@@ -8,11 +8,13 @@ def showIm(*args):
     if len(args) == 0:
         print "showIm( matrix, range, zoom, label, nshades, colorbar )\n"
         # FIX: add description of function and parameters
-    if len(args) > 0:
+    if len(args) > 0:   # matrix entered
         matrix = args[0]
         # defaults for all other values in case they weren't entered
         imRange = matrix.min(), matrix.max()
-    if len(args) > 1:
+        zoom = 1;
+        label = 1;
+    if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
             if args[1] is "auto":
                 imRange = matrix.min(), matrix.max()
@@ -33,7 +35,14 @@ def showIm(*args):
                 return
         else:
             imRange = args[1][0], args[1][1]
-
+    if len(args) > 2:   # zoom entered
+        # no equivalent to matlab's pixelAxes in matplotlib. need dpi
+        zoom = 1;
+    if len(args) > 3:   # label entered
+        
+        
     imgplot = plt.imshow(matrix).set_clim(imRange)
     plt.gca().invert_yaxis()  # default is inverted y from matlab
+    if label != 0 && label != 1:
+        plt.title(label)
     pylab.show()
