@@ -4,6 +4,7 @@ import numpy as np
 import pylab
 #import scipy as sp
 import scipy.stats as sps
+import math
 
 def showIm(*args):
     if len(args) == 0:
@@ -84,3 +85,24 @@ def showIm(*args):
     #pylab.show()
     plt.show()
     
+# Compute maximum pyramid height for given image and filter sizes.
+# Specifically: the number of corrDn operations that can be sequentially
+# performed when subsampling by a factor of 2.
+def maxPyrHt(imsz, filtsz):
+    if isinstance(imsz, (int,long)):
+        done = True
+    elif 1 in imsz:  # 1D image
+        imsz = imsz[0] * imsz[1]
+        filtsz = filtsz[0] * filtsz[1]
+    elif 1 in filtsz: # 2D image, 1D filter
+        filtsz = (filtsz[1], filtsz(1))
+
+    if isinstance(imsz, (int,long)):  # imsz is int
+        height = 0
+    elif any( i < f for i,f in zip(imsz, filtsz) ):
+        height = 0
+    else:
+        imsz = ( int( math.floor(imsz[0]/2) ), int( math.floor(imsz[1]/2) ))
+        height = 1 + maxPyrHt(imsz, filtsz)
+
+    return height
