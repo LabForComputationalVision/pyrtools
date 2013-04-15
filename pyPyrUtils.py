@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 import pylab
-#import scipy as sp
+import scipy.signal as spsig
 import scipy.stats as sps
 import math
 
@@ -113,3 +113,35 @@ def maxPyrHt(imsz, filtsz):
             height = 1 + maxPyrHt(imsz, filtsz)
 
     return height
+
+# returns a vector of binomial coefficients of order (size-1)
+# Rob Young, 4/13
+#
+def binomialFilter(size):
+    if size < 2:
+        print "Error: size argument must be larger than 1"
+        exit(1)
+    
+    kernel = np.matrix('0.5; 0.5')
+
+    for i in range(0, size-2):
+        kernel = spsig.convolve(np.matrix('0.5; 0.5'), kernel)
+
+    return kernel
+
+# Some standard 1D filter kernels. These are scaled such that their L2-norm 
+#   is 1.0
+#
+# binomN              - binomial coefficient filter of order N-1
+# haar                - Harr wavelet
+# qmf8, qmf12, qmf16  - Symmetric Quadrature Mirror Filters [Johnston80]
+# daub2, daub3, daub4 - Daubechies wavelet [Daubechies88]
+# qmf5, qmf9, qmf13   - Symmetric Quadrature Mirror Filters [Simoncelli88, 
+#                                                            Simoncelli90]
+# See bottom of file for full citations
+#
+# Rob Young, 4/13
+#
+#def namedFilter(name):
+#    if len(name) > 5 and name[0:5] is "binom":
+#        kernel = math.sqrt(2) * 
