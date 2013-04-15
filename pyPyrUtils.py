@@ -95,14 +95,21 @@ def maxPyrHt(imsz, filtsz):
         imsz = imsz[0] * imsz[1]
         filtsz = filtsz[0] * filtsz[1]
     elif 1 in filtsz: # 2D image, 1D filter
-        filtsz = (filtsz[1], filtsz(1))
+        filtsz = (filtsz[0], filtsz[0])
 
-    if isinstance(imsz, (int,long)):  # imsz is int
+    if isinstance(imsz, (int,long)) and imsz == 0:  # imsz is int == 0
         height = 0
-    elif any( i < f for i,f in zip(imsz, filtsz) ):
-        height = 0
-    else:
-        imsz = ( int( math.floor(imsz[0]/2) ), int( math.floor(imsz[1]/2) ))
-        height = 1 + maxPyrHt(imsz, filtsz)
+    elif not isinstance(imsz, (int,long)):  # imsz is tuple
+        if any( i < f for i,f in zip(imsz, filtsz) ):
+            height = 0
+        else:
+            imsz = ( int( math.floor(imsz[0]/2) ), int( math.floor(imsz[1]/2) ))
+            height = 1 + maxPyrHt(imsz, filtsz)
+    else:  # imsz is an int but != 0
+        if imsz < filtsz:
+            height = 0;
+        else:
+            imsz = int( math.floor(imsz/2) )
+            height = 1 + maxPyrHt(imsz, filtsz)
 
     return height
