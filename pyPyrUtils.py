@@ -36,15 +36,15 @@ def showIm(*args):
     if len(args) > 0:   # matrix entered
         matrix = args[0]
         # defaults for all other values in case they weren't entered
-        imRange = matrix.min(), matrix.max()
+        imRange = ( np.amin(matrix), np.amax(matrix) )
         zoom = 1
         label = 1
-        nshades = 256
         colorbar = False
+        colormap = cm.Greys_r
     if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
             if args[1] is "auto":
-                imRange = matrix.min(), matrix.max()
+                imRange = ( np.amin(matrix), np.amax(matrix) )
             elif args[1] is "auto2":
                 imRange = ( matrix.mean()-2*matrix.std(), 
                             matrix.mean()+2*matrix.std() )
@@ -122,12 +122,12 @@ def binomialFilter(size):
         print "Error: size argument must be larger than 1"
         exit(1)
     
-    kernel = np.matrix('0.5; 0.5')
+    kernel = np.array([[0.5], [0.5]])
 
     for i in range(0, size-2):
-        kernel = spsig.convolve(np.matrix('0.5; 0.5'), kernel)
+        kernel = spsig.convolve(np.array([[0.5], [0.5]]), kernel)
 
-    return kernel
+    return np.asarray(kernel)
 
 # Some standard 1D filter kernels. These are scaled such that their L2-norm 
 #   is 1.0
@@ -156,32 +156,33 @@ def binomialFilter(size):
 # Rob Young, 4/13
 #
 def namedFilter(name):
-    if len(name) > 5 and name[:5] is "binom":
-        kernel = math.sqrt(2) * binomialFilter(name[5:])
+    print name[:5]
+    if len(name) > 5 and name[:5] == "binom":
+        kernel = math.sqrt(2) * binomialFilter(int(name[5:]))
     elif name is "qmf5":
-        kernel = np.matrix('-0.076103;0.3535534;0.8593118;0.3535534;-0.076103')
+        kernel = np.array([[-0.076103], [0.3535534], [0.8593118], [0.3535534], [-0.076103]])
     elif name is "qmf9":
-        kernel = np.matrix('0.02807382;-0.060944743;-0.073386624;0.41472545;0.7973934;0.41472545;-0.073386624;-0.060944743;0.02807382')
+        kernel = np.array([[0.02807382], [-0.060944743], [-0.073386624], [0.41472545], [0.7973934], [0.41472545], [-0.073386624], [-0.060944743], [0.02807382]])
     elif name is "qmf13":
-        kernel = np.matrix('-0.014556438;0.021651438;0.039045125;-0.09800052;-0.057827797;0.42995453;0.7737113;0.42995453;-0.057827797;-0.09800052;0.039045125;0.021651438;-0.014556438')
+        kernel = np.array([[-0.014556438], [0.021651438], [0.039045125], [-0.09800052], [-0.057827797], [0.42995453], [0.7737113], [0.42995453], [-0.057827797], [-0.09800052], [0.039045125], [0.021651438], [-0.014556438]])
     elif name is "qmf8":
-        kernel = math.sqrt(2) * np.matrix('0.00938715;-0.07065183;0.06942827;0.4899808;0.4899808;0.06942827;-0.07065183;0.00938715')
+        kernel = math.sqrt(2) * np.array([[0.00938715], [-0.07065183], [0.06942827], [0.4899808], [0.4899808], [0.06942827], [-0.07065183], [0.00938715]])
     elif name is "qmf12":
-        kernel = math.sqrt(2) * np.matrix('-0.003809699;0.01885659;-0.002710326;-0.08469594;0.08846992;0.4843894;0.4843894;0.08846992;-0.08469594;-0.002710326;0.01885659;-0.003809699')
+        kernel = math.sqrt(2) * np.array([[-0.003809699], [0.01885659], [-0.002710326], [-0.08469594], [0.08846992], [0.4843894], [0.4843894], [0.08846992], [-0.08469594], [-0.002710326], [0.01885659], [-0.003809699]])
     elif name is "qmf16":
-        kernel = math.sqrt(2) * np.matrix('0.001050167;-0.005054526;-0.002589756;0.0276414;-0.009666376;-0.09039223;0.09779817;0.4810284;0.4810284;0.09779817;-0.09039223;-0.009666376;0.0276414;-0.002589756;-0.005054526;0.001050167')
+        kernel = math.sqrt(2) * np.array([[0.001050167], [-0.005054526], [-0.002589756], [0.0276414], [-0.009666376], [-0.09039223], [0.09779817], [0.4810284], [0.4810284], [0.09779817], [-0.09039223], [-0.009666376], [0.0276414], [-0.002589756], [-0.005054526], [0.001050167]])
     elif name is "haar":
-        kernel = np.matrix('1;1') / math.sqrt(2)
+        kernel = np.array([[1], [1]]) / math.sqrt(2)
     elif name is "daub2":
-        kernel = np.matrix('0.482962913145;0.836516303738;0.224143868042;-0.129409522551');
+        kernel = np.array([[0.482962913145], [0.836516303738], [0.224143868042], [-0.129409522551]]);
     elif name is "daub3":
-        kernel = np.matrix('0.332670552950;0.806891509311;0.459877502118;-0.135011020010;-0.085441273882;0.035226291882')
+        kernel = np.array([[0.332670552950], [0.806891509311], [0.459877502118], [-0.135011020010], [-0.085441273882], [0.035226291882]])
     elif name is "daub4":
-        kernel = np.matrix('0.230377813309;0.714846570553;0.630880767930;-0.027983769417;-0.187034811719;0.030841381836;0.032883011667;-0.010597401785')
+        kernel = np.array([[0.230377813309], [0.714846570553], [0.630880767930], [-0.027983769417], [-0.187034811719], [0.030841381836], [0.032883011667], [-0.010597401785]])
     elif name is "gauss5":  # for backward-compatibility
-        kernel = math.sqrt(2) * np.matrix('0.0625;0.25;0.375;0.25;0.0625')
+        kernel = math.sqrt(2) * np.array([[0.0625], [0.25], [0.375], [0.25], [0.0625]])
     elif name is "gauss3":  # for backward-compatibility
-        kernel = math.sqrt(2) * np.matrix('0.25;0.5;0.25')
+        kernel = math.sqrt(2) * np.array([[0.25], [0.5], [0.25]])
     else:
         print "Error: Bad filter name: %s" % (name)
         exit(1)

@@ -18,11 +18,11 @@ class maxPyrHtTests(unittest.TestCase):
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
-        self.failUnless((ppu.binomialFilter(2) == np.matrix('0.5; 0.5')).all() )
+        self.failUnless((ppu.binomialFilter(2) == np.array([[0.5], [0.5]])).all() )
     def test2(self):
-        self.failUnless((ppu.binomialFilter(3) == np.matrix('0.25; 0.5; 0.25')).all())
+        self.failUnless((ppu.binomialFilter(3) == np.array([[0.25], [0.5], [0.25]])).all())
     def test3(self):
-        self.failUnless((ppu.binomialFilter(5) == np.matrix('0.0625; 0.25; 0.3750; 0.25; 0.0625')).all())
+        self.failUnless((ppu.binomialFilter(5) == np.array([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])).all())
 
 def main():
     unittest.main()
