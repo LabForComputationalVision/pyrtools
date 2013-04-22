@@ -19,20 +19,26 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   int x_idim, y_idim;
   PyObject *arg1, *arg2;
   PyArrayObject *image, *filt, *result;
-  char *edges;
-  int x_step, y_step, x_start, y_start, x_stop, y_stop, x_rdim, y_rdim;
+  char *edges = "reflect1";
+  int x_step = 1;
+  int y_step = 1;
+  int x_start = 0;
+  int y_start = 0;
+  int x_stop, y_stop, x_rdim, y_rdim;
   int dimensions[1];
   int i;
 
   // parse input parameters
   // FIX: make some parameters optional
-  if( !PyArg_ParseTuple(args, "iiOiiOsiiiiii", &x_idim, &y_idim, &arg1, 
-			&x_fdim, &y_fdim, &arg2, &edges, &x_start, &y_start, 
-			&x_step, &y_step, &x_stop, &y_stop) )
+  if( !PyArg_ParseTuple(args, "iiOiiO|siiiiii", &x_idim, &y_idim, &arg1, 
+			&x_fdim, &y_fdim, &arg2, &edges, &x_step, &y_step, 
+			&x_start, &y_start, &x_stop, &y_stop) )
     return NULL;
   image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 1,
 							x_idim * y_idim);
 
+  x_stop = x_idim;
+  y_stop = y_idim;
   if(image == NULL)
     return NULL;
   if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
@@ -77,8 +83,8 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   x_rdim = (x_stop-x_start+x_step-1) / x_step;
   y_rdim = (y_stop-y_start+y_step-1) / y_step;
 
-
-  dimensions[0] = x_idim * y_idim / 2;
+  dimensions[0] = (x_idim/y_step) * y_idim/x_step;
+  printf("dimensions = %d\n", dimensions[0]);
   result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
   double *temp = malloc(x_fdim * y_fdim * sizeof(double));
   if (temp == NULL){
