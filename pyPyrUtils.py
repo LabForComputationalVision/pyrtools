@@ -156,7 +156,6 @@ def binomialFilter(size):
 # Rob Young, 4/13
 #
 def namedFilter(name):
-    print name[:5]
     if len(name) > 5 and name[:5] == "binom":
         kernel = math.sqrt(2) * binomialFilter(int(name[5:]))
     elif name is "qmf5":

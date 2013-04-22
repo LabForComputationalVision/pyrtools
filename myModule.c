@@ -14,59 +14,35 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
 //		 const mxArray *prhs[]     /* Matrices on rhs */
 //		 )
 {
-  //double *image,*filt, *temp, *result;
   int x_fdim, y_fdim;
   int Nargs;
   int x_idim, y_idim;
-  //int x_rdim, y_rdim;
-  //int x_start = 1;
-  //int x_step = 1;
-  //int y_start = 1;
-  //int y_step = 1;
-  //int x_stop, y_stop;
-  //mxArray *arg;
   PyObject *arg1, *arg2;
   PyArrayObject *image, *filt, *result;
-  /*double *mxMat;  */
   char *edges;
   int x_step, y_step, x_start, y_start, x_stop, y_stop, x_rdim, y_rdim;
   int dimensions[1];
   int i;
-  double *ix;
-  int *ixd, *rxd;
-  double *fx;
-  image_type *rx;
 
   // parse input parameters
   // FIX: make some parameters optional
-  // FIX: can we set the format so we don't need ix & fx?
   if( !PyArg_ParseTuple(args, "iiOiiOsiiiiii", &x_idim, &y_idim, &arg1, 
-			&x_fdim, &y_fdim, &arg2, &edges, &x_step, &y_step, 
-			&x_start, &y_start, &x_stop, &y_stop) )
+			&x_fdim, &y_fdim, &arg2, &edges, &x_start, &y_start, 
+			&x_step, &y_step, &x_stop, &y_stop) )
     return NULL;
-  image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_INT, 1, 
+  image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 1,
 							x_idim * y_idim);
-  printf("flag 1\n");
-  ixd = (int *)image->data;
-  ix = malloc(x_idim * y_idim * sizeof(double));
-  for(i=0; i<x_idim*y_idim; i++){
-    ix[i] = (double)ixd[i];
-    printf("ix[%d]=%f\n",i,ix[i]);
-  }
-  printf("flag 2\n");
 
   if(image == NULL)
     return NULL;
-  if(image->nd != 2 || image->descr->type_num != PyArray_INT){
+  if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
     PyErr_SetString(PyExc_ValueError, 
-		    "array must be two-dimensional and of type int");
+		    "array must be two-dimensional and of type double");
     return NULL;
   }
 
   filt = (PyArrayObject *)PyArray_ContiguousFromObject(arg2, PyArray_DOUBLE, 
 						       1, x_fdim * y_fdim);
-  fx = (double *)filt->data;
-
   if(filt == NULL)
     return NULL;
   if(filt->nd != 2 || filt->descr->type_num != PyArray_DOUBLE){
@@ -102,8 +78,8 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   y_rdim = (y_stop-y_start+y_step-1) / y_step;
 
 
-  dimensions[0] = x_idim * y_idim;
-  result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_INT);
+  dimensions[0] = x_idim * y_idim / 2;
+  result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
   double *temp = malloc(x_fdim * y_fdim * sizeof(double));
   if (temp == NULL){
     printf("Cannot allocate necessary temporary space");
@@ -115,34 +91,18 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
 	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
 	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges); */
 
-  rx = malloc(x_idim * y_idim * sizeof(image_type));
   if (strcmp(edges,"circular") == 0)
-    internal_wrap_reduce((image_type *)ix, x_idim, y_idim, 
-			 (image_type *)fx, x_fdim, y_fdim,
+    internal_wrap_reduce((image_type *)image->data, x_idim, y_idim, 
+			 (image_type *)filt->data, x_fdim, y_fdim,
   			 x_start, x_step, x_stop, y_start, y_step, y_stop,
-  			 (image_type *)rx);
+  			 (image_type *)result->data);
   else 
-    internal_reduce((image_type *)ix, x_idim, y_idim, 
-		    (image_type *)fx, temp, x_fdim, y_fdim,
+    internal_reduce((image_type *)image->data, x_idim, y_idim, 
+		    (image_type *)filt->data, temp, x_fdim, y_fdim,
 		    x_start, x_step, x_stop, y_start, y_step, y_stop,
-		    (image_type *)rx, edges);
+		    (image_type *)result->data, edges);
   
-
-  //for(i=500; i<510; i++)
-  //printf("%d: %f\n", i, rx[i]);
-  //printf("%d: %d\n", i, ix[i]);
-  rxd = malloc(x_idim * y_idim * sizeof(int));
-  for(i=0; i<x_idim*y_idim; i++){
-    rxd[i] = (int)floor(rx[i]);
-    if(rxd[i] > 0)
-      printf("rxd[%d]=%d\n",i,rxd[i]);
-  }
-  
-  result->data = rxd;
-  free(temp);
-  free(rx);
   return PyArray_Return(result);
-
 } 
 
 
