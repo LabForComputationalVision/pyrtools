@@ -5,6 +5,8 @@ import pylab
 import scipy.signal as spsig
 import scipy.stats as sps
 import math
+import struct
+import re
 
 def showIm(*args):
     if len(args) == 0:
@@ -76,8 +78,9 @@ def showIm(*args):
     if len(args) > 5 and args[5]:   # colorbar entered and set to true
         colorbar = args[5]
         
+    #imgplot = plt.imshow(matrix, colormap, origin='lower').set_clim(imRange)
     imgplot = plt.imshow(matrix, colormap).set_clim(imRange)
-    plt.gca().invert_yaxis()  # default is inverted y from matlab
+    #plt.gca().invert_yaxis()  # default is inverted y from matlab
     if label != 0 and label != 1:
         plt.title(label)
     if colorbar:
