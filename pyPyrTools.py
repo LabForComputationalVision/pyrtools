@@ -17,6 +17,7 @@ class pyramid:  # pyramid
 
     #def showPyr(self, *args):
         
+        
 
 class Gpyr(pyramid):
     filt = ''
@@ -170,7 +171,69 @@ class Lpyr(pyramid):
             hi2 = los[ht] - hi2
             pyramid.pyr[hi2.shape] = hi2
 
+    # methods
+    def reconLpyr(self, *args):
+        if len(args) > 0:
+            levs = args[0]
+        else:
+            levs = 'all'
+
+        if len(args) > 1:
+            filt2 = args[1]
+        else:
+            filt2 = 'binom5'
+
+        if len(args) > 2:
+            edges = args[2]
+        else:
+            edges = 'reflect1';
+
+        maxLev = pyramid.height
+        if levs == 'all':
+            levs = range(0,maxLev)
+        else:
+            #if levs.any() > maxLev:
+            if any(x > maxLev for x in levs):
+                print ( "Error: level numbers must be in the range [1, %d]." % 
+                        (maxLev) )
+                exit(1)
+
+        if isinstance(filt2, basestring):
+            filt2 = ppu.namedFilter(filt2)
+
+        res = []
+        lastLev = -1
+        #for lev in levs:
+        for lev in range(maxLev-1, -1, -1):
+            if lev in levs and len(res) == 0:
+                res = self.band(lev)
+            elif len(res) != 0:
+                res_sz = res.shape
+                filt2_sz = filt2.shape
+                hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
+                            filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
+                            res_sz[0]*2, res_sz[1])
+                hi = np.array(hi).reshape(res_sz[0]*2, res_sz[1], order='F')
+                hi2 = upConv(res_sz[0], res_sz[1]*2, hi, filt2_sz[0], 
+                             filt2_sz[1], filt2, edges, 2, 1, 0, 0,
+                             res_sz[0]*2, res_sz[1]*2)
+                hi2 = np.array(hi2).reshape(res_sz[0]*2, res_sz[1]*2, order='C')
+                if lev in levs:
+                    bandIm = self.band(lev)
+                    bandIm_sz = bandIm.shape
+
+                    res = hi2 + bandIm
+                else:
+                    res = hi2
+
+        return res                           
+                
+            
+            
         
+    
+    
+    
 
 
 

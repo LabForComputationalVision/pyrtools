@@ -189,3 +189,6 @@ def namedFilter(name):
         print "Error: Bad filter name: %s" % (name)
         exit(1)
     return kernel
+
+def strictly_decreasing(L):
+    return all(x>y for x, y in zip(L, L[1:]))
