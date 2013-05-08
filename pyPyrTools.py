@@ -1,6 +1,8 @@
 import numpy as np
 import pyPyrUtils as ppu
 from myModule import *
+import math
+import matplotlib.cm as cm
 
 class pyramid:  # pyramid
     # properties
@@ -15,8 +17,19 @@ class pyramid:  # pyramid
                             key=lambda element: (element[0], element[1]))
         return self.pyr[sortedKeys[bandNum]]
 
-    #def showPyr(self, *args):
+    def showPyr(self, *args):
+        if len(args) == 0:
+            print "showPry(pyramid, range, gap, scale)"
+            print "pyramid parameter is required"
+            exit(1)
         
+        if self.pyrType == 'Gaussian':
+            self.showLpyr(args)
+        elif self.pyrType == 'Laplacian':
+            self.showLpyr(args)
+        else:
+            print "pyramid type %s not currently supported" % (args[0])
+            exit(1)
         
 
 class Gpyr(pyramid):
@@ -27,7 +40,7 @@ class Gpyr(pyramid):
     def __init__(self, *args):    # (image, height, filter, edges)
         pyramid.pyrType = 'Gaussian'
         if len(args) < 1:
-            print "[pyr, indices] = Gpyr(image, height, filter, edges)"
+            print "pyr = Gpyr(image, height, filter, edges)"
             print "First argument (image) is required"
             exit(1)
         else:
@@ -228,15 +241,133 @@ class Lpyr(pyramid):
 
         return res                           
                 
-            
-            
+    def pyrLow(self):
+        return self.band(self.height-1)
+
+    def showLpyr(self, *args):
+        if len(args) == 0:
+            print "showPyr(pyramid, range, gap, scale)"
+            print "type and pyramid parameters are required"
+            exit(1)
+
+        if any(x == 1 for x in args[0][0].band(0).shape):
+            oned = 1
+        else:
+            oned = 0
+
+        if len(args) <= 1:
+            if oned == 1:
+                pRange = 'auto1'
+            else:
+                pRange = 'auto2'
         
-    
-    
-    
+        if len(args) <= 2:
+            gap = 1
 
+        if len(args) <= 3:
+            if oned == 1:
+                scale = math.sqrt(2)
+            else:
+                scale = 2
 
+        nind = self.height
+            
+        # auto range calculations
+        if pRange == 'auto1':
+            print "1D 'images currently not supported"
+            exit(1)
+            #pRange = np.zeros(nind,1)
+            #mn = 0.0
+            #mx = 0.0
+            #for bnum in range(1,nind):
+            #    band = self.band(bnum)
+            #    band /= np.power(scale, bnum-1)
+            #    pRange(bnum) = range2(band)   range2 is a function
+        elif pRange == 'indep1':
+            print "1D 'images currently not supported"
+            exit(1)
+        elif pRange == 'auto2':
+            pRange = np.zeros((nind,1))
+            sqsum = 0
+            numpixels = 0
+            for bnum in range(0, nind-1):
+                band = self.band(bnum)
+                band /= np.power(scale, bnum)
+                sqsum += np.sum( np.power(band, 2) )
+                numpixels += np.prod(band.shape)
+                pRange[bnum,:] = np.power(scale, bnum)
+            stdev = math.sqrt( sqsum / (numpixels-1) )
+            pRange = np.outer( pRange, np.array([-3*stdev, 3*stdev]) )
+            band = self.pyrLow()
+            av = np.mean(band)
+            stdev = np.std(band)
+            pRange[nind-1,:] = np.array([av-2*stdev, av+2*stdev]);#by ref? safe?
+        elif pRange == 'indep2':
+            pRange = np.zeros(nind,2)
+            for bnum in range(0,nind-1):
+                band = self.band(bnum)
+                stdev = np.std(band)
+                pRange[bnum,:] = np.array([-3*stdev, 3*stdev])
+            band = self.pyrLow()
+            av = np.mean(band)
+            stdev = np.std(band)
+            pRange[nind,:] = np.array([av-2*stdev, av+2*stdev])
+        elif isinstance(pRange, basestring):
+            print "Error: band range argument: %s" % (pRange)
+            exit(1)
+        elif pRange.shape[0] == 1 and pRange.shape[1] == 2:
+            scales = np.power( np.array( range(0,nind) ), scale)
+            pRange = np.outer( scales, pRange )
+            band = self.pyrLow()
+            pRange[nind,:] = ( pRange[nind,:] + np.mean(band) - 
+                               np.mean(pRange[nind,:]) )
 
+        # draw
+        if oned == 1:
+            print "one dimensional 'images' not supported yet"
+            exit(1)
+        else:
+            colormap = cm.Greys_r
+            # skipping background calculation. needed?
+
+            # compute positions of subbands:
+            llpos = np.ones((nind, 2)).astype(float)
+            dirr = np.array([-1.0, -1.0])
+            ctr = np.array([self.band(0).shape[0]+1+gap, 1]).astype(float)
+            sz = np.array([0.0, 0.0])
+            for bnum in range(nind):
+                prevsz = sz
+                sz = self.band(bnum).shape
+                
+                # determine center position of new band:
+                ctr = ( ctr + gap*dirr/2.0 + dirr * 
+                        np.floor( (prevsz+(dirr<0).astype(int))/2.0 ) )
+                dirr = np.dot(dirr,np.array([ [0, -1], [1, 0] ])) # ccw rotation
+                ctr = ( ctr + gap*dirr/2 + dirr * 
+                        np.floor( (sz+(dirr<0).astype(int)) / 2.0) )
+                llpos[bnum,:] = ctr - np.floor(np.array(sz))/2.0 
+            # make position list positive, and allocate appropriate image
+            #llpos = llpos - np.ones((nind,1))*np.min(llpos) + 1
+            llpos = llpos - np.ones((nind,1))*np.min(llpos)
+            pind = range(self.height)
+            for i in pind:
+                pind[i] = self.band(i).shape
+            #urpos = llpos + pind - 1
+            urpos = llpos + pind
+            d_im = np.zeros((np.max(urpos), np.max(urpos)))  # need bg here?
+            
+            # paste bands info image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
+            nshades = 256
+            for bnum in range(nind):
+                mult = (nshades-1) / (pRange[bnum,1]-pRange[bnum,0])
+                d_im[llpos[bnum,0]:urpos[bnum,0], llpos[bnum,1]:urpos[bnum,1]]=(
+                    mult*self.band(bnum) + (1.5-mult*pRange[bnum,0]) )
+                # layout works
+                #d_im[llpos[bnum,0]:urpos[bnum,0],llpos[bnum,1]:urpos[bnum,1]]=(
+                    #(bnum+1)*10 )
 
             
-    
+            ppu.showIm(d_im)
+
+                 
+            
