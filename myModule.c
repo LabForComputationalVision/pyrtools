@@ -34,11 +34,11 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   y_stop = y_idim;
   if(image == NULL)
     return NULL;
-  if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
+  /*if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
     PyErr_SetString(PyExc_ValueError, 
 		    "array must be two-dimensional and of type double");
     return NULL;
-  }
+    }*/
 
   filt = (PyArrayObject *)PyArray_ContiguousFromObject(arg2, PyArray_DOUBLE, 
 						       1, x_fdim * y_fdim);
@@ -78,7 +78,7 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
 
   //dimensions[0] = (x_idim/y_step) * (y_idim/x_step);
   dimensions[0] = x_rdim * y_rdim;
-  printf("dimensions = %d\n", dimensions[0]);
+
   result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
   double *temp = malloc(x_fdim * y_fdim * sizeof(double));
   if (temp == NULL){
@@ -86,9 +86,9 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
     exit(1);
   }
 
-  printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d), %s\n",
+  /*printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d),%s\n",
 	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
-	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges);
+	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges); */
 
   if (strcmp(edges,"circular") == 0)
     internal_wrap_reduce((image_type *)image->data, x_idim, y_idim, 

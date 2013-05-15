@@ -92,34 +92,44 @@ def showIm(*args):
 # Specifically: the number of corrDn operations that can be sequentially
 # performed when subsampling by a factor of 2.
 def maxPyrHt(imsz, filtsz):
-    if isinstance(imsz, (int,long)):
-        done = True
-    elif 1 in imsz:  # 1D image
-        imsz = imsz[0] * imsz[1]
-        filtsz = filtsz[0] * filtsz[1]
-    elif 1 in filtsz: # 2D image, 1D filter
-        filtsz = (filtsz[0], filtsz[0])
+    if isinstance(imsz, int):
+        imsz = (imsz, 1)
+    if isinstance(filtsz, int):
+        filtsz = (filtsz, 1)
 
-    if isinstance(imsz, (int,long)) and imsz == 0:  # imsz is int == 0
+    if len(imsz) == 1 and len(filtsz) == 1:
+        imsz = (imsz[0], 1)
+        filtsz = (filtsz[0], 1)
+    elif len(imsz) == 1 and not any(f == 1 for f in filtsz):
+            print "Error: cannot have a 1D 'image' and 2D filter"
+            exit(1)
+    elif len(imsz) == 1:
+        imsz = (imsz[0], 1)
+    elif len(filtsz) == 1:
+        filtsz = (filtsz[0], 1)
+
+    if imsz == 0:
         height = 0
-    elif not isinstance(imsz, (int,long)):  # imsz is tuple
+    elif isinstance(imsz, tuple):
         if any( i < f for i,f in zip(imsz, filtsz) ):
             height = 0
         else:
-            imsz = ( int( math.floor(imsz[0]/2) ), int( math.floor(imsz[1]/2) ))
+            if any( i == 1 for i in imsz):
+                imsz = (int( math.floor(imsz[0]/2) ), 1)
+            else:
+                imsz = ( int( math.floor(imsz[0]/2) ), 
+                         int( math.floor(imsz[1]/2) ))
             height = 1 + maxPyrHt(imsz, filtsz)
-    else:  # imsz is an int but != 0
-        if imsz < filtsz:
+    else:
+        if any(imsz < f for f in filtsz):
             height = 0;
         else:
-            imsz = int( math.floor(imsz/2) )
+            imsz = ( int( math.floor(imsz/2) ), 1 )
             height = 1 + maxPyrHt(imsz, filtsz)
 
     return height
 
 # returns a vector of binomial coefficients of order (size-1)
-# Rob Young, 4/13
-#
 def binomialFilter(size):
     if size < 2:
         print "Error: size argument must be larger than 1"
@@ -192,3 +202,32 @@ def namedFilter(name):
 
 def strictly_decreasing(L):
     return all(x>y for x, y in zip(L, L[1:]))
+
+def comparePyr(matPyr, pyPyr):
+    # compare two pyramids - return 0 for !=, 1 for == 
+    # correct number of elements?
+    matSz = sum(matPyr.shape)
+    pySz = 1
+    for key in pyPyr.pyr.keys():
+        if len(key) == 1:
+            pySz += key[0]
+        else:
+            pySz += key[0] * key[1]
+
+    if(matSz != pySz):
+        return 0
+
+    # values are the same?
+    matStart = 0
+    sortedKeys = sorted(pyPyr.pyr.keys(), reverse=True, key=lambda element: 
+                        (element[0], element[1]))
+    for key in sortedKeys:
+        bandSz = key
+        matLen = bandSz[0] * bandSz[1]
+        matTmp = matPyr[matStart:matStart + matLen]
+        matTmp = np.reshape(matTmp, bandSz, order='F')
+        matStart = matStart+matLen
+        if (matTmp != pyPyr.pyr[key]).any():
+            return 0
+
+    return 1
