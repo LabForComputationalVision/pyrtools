@@ -28,7 +28,7 @@ class binomialFilterTests(unittest.TestCase):
     def test3(self):
         self.failUnless((ppu.binomialFilter(5) == np.array([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])).all())
 
-class buildGpyrTests(unittest.TestCase):
+class GpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('buildGpyr1.mat')
         img = Image.open('lenna-256x256.tif')
@@ -36,8 +36,15 @@ class buildGpyrTests(unittest.TestCase):
         pyPyr = ppt.Gpyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
-        matPyr = scipy.io.loadmat('buildGpyr2.mat')
+        matPyr = scipy.io.loadmat('buildGpyr2row.mat')
         img = np.array(range(256)).astype(float)
+        img = img.reshape(1, 256)
+        pyPyr = ppt.Gpyr(img)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test3(self):
+        matPyr = scipy.io.loadmat('buildGpyr2col.mat')
+        img = np.array(range(256)).astype(float)
+        img = img.reshape(256, 1)
         pyPyr = ppt.Gpyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 

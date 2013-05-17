@@ -114,7 +114,10 @@ def maxPyrHt(imsz, filtsz):
         if any( i < f for i,f in zip(imsz, filtsz) ):
             height = 0
         else:
-            if any( i == 1 for i in imsz):
+            #if any( i == 1 for i in imsz):
+            if imsz[0] == 1:
+                imsz = (1, int(math.floor(imsz[1]/2) ) )
+            elif imsz[1] == 1:
                 imsz = (int( math.floor(imsz[0]/2) ), 1)
             else:
                 imsz = ( int( math.floor(imsz[0]/2) ), 
@@ -126,7 +129,7 @@ def maxPyrHt(imsz, filtsz):
         else:
             imsz = ( int( math.floor(imsz/2) ), 1 )
             height = 1 + maxPyrHt(imsz, filtsz)
-
+            
     return height
 
 # returns a vector of binomial coefficients of order (size-1)
@@ -198,7 +201,7 @@ def namedFilter(name):
     else:
         print "Error: Bad filter name: %s" % (name)
         exit(1)
-    return kernel
+    return np.array(kernel)
 
 def strictly_decreasing(L):
     return all(x>y for x, y in zip(L, L[1:]))

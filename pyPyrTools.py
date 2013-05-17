@@ -3,6 +3,7 @@ import pyPyrUtils as ppu
 from myModule import *
 import math
 import matplotlib.cm as cm
+from pylab import *
 
 class pyramid:  # pyramid
     # properties
@@ -18,11 +19,9 @@ class pyramid:  # pyramid
 
     # methods
     def band(self, bandNum):
-        print "band"
-        print self.pyr.keys()
         sortedKeys = sorted(self.pyr.keys(), reverse=True, 
                             key=lambda element: (element[0], element[1]))
-        return self.pyr[sortedKeys[bandNum]]
+        return np.array(self.pyr[sortedKeys[bandNum]])
 
     def showPyr(self, *args):
         if self.pyrType == 'Gaussian':
@@ -40,9 +39,9 @@ class Lpyr(pyramid):
     # constructor
     def __init__(self, *args):    # (image, height, filter1, filter2, edges)
         #args = args[0]        
-        pyramid.pyrType = 'Laplacian'
+        self.pyrType = 'Laplacian'
         if len(args) > 0:
-            pyramid.image = args[0]
+            self.image = args[0]
         else:
             print "pyr = Lpyr(image, height, filter1, filter2, edges)"
             print "First argument (image) is required"
@@ -64,20 +63,19 @@ class Lpyr(pyramid):
         else:
             filt = ppu.namedFilter('binom5')
 
-        maxHeight = 1 + ppu.maxPyrHt(pyramid.image.shape, filt.shape)
-        print "maxHeight = %d" % (maxHeight)
+        maxHeight = 1 + ppu.maxPyrHt(self.image.shape, filt.shape)
+
         if len(args) > 1:
             if args[1] is "auto":
-                pyramid.height = maxHeight
+                self.height = maxHeight
             else:
-                pyramid.height = args[1]
-                if pyramid.height > maxHeight:
+                self.height = args[1]
+                if self.height > maxHeight:
                     print ( "Error: cannot build pyramid higher than %d levels"
                             % (maxHeight) )
                     exit(1)
         else:
-            pyramid.height = maxHeight
-        print "pyramid.height = %d" % (pyramid.height)
+            self.height = maxHeight
 
         if len(args) > 4:
             edges = args[4]
@@ -85,42 +83,56 @@ class Lpyr(pyramid):
             edges = "reflect1"
 
         # make pyramid
-        im = pyramid.image
+        im = np.array(self.image).astype(float)
+        if len(im.shape) == 1:
+            im = im.reshape(im.shape[0], 1)
         los = {}
-        los[pyramid.height] = im
+        los[self.height] = im
         # compute low bands
-        for ht in range(pyramid.height-1,0,-1):
+        for ht in range(self.height-1,0,-1):
             im_sz = im.shape
             filt_sz = filt.shape
-            lo = corrDn(im_sz[0], im_sz[1], im, filt_sz[0], filt_sz[1], 
-                        filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-            lo = np.array(lo).reshape(im_sz[0]/1, im_sz[1]/2, order='C')
-            int_sz = lo.shape
-            lo2 = corrDn(im_sz[0]/1, im_sz[1]/2, lo.T, filt_sz[0], 
-                         filt_sz[1], filt, edges, 2, 1, 0, 0, im_sz[0], 
-                         im_sz[1])
-            lo2 = np.array(lo2).reshape(im_sz[0]/2, im_sz[1]/2, order='F')
+            if any(i == 1 for i in im_sz):
+                lo2 = corrDn(im_sz[0], im_sz[1], lo.T, filt_sz[0], 
+                             filt_sz[1], filt, edges, 2, 1, 0, 0, im_sz[0], 
+                             im_sz[1])
+                lo2 = np.array(lo2).reshape(im_sz[0]/2, im_sz[1], order='F')
+            else:
+                lo = corrDn(im_sz[0], im_sz[1], im, filt_sz[0], filt_sz[1], 
+                            filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
+                lo = np.array(lo).reshape(im_sz[0]/1, im_sz[1]/2, order='C')
+                #int_sz = lo.shape
+                lo2 = corrDn(im_sz[0]/1, im_sz[1]/2, lo.T, filt_sz[0], 
+                             filt_sz[1], filt, edges, 2, 1, 0, 0, im_sz[0], 
+                             im_sz[1])
+                lo2 = np.array(lo2).reshape(im_sz[0]/2, im_sz[1]/2, order='F')
             
             los[ht] = lo2
                 
             im = lo2
 
-        pyramid.pyr[lo2.shape] = lo2
+        self.pyr[lo2.shape] = lo2
         # compute hi bands
-        im = pyramid.image
-        for ht in range(pyramid.height, 1, -1):
+        im = self.image
+        for ht in range(self.height, 1, -1):
             im = los[ht-1]
             im_sz = los[ht-1].shape
             filt_sz = filt.shape
-            hi = upConv(im_sz[0], im_sz[1], im.T, filt_sz[0], filt_sz[1], 
-                         filt, edges, 2, 1, 0, 0, im_sz[0]*2, im_sz[1])
-            hi = np.array(hi).reshape(im_sz[0]*2, im_sz[1], order='F')
-            int_sz = hi.shape
-            hi2 = upConv(im_sz[0], im_sz[1]*2, hi, filt_sz[0], filt_sz[1], 
-                         filt, edges, 2, 1, 0, 0, im_sz[0]*2, im_sz[1]*2)
-            hi2 = np.array(hi2).reshape(im_sz[0]*2, im_sz[1]*2, order='C')
+            if any(i == 1 for i in im_sz):
+                hi2 = upConv(im_sz[0], im_sz[1], hi, filt_sz[0], filt_sz[1], 
+                             filt, edges, 2, 1, 0, 0, im_sz[0]*2, im_sz[1])
+                hi2 = np.array(hi2).reshape(im_sz[0]*2, im_sz[1], order='C')
+            else:
+                hi = upConv(im_sz[0], im_sz[1], im.T, filt_sz[0], filt_sz[1], 
+                            filt, edges, 2, 1, 0, 0, im_sz[0]*2, im_sz[1])
+                hi = np.array(hi).reshape(im_sz[0]*2, im_sz[1], order='F')
+                #int_sz = hi.shape
+                hi2 = upConv(im_sz[0], im_sz[1]*2, hi, filt_sz[0], filt_sz[1], 
+                             filt, edges, 2, 1, 0, 0, im_sz[0]*2, im_sz[1]*2)
+                hi2 = np.array(hi2).reshape(im_sz[0]*2, im_sz[1]*2, order='C')
+
             hi2 = los[ht] - hi2
-            pyramid.pyr[hi2.shape] = hi2
+            self.pyr[hi2.shape] = hi2
 
     # methods
     def reconLpyr(self, *args):
@@ -139,7 +151,7 @@ class Lpyr(pyramid):
         else:
             edges = 'reflect1';
 
-        maxLev = pyramid.height
+        maxLev = self.height
         if levs == 'all':
             levs = range(0,maxLev)
         else:
@@ -180,7 +192,7 @@ class Lpyr(pyramid):
         return res                           
                 
     def pyrLow(self):
-        return self.band(self.height-1)
+        return np.array(self.band(self.height-1))
 
     def showLpyr(self, *args):
         #if any(x == 1 for x in args[0][0].band(0).shape):
@@ -208,18 +220,41 @@ class Lpyr(pyramid):
             
         # auto range calculations
         if pRange == 'auto1':
-            print "1D 'images currently not supported"
-            exit(1)
-            #pRange = np.zeros(nind,1)
-            #mn = 0.0
-            #mx = 0.0
-            #for bnum in range(1,nind):
-            #    band = self.band(bnum)
-            #    band /= np.power(scale, bnum-1)
-            #    pRange(bnum) = range2(band)   range2 is a function
+            pRange = np.zeros((nind,1))
+            mn = 0.0
+            mx = 0.0
+            for bnum in range(nind):
+                band = self.band(bnum)
+                band /= np.power(scale, bnum-1)
+                pRange[bnum] = np.power(scale, bnum-1)
+                bmn = np.amin(band)
+                bmx = np.amax(band)
+                mn = np.amin([mn, bmn])
+                mx = np.amax([mx, bmx])
+            if oned == 1:
+                pad = (mx-mn)/12       # magic number
+                mn -= pad
+                mx += pad
+            pRange = np.outer(pRange, np.array([mn, mx]))
+            band = self.pyrLow()
+            mn = np.amin(band)
+            mx = np.amax(band)
+            if oned == 1:
+                pad = (mx-mn)/12
+                mn -= pad
+                mx += pad
+            pRange[nind-1,:] = [mn, mx];
         elif pRange == 'indep1':
-            print "1D 'images currently not supported"
-            exit(1)
+            pRange = np.zeros((nind,1))
+            for bnum in range(nind):
+                band = self.band(bnum)
+                mn = np.amin(band)
+                mx = np.amax(band)
+                if oned == 1:
+                    pad = (mx-mn)/12;
+                    mn -= pad
+                    mx += pad
+                pRange[bnum,:] = np.array([mn, mx])
         elif pRange == 'auto2':
             pRange = np.zeros((nind,1))
             sqsum = 0
@@ -258,8 +293,21 @@ class Lpyr(pyramid):
 
         # draw
         if oned == 1:
-            print "one dimensional 'images' not supported yet"
-            exit(1)
+            fig = plt.figure()
+            ax0 = fig.add_subplot(nind, 1, 0)
+            ax0.set_frame_on(False)
+            ax0.get_xaxis().tick_bottom()
+            ax0.get_xaxis().tick_top()
+            ax0.get_yaxis().tick_right()
+            ax0.get_yaxis().tick_left()
+            ax0.get_yaxis().set_visible(False)
+            for bnum in range(0,nind):
+                subplot(nind, 1, bnum+1)
+                plot(np.array(range(np.amax(self.band(bnum).shape))).T, 
+                     self.band(bnum).T)
+                ylim(pRange[bnum,:])
+                xlim((0,self.band(bnum).shape[1]-1))
+            plt.show()
         else:
             colormap = cm.Greys_r
             # skipping background calculation. needed?
@@ -310,13 +358,13 @@ class Gpyr(Lpyr):
     # constructor
     def __init__(self, *args):    # (image, height, filter, edges)
         #args = args[0]
-        pyramid.pyrType = 'Gaussian'
+        self.pyrType = 'Gaussian'
         if len(args) < 1:
             print "pyr = Gpyr(image, height, filter, edges)"
             print "First argument (image) is required"
             exit(1)
         else:
-            pyramid.image = args[0]
+            self.image = args[0]
 
         if len(args) > 2:
             filt = args[2]
@@ -325,19 +373,22 @@ class Gpyr(Lpyr):
                 exit(1)
         else:
             filt = ppu.namedFilter('binom5')
+            if self.image.shape[0] == 1:
+                filt = filt.reshape(1,5)
 
-        maxHeight = 1 + ppu.maxPyrHt(pyramid.image.shape, filt.shape)
+        maxHeight = 1 + ppu.maxPyrHt(self.image.shape, filt.shape)
+
         if len(args) > 1:
             if args[1] is "auto":
-                pyramid.height = maxHeight
+                self.height = maxHeight
             else:
-                pyramid.height = args[1]
-                if pyramid.height > maxHeight:
+                self.height = args[1]
+                if self.height > maxHeight:
                     print ( "Error: cannot build pyramid higher than %d levels"
                             % (maxHeight) )
                     exit(1)
         else:
-            pyramid.height = maxHeight
+            self.height = maxHeight
 
         if len(args) > 3:
             edges = args[3]
@@ -345,19 +396,28 @@ class Gpyr(Lpyr):
             edges = "reflect1"
 
         # make pyramid
-        pyramid.pyr = {}
-        im = np.array(pyramid.image).astype(float)
+        self.pyr = {}
+        im = np.array(self.image).astype(float)
+
         if len(im.shape) == 1:
-            pyramid.pyr[(im.shape[0], 1)] = im.reshape(im.shape[0], 1)
-        else:
-            pyramid.pyr[im.shape] = im
-        for ht in range(pyramid.height,0,-1):
+            im = im.reshape(im.shape[0], 1)
+
+        self.pyr[im.shape] = im
+        for ht in range(self.height,0,-1):
             if ht <= 1:
-                pyramid.pyr[im.shape] = im
+                self.pyr[im.shape] = im
             else:
                 im_sz = im.shape
                 filt_sz = filt.shape
-                if len(im_sz) == 1 or any(i == 1 for i in im_sz):
+                if len(im_sz) == 1:
+                    lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
+                                 edges, 2, 1, 0, 0, im_sz[0], 1)
+                    lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
+                elif im_sz[0] == 1:
+                    lo2 = corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1], filt, 
+                                 edges, 1, 2, 0, 0, 1, im_sz[1])
+                    lo2 = np.array(lo2).reshape(1, im_sz[1]/2, order='C')
+                elif im_sz[1] == 1:
                     lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
                                  edges, 2, 1, 0, 0, im_sz[0], 1)
                     lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
@@ -371,10 +431,10 @@ class Gpyr(Lpyr):
                     lo2 = np.array(lo2).reshape(im_sz[0]/2, im_sz[1]/2, 
                                                 order='F')
 
-                pyramid.pyr[lo2.shape] = lo2
+                self.pyr[lo2.shape] = lo2
 
                 im = lo2
-
+        
     # methods
 
                  
