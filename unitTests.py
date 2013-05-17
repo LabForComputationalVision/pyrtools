@@ -48,6 +48,12 @@ class GpyrTests(unittest.TestCase):
         pyPyr = ppt.Gpyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 
+class mkRampTests(unittest.TestCase):
+    def test1(self):
+        matRamp = scipy.io.loadmat('mkRamp1.mat')
+        pyRamp = ppu.mkRamp(10)
+        self.failUnless((matRamp['foo'] == pyRamp).all())
+
 def main():
     unittest.main()
 
