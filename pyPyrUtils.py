@@ -218,6 +218,10 @@ def comparePyr(matPyr, pyPyr):
             pySz += key[0] * key[1]
 
     if(matSz != pySz):
+        print "size difference: returning 0"
+        print matSz
+        print pySz
+        print pyPyr.pyr.keys()
         return 0
 
     # values are the same?
@@ -231,8 +235,16 @@ def comparePyr(matPyr, pyPyr):
         matTmp = np.reshape(matTmp, bandSz, order='F')
         matStart = matStart+matLen
         if (matTmp != pyPyr.pyr[key]).any():
-            return 0
-
+            print "some pyramid elements not identical: checking..."
+            for i in range(key[0]):
+                for j in range(key[1]):
+                    if matTmp[i,j] != pyPyr.pyr[key][i,j]:
+                        if ( math.fabs(matTmp[i,j] - pyPyr.pyr[key][i,j]) > 
+                             math.pow(10,-12) ):
+                            #print "%.20f" % (math.fabs(matTmp[i,j] - 
+                            #                           pyPyr.pyr[key][i,j]))
+                            return 0
+            print "same to 10^-12"
     return 1
 
 def mkRamp(*args):
