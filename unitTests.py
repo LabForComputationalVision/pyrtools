@@ -106,8 +106,39 @@ class LpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test6(self):
         matPyr = scipy.io.loadmat('buildLpyr6.mat')
-        pyRamp = np.array(range(200))
+        pyRamp = np.array(range(200)).T
         pyPyr = ppt.Lpyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+
+class spFilterTests(unittest.TestCase):
+    def test1(self):
+        matFilt0 = scipy.io.loadmat('sp0Filters.mat')
+        pySP0filt = ppu.sp0Filters()
+        tmpKeys = []
+        for key in matFilt0.keys():
+            if "_" not in key:
+                tmpKeys.append(key)
+        self.failUnless(tmpKeys == pySP0filt.keys())
+        for key in tmpKeys:
+            self.failUnless((matFilt0[key] == pySP0filt[key]).all())
+
+    def test2(self):
+        matFilt1 = scipy.io.loadmat('sp1Filters.mat')
+        pySP1filt = ppu.sp1Filters()
+        tmpKeys = []
+        for key in matFilt1.keys():
+            if "_" not in key:
+                tmpKeys.append(key)
+        self.failUnless(tmpKeys == pySP1filt.keys())
+        for key in tmpKeys:
+            self.failUnless((matFilt1[key] == pySP1filt[key]).all())
+
+class SpyrTests(unittest.TestCase):
+    def test1(self):
+        matPyr = scipy.io.loadmat('buildSpyr1.mat')
+        img = Image.open('lenna-256x256.tif')
+        img = np.array(img.getdata()).reshape(256,256)
+        pyPyr = ppt.Spyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 
 def main():

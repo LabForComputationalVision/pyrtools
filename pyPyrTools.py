@@ -4,10 +4,12 @@ from myModule import *
 import math
 import matplotlib.cm as cm
 from pylab import *
+from operator import mul
 
 class pyramid:  # pyramid
     # properties
     pyr = {}
+    pyrSize = {}
     pyrType = ''
     image = ''
     height = ''
@@ -31,6 +33,111 @@ class pyramid:  # pyramid
         else:
             print "pyramid type %s not currently supported" % (args[0])
             exit(1)
+
+class Spyr(pyramid):
+    filt = ''
+    edges = ''
+    
+    #constructor
+    def __init__(self, *args):    # (image height, filter file, edges)
+        self.pyrType = 'steerable'
+        if len(args) > 0:
+            self.image = args[0]
+        else:
+            print "First argument (image) is required."
+            exit(1)
+
+        #------------------------------------------------
+        # defaults:
+
+        if len(args) > 1:
+            if args[1] == 'sp0Filters':
+                filters = ppu.sp0Filters()
+            elif args[1] == 'sp1Filters':
+                filters = ppu.sp1Filters()
+            elif os.path.isfile(args[1]):
+                print "Filter files not supported yet"
+                exit(1)
+            else:
+                print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
+                exit(1)
+        else:
+            filters = ppu.sp1Filters()
+
+        harmonics = filters['harmonics']
+        lo0filt = filters['lo0filt']
+        hi0filt = filters['hi0filt']
+        lofilt = filters['lofilt']
+        bfilts = filters['bfilts']
+        steermtx = filters['mtx']
+            
+        if len(args) > 2:
+            edges = args[2]
+        else:
+            edges = 'reflect1'
+
+        max_ht = ppu.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
+        if len(args) > 3:
+            if args[3] == 'auto':
+                ht = max_ht
+            elif args[3] > max_ht:
+                print "Error: cannot build pyramid higher than %d levels." % (
+                    max_ht)
+                exit(1)
+            else:
+                ht = args[3]
+        else:
+            ht = max_ht
+
+        #------------------------------------------------------
+
+        self.pyr = {}
+        im = self.image
+        im_sz = im.shape
+        pyrCtr = 0
+
+        hi0 = corrDn(im_sz[0], im_sz[1], im, hi0filt.shape[0], hi0filt.shape[1],
+                     hi0filt, edges);
+        hi0 = np.array(hi0).reshape(im_sz[0], im_sz[1])
+        #self.pyr[hi0.shape] = hi0
+        self.pyr[pyrCtr] = hi0
+        pyrCtr += 1
+
+        lo = corrDn(im_sz[0], im_sz[1], im, lo0filt.shape[0], lo0filt.shape[1],
+                    lo0filt, edges);
+        lo = np.array(lo).reshape(im_sz[0], im_sz[1])
+
+        for i in range(ht):
+            lo_sz = lo.shape
+            print "i = %d" % (i)
+            print lo_sz
+            # assume square filters  -- start of buildSpyrLevs
+            bfiltsz = math.floor(math.sqrt(bfilts.shape[0]))
+            #bands = np.zeros((reduce(mul, lo.shape, 1), bfilts.shape[1]))
+            #bind = np.zeros((bfilts.shape[0], 2))
+
+            for b in range(bfilts.shape[1]):
+                filt = bfilts[:,b].reshape(bfiltsz,bfiltsz)
+                band = corrDn(lo_sz[0], lo_sz[1], lo, bfiltsz, bfiltsz, filt, 
+                              edges)
+                #print bands.shape
+                #print band.shape
+                #bands[:,b] = band.copy()
+                #bind[b,:] = band.shape
+                self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
+                                                                 lo_sz[1])
+                pyrCtr += 1
+
+            #self.pyr[bind] = bands.copy()
+            #self.pyr[bands.shape] = bands.copy()
+            #pyrCtr += 1
+
+            lo = corrDn(lo_sz[0], lo_sz[1], lo, lofilt.shape[0], 
+                        lofilt.shape[1], lofilt, edges, 2, 2)
+            lo = np.array(lo).reshape(lo_sz[0]/2, lo_sz[1]/2)
+
+        self.pyr[pyrCtr] = lo
+    # methods
 
 class Lpyr(pyramid):
     filt = ''
