@@ -211,13 +211,12 @@ def comparePyr(matPyr, pyPyr):
     # correct number of elements?
     matSz = sum(matPyr.shape)
     pySz = 1
-    for key in pyPyr.pyr.keys():
-        print "key = "
-        print key
-        if len(key) == 1:
-            pySz += key[0]
+    for key in pyPyr.pyrSize.keys():
+        sz = pyPyr.pyrSize[key]
+        if len(sz) == 1:
+            pySz += sz[0]
         else:
-            pySz += key[0] * key[1]
+            pySz += sz[0] * sz[1]
 
     if(matSz != pySz):
         print "size difference: returning 0"
@@ -228,25 +227,29 @@ def comparePyr(matPyr, pyPyr):
 
     # values are the same?
     matStart = 0
-    sortedKeys = sorted(pyPyr.pyr.keys(), reverse=True, key=lambda element: 
-                        (element[0], element[1]))
-    for key in sortedKeys:
-        bandSz = key
+    #sortedKeys = sorted(pyPyr.pyr.keys(), reverse=True, key=lambda element: 
+    #                    (element[0], element[1]))
+    #for key in sortedKeys:
+    for key, value in pyPyr.pyrSize.iteritems():
+        bandSz = value
         matLen = bandSz[0] * bandSz[1]
         matTmp = matPyr[matStart:matStart + matLen]
         matTmp = np.reshape(matTmp, bandSz, order='F')
         matStart = matStart+matLen
         if (matTmp != pyPyr.pyr[key]).any():
             print "some pyramid elements not identical: checking..."
-            for i in range(key[0]):
-                for j in range(key[1]):
+            #for i in range(key[0]):
+            #    for j in range(key[1]):
+            for i in range(value[0]):
+                for j in range(value[1]):
                     if matTmp[i,j] != pyPyr.pyr[key][i,j]:
                         if ( math.fabs(matTmp[i,j] - pyPyr.pyr[key][i,j]) > 
-                             math.pow(10,-12) ):
+                             math.pow(10,-11) ):
                             #print "%.20f" % (math.fabs(matTmp[i,j] - 
                             #                           pyPyr.pyr[key][i,j]))
                             return 0
-            print "same to 10^-12"
+            print "same to at least 10^-11"
+
     return 1
 
 def mkRamp(*args):

@@ -21,9 +21,10 @@ class pyramid:  # pyramid
 
     # methods
     def band(self, bandNum):
-        sortedKeys = sorted(self.pyr.keys(), reverse=True, 
-                            key=lambda element: (element[0], element[1]))
-        return np.array(self.pyr[sortedKeys[bandNum]])
+        #sortedKeys = sorted(self.pyr.keys(), reverse=True, 
+        #                    key=lambda element: (element[0], element[1]))
+        #return np.array(self.pyr[sortedKeys[bandNum]])
+        return np.array(self.pyr[bandNum])
 
     def showPyr(self, *args):
         if self.pyrType == 'Gaussian':
@@ -92,6 +93,7 @@ class Spyr(pyramid):
         #------------------------------------------------------
 
         self.pyr = {}
+        self.pyrSize = {}
         im = self.image
         im_sz = im.shape
         pyrCtr = 0
@@ -99,8 +101,9 @@ class Spyr(pyramid):
         hi0 = corrDn(im_sz[0], im_sz[1], im, hi0filt.shape[0], hi0filt.shape[1],
                      hi0filt, edges);
         hi0 = np.array(hi0).reshape(im_sz[0], im_sz[1])
-        #self.pyr[hi0.shape] = hi0
-        self.pyr[pyrCtr] = hi0
+
+        self.pyr[pyrCtr] = hi0.copy()
+        self.pyrSize[pyrCtr] = hi0.shape
         pyrCtr += 1
 
         lo = corrDn(im_sz[0], im_sz[1], im, lo0filt.shape[0], lo0filt.shape[1],
@@ -109,34 +112,26 @@ class Spyr(pyramid):
 
         for i in range(ht):
             lo_sz = lo.shape
-            print "i = %d" % (i)
-            print lo_sz
             # assume square filters  -- start of buildSpyrLevs
             bfiltsz = math.floor(math.sqrt(bfilts.shape[0]))
-            #bands = np.zeros((reduce(mul, lo.shape, 1), bfilts.shape[1]))
-            #bind = np.zeros((bfilts.shape[0], 2))
 
-            for b in range(bfilts.shape[1]):
+            #for b in range(bfilts.shape[1]):
+            for b in range(bfilts.shape[1]-1,-1,-1):
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz)
                 band = corrDn(lo_sz[0], lo_sz[1], lo, bfiltsz, bfiltsz, filt, 
                               edges)
-                #print bands.shape
-                #print band.shape
-                #bands[:,b] = band.copy()
-                #bind[b,:] = band.shape
-                self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
-                                                                 lo_sz[1])
+                self.pyr[pyrCtr] = - np.array(band.copy()).reshape(lo_sz[0], 
+                                                                   lo_sz[1])
+                self.pyrSize[pyrCtr] = lo_sz
                 pyrCtr += 1
-
-            #self.pyr[bind] = bands.copy()
-            #self.pyr[bands.shape] = bands.copy()
-            #pyrCtr += 1
 
             lo = corrDn(lo_sz[0], lo_sz[1], lo, lofilt.shape[0], 
                         lofilt.shape[1], lofilt, edges, 2, 2)
-            lo = np.array(lo).reshape(lo_sz[0]/2, lo_sz[1]/2)
+            lo = np.array(lo).reshape(math.ceil(lo_sz[0]/2.0), 
+                                      math.ceil(lo_sz[1]/2.0))
 
-        self.pyr[pyrCtr] = lo
+        self.pyr[pyrCtr] = np.array(lo).copy()
+        self.pyrSize[pyrCtr] = lo.shape
     # methods
 
 class Lpyr(pyramid):
@@ -145,7 +140,6 @@ class Lpyr(pyramid):
 
     # constructor
     def __init__(self, *args):    # (image, height, filter1, filter2, edges)
-        #args = args[0]        
         self.pyrType = 'Laplacian'
         if len(args) > 0:
             self.image = args[0]
@@ -195,6 +189,8 @@ class Lpyr(pyramid):
 
         # make pyramid
         self.pyr = {}
+        self.pyrSize = {}
+        pyrCtr = 0
         im = np.array(self.image).astype(float)
         if len(im.shape) == 1:
             im = im.reshape(im.shape[0], 1)
@@ -235,7 +231,9 @@ class Lpyr(pyramid):
                 
             im = lo2
 
-        self.pyr[lo2.shape] = lo2
+        #self.pyr[lo2.shape] = lo2
+        self.pyr[self.height] = lo2
+        self.pyrSize[self.height] = lo2.shape
         # compute hi bands
         im = self.image
         for ht in range(self.height, 1, -1):
@@ -268,7 +266,10 @@ class Lpyr(pyramid):
                                             order='C')
 
             hi2 = los[ht] - hi2
-            self.pyr[hi2.shape] = hi2
+            #self.pyr[hi2.shape] = hi2
+            self.pyr[pyrCtr] = hi2
+            self.pyrSize[pyrCtr] = hi2.shape
+            pyrCtr += 1
 
     # methods
     def reconLpyr(self, *args):
@@ -331,7 +332,6 @@ class Lpyr(pyramid):
         return np.array(self.band(self.height-1))
 
     def showLpyr(self, *args):
-        #if any(x == 1 for x in args[0][0].band(0).shape):
         if any(x == 1 for x in self.band(0).shape):
             oned = 1
         else:
@@ -465,12 +465,10 @@ class Lpyr(pyramid):
                         np.floor( (sz+(dirr<0).astype(int)) / 2.0) )
                 llpos[bnum,:] = ctr - np.floor(np.array(sz))/2.0 
             # make position list positive, and allocate appropriate image
-            #llpos = llpos - np.ones((nind,1))*np.min(llpos) + 1
             llpos = llpos - np.ones((nind,1))*np.min(llpos)
             pind = range(self.height)
             for i in pind:
                 pind[i] = self.band(i).shape
-            #urpos = llpos + pind - 1
             urpos = llpos + pind
             d_im = np.zeros((np.max(urpos), np.max(urpos)))  # need bg here?
             
@@ -483,7 +481,6 @@ class Lpyr(pyramid):
                 # layout works
                 #d_im[llpos[bnum,0]:urpos[bnum,0],llpos[bnum,1]:urpos[bnum,1]]=(
                     #(bnum+1)*10 )
-
             
             ppu.showIm(d_im)
 
@@ -493,7 +490,6 @@ class Gpyr(Lpyr):
 
     # constructor
     def __init__(self, *args):    # (image, height, filter, edges)
-        #args = args[0]
         self.pyrType = 'Gaussian'
         if len(args) < 1:
             print "pyr = Gpyr(image, height, filter, edges)"
@@ -533,47 +529,53 @@ class Gpyr(Lpyr):
 
         # make pyramid
         self.pyr = {}
+        self.pyrSize = {}
+        pyrCtr = 0
         im = np.array(self.image).astype(float)
 
         if len(im.shape) == 1:
             im = im.reshape(im.shape[0], 1)
 
-        self.pyr[im.shape] = im
-        for ht in range(self.height,0,-1):
-            if ht <= 1:
-                self.pyr[im.shape] = im
+        #self.pyr[im.shape] = im
+        self.pyr[pyrCtr] = im
+        self.pyrSize[pyrCtr] = im.shape
+        pyrCtr += 1
+
+        for ht in range(self.height-1,0,-1):
+            im_sz = im.shape
+            filt_sz = filt.shape
+            if len(im_sz) == 1:
+                lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
+                             edges, 2, 1, 0, 0, im_sz[0], 1)
+                lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
+            elif im_sz[0] == 1:
+                lo2 = corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1], filt, 
+                             edges, 1, 2, 0, 0, 1, im_sz[1])
+                lo2 = np.array(lo2).reshape(1, im_sz[1]/2, order='C')
+            elif im_sz[1] == 1:
+                lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
+                             edges, 2, 1, 0, 0, im_sz[0], 1)
+                lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
             else:
-                im_sz = im.shape
-                filt_sz = filt.shape
-                if len(im_sz) == 1:
-                    lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
-                                 edges, 2, 1, 0, 0, im_sz[0], 1)
-                    lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
-                elif im_sz[0] == 1:
-                    lo2 = corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1], filt, 
-                                 edges, 1, 2, 0, 0, 1, im_sz[1])
-                    lo2 = np.array(lo2).reshape(1, im_sz[1]/2, order='C')
-                elif im_sz[1] == 1:
-                    lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
-                                 edges, 2, 1, 0, 0, im_sz[0], 1)
-                    lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
-                else:
-                    lo = corrDn(im_sz[0], im_sz[1], im, filt_sz[0], filt_sz[1], 
-                                filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-                    lo = np.array(lo).reshape(im_sz[0]/1, 
-                                              math.ceil(im_sz[1]/2.0), 
-                                              order='C')
-                    lo2 = corrDn(im_sz[0]/1, math.ceil(im_sz[1]/2.0), lo.T, 
-                                 filt_sz[0], 
-                                 filt_sz[1], filt, edges, 2, 1, 0, 0, im_sz[0], 
-                                 im_sz[1])
-                    lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                                                math.ceil(im_sz[1]/2.0), 
-                                                order='F')
+                lo = corrDn(im_sz[0], im_sz[1], im, filt_sz[0], filt_sz[1], 
+                            filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
+                lo = np.array(lo).reshape(im_sz[0]/1, 
+                                          math.ceil(im_sz[1]/2.0), 
+                                          order='C')
+                lo2 = corrDn(im_sz[0]/1, math.ceil(im_sz[1]/2.0), lo.T, 
+                             filt_sz[0], 
+                             filt_sz[1], filt, edges, 2, 1, 0, 0, im_sz[0], 
+                             im_sz[1])
+                lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
+                                            math.ceil(im_sz[1]/2.0), 
+                                            order='F')
 
-                self.pyr[lo2.shape] = lo2
+            #self.pyr[lo2.shape] = lo2
+            self.pyr[pyrCtr] = lo2
+            self.pyrSize[pyrCtr] = lo2.shape
+            pyrCtr += 1
 
-                im = lo2
+            im = lo2
         
     # methods
 

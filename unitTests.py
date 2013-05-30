@@ -140,6 +140,32 @@ class SpyrTests(unittest.TestCase):
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Spyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test2(self):
+        matPyr = scipy.io.loadmat('buildSpyr2.mat')
+        pyRamp = ppu.mkRamp(200,200)
+        pyPyr = ppt.Spyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test3(self):
+        matPyr = scipy.io.loadmat('buildSpyr3.mat')
+        pyRamp = ppu.mkRamp(100,200)
+        pyPyr = ppt.Spyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test4(self):
+        matPyr = scipy.io.loadmat('buildSpyr4.mat')
+        pyRamp = ppu.mkRamp(200,100)
+        pyPyr = ppt.Spyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test5(self):
+        matPyr = scipy.io.loadmat('buildSpyr5.mat')
+        pyRamp = ppu.mkRamp(200,1)
+        pyPyr = ppt.Spyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test6(self):
+        matPyr = scipy.io.loadmat('buildSpyr6.mat')
+        pyRamp = ppu.mkRamp(1,200)
+        pyPyr = ppt.Spyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    ## both versions fail for 1D col vector (200x1)
 
 def main():
     unittest.main()
