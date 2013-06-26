@@ -306,7 +306,6 @@ class Spyr(pyramid):
         ht = self.spyrHt()
         nind = len(self.pyr)
         nbands = self.numBands()
-        print "ht=%d nind=%d nbands=%d" % (ht, nind, nbands)
 
         ## Auto range calculations:
         if prange == 'auto1':
@@ -328,8 +327,6 @@ class Spyr(pyramid):
             mn = np.amin(band)
             mx = np.amax(band)
             prange[nind-1,:] = np.array([mn, mx])
-            print "prange**"
-            print prange
         elif prange == 'indep1':
             prange = np.zeros((nind,2))
             for bnum in range(nind):
@@ -375,8 +372,6 @@ class Spyr(pyramid):
             band = self.pyrLow()
             prange[nind,:] += np.mean(band) - np.mean(prange[nind,:])
 
-        print "prange"
-        print prange
         colormap = cm.Greys_r
 
         # compute positions of subbands
@@ -398,35 +393,18 @@ class Spyr(pyramid):
             mvpos = np.array([0, -1])
         basepos = np.array([0, 0])
 
-        print "ht = %d" % (ht)
         for lnum in range(ht):
-            print "lnum=%d ht=%d" % (lnum, ht)
             ind1 = (lnum-1)*nbands + 2 + 1
             sz = np.array(self.pyrSize[ind1]) + gap
             basepos = basepos + mvpos * sz
             if nbands < 5:         # to align edges
                 sz += gap * (ht-lnum)
-                #sz += gap * (ht-lnum+1)
-            print relpos
-            print np.diag(sz)
-            print basepos
-            print np.dot(relpos, np.diag(sz))
-            print np.ones((nbands,nbands)) * basepos
-            print np.dot(relpos, np.diag(sz)) + (np.ones((nbands,nbands))*basepos)
-            print ind1
-            print ind1+nbands
-            print llpos[ind1:ind1+nbands,:]
-            #llpos[ind1:ind1+nbands-1, :] = np.dot( np.dot( np.dot(relpos, np.diag(sz)), np.ones(nbands) ), basepos )
             llpos[ind1:ind1+nbands, :] = np.dot(relpos, np.diag(sz)) + ( np.ones((nbands,nbands)) * basepos )
-        print "flag 1"
-        print llpos
     
         # lowpass band
         sz = np.array(self.pyrSize[nind-1]) + gap
         basepos += mvpos * sz
         llpos[nind-1,:] = basepos
-        print "flag 2"
-        print llpos
 
         # make position list positive, and allocate appropriate image:
         llpos = llpos - ((np.ones((nind,2)) * np.amin(llpos, axis=0)) + 1) + 1
@@ -438,24 +416,12 @@ class Spyr(pyramid):
         # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
         nshades = 64;
 
-        #for bnum in range(2,nind+1):
         for bnum in range(1,nind):
-            print "bnum = %d" % (bnum)
             mult = (nshades-1) / (prange[bnum,1]-prange[bnum,0])
-            print "mult = %f prange[%d,0] = %f  prange[%d,1] = %f" % (mult, bnum, prange[bnum,0], bnum, prange[bnum,1])
-            #print "%d %d   %d %d" % (llpos[bnum,0], urpos[bnum,0], 
-            #                         llpos[bnum,1], urpos[bnum,1])
-            
-            print ( mult * self.band(bnum) + (1.5-mult*prange[bnum,0]) ).shape
-            print d_im[llpos[bnum,0]:urpos[bnum,0], 
-                       llpos[bnum,1]:urpos[bnum,1]].shape
             d_im[llpos[bnum,0]:urpos[bnum,0], 
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
             
         ppu.showIm(d_im)
-                 
-                                                                    
-    
  
 
 class Lpyr(pyramid):
@@ -557,8 +523,9 @@ class Lpyr(pyramid):
             im = lo2
 
         #self.pyr[lo2.shape] = lo2
-        self.pyr[self.height] = lo2
-        self.pyrSize[self.height] = lo2.shape
+        self.pyr[self.height-1] = lo2
+        self.pyrSize[self.height-1] = lo2.shape
+
         # compute hi bands
         im = self.image
         for ht in range(self.height, 1, -1):
@@ -656,7 +623,7 @@ class Lpyr(pyramid):
     def pyrLow(self):
         return np.array(self.band(self.height-1))
 
-    def showLpyr(self, *args):
+    def showPyr(self, *args):
         if any(x == 1 for x in self.band(0).shape):
             oned = 1
         else:
@@ -677,7 +644,8 @@ class Lpyr(pyramid):
             else:
                 scale = 2
 
-        nind = self.height
+        nind = self.height - 1
+        print "nind = %d" % (nind)
             
         # auto range calculations
         if pRange == 'auto1':
