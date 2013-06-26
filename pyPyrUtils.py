@@ -227,9 +227,6 @@ def comparePyr(matPyr, pyPyr):
 
     # values are the same?
     matStart = 0
-    #sortedKeys = sorted(pyPyr.pyr.keys(), reverse=True, key=lambda element: 
-    #                    (element[0], element[1]))
-    #for key in sortedKeys:
     for key, value in pyPyr.pyrSize.iteritems():
         bandSz = value
         matLen = bandSz[0] * bandSz[1]
@@ -238,15 +235,14 @@ def comparePyr(matPyr, pyPyr):
         matStart = matStart+matLen
         if (matTmp != pyPyr.pyr[key]).any():
             print "some pyramid elements not identical: checking..."
-            #for i in range(key[0]):
-            #    for j in range(key[1]):
             for i in range(value[0]):
                 for j in range(value[1]):
                     if matTmp[i,j] != pyPyr.pyr[key][i,j]:
+                        #print "%d %d : %.20f" % (i,j,
+                        #                         math.fabs(matTmp[i,j]- 
+                        #                                  pyPyr.pyr[key][i,j]))
                         if ( math.fabs(matTmp[i,j] - pyPyr.pyr[key][i,j]) > 
                              math.pow(10,-11) ):
-                            #print "%.20f" % (math.fabs(matTmp[i,j] - 
-                            #                           pyPyr.pyr[key][i,j]))
                             return 0
             print "same to at least 10^-11"
 
@@ -641,3 +637,72 @@ def sp1Filters():
     filters['bfilts'] = -filters['bfilts']
 
     return filters
+
+# convert level and band to dictionary index
+def LB2idx(lev,band,nlevs,nbands):
+    if lev == 0:
+        idx = 0
+    elif lev == nlevs-1:
+        # (Nlevels - ends)*Nbands + ends -1 (because zero indexed)
+        idx = (((nlevs-2)*nbands)+2)-1
+    else:
+        # (level-first level) * nbands + first level + current band 
+        #idx = (nbands*(lev-1))+1+band
+        idx = (nbands*(lev-1))+1-band + 1
+    return idx
+
+# given and index into dictionary return level and band
+def idx2LB(idx, nlevs, nbands):
+    if idx == 0:
+        return ('hi', -1)
+    elif idx == ((nlevs-2)*nbands)+1:
+        return ('lo', -1)
+    else:
+        lev = math.ceil(idx/nbands)
+        band = (idx % nbands) + 1
+        if band == nbands:
+            band = 0
+        return (lev, band)
+
+# find next largest size in list
+def nextSz(size, sizeList):
+    ## make sure sizeList is strictly increasing
+    if sizeList[0] > sizeList[len(sizeList)-1]:
+        sizeList = sizeList[::-1]
+    outSize = (0,0)
+    idx = 0;
+    while outSize == (0,0) and idx < len(sizeList):
+        if sizeList[idx] > size:
+            outSize = sizeList[idx]
+        idx += 1
+    return outSize
+
+def mkImpulse(*args):
+    # create an image that is all zeros except for an impulse
+    if(len(args) == 0):
+        print "mkImpulse(size, origin, amplitude)"
+        print "first input parameter is required"
+        return
+    
+    if(isinstance(args[0], int)):
+        sz = (args[0], args[0])
+    elif(isinstance(args[0], tuple)):
+        sz = args[0]
+    else:
+        print "size parameter must be either an integer or a tuple"
+        return
+
+    if(len(args) > 1):
+        origin = args[1]
+    else:
+        origin = ( np.ceil(sz[0]/2.0), np.ceil(sz[1]/2.0) )
+
+    if(len(args) > 2):
+        amplitude = args[2]
+    else:
+        amplitude = 1
+
+    res = np.zeros(sz);
+    res[origin[0], origin[1]] = amplitude
+
+    return res

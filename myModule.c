@@ -12,7 +12,8 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   int x_fdim, y_fdim;
   int x_idim, y_idim;
   PyObject *arg1, *arg2;
-  PyArrayObject *image, *filt, *result;
+  PyArrayObject *image, *filt;
+  PyArrayObject *result = NULL;
   char *edges = "reflect1";
   int x_step = 1;
   int y_step = 1;
@@ -23,9 +24,9 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   int i;
 
   // parse input parameters
-  if( !PyArg_ParseTuple(args, "iiOiiO|siiiiii", &x_idim, &y_idim, &arg1, 
+  if( !PyArg_ParseTuple(args, "iiOiiO|siiiiiiO", &x_idim, &y_idim, &arg1, 
 			&x_fdim, &y_fdim, &arg2, &edges, &x_step, &y_step, 
-			&x_start, &y_start, &x_stop, &y_stop) )
+			&x_start, &y_start, &x_stop, &y_stop, &result) )
     return NULL;
   image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 1,
 							x_idim * y_idim);
@@ -79,12 +80,15 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   //dimensions[0] = (x_idim/y_step) * (y_idim/x_step);
   dimensions[0] = x_rdim * y_rdim;
 
-  result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+  if(result == NULL)
+    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+
   double *temp = malloc(x_fdim * y_fdim * sizeof(double));
   if (temp == NULL){
     printf("Cannot allocate necessary temporary space");
     exit(1);
   }
+
 
   /*printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d),%s\n",
 	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
@@ -110,8 +114,9 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
 static PyObject* py_upConv(PyObject* self, PyObject* args)
 {
   int x_fdim, y_fdim, x_idim, y_idim;
-  PyObject *arg1, *arg2;
-  PyArrayObject *image, *filt, *result, *orig_filt;
+  PyObject *arg1, *arg2; 
+  PyObject *arg3 = NULL;
+  PyArrayObject *image, *filt, *orig_filt, *result;
   int orig_x = 0;
   int orig_y, x, y;
   char *edges = "reflect1";
@@ -124,13 +129,13 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   int i;
 
   // parse input parameters
-  if( !PyArg_ParseTuple(args, "iiOiiO|siiiiii", &x_idim, &y_idim, &arg1, 
+  if( !PyArg_ParseTuple(args, "iiOiiO|siiiiiiO", &x_idim, &y_idim, &arg1, 
 			&x_fdim, &y_fdim, &arg2, &edges, &x_step, &y_step, 
-			&x_start, &y_start, &x_stop, &y_stop) )
+			&x_start, &y_start, &x_stop, &y_stop, &arg3) )
     return NULL;
   image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 1,
 							x_idim * y_idim);
-
+  
   //x_stop = x_idim;
   //y_stop = y_idim;
   if(image == NULL)
@@ -203,24 +208,28 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 
   //dimensions[0] = (x_idim/y_step) * (y_idim/x_step);
   dimensions[0] = x_rdim * y_rdim;
-  printf("dimensions = %d\n", dimensions[0]);
-  result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+  if(arg3 == NULL)
+    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+  else
+    result = (PyArrayObject *)PyArray_ContiguousFromObject(arg3, PyArray_DOUBLE,
+							   1, dimensions[0]);
+  
   double *temp = malloc(x_fdim * y_fdim * sizeof(double));
   if (temp == NULL){
     printf("Cannot allocate necessary temporary space");
     exit(1);
   }
 
-  printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d), %s\n",
+  /*printf("i(%d, %d),f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d), %s\n",
 	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
-	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges);
+	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges);*/
   
   if (strcmp(edges,"circular") == 0)
     internal_wrap_expand((image_type *)image->data, (image_type *)filt->data,
 			 x_fdim, y_fdim, x_start, x_step, x_stop, y_start, 
 			 y_step, y_stop, (image_type *)result->data, x_rdim,
 			 y_rdim);
-  else 
+  else
     internal_expand((image_type *)image->data, (image_type *)filt->data, 
 		    (image_type *)temp, x_fdim, y_fdim, x_start, x_step, x_stop,
 		    y_start, y_step, y_stop, (image_type *)result->data, x_stop,
