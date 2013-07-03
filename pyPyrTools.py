@@ -601,19 +601,30 @@ class Lpyr(pyramid):
                 res = self.band(lev)
             elif len(res) != 0:
                 res_sz = res.shape
+                new_sz = self.band(lev).shape
                 filt2_sz = filt2.shape
+                #hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
+                #            filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
+                #            res_sz[0]*2, res_sz[1])
+                #hi = np.array(hi).reshape(res_sz[0]*2, res_sz[1], order='F')
+                #hi2 = upConv(res_sz[0], res_sz[1]*2, hi, filt2_sz[0], 
+                #             filt2_sz[1], filt2, edges, 2, 1, 0, 0,
+                #             res_sz[0]*2, res_sz[1]*2)
+                #hi2= np.array(hi2).reshape(res_sz[0]*2, res_sz[1]*2, order='C')
                 hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
                             filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
-                            res_sz[0]*2, res_sz[1])
-                hi = np.array(hi).reshape(res_sz[0]*2, res_sz[1], order='F')
-                hi2 = upConv(res_sz[0], res_sz[1]*2, hi, filt2_sz[0], 
+                            new_sz[0], res_sz[1])
+                hi = np.array(hi).reshape(new_sz[0], res_sz[1], order='F')
+                hi2 = upConv(res_sz[0], new_sz[1], hi, filt2_sz[0], 
                              filt2_sz[1], filt2, edges, 2, 1, 0, 0,
-                             res_sz[0]*2, res_sz[1]*2)
-                hi2 = np.array(hi2).reshape(res_sz[0]*2, res_sz[1]*2, order='C')
+                             new_sz[0], new_sz[1])
+                hi2= np.array(hi2).reshape(new_sz[0], new_sz[1], order='C')
                 if lev in levs:
                     bandIm = self.band(lev)
                     bandIm_sz = bandIm.shape
-
+                    print self.pyrSize
+                    print hi2.shape
+                    print bandIm.shape
                     res = hi2 + bandIm
                 else:
                     res = hi2
@@ -798,9 +809,14 @@ class Gpyr(Lpyr):
                 print "Error: filt should be a 1D filter (i.e., a vector)"
                 exit(1)
         else:
+            print "no filter set, so filter is binom5"
             filt = ppu.namedFilter('binom5')
             if self.image.shape[0] == 1:
                 filt = filt.reshape(1,5)
+            #elif self.image.shape[0] < self.image.shape[1]:
+            #    filt = filt.reshape(1,5)
+            else:
+                filt = filt.reshape(5,1)
 
         maxHeight = 1 + ppu.maxPyrHt(self.image.shape, filt.shape)
 
@@ -853,10 +869,13 @@ class Gpyr(Lpyr):
             else:
                 lo = corrDn(im_sz[0], im_sz[1], im, filt_sz[0], filt_sz[1], 
                             filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-                lo = np.array(lo).reshape(im_sz[0]/1, 
-                                          math.ceil(im_sz[1]/2.0), 
-                                          order='C')
-                lo2 = corrDn(im_sz[0]/1, math.ceil(im_sz[1]/2.0), lo.T, 
+                #lo = np.array(lo).reshape(im_sz[0]/1, 
+                #                          math.ceil(im_sz[1]/2.0), 
+                #                          order='C')
+                lo = np.array(lo).reshape(math.ceil(im_sz[0]/2.0), 
+                                          math.ceil(im_sz[1]/1.0), 
+                                          order='F')
+                lo2 = corrDn(im_sz[0]/1, math.ceil(im_sz[1]/2.0), lo, 
                              filt_sz[0], 
                              filt_sz[1], filt, edges, 2, 1, 0, 0, im_sz[0], 
                              im_sz[1])
