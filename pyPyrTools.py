@@ -12,7 +12,6 @@ class pyramid:  # pyramid
     pyrSize = {}
     pyrType = ''
     image = ''
-    #height = ''
 
     # constructor
     def __init__(self):
@@ -21,9 +20,6 @@ class pyramid:  # pyramid
 
     # methods
     def band(self, bandNum):
-        #sortedKeys = sorted(self.pyr.keys(), reverse=True, 
-        #                    key=lambda element: (element[0], element[1]))
-        #return np.array(self.pyr[sortedKeys[bandNum]])
         return np.array(self.pyr[bandNum])
 
     def showPyr(self, *args):
@@ -98,9 +94,6 @@ class Spyr(pyramid):
         im_sz = im.shape
         pyrCtr = 0
 
-        #hi0 = corrDn(im_sz[0], im_sz[1], im, hi0filt.shape[0], hi0filt.shape[1],
-        #hi0filt, edges);
-        #hi0 = np.array(hi0).reshape(im_sz[0], im_sz[1])
         hi0 = corrDn(im_sz[1], im_sz[0], im, hi0filt.shape[0], hi0filt.shape[1],
                      hi0filt, edges);
         hi0 = np.array(hi0).reshape(im_sz[0], im_sz[1])
@@ -109,9 +102,6 @@ class Spyr(pyramid):
         self.pyrSize[pyrCtr] = hi0.shape
         pyrCtr += 1
 
-        #lo = corrDn(im_sz[0], im_sz[1], im, lo0filt.shape[0], lo0filt.shape[1],
-        #            lo0filt, edges);
-        #lo = np.array(lo).reshape(im_sz[0], im_sz[1])
         lo = corrDn(im_sz[1], im_sz[0], im, lo0filt.shape[0], lo0filt.shape[1],
                     lo0filt, edges);
         lo = np.array(lo).reshape(im_sz[0], im_sz[1])
@@ -121,13 +111,8 @@ class Spyr(pyramid):
             # assume square filters  -- start of buildSpyrLevs
             bfiltsz = math.floor(math.sqrt(bfilts.shape[0]))
 
-            #for b in range(bfilts.shape[1]):
             for b in range(bfilts.shape[1]-1,-1,-1):
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz)
-                #band = np.negative( corrDn(lo_sz[0], lo_sz[1], lo, bfiltsz, 
-                #                           bfiltsz, filt, edges) )
-                #self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
-                #                                                 lo_sz[1])
                 band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, bfiltsz, 
                                            bfiltsz, filt, edges) )
                 self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
@@ -136,10 +121,6 @@ class Spyr(pyramid):
                 self.pyrSize[pyrCtr] = lo_sz
                 pyrCtr += 1
 
-            #lo = corrDn(lo_sz[0], lo_sz[1], lo, lofilt.shape[0], 
-            #            lofilt.shape[1], lofilt, edges, 2, 2)
-            #lo = np.array(lo).reshape(math.ceil(lo_sz[0]/2.0), 
-            #                          math.ceil(lo_sz[1]/2.0))
             lo = corrDn(lo_sz[1], lo_sz[0], lo, lofilt.shape[0], 
                         lofilt.shape[1], lofilt, edges, 2, 2)
             lo = np.array(lo).reshape(math.ceil(lo_sz[0]/2.0), 
@@ -187,8 +168,6 @@ class Spyr(pyramid):
                 exit(1)
         else:
             filters = ppu.sp1Filters()
-
-        print filters.keys()
 
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -248,9 +227,7 @@ class Spyr(pyramid):
                     
         # reconstruct
         # FIX: shouldn't have to enter step, start and stop in upConv!
-        #recon = []
         for lev in range(Nlevs-1,-1,-1):
-            print "lev = %d" % lev
             if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 recon = self.pyr[len(self.pyrSize)-1].copy()
@@ -260,16 +237,10 @@ class Spyr(pyramid):
             elif lev == 0 and 0 in reconList:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
-                #recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
-                #               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
-                #               sz[0], sz[1])
-                #recon = np.array(recon).reshape(sz[0], sz[1])
                 recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
                                hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[1], sz[0])
                 recon = np.array(recon).reshape(sz[0], sz[1])
-                print "recon1 - lo0filt"
-                print recon
                 recon = upConv(self.pyrSize[idx][0], self.pyrSize[idx][1], 
                                self.pyr[idx], hi0filt.shape[0], 
                                hi0filt.shape[1], hi0filt, edges, 
@@ -277,85 +248,40 @@ class Spyr(pyramid):
                                self.pyrSize[idx][1], self.pyrSize[idx][0], 
                                recon)
                 recon = np.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
-                print "hi - hi0filt"
-                print self.pyr[idx]
-                print hi0filt
-                print recon
-                #sz = recon.shape
-                #recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
-                #               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
-                #               sz[0], sz[1])
-                #recon = np.array(recon).reshape(sz[0], sz[1])
-                #print "recon1 - lo0filt"
-                #print recon
-                #recon = recon + hi
-                #print "recon1+hi  hi0filt+lo0filt"
-                #print recon
             elif lev == 0:
                 sz = recon.shape
                 recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
                                hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[0], sz[1])
                 recon = np.array(recon).reshape(sz[0], sz[1])
-                print "recon2 - lo0filt"
-                print recon
             else:
-                #for band in range(Nbands):
                 for band in range(Nbands-1,-1,-1):
                     idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
-                    print "idx = %d" % idx
                     if idx in reconList:
                         filt = np.negative(bfilts[:,band].reshape(bfiltsz, 
                                                                   bfiltsz,
                                                                   order='C'))
-                        print filt
-                        print self.pyr[idx]
-                        #recon = upConv(self.pyrSize[idx][0], 
-                        #               self.pyrSize[idx][1], 
-                        #               self.pyr[idx], 
-                        #               bfiltsz, bfiltsz, filt, edges, 1, 1, 0, 
-                        #               0, self.pyrSize[idx][1], 
-                        #               self.pyrSize[idx][0], recon)
                         recon = upConv(self.pyrSize[idx][0], 
                                        self.pyrSize[idx][1], 
                                        self.pyr[idx],
                                        bfiltsz, bfiltsz, filt, edges, 1, 1, 0, 
                                        0, self.pyrSize[idx][1], 
                                        self.pyrSize[idx][0], recon)
-                        print recon.shape
-                        print self.pyrSize[idx]
-                        #recon = np.array(recon).reshape(self.pyrSize[idx][1], 
-                        #                                self.pyrSize[idx][0],
-                        #                                order='C')
                         recon = np.array(recon).reshape(self.pyrSize[idx][0], 
                                                         self.pyrSize[idx][1],
                                                         order='C')
-                        print "recon3 - bfilt"
-                        print recon
 
             # upsample
             newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
             mult = newSz[0] / recon.shape[0]
             if newSz[0] % recon.shape[0] > 0:
                 mult += 1
-            print "lev=%d mult=%d newSz[0]=%d recon.shape[0]=%d" % (lev, mult,
-                                                                    newSz[0],
-                                                                    recon.shape[0])
             if mult > 1:
-                #recon = upConv(recon.shape[0], recon.shape[1], recon, 
-                #               lofilt.shape[0], lofilt.shape[1], lofilt, edges, 
-                #mult, mult, 0, 0, newSz[0], newSz[1])
-                #recon = np.array(recon).reshape(newSz[0], newSz[1])
-                print recon
-                print lofilt
                 recon = upConv(recon.shape[1], recon.shape[0], 
                                recon.T,
                                lofilt.shape[0], lofilt.shape[1], lofilt, edges, 
                                mult, mult, 0, 0, newSz[0], newSz[1])
                 recon = np.array(recon).reshape(newSz[0], newSz[1], order='F')
-                print "recon4 - upsample lofilt"
-                print recon
-        #return np.negative(recon)
         return recon
 
     def showPyr(self, *args):
@@ -479,7 +405,6 @@ class Spyr(pyramid):
 
         # make position list positive, and allocate appropriate image:
         llpos = llpos - ((np.ones((nind,2)) * np.amin(llpos, axis=0)) + 1) + 1
-        #llpos[1,:] = np.array([1, 1])
         llpos[0,:] = np.array([1, 1])
         urpos = llpos + self.pyrSize.values()
         d_im = np.zeros((np.amax(urpos), np.amax(urpos)))
@@ -578,17 +503,6 @@ class Lpyr(pyramid):
                 lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 1, 
                                             order='C')
             else:
-                #lo = corrDn(im_sz[0], im_sz[1], im, filt_sz[0], filt_sz[1], 
-                #            filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-                #lo = np.array(lo).reshape(im_sz[0]/1, math.ceil(im_sz[1]/2.0), 
-                #                          order='C')
-                ##int_sz = lo.shape
-                #lo2 = corrDn(im_sz[0]/1, math.ceil(im_sz[1]/2.0), lo.T, 
-                #             filt_sz[0], filt_sz[1], filt, edges, 2, 1, 0, 0, 
-                #             im_sz[0], im_sz[1])
-                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                #                            math.ceil(im_sz[1]/2.0), order='F')
-
                 lo = corrDn(im_sz[1], im_sz[0], im, filt_sz[0], filt_sz[1], 
                             filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
                 lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
@@ -605,7 +519,6 @@ class Lpyr(pyramid):
                 
             im = lo2
 
-        #self.pyr[lo2.shape] = lo2
         self.pyr[self.height-1] = lo2
         self.pyrSize[self.height-1] = lo2.shape
 
@@ -629,48 +542,18 @@ class Lpyr(pyramid):
                 hi2 = np.array(hi2).reshape(los[ht].shape[0], im_sz[1], 
                                             order='F')
             else:
-                # correct for square not rectangular images
-                #hi = upConv(im_sz[0], im_sz[1], im.T, filt_sz[0], filt_sz[1], 
-                #            filt, edges, 2, 1, 0, 0, los[ht].shape[0], 
-                #            im_sz[1])
-                #hi = np.array(hi).reshape(los[ht].shape[0], im_sz[1], order='F')
-                #int_sz = hi.shape
-                #hi2 = upConv(im_sz[0], los[ht].shape[1], hi, filt_sz[0], 
-                #             filt_sz[1], filt, edges, 2, 1, 0, 0, 
-                #             los[ht].shape[0], los[ht].shape[1])
-                #hi2 = np.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
-                #                            order='C')
-                # correct for 10x20, but not square image
-                #hi = upConv(im_sz[1], im_sz[0], im.T, filt_sz[0], filt_sz[1], 
-                #            filt, edges, 2, 1, 0, 0, im_sz[1], los[ht].shape[0])
-                #hi = np.array(hi).reshape(los[ht].shape[0],
-                #                          im_sz[1],
-                #                          order='F')
-                #print hi
-                #hi2 = upConv(im_sz[1], los[ht].shape[0], 
-                #             hi, filt_sz[0], filt_sz[1], filt, edges, 2, 1, 
-                #             0, 0, los[ht].shape[1], los[ht].shape[0])
-                #print hi2.shape
-                #print los[ht].shape
-                #hi2 = np.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1], 
-                #                           order='C')
-                #print hi2
-                # correct for all
                 hi = upConv(im_sz[0], im_sz[1], im.T, filt_sz[0], filt_sz[1], 
                             filt, edges, 2, 1, 0, 0, los[ht].shape[0], 
                             im_sz[1])
                 hi = np.array(hi).reshape(los[ht].shape[0], im_sz[1], order='F')
-                #print hi
                 int_sz = hi.shape
                 hi2 = upConv(los[ht].shape[0], im_sz[1], hi.T, filt_sz[1], 
                              filt_sz[0], filt, edges, 1, 2, 0, 0, 
                              los[ht].shape[0], los[ht].shape[1])
                 hi2 = np.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
                                             order='F')
-                #print hi2
 
             hi2 = los[ht] - hi2
-            #self.pyr[hi2.shape] = hi2
             self.pyr[pyrCtr] = hi2
             self.pyrSize[pyrCtr] = hi2.shape
             pyrCtr += 1
@@ -696,7 +579,6 @@ class Lpyr(pyramid):
         if levs == 'all':
             levs = range(0,maxLev)
         else:
-            #if levs.any() > maxLev:
             if any(x > maxLev for x in levs):
                 print ( "Error: level numbers must be in the range [1, %d]." % 
                         (maxLev) )
@@ -707,7 +589,6 @@ class Lpyr(pyramid):
 
         res = []
         lastLev = -1
-        #for lev in levs:
         for lev in range(maxLev-1, -1, -1):
             if lev in levs and len(res) == 0:
                 res = self.band(lev)
@@ -715,29 +596,10 @@ class Lpyr(pyramid):
                 res_sz = res.shape
                 new_sz = self.band(lev).shape
                 filt2_sz = filt2.shape
-                #hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
-                #            filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
-                #            res_sz[0]*2, res_sz[1])
-                #hi = np.array(hi).reshape(res_sz[0]*2, res_sz[1], order='F')
-                #hi2 = upConv(res_sz[0], res_sz[1]*2, hi, filt2_sz[0], 
-                #             filt2_sz[1], filt2, edges, 2, 1, 0, 0,
-                #             res_sz[0]*2, res_sz[1]*2)
-                #hi2= np.array(hi2).reshape(res_sz[0]*2, res_sz[1]*2, order='C')
-                #hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
-                #            filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
-                #            new_sz[0], res_sz[1])
-                #hi = np.array(hi).reshape(new_sz[0], res_sz[1], order='F')
-                #hi2 = upConv(res_sz[0], new_sz[1], hi, filt2_sz[0], 
-                #             filt2_sz[1], filt2, edges, 2, 1, 0, 0,
-                #             new_sz[0], new_sz[1])
-                #hi2= np.array(hi2).reshape(new_sz[0], new_sz[1], order='C')
-                # another try
                 hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
                             filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
                             new_sz[0], res_sz[1])
                 hi = np.array(hi).reshape(new_sz[0], res_sz[1], order='F')
-                #print hi
-                #int_sz = hi.shape
                 hi2 = upConv(new_sz[0], res_sz[1], hi.T, filt2_sz[1], 
                              filt2_sz[0], filt2, edges, 1, 2, 0, 0, 
                              new_sz[0], new_sz[1])
@@ -746,9 +608,6 @@ class Lpyr(pyramid):
                 if lev in levs:
                     bandIm = self.band(lev)
                     bandIm_sz = bandIm.shape
-                    print self.pyrSize
-                    print hi2.shape
-                    print bandIm.shape
                     res = hi2 + bandIm
                 else:
                     res = hi2
@@ -780,7 +639,6 @@ class Lpyr(pyramid):
                 scale = 2
 
         nind = self.height - 1
-        print "nind = %d" % (nind)
             
         # auto range calculations
         if pRange == 'auto1':
@@ -900,7 +758,7 @@ class Lpyr(pyramid):
             urpos = llpos + pind
             d_im = np.zeros((np.max(urpos), np.max(urpos)))  # need bg here?
             
-            # paste bands info image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
+            # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
             nshades = 256
             for bnum in range(nind):
                 mult = (nshades-1) / (pRange[bnum,1]-pRange[bnum,0])
@@ -937,8 +795,6 @@ class Gpyr(Lpyr):
             filt = ppu.namedFilter('binom5')
             if self.image.shape[0] == 1:
                 filt = filt.reshape(1,5)
-            #elif self.image.shape[0] < self.image.shape[1]:
-            #    filt = filt.reshape(1,5)
             else:
                 filt = filt.reshape(5,1)
 
@@ -970,13 +826,11 @@ class Gpyr(Lpyr):
         if len(im.shape) == 1:
             im = im.reshape(im.shape[0], 1)
 
-        #self.pyr[im.shape] = im
         self.pyr[pyrCtr] = im
         self.pyrSize[pyrCtr] = im.shape
         pyrCtr += 1
 
         for ht in range(self.height-1,0,-1):
-            print "ht = %d" % (ht)
             im_sz = im.shape
             filt_sz = filt.shape
             if len(im_sz) == 1:
@@ -992,20 +846,6 @@ class Gpyr(Lpyr):
                              edges, 2, 1, 0, 0, im_sz[0], 1)
                 lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
             else:
-                # works on square images, but fails on rectangular
-                #lo = corrDn(im_sz[0], im_sz[1], im, filt_sz[0], filt_sz[1], 
-                #            filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-                #lo = np.array(lo).reshape(math.ceil(im_sz[0]/2.0), 
-                #                          math.ceil(im_sz[1]/1.0), 
-                #                          order='F')
-                #print lo
-                #lo2 = corrDn(im_sz[0]/1, math.ceil(im_sz[1]/2.0), lo, 
-                #             filt_sz[0], 
-                #             filt_sz[1], filt, edges, 2, 1, 0, 0, im_sz[0], 
-                #             im_sz[1])
-                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                #                            math.ceil(im_sz[1]/2.0), 
-                #                            order='F')
                 lo = corrDn(im_sz[1], im_sz[0], im, filt_sz[0], filt_sz[1], 
                             filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
                 lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
@@ -1017,34 +857,7 @@ class Gpyr(Lpyr):
                 lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
                                             math.ceil(im_sz[1]/2.0), 
                                             order='F')
-                # works on rectangular images, but fails on square
-                #lo = corrDn(im_sz[1], im_sz[0], im, filt_sz[0], filt_sz[1], 
-                #            filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-                #lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
-                #                          math.ceil(im_sz[1]/2.0), 
-                #                          order='C')
-                #print lo
-                #lo2 = corrDn(math.ceil(im_sz[1]/1.0), math.ceil(im_sz[0]/2.0), 
-                #             lo.T, filt_sz[0], filt_sz[1], filt, edges, 1, 2, 
-                #             0, 0, im_sz[0], im_sz[1])
-                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                #                            math.ceil(im_sz[1]/2.0), 
-                #                            order='F')
-                # works on rectangular images, but fails on square
-                #lo = corrDn(im_sz[0], im_sz[1], im.T, filt_sz[1], filt_sz[0], 
-                #            filt, edges, 1, 2, 0, 0, im_sz[0], im_sz[1])
-                #lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
-                #                          math.ceil(im_sz[1]/2.0), 
-                #                          order='F')
-                #print lo
-                #lo2 = corrDn(math.ceil(im_sz[1]/1.0), math.ceil(im_sz[0]/2.0), 
-                #             lo.T, filt_sz[0], filt_sz[1], filt, edges, 1, 2, 
-                #             0, 0, im_sz[0], im_sz[1])
-                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                #                            math.ceil(im_sz[1]/2.0), 
-                #                            order='F')
 
-            #self.pyr[lo2.shape] = lo2
             self.pyr[pyrCtr] = lo2
             self.pyrSize[pyrCtr] = lo2.shape
             pyrCtr += 1
