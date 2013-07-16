@@ -91,7 +91,11 @@ def showIm(*args):
 # Compute maximum pyramid height for given image and filter sizes.
 # Specifically: the number of corrDn operations that can be sequentially
 # performed when subsampling by a factor of 2.
-def maxPyrHt(imsz, filtsz):
+def maxPyrHt_old(imsz, filtsz):
+    print "maxPyrHt"
+    print imsz
+    print filtsz
+    print " "
     if isinstance(imsz, int):
         imsz = (imsz, 1)
     if isinstance(filtsz, int):
@@ -107,6 +111,9 @@ def maxPyrHt(imsz, filtsz):
         imsz = (imsz[0], 1)
     elif len(filtsz) == 1:
         filtsz = (filtsz[0], 1)
+
+    if filtsz[0] == 1 or filtsz[1] == 1:
+        filtsz = (max(filtsz), max(filtsz))
 
     if imsz == 0:
         height = 0
@@ -130,6 +137,41 @@ def maxPyrHt(imsz, filtsz):
             imsz = ( int( math.floor(imsz/2) ), 1 )
             height = 1 + maxPyrHt(imsz, filtsz)
             
+    return height
+
+def maxPyrHt(imsz, filtsz):
+    if not isinstance(imsz, tuple) or not isinstance(filtsz, tuple):
+        if imsz < filtsz:
+            return 0
+    else:
+        print imsz
+        print filtsz
+        if len(imsz) == 1:
+            imsz = (imsz[0], 1)
+        if len(filtsz) == 1:
+            filtsz = (filtsz[0], 1)
+        if imsz[0] < filtsz[0] or imsz[1] < filtsz[1]:
+            return 0
+
+
+    if not isinstance(imsz, tuple) and not isinstance(filtsz, tuple):
+        imsz = imsz
+        filtsz = filtsz
+    elif imsz[0] == 1 or imsz[1] == 1:         # 1D image
+        imsz = imsz[0] * imsz[1]
+        filtsz = filtsz[0] * filtsz[1]
+    elif filtsz[0] == 1 or filtsz[1] == 1:   # 2D image, 1D filter
+        filtsz = (filtsz[0], filtsz[0])
+
+    if not isinstance(imsz, tuple) and not isinstance(filtsz, tuple) and imsz < filtsz:
+        height = 0
+    elif not isinstance(imsz, tuple) and not isinstance(filtsz, tuple):
+        height = 1 + maxPyrHt( np.floor(imsz/2.0), filtsz )
+    else:
+        height = 1 + maxPyrHt( (np.floor(imsz[0]/2.0), 
+                                np.floor(imsz[1]/2.0)), 
+                               filtsz )
+
     return height
 
 # returns a vector of binomial coefficients of order (size-1)
@@ -206,6 +248,18 @@ def namedFilter(name):
 def strictly_decreasing(L):
     return all(x>y for x, y in zip(L, L[1:]))
 
+def compareRecon(recon1, recon2):
+    if recon1.shape != recon2.shape:
+        return 0
+
+    for i in range(recon1.shape[0]):
+        for j in range(recon2.shape[1]):
+            if math.fabs(recon1[i,j] - recon2[i,j]) > math.pow(10,-11):
+                print "i=%d j=%d %f %f diff=%f" % (i, j, recon1[i,j], recon2[i,j], math.fabs(recon1[i,j]-recon2[i,j]))
+                return 0
+
+    return 1
+
 def comparePyr(matPyr, pyPyr):
     # compare two pyramids - return 0 for !=, 1 for == 
     # correct number of elements?
@@ -220,6 +274,8 @@ def comparePyr(matPyr, pyPyr):
 
     if(matSz != pySz):
         print "size difference: returning 0"
+        print matPyr.shape
+        print pyPyr.pyrSize
         print matSz
         print pySz
         print pyPyr.pyr.keys()

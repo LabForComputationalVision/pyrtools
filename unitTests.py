@@ -18,6 +18,22 @@ class maxPyrHtTests(unittest.TestCase):
         self.failUnless(ppu.maxPyrHt((10,10),(3,1)) == 2)
     def test5(self):
         self.failUnless(ppu.maxPyrHt((10,10),(3,4)) == 2)
+    def test6(self):
+        self.failUnless(ppu.maxPyrHt((20,10),(5,1)) == 2)
+    def test7(self):
+        self.failUnless(ppu.maxPyrHt((10,20),(5,1)) == 2)
+    def test8(self):
+        self.failUnless(ppu.maxPyrHt((20,10),(1,5)) == 5)
+    def test9(self):
+        self.failUnless(ppu.maxPyrHt((10,20),(1,5)) == 5)
+    def test10(self):
+        self.failUnless(ppu.maxPyrHt((256,1),(1,5)) == 6)
+    def test11(self):
+        self.failUnless(ppu.maxPyrHt((256,1),(5,1)) == 6)
+    def test12(self):
+        self.failUnless(ppu.maxPyrHt((1,256),(1,5)) == 6)
+    def test13(self):
+        self.failUnless(ppu.maxPyrHt((1,256),(5,1)) == 6)
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
@@ -58,7 +74,7 @@ class GpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test6(self):
         matPyr = scipy.io.loadmat('buildGpyr5.mat')
-        img = ppu.mkRamp((200, 100))
+        img = ppu.mkRamp((20, 10))
         pyPyr = ppt.Gpyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 
@@ -85,12 +101,12 @@ class LpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self): 
         matPyr2 = scipy.io.loadmat('buildLpyr2.mat')
-        pyRamp = ppu.mkRamp(200,200)
+        pyRamp = ppu.mkRamp((200,200))
         pyPyr = ppt.Lpyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr2['pyr'], pyPyr))
     def test3(self):
         matPyr2 = scipy.io.loadmat('buildLpyr3.mat')
-        pyRamp = ppu.mkRamp(100,200)
+        pyRamp = ppu.mkRamp((100,200))
         pyPyr = ppt.Lpyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr2['pyr'], pyPyr))
     def test4(self):
@@ -167,25 +183,62 @@ class SpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
         matPyr = scipy.io.loadmat('buildSpyr2.mat')
-        pyRamp = ppu.mkRamp(200,200)
+        pyRamp = ppu.mkRamp((200,200))
         pyPyr = ppt.Spyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test3(self):
         matPyr = scipy.io.loadmat('buildSpyr3.mat')
-        pyRamp = ppu.mkRamp(100,200)
+        pyRamp = ppu.mkRamp((100,200))
         pyPyr = ppt.Spyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test4(self):
         matPyr = scipy.io.loadmat('buildSpyr4.mat')
-        pyRamp = ppu.mkRamp(200,100)
+        pyRamp = ppu.mkRamp((200,100))
         pyPyr = ppt.Spyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test0(self):
+        matPyr = scipy.io.loadmat('buildSpyr0.mat')
+        pyRamp = ppu.mkRamp((20,20))
+        pyPyr = ppt.Spyr(pyRamp)
+        recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
     def test5(self):
         matPyr = scipy.io.loadmat('buildSpyr5.mat')
-        pyRamp = ppu.mkRamp(200,1)
+        img = Image.open('lenna-256x256.tif')
+        img = np.array(img.getdata()).reshape(256,256)
+        pyPyr = ppt.Spyr(img)
+        recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test6(self):
+        matPyr = scipy.io.loadmat('buildSpyr6.mat')
+        pyRamp = ppu.mkRamp((200,200))
         pyPyr = ppt.Spyr(pyRamp)
-        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
-#    ## both versions fail for 1D col vector (1x200)
+        recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test7(self):
+        matPyr = scipy.io.loadmat('buildSpyr7.mat')
+        pyRamp = ppu.mkRamp((256,128))
+        pyPyr = ppt.Spyr(pyRamp)
+        recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test8(self):
+        matPyr = scipy.io.loadmat('buildSpyr8.mat')
+        pyRamp = ppu.mkRamp((128,256))
+        pyPyr = ppt.Spyr(pyRamp)
+        recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test9(self):
+        matPyr = scipy.io.loadmat('buildSpyr9.mat')
+        pyRamp = ppu.mkRamp((200,100))
+        pyPyr = ppt.Spyr(pyRamp)
+        recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test10(self):
+        matPyr = scipy.io.loadmat('buildSpyr10.mat')
+        pyRamp = ppu.mkRamp((100,200))
+        pyPyr = ppt.Spyr(pyRamp)
+        recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
 
 def main():
     unittest.main()
