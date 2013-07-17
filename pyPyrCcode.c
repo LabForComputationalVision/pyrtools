@@ -2,7 +2,7 @@
 #include "Numeric/arrayobject.h"
 #include "convolve.h"
 
-/* compile with: gcc -shared -I/usr/include/python2.6/ -lpython2.6 -o myModule.so -fPIC myModule.c convolve.c convolve.h edges.c wrap.c*/
+/* compile with: gcc -shared -I/usr/include/python2.6/ -lpython2.6 -o pyPyrCcode.so -fPIC pyPyrCcode.c convolve.c convolve.h edges.c wrap.c*/
 
 #define notDblMtx(it) (!mxIsNumeric(it) || !mxIsDouble(it) || mxIsSparse(it) || mxIsComplex(it))
 
@@ -245,7 +245,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 /*
  * Bind Python function names to our C functions
  */
-static PyMethodDef myModule_methods[] = {
+static PyMethodDef c_methods[] = {
 	{"corrDn", py_corrDn, METH_VARARGS},
 	{"upConv", py_upConv, METH_VARARGS},
 	{NULL, NULL}
@@ -254,8 +254,8 @@ static PyMethodDef myModule_methods[] = {
 /*
  * Python calls this to let us initialize our module
  */
-void initmyModule()
+void initpyPyrCcode()
 {
-	(void) Py_InitModule("myModule", myModule_methods);
+	(void) Py_InitModule("pyPyrCcode", c_methods);
 	import_array();
 }

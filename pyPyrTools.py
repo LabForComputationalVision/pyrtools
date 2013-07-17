@@ -1,6 +1,7 @@
 import numpy as np
 import pyPyrUtils as ppu
-from myModule import *
+#from myModule import *
+from pyPyrCcode import *
 import math
 import matplotlib.cm as cm
 from pylab import *
