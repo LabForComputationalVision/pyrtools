@@ -149,6 +149,12 @@ class LpyrTests(unittest.TestCase):
         pyPyr = ppt.Lpyr(pyRamp)
         recon = pyPyr.reconLpyr()
         self.failUnless((matPyr['recon'] == recon).all())
+    def test11(self): 
+        matPyr = scipy.io.loadmat('buildLpyr11.mat')
+        pyRamp = ppu.mkRamp((200,200))
+        pyPyr = ppt.Lpyr(pyRamp)
+        recon = pyPyr.reconLpyr([1])
+        self.failUnless((matPyr['recon'] == recon).all())
 
 
 class spFilterTests(unittest.TestCase):
@@ -238,6 +244,12 @@ class SpyrTests(unittest.TestCase):
         pyRamp = ppu.mkRamp((100,200))
         pyPyr = ppt.Spyr(pyRamp)
         recon = pyPyr.reconSpyr()
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test11(self):
+        matPyr = scipy.io.loadmat('buildSpyr11.mat')
+        pyRamp = ppu.mkRamp((200,200))
+        pyPyr = ppt.Spyr(pyRamp)
+        recon = pyPyr.reconSpyr('sp1Filters', 'reflect1', [1])
         self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
 
 def main():

@@ -5,6 +5,7 @@ import math
 import matplotlib.cm as cm
 from pylab import *
 from operator import mul
+import os
 
 class pyramid:  # pyramid
     # properties
@@ -16,7 +17,7 @@ class pyramid:  # pyramid
     # constructor
     def __init__(self):
         print "please specify type of pyramid to create (Gpry, Lpyr, etc.)"
-        exit(1)
+        return
 
     # methods
     def band(self, bandNum):
@@ -29,7 +30,7 @@ class pyramid:  # pyramid
             self.showLpyr(args)
         else:
             print "pyramid type %s not currently supported" % (args[0])
-            exit(1)
+            return
 
 class Spyr(pyramid):
     filt = ''
@@ -42,7 +43,7 @@ class Spyr(pyramid):
             self.image = args[0]
         else:
             print "First argument (image) is required."
-            exit(1)
+            return
 
         #------------------------------------------------
         # defaults:
@@ -54,10 +55,10 @@ class Spyr(pyramid):
                 filters = ppu.sp1Filters()
             elif os.path.isfile(args[1]):
                 print "Filter files not supported yet"
-                exit(1)
+                return
             else:
                 print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
-                exit(1)
+                return
         else:
             filters = ppu.sp1Filters()
 
@@ -80,7 +81,7 @@ class Spyr(pyramid):
             elif args[3] > max_ht:
                 print "Error: cannot build pyramid higher than %d levels." % (
                     max_ht)
-                exit(1)
+                return
             else:
                 ht = args[3]
         else:
@@ -162,10 +163,10 @@ class Spyr(pyramid):
                 filters = ppu.sp1Filters()
             elif os.path.isfile(args[0]):
                 print "Filter files not supported yet"
-                exit(1)
+                return
             else:
                 print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
-                exit(1)
+                return
         else:
             filters = ppu.sp1Filters()
 
@@ -199,11 +200,12 @@ class Spyr(pyramid):
         if levs == 'all':
             levs = np.array(range(maxLev))
         else:
-            if (levs < 0).any() or (levs >= maxLev).any():
-                print "Error: level numbers must be in the range [0, %d]." % (maxLev)
+            levs = np.array(levs)
+            if (levs < 0).any() or (levs >= maxLev-1).any():
+                print "Error: level numbers must be in the range [0, %d]." % (maxLev-1)
             else:
                 levs = np.array(levs)
-                if levs[0] < levs[1]:
+                if len(levs) > 1 and levs[0] < levs[1]:
                     levs = levs[::-1]  # we want smallest first
         if bands == 'all':
             bands = np.array(range(self.numBands()))
@@ -227,6 +229,7 @@ class Spyr(pyramid):
                     
         # reconstruct
         # FIX: shouldn't have to enter step, start and stop in upConv!
+        band = -1
         for lev in range(Nlevs-1,-1,-1):
             if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
@@ -250,8 +253,8 @@ class Spyr(pyramid):
                 recon = np.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
             elif lev == 0:
                 sz = recon.shape
-                recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
-                               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
+                recon = upConv(sz[0], sz[1], recon, lo0filt.shape[0], 
+                               lo0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[0], sz[1])
                 recon = np.array(recon).reshape(sz[0], sz[1])
             else:
@@ -433,13 +436,13 @@ class Lpyr(pyramid):
         else:
             print "pyr = Lpyr(image, height, filter1, filter2, edges)"
             print "First argument (image) is required"
-            exit(1)
+            return
 
         if len(args) > 2:
             filt = args[2]
             if not (filt.shape == 1).any():
                 print "Error: filter1 should be a 1D filter (i.e., a vector)"
-                exit(1)
+                return
         else:
             filt = ppu.namedFilter('binom5')
             if self.image.shape[0] == 1:
@@ -449,7 +452,7 @@ class Lpyr(pyramid):
             filt = args[3]
             if not (filt.shape == 1).any():
                 print "Error: filter2 should be a 1D filter (i.e., a vector)"
-                exit(1)
+                return
         else:
             filt = ppu.namedFilter('binom5')
             if self.image.shape[0] == 1:
@@ -465,7 +468,7 @@ class Lpyr(pyramid):
                 if self.height > maxHeight:
                     print ( "Error: cannot build pyramid higher than %d levels"
                             % (maxHeight) )
-                    exit(1)
+                    return
         else:
             self.height = maxHeight
 
@@ -561,7 +564,7 @@ class Lpyr(pyramid):
     # methods
     def reconLpyr(self, *args):
         if len(args) > 0:
-            levs = args[0]
+            levs = np.array(args[0])
         else:
             levs = 'all'
 
@@ -579,9 +582,9 @@ class Lpyr(pyramid):
         if levs == 'all':
             levs = range(0,maxLev)
         else:
-            if any(x > maxLev for x in levs):
-                print ( "Error: level numbers must be in the range [1, %d]." % 
-                        (maxLev) )
+            if (levs > maxLev-1).any():
+                print ( "Error: level numbers must be in the range [0, %d]." % 
+                        (maxLev-1) )
                 exit(1)
 
         if isinstance(filt2, basestring):
@@ -705,7 +708,7 @@ class Lpyr(pyramid):
             pRange[nind,:] = np.array([av-2*stdev, av+2*stdev])
         elif isinstance(pRange, basestring):
             print "Error: band range argument: %s" % (pRange)
-            exit(1)
+            return
         elif pRange.shape[0] == 1 and pRange.shape[1] == 2:
             scales = np.power( np.array( range(0,nind) ), scale)
             pRange = np.outer( scales, pRange )
@@ -781,7 +784,7 @@ class Gpyr(Lpyr):
         if len(args) < 1:
             print "pyr = Gpyr(image, height, filter, edges)"
             print "First argument (image) is required"
-            exit(1)
+            return
         else:
             self.image = args[0]
 
@@ -789,7 +792,7 @@ class Gpyr(Lpyr):
             filt = args[2]
             if not (filt.shape == 1).any():
                 print "Error: filt should be a 1D filter (i.e., a vector)"
-                exit(1)
+                return
         else:
             print "no filter set, so filter is binom5"
             filt = ppu.namedFilter('binom5')
@@ -808,7 +811,7 @@ class Gpyr(Lpyr):
                 if self.height > maxHeight:
                     print ( "Error: cannot build pyramid higher than %d levels"
                             % (maxHeight) )
-                    exit(1)
+                    return
         else:
             self.height = maxHeight
 

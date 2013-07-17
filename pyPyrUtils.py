@@ -92,10 +92,6 @@ def showIm(*args):
 # Specifically: the number of corrDn operations that can be sequentially
 # performed when subsampling by a factor of 2.
 def maxPyrHt_old(imsz, filtsz):
-    print "maxPyrHt"
-    print imsz
-    print filtsz
-    print " "
     if isinstance(imsz, int):
         imsz = (imsz, 1)
     if isinstance(filtsz, int):
@@ -144,8 +140,6 @@ def maxPyrHt(imsz, filtsz):
         if imsz < filtsz:
             return 0
     else:
-        print imsz
-        print filtsz
         if len(imsz) == 1:
             imsz = (imsz[0], 1)
         if len(filtsz) == 1:
@@ -274,11 +268,6 @@ def comparePyr(matPyr, pyPyr):
 
     if(matSz != pySz):
         print "size difference: returning 0"
-        print matPyr.shape
-        print pyPyr.pyrSize
-        print matSz
-        print pySz
-        print pyPyr.pyr.keys()
         return 0
 
     # values are the same?

@@ -90,9 +90,9 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   }
 
 
-  printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d),%s\n",
-	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
-	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges);
+  /*printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d),%s\n",
+    x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
+    x_start,x_step,x_stop,y_start,y_step,y_stop,edges); */
 
   if (strcmp(edges,"circular") == 0)
     internal_wrap_reduce((image_type *)image->data, x_idim, y_idim, 
@@ -220,9 +220,9 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
     exit(1);
   }
 
-  printf("i(%d, %d),f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d), %s\n",
-	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
-	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges);
+  /*printf("i(%d, %d),f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d), %s\n",
+    x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
+    x_start,x_step,x_stop,y_start,y_step,y_stop,edges); */
   
   if (strcmp(edges,"circular") == 0)
     internal_wrap_expand((image_type *)image->data, (image_type *)filt->data,
