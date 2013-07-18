@@ -10,8 +10,8 @@ import os
 
 class pyramid:  # pyramid
     # properties
-    pyr = {}
-    pyrSize = {}
+    pyr = []
+    pyrSize = []
     pyrType = ''
     image = ''
 
@@ -90,8 +90,8 @@ class Spyr(pyramid):
 
         #------------------------------------------------------
 
-        self.pyr = {}
-        self.pyrSize = {}
+        self.pyr = []
+        self.pyrSize = []
         im = self.image
         im_sz = im.shape
         pyrCtr = 0
@@ -100,8 +100,10 @@ class Spyr(pyramid):
                      hi0filt, edges);
         hi0 = np.array(hi0).reshape(im_sz[0], im_sz[1])
 
-        self.pyr[pyrCtr] = hi0.copy()
-        self.pyrSize[pyrCtr] = hi0.shape
+        #self.pyr[pyrCtr] = hi0.copy()
+        #self.pyrSize[pyrCtr] = hi0.shape
+        self.pyr.append(hi0.copy())
+        self.pyrSize.append(hi0.shape)
         pyrCtr += 1
 
         lo = corrDn(im_sz[1], im_sz[0], im, lo0filt.shape[0], lo0filt.shape[1],
@@ -117,10 +119,12 @@ class Spyr(pyramid):
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz)
                 band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, bfiltsz, 
                                            bfiltsz, filt, edges) )
-                self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
-                                                                 lo_sz[1])
-
-                self.pyrSize[pyrCtr] = lo_sz
+                #self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
+                #                                                 lo_sz[1])
+                #self.pyrSize[pyrCtr] = lo_sz
+                self.pyr.append( np.array(band.copy()).reshape(lo_sz[0], 
+                                                               lo_sz[1]) )
+                self.pyrSize.append(lo_sz)
                 pyrCtr += 1
 
             lo = corrDn(lo_sz[1], lo_sz[0], lo, lofilt.shape[0], 
@@ -128,8 +132,10 @@ class Spyr(pyramid):
             lo = np.array(lo).reshape(math.ceil(lo_sz[0]/2.0), 
                                       math.ceil(lo_sz[1]/2.0))
 
-        self.pyr[pyrCtr] = np.array(lo).copy()
-        self.pyrSize[pyrCtr] = lo.shape
+        #self.pyr[pyrCtr] = np.array(lo).copy()
+        #self.pyrSize[pyrCtr] = lo.shape
+        self.pyr.append(np.array(lo).copy())
+        self.pyrSize.append(lo.shape)
 
     # methods
     def spyrHt(self):
@@ -276,7 +282,8 @@ class Spyr(pyramid):
                                                         order='C')
 
             # upsample
-            newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
+            #newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
+            newSz = ppu.nextSz(recon.shape, self.pyrSize)
             mult = newSz[0] / recon.shape[0]
             if newSz[0] % recon.shape[0] > 0:
                 mult += 1
@@ -410,7 +417,8 @@ class Spyr(pyramid):
         # make position list positive, and allocate appropriate image:
         llpos = llpos - ((np.ones((nind,2)) * np.amin(llpos, axis=0)) + 1) + 1
         llpos[0,:] = np.array([1, 1])
-        urpos = llpos + self.pyrSize.values()
+        #urpos = llpos + self.pyrSize.values()
+        urpos = llpos + self.pyrSize
         d_im = np.zeros((np.amax(urpos), np.amax(urpos)))
         
         # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
@@ -479,8 +487,8 @@ class Lpyr(pyramid):
             edges = "reflect1"
 
         # make pyramid
-        self.pyr = {}
-        self.pyrSize = {}
+        self.pyr = []
+        self.pyrSize = []
         pyrCtr = 0
         im = np.array(self.image).astype(float)
         if len(im.shape) == 1:
@@ -523,8 +531,10 @@ class Lpyr(pyramid):
                 
             im = lo2
 
-        self.pyr[self.height-1] = lo2
-        self.pyrSize[self.height-1] = lo2.shape
+        #self.pyr[self.height-1] = lo2
+        #self.pyrSize[self.height-1] = lo2.shape
+        self.pyr.append(lo2.copy())
+        self.pyrSize.append(lo2.shape)
 
         # compute hi bands
         im = self.image
@@ -558,8 +568,10 @@ class Lpyr(pyramid):
                                             order='F')
 
             hi2 = los[ht] - hi2
-            self.pyr[pyrCtr] = hi2
-            self.pyrSize[pyrCtr] = hi2.shape
+            #self.pyr[pyrCtr] = hi2
+            #self.pyrSize[pyrCtr] = hi2.shape
+            self.pyr.insert(pyrCtr, hi2.copy())
+            self.pyrSize.insert(pyrCtr, hi2.shape)
             pyrCtr += 1
 
     # methods
@@ -822,16 +834,18 @@ class Gpyr(Lpyr):
             edges = "reflect1"
 
         # make pyramid
-        self.pyr = {}
-        self.pyrSize = {}
+        self.pyr = []
+        self.pyrSize = []
         pyrCtr = 0
         im = np.array(self.image).astype(float)
 
         if len(im.shape) == 1:
             im = im.reshape(im.shape[0], 1)
 
-        self.pyr[pyrCtr] = im
-        self.pyrSize[pyrCtr] = im.shape
+        #self.pyr[pyrCtr] = im
+        #self.pyrSize[pyrCtr] = im.shape
+        self.pyr.append(im.copy())
+        self.pyrSize.append(im.shape)
         pyrCtr += 1
 
         for ht in range(self.height-1,0,-1):
@@ -862,8 +876,10 @@ class Gpyr(Lpyr):
                                             math.ceil(im_sz[1]/2.0), 
                                             order='F')
 
-            self.pyr[pyrCtr] = lo2
-            self.pyrSize[pyrCtr] = lo2.shape
+            #self.pyr[pyrCtr] = lo2
+            #self.pyrSize[pyrCtr] = lo2.shape
+            self.pyr.append(lo2.copy())
+            self.pyrSize.append(lo2.shape)
             pyrCtr += 1
 
             im = lo2

@@ -259,8 +259,10 @@ def comparePyr(matPyr, pyPyr):
     # correct number of elements?
     matSz = sum(matPyr.shape)
     pySz = 1
-    for key in pyPyr.pyrSize.keys():
-        sz = pyPyr.pyrSize[key]
+    #for key in pyPyr.pyrSize.keys():
+    for idx in range(len(pyPyr.pyrSize)):
+        #sz = pyPyr.pyrSize[key]
+        sz = pyPyr.pyrSize[idx]
         if len(sz) == 1:
             pySz += sz[0]
         else:
@@ -272,21 +274,28 @@ def comparePyr(matPyr, pyPyr):
 
     # values are the same?
     matStart = 0
-    for key, value in pyPyr.pyrSize.iteritems():
-        bandSz = value
+    #for key, value in pyPyr.pyrSize.iteritems():
+    for idx in range(len(pyPyr.pyrSize)):
+        #bandSz = value
+        bandSz = pyPyr.pyrSize[idx]
         matLen = bandSz[0] * bandSz[1]
         matTmp = matPyr[matStart:matStart + matLen]
         matTmp = np.reshape(matTmp, bandSz, order='F')
         matStart = matStart+matLen
-        if (matTmp != pyPyr.pyr[key]).any():
+        #if (matTmp != pyPyr.pyr[key]).any():
+        if (matTmp != pyPyr.pyr[idx]).any():
             print "some pyramid elements not identical: checking..."
-            for i in range(value[0]):
-                for j in range(value[1]):
-                    if matTmp[i,j] != pyPyr.pyr[key][i,j]:
+            #for i in range(value[0]):
+            #    for j in range(value[1]):
+            for i in range(bandSz[0]):
+                for j in range(bandSz[1]):
+                    #if matTmp[i,j] != pyPyr.pyr[key][i,j]:
+                    if matTmp[i,j] != pyPyr.pyr[idx][i,j]:
                         #print "%d %d : %.20f" % (i,j,
                         #                         math.fabs(matTmp[i,j]- 
                         #                                  pyPyr.pyr[key][i,j]))
-                        if ( math.fabs(matTmp[i,j] - pyPyr.pyr[key][i,j]) > 
+                        #if ( math.fabs(matTmp[i,j] - pyPyr.pyr[key][i,j]) > 
+                        if ( math.fabs(matTmp[i,j] - pyPyr.pyr[idx][i,j]) > 
                              math.pow(10,-11) ):
                             return 0
             print "same to at least 10^-11"
