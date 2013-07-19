@@ -10,7 +10,8 @@ import re
 
 def showIm(*args):
     if len(args) == 0:
-        print "showIm( matrix, range, zoom, label, colormap, colorbar )"
+        #print "showIm( matrix, range, zoom, label, colormap, colorbar )"
+        print "showIm( matrix, range, label, colormap, colorbar )"
         print "  matrix is string. It should be the name of a 2D array."
         print "  range is a two element tuple.  It specifies the values that "
         print "    map to the min and max colormap values.  Passing a value "
@@ -19,20 +20,16 @@ def showIm(*args):
         print "    range=[p1-(p2-p1)/8, p2+(p2-p1)/8], where p1 is the 10th "
         print "    percientile value of the sorted matix samples, and p2 is "
         print "    the 90th percentile value."
-        print "  zoom specifies the number of matrix smples per screen pixel. "
-        print "    It will be rounded to an integer, or 1 divided by an "
-        print "    integer.  A value of 'same' or 'auto' (default) causes the "
-        print "    zoom value to be chosen automatically to fit the image into "
-        print "    the current axes.  A value of 'full' fills the axis region "
-        print "    (leaving no room for labels)."
-        print "  If label (optional, default = 1, unless zoom = 'full') is "
-        print "    non-zero, the range of values that are mapped into the "
-        print "    colormap and the dimensions (size) of the matrix and zoom "
-        print "    factor are printed below the image.  If label is a string, "
-        print "    it is used as a title."
-        print "  colormap must contain the string 'auto' (grey colormap with " 
-        print "    size = matrix.max() - matrix.min() will be used), "
-        print "    or a string that is the name of a colormap variable "
+        #print "  zoom specifies the number of matrix samples per screen pixel."
+        #print "    It will be rounded to an integer, or 1 divided by an "
+        #print "    integer.  A value of 'same' or 'auto' (default) causes the "
+        #print "    zoom value to be chosen automatically to fit the image into"
+        #print "    the current axes.  A value of 'full' fills the axis region "
+        #print "    (leaving no room for labels)."
+        print "  label - A string that is used as a figure title."
+        print "  colormap must contain the string 'auto' (grey colormap will " 
+        print "    be used), or a string that is the name of a colormap "
+        print "    variable"
         print "  colorbar is a boolean that specifies whether or not a "
         print "    colorbar is displayed"
     if len(args) > 0:   # matrix entered
@@ -64,19 +61,19 @@ def showIm(*args):
                 return
         else:
             imRange = args[1][0], args[1][1]
-    if len(args) > 2:   # zoom entered
-        # no equivalent to matlab's pixelAxes in matplotlib. need dpi
-        # might work with tkinter, but then have to change everything
-        zoom = 1
-    if len(args) > 3:   # label entered
-        label = args[3]
-    if len(args) > 4:   # colormap entered
-        if args[4] is "auto":
+    #if len(args) > 2:   # zoom entered
+    #    # no equivalent to matlab's pixelAxes in matplotlib. need dpi
+    #    # might work with tkinter, but then have to change everything
+    #    zoom = 1
+    if len(args) > 2:   # label entered
+        label = args[2]
+    if len(args) > 3:   # colormap entered
+        if args[3] is "auto":
             colormap = cm.Greys_r
         else:  # got a variable name
-            colormap = args[4]
-    if len(args) > 5 and args[5]:   # colorbar entered and set to true
-        colorbar = args[5]
+            colormap = args[3]
+    if len(args) > 4 and args[4]:   # colorbar entered and set to true
+        colorbar = args[4]
         
     #imgplot = plt.imshow(matrix, colormap, origin='lower').set_clim(imRange)
     imgplot = plt.imshow(matrix, colormap).set_clim(imRange)
@@ -84,7 +81,7 @@ def showIm(*args):
     if label != 0 and label != 1:
         plt.title(label)
     if colorbar:
-        plt.colorbar(imgplot, cmap=cmap)
+        plt.colorbar(imgplot, cmap=colormap)
     #pylab.show()
     plt.show()
     
