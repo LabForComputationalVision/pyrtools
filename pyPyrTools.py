@@ -7,6 +7,7 @@ import matplotlib.cm as cm
 from pylab import *
 from operator import mul
 import os
+import scipy.misc as spm
 
 class pyramid:  # pyramid
     # properties
@@ -431,6 +432,230 @@ class Spyr(pyramid):
             
         ppu.showIm(d_im)
  
+
+class SFpyr(Spyr):
+    filt = ''
+    edges = ''
+    
+    #constructor
+    def __init__(self, *args):    # (image, height, order, twidth)
+        self.pyrType = 'steerableFrequency'
+
+        if len(args) > 0:
+            self.image = args[0]
+        else:
+            print "First argument (image) is required."
+            return
+
+        #------------------------------------------------
+        # defaults:
+
+        max_ht = np.floor( np.log2( min(self.image.shape) ) ) - 2
+        if len(args) > 1:
+            if(args[1] > max_ht):
+                print "Error: cannot build pyramid higher than %d levels." % (max_ht)
+            ht = args[1]
+        else:
+            ht = max_ht
+        ht = int(ht)
+            
+        if len(args) > 2:
+            if args[2] > 15 or args[2] < 0:
+                print "Warning: order must be an integer in the range [0,15]. Truncating."
+                order = min( max(args[2],0), 15 )
+            else:
+                order = args[2]
+        else:
+            order = 3
+
+        nbands = order+1
+
+        if len(args) > 3:
+            if args[3] <= 0:
+                print "Warning: twidth must be positive. Setting to 1."
+                twidth = 1
+            else:
+                twidth = args[3]
+        else:
+            twidth = 1
+
+        #------------------------------------------------------
+        # steering stuff:
+
+        if nbands % 2 == 0:
+            harmonics = np.array(range(nbands/2)) * 2 + 1
+        else:
+            harmonics = np.array(range((nbands-1)/2)) * 2
+
+        steermtx = ppu.steer2HarmMtx(harmonics, 
+                                     np.pi*np.array(range(nbands))/nbands,
+                                     'even')
+        print "steermtx"
+        print steermtx
+        #------------------------------------------------------
+        
+        dims = np.array(self.image.shape)
+        ctr = np.ceil((np.array(dims)+0.5)/2)
+        
+        (xramp, yramp) = np.meshgrid((np.array(range(1,dims[1]+1))-ctr[1])/
+                                     (dims[1]/2), 
+                                     (np.array(range(1,dims[0]+1))-ctr[0])/
+                                     (dims[0]/2))
+        angle = np.arctan2(yramp, xramp)
+        print "angle"
+        print angle
+        log_rad = np.sqrt(xramp**2 + yramp**2)
+        #log_rad[ctr[0], ctr[1]] = log_rad[ctr[0], ctr[1]-1]
+        log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
+        log_rad = np.log2(log_rad);
+        print "log_rad"
+        print log_rad
+
+        ## Radial transition function (a raised cosine in log-frequency):
+        (Xrcos, Yrcos) = ppu.rcosFn(twidth, (-twidth/2.0), np.array([0,1]))
+        Yrcos = np.sqrt(Yrcos)
+
+        YIrcos = np.sqrt(1.0 - Yrcos**2)
+        #lo0mask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], log_rad,
+        #YIrcos.shape[0], YIrcos, Xrcos[0], 
+        #Xrcos[2]-Xrcos[1], 0))
+        lo0mask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], log_rad,
+                                   YIrcos.shape[0], YIrcos, Xrcos[0], 
+                                   Xrcos[1]-Xrcos[0], 0))
+
+        imdft = np.fft.fftshift(np.fft.fft2(self.image))
+        print "imdft"
+        print imdft
+        #[pyr,pind] = buildSFpyrLevs(lo0dft,log_rad,Xrcos,Yrcos,angle,ht,nbands)
+
+        self.pyr = []
+        self.pyrSize = []
+        #im = self.image
+        #im_sz = im.shape
+        #pyrCtr = 0
+
+        #Xrcos -= np.log2(2)
+        #hi0mask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], log_rad,
+        #Yrcos.shape[0], Yrcos, Xrcos[0], 
+        #Xrcos[2]-Xrcos[1], 0))
+        hi0mask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], log_rad,
+                                   Yrcos.shape[0], Yrcos, Xrcos[0], 
+                                   Xrcos[1]-Xrcos[0], 0))
+        print "hi0mask"
+        print hi0mask
+        #hi0dft =np.dot(imdft, hi0mask.reshape(imdft.shape[0], imdft.shape[1]))
+        hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
+        print "hi0dft"
+        print hi0dft
+        hi0 = np.fft.ifft2(np.fft.ifftshift(hi0dft))
+        print "hi0"
+        print hi0
+
+        self.pyr.append(np.real(hi0.copy()))
+        self.pyrSize.append(hi0.shape)
+        #pyrCtr += 1
+
+        #lo = corrDn(im_sz[1], im_sz[0], im, lo0filt.shape[0], lo0filt.shape[1],
+        #            lo0filt, edges);
+        #lo = np.array(lo).reshape(im_sz[0], im_sz[1])
+        lo0mask = lo0mask.reshape(imdft.shape[0], imdft.shape[1])
+        lodft = imdft * lo0mask
+
+        for i in range(ht):
+            #lo_sz = lo.shape
+            # assume square filters  -- start of buildSpyrLevs
+            #bfiltsz = math.floor(math.sqrt(bfilts.shape[0]))
+            bands = np.zeros((lodft.shape[0]*lodft.shape[1], nbands))
+            bind = np.zeros((nbands, 2))
+        
+            #if i > 0:
+            Xrcos -= np.log2(2)
+
+            lutsize = 1024
+            Xcosn = np.pi * np.array(range(-(2*lutsize+1), (lutsize+2))) / lutsize
+
+            order = nbands -1
+            const = (2**(2*order))*(spm.factorial(order, exact=True)**2)/float(nbands*spm.factorial(2*order, exact=True))
+            Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
+            #himask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], 
+            #                          log_rad, Yrcos.shape[0], Yrcos, Xrcos[0],
+            #Xrcos[2]-Xrcos[1], 0)).reshape(lodft.shape[0], lodft.shape[1])
+            himask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], 
+                                      log_rad, Yrcos.shape[0], Yrcos, Xrcos[0],
+                                      Xrcos[1]-Xrcos[0], 0)).reshape(lodft.shape[0], lodft.shape[1])
+
+            #for b in range(bfilts.shape[1]-1,-1,-1):
+            #for b in range(nbands-1,-1,-1):
+            for b in range(nbands):
+                #filt = bfilts[:,b].reshape(bfiltsz,bfiltsz)
+                #band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, bfiltsz, 
+                #                           bfiltsz, filt, edges) )
+                ##self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
+                ##                                                 lo_sz[1])
+                ##self.pyrSize[pyrCtr] = lo_sz
+                #self.pyr.append( np.array(band.copy()).reshape(lo_sz[0], 
+                #                                               lo_sz[1]) )
+                #self.pyrSize.append(lo_sz)
+                ##pyrCtr += 1
+                #anglemask = np.array(pointOp(angle.shape[0], angle.shape[1], 
+                #                             angle, Ycosn.shape[0], Ycosn, 
+                #                             Xcosn[0]+np.pi*(b-1)/nbands, 
+                #                             Xcosn[2]-Xcosn[1], 0)).reshape(lodft.shape[0], lodft.shape[1])
+                #anglemask = np.array(pointOp(angle.shape[0], angle.shape[1], 
+                #                             angle, Ycosn.shape[0], Ycosn, 
+                #                             Xcosn[0]+np.pi*b/nbands, 
+                #                             Xcosn[2]-Xcosn[1], 0)).reshape(lodft.shape[0], lodft.shape[1])
+                anglemask = np.array(pointOp(angle.shape[0], angle.shape[1], 
+                                             angle, Ycosn.shape[0], Ycosn, 
+                                             Xcosn[0]+np.pi*b/nbands, 
+                                             Xcosn[1]-Xcosn[0], 0)).reshape(lodft.shape[0], lodft.shape[1])
+                #banddft = ((-np.sqrt(-1))**order) * lodft * anglemask * himask
+                banddft = ((-np.power(-1+0j,0.5))**order) * lodft * anglemask * himask
+                band = np.fft.ifft2(np.fft.ifftshift(banddft))
+                #bands[:,b] = np.real(band)
+                #bind[b,:] = band.shape
+                self.pyr.append(np.real(band.copy()))
+                self.pyrSize.append(band.shape)
+
+            #lo = corrDn(lo_sz[1], lo_sz[0], lo, lofilt.shape[0], 
+            #            lofilt.shape[1], lofilt, edges, 2, 2)
+            #lo = np.array(lo).reshape(math.ceil(lo_sz[0]/2.0), 
+            #                          math.ceil(lo_sz[1]/2.0))
+            dims = np.array(lodft.shape)
+            ctr = np.ceil((dims+0.5)/2)
+            lodims = np.ceil((dims-0.5)/2)
+            loctr = ceil((lodims+0.5)/2)
+            #lostart = ctr - loctr + 1
+            lostart = ctr - loctr
+            #loend = lostart + lodims - 1
+            loend = lostart + lodims
+
+            log_rad = log_rad[lostart[0]:loend[0], lostart[1]:loend[1]]
+            angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
+            lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
+            YIrcos = np.abs(np.sqrt(1.0 - Yrcos**2))
+            #lomask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], 
+            #                          log_rad, YIrcos.shape[0], YIrcos, 
+            #                          Xrcos[0], Xrcos[2]-Xrcos[1],
+            #                          0))
+            lomask = np.array(pointOp(log_rad.shape[0], log_rad.shape[1], 
+                                      log_rad, YIrcos.shape[0], YIrcos, 
+                                      Xrcos[0], Xrcos[1]-Xrcos[0],
+                                      0))
+            #lodft = lomask.reshape(lodft.shape[0], lodft.shape[1]) * lodft
+            lodft = lodft * lomask.reshape(lodft.shape[0], lodft.shape[1])
+            #lodft = np.fft.ifft2(np.fft.ifftshift(lodft))
+
+        #self.pyr[pyrCtr] = np.array(lo).copy()
+        #self.pyrSize[pyrCtr] = lo.shape
+        #self.pyr.append(np.array(lo).copy())
+        #self.pyrSize.append(lo.shape)
+        lodft = np.fft.ifft2(np.fft.ifftshift(lodft))
+        self.pyr.append(np.real(np.array(lodft).copy()))
+        self.pyrSize.append(lodft.shape)
+
+    # methods
+
 
 class Lpyr(pyramid):
     filt = ''

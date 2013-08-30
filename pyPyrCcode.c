@@ -2,7 +2,7 @@
 #include "Numeric/arrayobject.h"
 #include "convolve.h"
 
-/* compile with: gcc -shared -I/usr/include/python2.6/ -lpython2.6 -o pyPyrCcode.so -fPIC pyPyrCcode.c convolve.c convolve.h edges.c wrap.c*/
+/* compile with: gcc -shared -I/usr/include/python2.6/ -lpython2.6 -o pyPyrCcode.so -fPIC pyPyrCcode.c convolve.c convolve.h edges.c wrap.c internal_pointOp.c*/
 
 #define notDblMtx(it) (!mxIsNumeric(it) || !mxIsDouble(it) || mxIsSparse(it) || mxIsComplex(it))
 
@@ -242,12 +242,57 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   return PyArray_Return(result);
 } 
 
+static PyObject* py_pointOp(PyObject* self, PyObject* args)
+{
+  int x_idim, y_idim, lutsize;
+  PyObject *poimage, *polut; 
+  PyArrayObject *image, *lut;
+  PyArrayObject *result = NULL;
+  int warnings;
+  double origin, increment;
+  int dimensions[1];
+
+  // parse input parameters
+  if( !PyArg_ParseTuple(args, "iiOiOddi", &x_idim, &y_idim, &poimage, 
+			&lutsize, &polut, &origin, &increment, &warnings) )
+    return NULL;
+  image = (PyArrayObject *)PyArray_ContiguousFromObject(poimage, PyArray_DOUBLE,
+							1, x_idim * y_idim);
+  if(image == NULL)
+    return NULL;
+  if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
+    PyErr_SetString(PyExc_ValueError, 
+		    "array must be two-dimensional and of type double");
+    return NULL;
+  }
+
+  lut = (PyArrayObject *)PyArray_ContiguousFromObject(polut, PyArray_DOUBLE,
+						      1, lutsize);
+  if(lut == NULL)
+    return NULL;
+  if(lut->nd != 1 || image->descr->type_num != PyArray_DOUBLE){
+    PyErr_SetString(PyExc_ValueError, 
+		    "array must be one-dimensional and of type double");
+    return NULL;
+  }
+
+  dimensions[0] = x_idim * y_idim;
+  result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+  
+  internal_pointop(image->data, result->data, x_idim*y_idim, lut->data, 
+		   lutsize, origin, increment, warnings);
+
+  return PyArray_Return(result);
+
+}
+
 /*
  * Bind Python function names to our C functions
  */
 static PyMethodDef c_methods[] = {
 	{"corrDn", py_corrDn, METH_VARARGS},
 	{"upConv", py_upConv, METH_VARARGS},
+	{"pointOp", py_pointOp, METH_VARARGS},
 	{NULL, NULL}
 };
 

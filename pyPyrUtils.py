@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 import pylab
+import scipy.linalg as spl
 import scipy.signal as spsig
 import scipy.stats as sps
 import math
@@ -266,7 +267,7 @@ def comparePyr(matPyr, pyPyr):
             pySz += sz[0] * sz[1]
 
     if(matSz != pySz):
-        print "size difference: returning 0"
+        print "size difference: %d != %d, returning 0" % (matSz, pySz)
         return 0
 
     # values are the same?
@@ -293,9 +294,10 @@ def comparePyr(matPyr, pyPyr):
                         #                                  pyPyr.pyr[key][i,j]))
                         #if ( math.fabs(matTmp[i,j] - pyPyr.pyr[key][i,j]) > 
                         if ( math.fabs(matTmp[i,j] - pyPyr.pyr[idx][i,j]) > 
-                             math.pow(10,-11) ):
+                             math.pow(10,-9) ):
+                            print "failed level:%d element:%d %d value:%.15f %.15f" % (idx, i, j, matTmp[i,j], pyPyr.pyr[idx][i,j])
                             return 0
-            print "same to at least 10^-11"
+            print "same to at least 10^-9"
 
     return 1
 
@@ -757,3 +759,112 @@ def mkImpulse(*args):
     res[origin[0], origin[1]] = amplitude
 
     return res
+
+# Compute a steering matrix (maps a directional basis set onto the
+# angular Fourier harmonics).  HARMONICS is a vector specifying the
+# angular harmonics contained in the steerable basis/filters.  ANGLES 
+# (optional) is a vector specifying the angular position of each filter.  
+# REL_PHASES (optional, default = 'even') specifies whether the harmonics 
+# are cosine or sine phase aligned about those positions.
+# The result matrix is suitable for passing to the function STEER.
+# mtx = steer2HarmMtx(harmonics, angles, evenorodd)
+def steer2HarmMtx(*args):
+
+    if len(args) == 0:
+        print "Error: first parameter 'harmonics' is required."
+        return
+    
+    if len(args) > 0:
+        harmonics = np.array(args[0])
+
+    # optional parameters
+    numh = (2*harmonics.shape[0]) - (harmonics == 0).sum()
+    if len(args) > 1:
+        angles = args[1]
+    else:
+        angles = np.pi * np.array(range(numh)) / numh
+        
+    if len(args) > 2:
+        if isinstance(args[2], basestring):
+            if args[2] == 'even' or args[2] == 'EVEN':
+                evenorodd = 0
+            elif args[2] == 'odd' or args[2] == 'ODD':
+                evenorodd = 1
+            else:
+                print "Error: only 'even' and 'odd' are valid entries for the third input parameter."
+                return
+        else:
+            print "Error: third input parameter must be a string (even/odd)."
+    else:
+        evenorodd = 0
+
+    # Compute inverse matrix, which maps to Fourier components onto 
+    #   steerable basis
+    imtx = np.zeros((angles.shape[0], numh))
+    col = 0
+    for h in harmonics:
+        args = h * angles
+        if h == 0:
+            imtx[:, col] = np.ones(angles.shape)
+            col += 1
+        elif evenorodd:
+            imtx[:, col] = np.sin(args)
+            imtx[:, col+1] = np.negative( np.cos(args) )
+            col += 2
+        else:
+            imtx[:, col] = np.cos(args)
+            imtx[:, col+1] = np.sin(args)
+            col += 2
+
+    r = np.rank(imtx)
+    if r != numh and r != angles.shape[0]:
+        print "Warning: matrix is not full rank"
+
+    mtx = np.linalg.pinv(imtx)
+    
+    return mtx
+
+# [X, Y] = rcosFn(WIDTH, POSITION, VALUES)
+#
+# Return a lookup table (suitable for use by INTERP1) 
+# containing a "raised cosine" soft threshold function:
+# 
+#    Y =  VALUES(1) + (VALUES(2)-VALUES(1)) *
+#              cos^2( PI/2 * (X - POSITION + WIDTH)/WIDTH )
+#
+# WIDTH is the width of the region over which the transition occurs
+# (default = 1). POSITION is the location of the center of the
+# threshold (default = 0).  VALUES (default = [0,1]) specifies the
+# values to the left and right of the transition.
+def rcosFn(*args):
+    
+    if len(args) > 0:
+        width = args[0]
+    else:
+        width = 1
+
+    if len(args) > 1:
+        position = args[1]
+    else:
+        position = 0
+
+    if len(args) > 2:
+        values = args[2]
+    else:
+        values = (0,1)
+
+    #---------------------------------------------
+
+    sz = 256   # arbitrary!
+
+    X = np.pi * np.array(range(-sz-1,2)) / (2*sz)
+
+    Y = values[0] + (values[1]-values[0]) * np.cos(X)**2;
+
+    # make sure end values are repeated, for extrapolation...
+    Y[0] = Y[1]
+    Y[sz+2] = Y[sz+1]
+    
+    X = position + (2*width/np.pi) * (X + np.pi/4)
+
+    return (X,Y)
