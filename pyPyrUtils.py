@@ -868,3 +868,45 @@ def rcosFn(*args):
     X = position + (2*width/np.pi) * (X + np.pi/4)
 
     return (X,Y)
+
+# Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
+# containing samples of the polar angle (in radians, CW from the
+# X-axis, ranging from -pi to pi), relative to angle PHASE (default =
+# 0), about ORIGIN pixel (default = (size+1)/2).
+def mkAngle(*args):
+
+    if len(args) > 0:
+        sz = args[0]
+        if not isinstance(sz, tuple):
+            sz = (sz, sz)
+    else:
+        print "Error: first input parameter 'size' is required!"
+        print "makeAngle(size, phase, origin)"
+        return
+
+    # ------------------------------------------------------------
+    # Optional args:
+
+    if len(args) > 1:
+        phase = args[1]
+    else:
+        phase = 'not set'
+
+    if len(args) > 2:
+        origin = args[2]
+    else:
+        origin = (sz[0]+1/2, sz[1]+1/2)
+
+    #------------------------------------------------------------------
+
+    (xramp, yramp) = np.meshgrid(np.array(range(1,sz[1]+1))-origin[1], 
+                                 (np.array(range(1,sz[0]+1)))-origin[0])
+    xramp = np.array(xramp)
+    yramp = np.array(yramp)
+
+    res = np.arctan2(yramp, xramp)
+    
+    if phase != 'not set':
+        res = ((res+(np.pi-phase)) % (2*np.pi)) - np.pi
+
+    return res
