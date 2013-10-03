@@ -1461,5 +1461,102 @@ class Gpyr(Lpyr):
         
     # methods
 
+class Wpyr(pyramid):
+    filt = ''
+    edges = ''
+    
+    #constructor
+    def __init__(self, *args):    # (image, height, order, twidth)
+        self.pyr = []
+        self.pyrSize = []
+        self.pyrType = 'wavelet'
+
+        if len(args) > 0:
+            im = args[0]
+        else:
+            print "First argument (image) is required."
+            return
+
+        #------------------------------------------------
+        # defaults:
+
+        if len(args) > 2:
+            filt = args[1]
+        else:
+            filt = "qmf9"
+        if isinstance(filt, basestring):
+            filt = ppu.namedFilter(filt)
+        print filt.shape
+        if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
+            print "Error: filter should be 1D (i.e., a vector)";
+            return
+        hfilt = ppu.modulateFlip(filt).T
+
+        if len(args) > 3:
+            edges = args[2]
+        else:
+            edges = "reflect1"
+
+        # Stagger sampling if filter is odd-length:
+        if filt.shape[0] % 2 == 0:
+            stag = 2
+        else:
+            stag = 1
+
+        im_sz = im.shape
+
+        max_ht = ppu.maxPyrHt(im_sz, filt.shape)
+        if len(args) > 1:
+            ht = args[1]
+            if ht == 'auto':
+                ht = max_ht
+            elif(ht > max_ht):
+                print "Error: cannot build pyramid higher than %d levels." % (max_ht)
+        else:
+            ht = max_ht
+        ht = int(ht)
+
+        for lev in range(ht):
+            lo = np.array( corrDn(im.shape[0], im.shape[1], im.T, filt.shape[0],
+                                  1, filt, edges, 2, 1, stag-1, 0) )
+            print lo.shape
+            print im.shape
+            print "stag = %d" % (stag)
+            print math.ceil(im.shape[0]/stag)
+            print math.ceil(im.shape[1]/2.0)
+            lo = lo.reshape(math.ceil(im.shape[0]/stag), 
+                            math.ceil(im.shape[1]/2.0)).T
+            hi = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
+                                  hfilt.shape[0], 1, hfilt, edges, 2, 1, 1, 0) )
+            hi = hi.reshape(im.shape[0], math.floor(im.shape[1]/2.0)).T
+            lolo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1, 
+                                    filt.shape[0], filt, edges, 1, 2, 0, 
+                                    stag-1) )
+            lolo = lolo.reshape(math.ceil(im.shape[0]/2.0), 
+                                math.ceil(im.shape[1]/2.0)).T
+            lohi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
+                                    filt.shape[0], filt, edges, 1, 2, 0, 
+                                    stag-1) )
+            lohi = lohi.reshape(math.ceil(im.shape[0]/2.0),
+                                math.floor(im.shape[1]/2.0)).T
+            hilo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1,
+                                    hfilt.shape[0], hfilt, edges, 1, 2, 0, 1) )
+            hilo = hilo.reshape(math.floor(im.shape[0]/2.0),
+                                math.ceil(im.shape[1]/2.0)).T
+            hihi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
+                                    hfilt.shape[0], hfilt, edges, 1, 2, 0, 1) )
+            hihi = hihi.reshape(math.floor(im.shape[0]/2.0),
+                                math.floor(im.shape[1]/2.0)).T
+            self.pyr.append(lohi)
+            self.pyrSize.append(lohi.shape)
+            self.pyr.append(hilo)
+            self.pyrSize.append(hilo.shape)
+            self.pyr.append(hihi)
+            self.pyrSize.append(hihi.shape)
+            im = lolo
+        self.pyr.append(lolo)
+        self.pyrSize.append(lolo.shape)
+
+
                  
             

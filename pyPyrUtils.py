@@ -910,3 +910,26 @@ def mkAngle(*args):
         res = ((res+(np.pi-phase)) % (2*np.pi)) - np.pi
 
     return res
+
+# [HFILT] = modulateFlipShift(LFILT)
+# QMF/Wavelet highpass filter construction: modulate by (-1)^n,
+# reverse order (and shift by one, which is handled by the convolution
+# routines).  This is an extension of the original definition of QMF's
+# (e.g., see Simoncelli90).
+def modulateFlip(*args):
+
+    if len(args) == 0:
+        print "Error: filter input parameter required."
+        return
+
+    lfilt = args[0]
+    
+    sz = len(lfilt)
+    sz2 = np.ceil(sz/2.0);
+
+    ind = np.array(range(sz-1,-1,-1))
+    print ind
+
+    hfilt = lfilt[ind].T * (-1)**((ind+1)-sz2)
+
+    return hfilt
