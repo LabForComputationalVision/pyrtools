@@ -1519,34 +1519,29 @@ class Wpyr(pyramid):
         for lev in range(ht):
             lo = np.array( corrDn(im.shape[0], im.shape[1], im.T, filt.shape[0],
                                   1, filt, edges, 2, 1, stag-1, 0) )
-            print lo.shape
-            print im.shape
-            print "stag = %d" % (stag)
-            print math.ceil(im.shape[0]/stag)
-            print math.ceil(im.shape[1]/2.0)
-            lo = lo.reshape(math.ceil(im.shape[0]/stag), 
-                            math.ceil(im.shape[1]/2.0)).T
+            lo = lo.reshape(math.ceil(im.shape[0]/2.0), 
+                            math.ceil(im.shape[1]/stag), order='F')
             hi = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
                                   hfilt.shape[0], 1, hfilt, edges, 2, 1, 1, 0) )
-            hi = hi.reshape(im.shape[0], math.floor(im.shape[1]/2.0)).T
+            hi = hi.reshape(math.floor(im.shape[0]/2.0), im.shape[1], order='F')
             lolo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1, 
                                     filt.shape[0], filt, edges, 1, 2, 0, 
-                                    stag-1) )
-            lolo = lolo.reshape(math.ceil(im.shape[0]/2.0), 
-                                math.ceil(im.shape[1]/2.0)).T
+                                    stag-1) ) 
+            lolo = lolo.reshape(math.ceil(lo.shape[0]/float(stag)), 
+                                math.ceil(lo.shape[1]/2.0), order='F')
             lohi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
                                     filt.shape[0], filt, edges, 1, 2, 0, 
                                     stag-1) )
-            lohi = lohi.reshape(math.ceil(im.shape[0]/2.0),
-                                math.floor(im.shape[1]/2.0)).T
+            lohi = lohi.reshape(hi.shape[0], math.ceil(hi.shape[1]/2.0), 
+                                order='F')
             hilo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1,
                                     hfilt.shape[0], hfilt, edges, 1, 2, 0, 1) )
-            hilo = hilo.reshape(math.floor(im.shape[0]/2.0),
-                                math.ceil(im.shape[1]/2.0)).T
+            hilo = hilo.reshape(lo.shape[0], math.floor(lo.shape[1]/2.0), 
+                                order='F')
             hihi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
                                     hfilt.shape[0], hfilt, edges, 1, 2, 0, 1) )
-            hihi = hihi.reshape(math.floor(im.shape[0]/2.0),
-                                math.floor(im.shape[1]/2.0)).T
+            hihi = hihi.reshape(hi.shape[0], math.floor(hi.shape[1]/2.0), 
+                                order='F')
             self.pyr.append(lohi)
             self.pyrSize.append(lohi.shape)
             self.pyr.append(hilo)
@@ -1557,6 +1552,42 @@ class Wpyr(pyramid):
         self.pyr.append(lolo)
         self.pyrSize.append(lolo.shape)
 
+    # methods
 
-                 
+    def wpyrHt(self):
+        if self.pyrSize[0][0] == 1 or self.pyrSize[0][1] == 1:
+            nbands = 1
+        else:
+            nbands = 3
+
+        ht = (len(self.pyrSize)-1)/float(nbands)
+
+        return ht
+
+
+    def reconWpyr(self, *args):
+        # Optional args
+        if len(args) > 0:
+            filt = args[0]
+        else:
+            filt = 'qmf9'
+            
+        if len(args) > 1:
+            edges = args[1]
+        else:
+            edges = 'reflect1'
+
+        if len(args) > 2:
+            levs = args[2]
+        else:
+            levs = 'all'
+
+        if len(args) > 3:
+            bands = args[3]
+        else:
+            bands = 'all'
+
+        #------------------------------------------------------
+
+        maxLev = 1 + self.wpyrHt(self.pyrSize)
             
