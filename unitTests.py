@@ -462,6 +462,16 @@ class WpyrTests(unittest.TestCase):
         pyRamp = ppu.mkRamp((200,100))
         pyPyr = ppt.Wpyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    #def test5(self):  # need to fix ppu.maxPyrHt for these two
+    #    matPyr = scipy.io.loadmat('matFiles/buildWpyr5.mat')
+    #    pyRamp = ppu.mkRamp((200,1))
+    #    pyPyr = ppt.Wpyr(pyRamp)
+    #    self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    #def test6(self):
+    #    matPyr = scipy.io.loadmat('matFiles/buildWpyr6.mat')
+    #    pyRamp = ppu.mkRamp((1,200))
+    #    pyPyr = ppt.Wpyr(pyRamp)
+    #    self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     #def test5(self):
     #    matPyr = scipy.io.loadmat('matFiles/buildSCFpyr5.mat')
     #    img = Image.open('lenna-256x256.tif')

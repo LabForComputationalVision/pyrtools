@@ -1486,7 +1486,7 @@ class Wpyr(pyramid):
             filt = "qmf9"
         if isinstance(filt, basestring):
             filt = ppu.namedFilter(filt)
-        print filt.shape
+
         if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
             print "Error: filter should be 1D (i.e., a vector)";
             return
@@ -1504,8 +1504,22 @@ class Wpyr(pyramid):
             stag = 1
 
         im_sz = im.shape
-
-        max_ht = ppu.maxPyrHt(im_sz, filt.shape)
+        if len(im.shape) == 1:
+            im_sz = (1, im.shape[0])
+        elif im.shape[1] == 1:
+            im_sz = (im.shape[1], im.shape[0])
+        print "im_sz"
+        print im_sz
+        if len(filt.shape) == 1:
+            filt_sz = (1, filt.shape[0])
+        #elif filt.shape[1] == 1:  # FIX for 1D: breaks other tests
+        #    filt_sz = (filt.shape[1], filt.shape[0])
+        else:
+            filt_sz = filt.shape
+        print "filt_sz"
+        print filt_sz
+        max_ht = ppu.maxPyrHt(im_sz, filt_sz)
+        print "max_ht = %d" % (max_ht)
         if len(args) > 1:
             ht = args[1]
             if ht == 'auto':
@@ -1517,37 +1531,70 @@ class Wpyr(pyramid):
         ht = int(ht)
 
         for lev in range(ht):
-            lo = np.array( corrDn(im.shape[0], im.shape[1], im.T, filt.shape[0],
-                                  1, filt, edges, 2, 1, stag-1, 0) )
-            lo = lo.reshape(math.ceil(im.shape[0]/2.0), 
-                            math.ceil(im.shape[1]/stag), order='F')
-            hi = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
-                                  hfilt.shape[0], 1, hfilt, edges, 2, 1, 1, 0) )
-            hi = hi.reshape(math.floor(im.shape[0]/2.0), im.shape[1], order='F')
-            lolo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1, 
-                                    filt.shape[0], filt, edges, 1, 2, 0, 
-                                    stag-1) ) 
-            lolo = lolo.reshape(math.ceil(lo.shape[0]/float(stag)), 
-                                math.ceil(lo.shape[1]/2.0), order='F')
-            lohi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
-                                    filt.shape[0], filt, edges, 1, 2, 0, 
-                                    stag-1) )
-            lohi = lohi.reshape(hi.shape[0], math.ceil(hi.shape[1]/2.0), 
+            print "lev = %d" % (lev)
+            im_sz = im.shape
+            if len(im.shape) == 1:
+                im_sz = (1, im.shape[0])
+            elif im.shape[1] == 1:
+                im_sz = (im.shape[1], im.shape[0])
+                print "im_sz"
+                print im_sz
+            if len(im_sz) == 1 or im_sz[1] == 1:
+                print "flag 1"
+                lolo = np.array( corrDn(im_sz[0], im_sz[1], im.T, filt_sz[0],
+                                        filt_sz[1], filt, edges, 2, 1, stag-1, 
+                                        0) )
+                hihi = np.array( corrDn(im_sz[0], im_sz[1], im.T, filt_sz[0], 
+                                        filt_sz[1], hfilt, edges, 2, 1, 1, 0) )
+            elif im_sz[0] == 1:
+                print "flag 2"
+                lolo = np.array( corrDn(im_sz[0], im_sz[1], im, filt_sz[0], 
+                                        filt_sz[1], filt, edges, 1, 2, 0, 
+                                        stag-1) )
+                print "flag 2.1"                
+                hihi = np.array( corrDn(im_sz[0], im_sz[1], im, filt_sz[0], 
+                                        filt_sz[1], hfilt, edges, 1, 2, 0, 1) )
+            else:
+                lo = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
+                                      filt.shape[0], 1, filt, edges, 2, 1, 
+                                      stag-1, 0) )
+                lo = lo.reshape(math.ceil(im.shape[0]/2.0), 
+                                math.ceil(im.shape[1]/stag), order='F')
+                hi = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
+                                      hfilt.shape[0], 1, hfilt, edges, 2, 1, 1,
+                                      0) )
+                hi = hi.reshape(math.floor(im.shape[0]/2.0), im.shape[1], 
                                 order='F')
-            hilo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1,
-                                    hfilt.shape[0], hfilt, edges, 1, 2, 0, 1) )
-            hilo = hilo.reshape(lo.shape[0], math.floor(lo.shape[1]/2.0), 
-                                order='F')
-            hihi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
-                                    hfilt.shape[0], hfilt, edges, 1, 2, 0, 1) )
-            hihi = hihi.reshape(hi.shape[0], math.floor(hi.shape[1]/2.0), 
-                                order='F')
-            self.pyr.append(lohi)
-            self.pyrSize.append(lohi.shape)
-            self.pyr.append(hilo)
-            self.pyrSize.append(hilo.shape)
-            self.pyr.append(hihi)
-            self.pyrSize.append(hihi.shape)
+                lolo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1, 
+                                        filt.shape[0], filt, edges, 1, 2, 0, 
+                                        stag-1) ) 
+                lolo = lolo.reshape(math.ceil(lo.shape[0]/float(stag)), 
+                                    math.ceil(lo.shape[1]/2.0), order='F')
+                lohi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
+                                        filt.shape[0], filt, edges, 1, 2, 0, 
+                                        stag-1) )
+                lohi = lohi.reshape(hi.shape[0], math.ceil(hi.shape[1]/2.0), 
+                                    order='F')
+                hilo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1,
+                                        hfilt.shape[0], hfilt, edges, 1, 2, 0, 
+                                        1) )
+                hilo = hilo.reshape(lo.shape[0], math.floor(lo.shape[1]/2.0), 
+                                    order='F')
+                hihi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
+                                        hfilt.shape[0], hfilt, edges, 1, 2, 0, 
+                                        1) )
+                hihi = hihi.reshape(hi.shape[0], math.floor(hi.shape[1]/2.0), 
+                                    order='F')
+            if im_sz[0] == 1 or im_sz[1] == 1:
+                self.pyr.append(hihi)
+                self.pyrSize.append(hihi.shape)
+            else:
+                self.pyr.append(lohi)
+                self.pyrSize.append(lohi.shape)
+                self.pyr.append(hilo)
+                self.pyrSize.append(hilo.shape)
+                self.pyr.append(hihi)
+                self.pyrSize.append(hihi.shape)
             im = lolo
         self.pyr.append(lolo)
         self.pyrSize.append(lolo.shape)
@@ -1555,7 +1602,8 @@ class Wpyr(pyramid):
     # methods
 
     def wpyrHt(self):
-        if self.pyrSize[0][0] == 1 or self.pyrSize[0][1] == 1:
+        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or 
+             self.pyrSize[0][1] == 1 ): 
             nbands = 1
         else:
             nbands = 3
@@ -1589,5 +1637,109 @@ class Wpyr(pyramid):
 
         #------------------------------------------------------
 
-        maxLev = 1 + self.wpyrHt(self.pyrSize)
-            
+        print self.pyrSize
+        #maxLev = 1 + self.wpyrHt()
+        maxLev = self.wpyrHt()
+        print "maxLev = %d" % maxLev
+        if levs == 'all':
+            levs = np.array(range(maxLev))
+        else:
+            if (levs > maxLev).any():
+                print "Error: level numbers must be in the range [0, %d]" % (maxLev)
+        print "levs:"
+        print levs
+        
+        if bands == "all":
+            bands = np.array(range(3))
+        else:
+            if (bands < 0).any() or (bands > 2).any():
+                print "Error: band numbers must be in the range [0,2]."
+        
+        if isinstance(filt, basestring):
+            filt = ppu.namedFilter(filt)
+
+        hfilt = ppu.modulateFlip(filt)
+
+        # for odd-length filters, stagger the sampling lattices:
+        if len(filt) % 2 == 0:
+            stag = 2
+        else:
+            stag = 1
+
+        if 0 in levs:
+            res = self.pyr[len(self.pyr)-1]
+        else:
+            res = np.zeros(self.pyr[len(self.pyr)-1].shape)
+        print res
+        levs = np.delete(levs, 0)
+        idx = len(self.pyrSize)-1
+        for lev in levs:
+            # compute size of result image: assumes critical sampling
+            print self.pyrSize
+            print self.pyrSize[len(self.pyrSize)-(3*(levs-1))-2]
+            res_sz = self.pyrSize[len(self.pyrSize)-(3*(levs-1))-2]
+            resIdx = len(self.pyrSize)-(3*(levs-1))-2
+            if res_sz[0] == 1:
+                res_sz[1] = sum(self.pyrSize[:,1])
+            elif res_sz[1] == 1:
+                res_sz[0] = sum(self.pyrSize[:,0])
+            else:
+                #horizontal + vertical bands
+                res_sz = (self.pyrSize[resIdx][0] + self.pyrSize[resIdx+1][0], 
+                          self.pyrSize[resIdx][1] + self.pyrSize[resIdx+1][1])
+                hres_sz = np.array([self.pyrSize[resIdx][0], res_sz[1]])
+                lres_sz = np.array([self.pyrSize[resIdx+1][0], res_sz[1]])
+            print "res_sz"
+            print res_sz
+            print "hres_sz"
+            print hres_sz
+            print "lres_sz"
+            print lres_sz
+
+            if 0 in bands:
+                ires = upConv(self.band(idx).shape[0], 
+                              self.band(idx).shape[1],
+                              self.band(idx), filt.shape[0], filt.shape[1], 
+                              filt, edges, 2, 1, 0, stag-1, hres_sz[1], 
+                              hres_sz[0])
+                ires = np.array(ires)
+                ires = ires.reshape(hres_sz[0], hres_sz[1])
+                print "ires"
+                print ires
+                print ires.shape
+
+                res = upConv(ires.shape[0], ires.shape[1], ires.T, 
+                             hfilt.shape[1],
+                             hfilt.shape[0], hfilt, edges, 2, 1, stag-1, 0, 
+                             res_sz[0], res_sz[1])
+                res = np.array(res)
+                res = res.reshape(res_sz[0], res_sz[1]).T
+                print "res"
+                print res
+            idx -= 1
+            if 1 in bands:
+                print "lres_sz"
+                print lres_sz
+                print lres_sz[0]
+                print lres_sz[1]
+                ires = upConv(self.band(idx-1).shape[0], 
+                              self.band(idx-1).shape[1], self.band(idx-1), 
+                              hfilt.shape[0], hfilt.shape[1], hfilt, edges, 1, 
+                              2, 1, 2, lres_sz[0], lres_sz[1])
+                print "ires"
+                print ires
+                upConv(ires, filt, edges, 2, 1, stag-1, 1, res_sz[0], res_sz[1],
+                       res)
+                print "res"
+                print res
+            idx -= 1
+            if 2 in bands:
+                ires = upConv(self.band(idx), hfilt, edges, 1, 2, 1, 2, 
+                              hres_sz)
+                print ires
+                upConv(ires, hfilt, edges, 2, 1, 2, 1, res_sz, res)
+                print res
+            idx -= 1
+            #ires = upConv(res, filt, edges, 1, 2, 1, stag-1, lres_sz)
+            #res = upConv(res, filt, edges, 2, 1, stag-1, 1, res_sz)
+                

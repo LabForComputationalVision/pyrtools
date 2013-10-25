@@ -53,7 +53,7 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
 
   if( (x_fdim > x_idim) || (y_fdim > y_idim) ){
     printf("Filter: [%d %d], Image: [%d %d]\n", x_fdim, y_fdim, x_idim, y_idim);
-    printf("FILTER dimensions larger than IMAGE dimensions.");
+    printf("FILTER dimensions larger than IMAGE dimensions.\n");
     exit(1);
   }
 
@@ -89,9 +89,9 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
     exit(1);
   }
 
-  /*printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d),%s\n",
-    x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
-    x_start,x_step,x_stop,y_start,y_step,y_stop,edges); */
+  printf("i(%d, %d), f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d),%s\n",
+	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
+	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges);
     
   if (strcmp(edges,"circular") == 0)
     internal_wrap_reduce((image_type *)image->data, x_idim, y_idim, 
@@ -115,7 +115,8 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   int x_fdim, y_fdim, x_idim, y_idim;
   PyObject *arg1, *arg2; 
   PyObject *arg3 = NULL;
-  PyArrayObject *image, *filt, *orig_filt, *result;
+  PyArrayObject *image, *filt, *orig_filt;
+  PyArrayObject *result = NULL;
   int orig_x = 0;
   int orig_y, x, y;
   char *edges = "reflect1";
@@ -132,6 +133,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 			&x_fdim, &y_fdim, &arg2, &edges, &x_step, &y_step, 
 			&x_start, &y_start, &x_stop, &y_stop, &arg3) )
     return NULL;
+
   image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 1,
 							x_idim * y_idim);
   
@@ -141,7 +143,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
     return NULL;
   if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
     PyErr_SetString(PyExc_ValueError, 
-		    "array must be two-dimensional and of type double");
+		    "array must be two-dimensional and of type double\n");
     return NULL;
   }
 
@@ -151,7 +153,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
     return NULL;
   if(filt->nd != 2 || filt->descr->type_num != PyArray_DOUBLE){
     PyErr_SetString(PyExc_ValueError, 
-		    "array must be two-dimensional and of type double");
+		    "array must be two-dimensional and of type double\n");
     return NULL;
   }
 
@@ -162,13 +164,13 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
     }*/
 
   if ( (x_step < 1) || ( y_step < 1) ){
-    printf("STEP values must be greater than zero.");
+    printf("STEP values must be greater than zero.\n");
     exit(1);
   }
 
   if ( (x_start < 0) || (x_start > x_idim) || 
        (y_start < 0) || (y_start > y_idim) ){
-    printf("START values must lie between 1 and the image dimensions.");
+    printf("START values must lie between 1 and the image dimensions.\n");
     exit(1);
   }
 
@@ -207,6 +209,8 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 
   //dimensions[0] = (x_idim/y_step) * (y_idim/x_step);
   dimensions[0] = x_rdim * y_rdim;
+  printf("dimensions[0]=%d  x_rdim=%d  y_rdim=%d\n", dimensions[0], x_rdim, 
+	 y_rdim);
   if(arg3 == NULL)
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
   else
@@ -219,9 +223,9 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
     exit(1);
   }
 
-  /*printf("i(%d, %d),f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d), %s\n",
-    x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
-    x_start,x_step,x_stop,y_start,y_step,y_stop,edges); */
+  printf("i(%d, %d),f(%d, %d), r(%d, %d), X(%d, %d, %d), Y(%d, %d, %d), %s\n",
+	 x_idim,y_idim,x_fdim,y_fdim,x_rdim,y_rdim,
+	 x_start,x_step,x_stop,y_start,y_step,y_stop,edges);
   
   if (strcmp(edges,"circular") == 0)
     internal_wrap_expand((image_type *)image->data, (image_type *)filt->data,

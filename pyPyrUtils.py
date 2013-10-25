@@ -142,6 +142,8 @@ def maxPyrHt(imsz, filtsz):
             imsz = (imsz[0], 1)
         if len(filtsz) == 1:
             filtsz = (filtsz[0], 1)
+        #if filtsz[1] == 1:  # new
+        #    filtsz = (filtsz[1], filtsz[0])
         if imsz[0] < filtsz[0] or imsz[1] < filtsz[1]:
             return 0
 
@@ -276,7 +278,10 @@ def comparePyr(matPyr, pyPyr):
     for idx in range(len(pyPyr.pyrSize)):
         #bandSz = value
         bandSz = pyPyr.pyrSize[idx]
-        matLen = bandSz[0] * bandSz[1]
+        if len(bandSz) == 1:
+            matLen = bandSz[0]
+        else:
+            matLen = bandSz[0] * bandSz[1]
         matTmp = matPyr[matStart:matStart + matLen]
         matTmp = np.reshape(matTmp, bandSz, order='F')
         matStart = matStart+matLen
