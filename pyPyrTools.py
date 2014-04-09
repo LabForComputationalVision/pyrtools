@@ -1646,6 +1646,8 @@ class Wpyr(pyramid):
             levs = np.array(levs)
             if (levs > maxLev).any():
                 print "Error: level numbers must be in the range [0, %d]" % (maxLev)
+        allLevs = np.array(range(maxLev))
+
         print "levs:"
         print levs
         
@@ -1873,7 +1875,7 @@ class Wpyr(pyramid):
                     #res = res.reshape(res_sz[1], res_sz[0]).T
                     print "post upconv res"
                     print res
-                    idx += 1
+                idx += 1
                 if 1 in bands:
                     print "1 band"
                     print "idx = %d" % idx
@@ -1926,7 +1928,7 @@ class Wpyr(pyramid):
                     res = res.reshape(res_sz[1], res_sz[0]).T
                     print "res"
                     print res
-                    idx += 1
+                idx += 1
                 if 2 in bands:
                     print "2 band"
                     print "idx = %d" % idx
@@ -1961,7 +1963,7 @@ class Wpyr(pyramid):
                     res = np.array(res).T
                     print "res"
                     print res
-                    idx += 1
+                idx += 1
                 # need to jump back n bands in the idx each loop
                 idx -= 2*len(bands)
         return res
