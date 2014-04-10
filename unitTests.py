@@ -500,23 +500,23 @@ class WpyrTests(unittest.TestCase):
         recon = pyPyr.reconWpyr()
         self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
     def test11(self):
-        matPyr = scipy.io.loadmat('matFiles/buildSCFpyr11.mat')
+        matPyr = scipy.io.loadmat('matFiles/buildWpyr11.mat')
         pyRamp = ppu.mkRamp((256,256))
         pyPyr = ppt.Wpyr(pyRamp)
-        recon = pyPyr.reconWpyr([0])
+        recon = pyPyr.reconWpyr('qmf9', 'reflect1', [0])
         self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
-    #def test12(self):
-    #    matPyr = scipy.io.loadmat('matFiles/buildSCFpyr12.mat')
-    #    pyRamp = ppu.mkRamp((256,256))
-    #    pyPyr = ppt.SCFpyr(pyRamp)
-    #    recon = pyPyr.reconSCFpyr([0,2,4])
-    #    self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
-    #def test13(self):
-    #    matPyr = scipy.io.loadmat('matFiles/buildSCFpyr13.mat')
-    #    pyRamp = ppu.mkRamp((256,256))
-    #    pyPyr = ppt.SCFpyr(pyRamp)
-    #    recon = pyPyr.reconSCFpyr([0,2,4], [1])
-    #    self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test12(self):
+        matPyr = scipy.io.loadmat('matFiles/buildWpyr12.mat')
+        pyRamp = ppu.mkRamp((256,256))
+        pyPyr = ppt.Wpyr(pyRamp)
+        recon = pyPyr.reconWpyr('qmf9', 'reflect1', [0,2,4])
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test13(self):
+        matPyr = scipy.io.loadmat('matFiles/buildWpyr13.mat')
+        pyRamp = ppu.mkRamp((256,256))
+        pyPyr = ppt.Wpyr(pyRamp)
+        recon = pyPyr.reconWpyr('qmf9', 'reflect1', [0,2,4], [1])
+        self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
     
 
 def main():

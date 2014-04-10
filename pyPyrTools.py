@@ -1643,7 +1643,10 @@ class Wpyr(pyramid):
         if levs == 'all':
             levs = np.array(range(maxLev))
         else:
-            levs = np.array(levs)
+            tmpLevs = []
+            for l in levs:
+                tmpLevs.append((maxLev-1)-l)
+            levs = np.array(tmpLevs)
             if (levs > maxLev).any():
                 print "Error: level numbers must be in the range [0, %d]" % (maxLev)
         allLevs = np.array(range(maxLev))
@@ -1674,11 +1677,11 @@ class Wpyr(pyramid):
             stag = 1
         print "stag = %d" % (stag)
 
-        if 0 in levs:
-            res = self.pyr[len(self.pyr)-1]
-        else:
-            res = np.zeros(self.pyr[len(self.pyr)-1].shape)
-        print res
+        #if 0 in levs:
+        #    res = self.pyr[len(self.pyr)-1]
+        #else:
+        #    res = np.zeros(self.pyr[len(self.pyr)-1].shape)
+        #print res
 
         print "pyrSize[0]:"
         print self.pyrSize[0]
@@ -1688,27 +1691,26 @@ class Wpyr(pyramid):
         print 'len pyrSize = %d' % (len(self.pyr))
 
         idx = len(self.pyrSize)-1
-        #res_sz = self.pyrSize[0]
-        #print "res_sz"
-        #print res_sz
-        #hres_sz = np.array([self.pyrSize[idx][0], res_sz[1]])
-        #print "hres_sz"
-        #print hres_sz
 
         print "levs:"
         print levs
         print "bands:"
         print bands
 
-        for lev in levs:
+        #for lev in levs:
+        for lev in allLevs:
             print "starting levs loop lev = %d" % lev
 
-            if lev > 0:
+            if lev == 0:
+                if 0 in levs:
+                    res = self.pyr[len(self.pyr)-1]
+                else:
+                    res = np.zeros(self.pyr[len(self.pyr)-1].shape)
+                print res
+            elif lev > 0:
                 # compute size of result image: assumes critical sampling
-                #resIdx = len(self.pyrSize)-(3*(lev-1))-2
                 resIdx = len(self.pyrSize)-(3*(lev-1))-3
                 res_sz = self.pyrSize[resIdx]
-                #res_sz = res_sz[::-1]
                 print "resIdx = %d" % resIdx
                 if res_sz[0] == 1:
                     res_sz[1] = sum(self.pyrSize[:,1])
@@ -1716,12 +1718,8 @@ class Wpyr(pyramid):
                     res_sz[0] = sum(self.pyrSize[:,0])
                 else:
                 #horizontal + vertical bands
-                    #res_sz = (self.pyrSize[resIdx][0] + self.pyrSize[resIdx+1][0], 
-                    #          self.pyrSize[resIdx][1] + self.pyrSize[resIdx+1][1])
-                    res_sz = (self.pyrSize[resIdx][0] + self.pyrSize[resIdx-1][0], 
-                              self.pyrSize[resIdx][1] + self.pyrSize[resIdx-1][1])
-                    #hres_sz = np.array([self.pyrSize[resIdx][0], res_sz[1]])
-                    #lres_sz = np.array([self.pyrSize[resIdx+1][0], res_sz[1]])
+                    res_sz = (self.pyrSize[resIdx][0]+self.pyrSize[resIdx-1][0],
+                              self.pyrSize[resIdx][1]+self.pyrSize[resIdx-1][1])
                     lres_sz = np.array([self.pyrSize[resIdx][0], res_sz[1]])
                     hres_sz = np.array([self.pyrSize[resIdx-1][0], res_sz[1]])
 
@@ -1737,78 +1735,53 @@ class Wpyr(pyramid):
                 print lres_sz
 
                 # FIX: how is this changed with subsets of levs?
-                if lev <= 1:
-                    print "idx = %d" % (idx)
-                    print self.pyrSize
-                    print "input image"
-                    print self.band(idx)
-                    imageIn = self.band(idx)
-                else:
-                    imageIn = res
-                #ires = upConv(imageIn.shape[1], 
-                #              imageIn.shape[0],
-                #              imageIn.T, filt.shape[1], filt.shape[0], 
-                #              filt, edges, 1, 2, 0, stag-1, hres_sz[0], 
-                #              hres_sz[1])
+                #if lev <= 1:
+                #    print "lev = %d" % lev
+                #    print "levs"
+                #    print levs
+                #    if lev in levs:
+                #        print "idx = %d" % (idx)
+                #        print self.pyrSize
+                #        imageIn = self.band(idx)
+                #    else:
+                #        imageIn = np.zeros(self.band(idx).shape)
+                #    print "input image"
+                #    print imageIn
+                #else:
+                #    imageIn = res
+                imageIn = res
                 #fp = open('tmp.txt', 'a')
                 #fp.write('%d ires\n' % lev)
                 #fp.close()
-                #ires = upConv(imageIn.shape[1], 
-                #              imageIn.shape[0],
-                #              imageIn.T, filt.shape[1], filt.shape[0], 
-                #              filt, edges, 1, 2, 0, stag-1, imageIn.shape[0], 
-                #              imageIn.shape[1]*2)
                 ires = upConv(imageIn.shape[1], 
                               imageIn.shape[0],
                               imageIn.T, filt.shape[1], filt.shape[0], 
                               filt, edges, 1, 2, 0, stag-1, lres_sz[0], 
                               lres_sz[1])
                 ires = np.array(ires)
-                #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
-                #ires = ires.reshape(imageIn.shape[1]*2, imageIn.shape[0]).T
                 ires = ires.reshape(lres_sz[1], lres_sz[0]).T
                 print "%d ires" % (lev)
                 print ires
                 print ires.shape
                 print "hfilt"
                 print hfilt
-                #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                #             filt.shape[1],
-                #             filt.shape[0], filt, edges, 1, 2, 0, stag-1, 
-                #             res_sz[0], res_sz[1])
                 #fp = open('tmp.txt', 'a')
                 #fp.write("%d res\n" % (lev))
                 #fp.close()
-                #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                #             filt.shape[1],
-                #             filt.shape[0], filt, edges, 1, 2, 0, stag-1, 
-                #             ires.shape[1], ires.shape[0]*2)
-                #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                #             filt.shape[1],
-                #             filt.shape[0], filt, edges, 1, 2, 0, stag-1, 
-                #             res_sz[1], res_sz[0])
-                # very close - works for square and one rectangular
-                #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                #             filt.shape[1],
-                #             filt.shape[0], filt, edges, 1, 2, 0, stag-1, 
-                #             res_sz[0], res_sz[1])
                 res = upConv(ires.shape[1], ires.shape[0], ires.T, 
                              filt.shape[0],
                              filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
                              res_sz[0], res_sz[1])
                 res = np.array(res)
-                #res = res.reshape(res_sz[0], res_sz[1])
-                #res = res.reshape(ires.shape[0]*2, ires.shape[1])
                 res = res.reshape(res_sz[1], res_sz[0]).T
                 print "%d res" % (lev)
                 print res
 
-            #if lev > 0:
-
                 idx = resIdx - 1
 
                 ### FIX: do we need stag here?! Check with even size filter
-                if 0 in bands:
+                #if 0 in bands:
+                if 0 in bands and lev in levs:
                     print "0 band"
                     print "idx = %d" % idx
                     print "resIdx = %d" % resIdx
@@ -1817,11 +1790,6 @@ class Wpyr(pyramid):
                     #fp = open('tmp.txt', 'a')
                     #fp.write("ires 0 band\n")
                     #fp.close()
-                    #ires = upConv(self.band(idx).shape[0], 
-                    #              self.band(idx).shape[1],
-                    #              self.band(idx), filt.shape[0], filt.shape[1], 
-                    #              filt, edges, 2, 1, 0, stag-1, hres_sz[1], 
-                    #              hres_sz[0])
                     ires = upConv(self.band(idx).shape[0], 
                                   self.band(idx).shape[1],
                                   self.band(idx).T, 
@@ -1839,31 +1807,8 @@ class Wpyr(pyramid):
                     #fp = open('tmp.txt', 'a')
                     #fp.write("res 0 band\n")
                     #fp.close()
-                    #res = upConv(ires.shape[1], ires.shape[0], ires, 
-                    #             hfilt.shape[0],
-                    #             hfilt.shape[1], hfilt, edges, 1, 2, 0, 1, 
-                    #             res_sz[0], res_sz[1], res)
-                    # very close
-                    #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                    #             hfilt.shape[1], hfilt.shape[0], hfilt, 
-                    #             edges, 2, 1, 1, 0, 
-                    #             res_sz[1], res_sz[0], res.T)
                     print "pre res size"
                     print res.shape
-                    #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                    #             hfilt.shape[1], hfilt.shape[0], hfilt, 
-                    #             edges, 2, 1, 1, 0, 
-                    #             res_sz[0], res_sz[1], res.T)
-                    # very close
-                    #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                    #             hfilt.shape[1], hfilt.shape[0], hfilt, 
-                    #             edges, 2, 1, 1, 0, 
-                    #             res_sz[0], res_sz[1], res)
-                    # still very close
-                    #res = upConv(ires.shape[0], ires.shape[1], ires, 
-                    #             hfilt.shape[0], hfilt.shape[1], hfilt, 
-                    #             edges, 1, 2, 0, 1, 
-                    #             res_sz[0], res_sz[1], res)
                     res = upConv(ires.shape[0], ires.shape[1], ires.T, 
                                  hfilt.shape[1], hfilt.shape[0], hfilt, 
                                  edges, 2, 1, 1, 0, 
@@ -1872,11 +1817,11 @@ class Wpyr(pyramid):
                     print "res size %d %d" % (res_sz[1], res_sz[0])
                     print "post res size"
                     print res.shape
-                    #res = res.reshape(res_sz[1], res_sz[0]).T
                     print "post upconv res"
                     print res
                 idx += 1
-                if 1 in bands:
+                #if 1 in bands:
+                if 1 in bands and lev in levs:
                     print "1 band"
                     print "idx = %d" % idx
                     print "lres_sz"
@@ -1911,15 +1856,6 @@ class Wpyr(pyramid):
                     #fp = open('tmp.txt', 'a')
                     #fp.write("res 1 band\n")
                     #fp.close()
-                    #res = upConv(ires.shape[1], ires.shape[0], ires, 
-                    #             filt.shape[1], filt.shape[0], filt, 
-                    #             edges, 1, 2, 0, 0, 
-                    #             res_sz[0], res_sz[1], res)
-                    # close
-                    #res = upConv(ires.shape[0], ires.shape[1], ires.T, 
-                    #             filt.shape[0], filt.shape[1], filt, 
-                    #             edges, 2, 1, 0, 0, 
-                    #             res_sz[0], res_sz[1], res.T)
                     res = upConv(ires.shape[0], ires.shape[1], ires.T, 
                                  filt.shape[0], filt.shape[1], filt, 
                                  edges, 2, 1, 0, 0, 
@@ -1929,7 +1865,8 @@ class Wpyr(pyramid):
                     print "res"
                     print res
                 idx += 1
-                if 2 in bands:
+                #if 2 in bands:
+                if 2 in bands and lev in levs:
                     print "2 band"
                     print "idx = %d" % idx
                     print "input image"
@@ -1937,18 +1874,12 @@ class Wpyr(pyramid):
                     #fp = open('tmp.txt', 'a')
                     #fp.write("ires 2 band\n")
                     #fp.close()
-                    #ires = upConv(self.band(idx).shape[0],
-                    #              self.band(idx).shape[1],
-                    #              self.band(idx).T,
-                    #              hfilt.shape[0], hfilt.shape[1], hfilt, edges,
-                    #              1, 2, 0, 1, lres_sz[0], lres_sz[1])
                     ires = upConv(self.band(idx).shape[0],
                                   self.band(idx).shape[1],
                                   self.band(idx).T,
                                   hfilt.shape[0], hfilt.shape[1], hfilt, 
                                   edges, 1, 2, 0, 1, hres_sz[0], hres_sz[1])
                     ires = np.array(ires)
-                    #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
                     ires = ires.reshape(hres_sz[1], hres_sz[0]).T
                     print "ires"
                     print ires
