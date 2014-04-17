@@ -116,7 +116,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   int x_fdim, y_fdim, x_idim, y_idim;
   PyObject *arg1, *arg2; 
   PyObject *arg3 = NULL;
-  PyArrayObject *image, *filt, *orig_filt;
+  PyArrayObject *image, *filt, *orig_filt, *new_filt;
   PyArrayObject *result = NULL;
   int orig_x = 0;
   int orig_y, x, y;
@@ -127,6 +127,8 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   int y_start = 0;
   int x_stop, y_stop, x_rdim, y_rdim;
   int dimensions[1];
+  int dimensions2[1];
+  int dimensions3[1];
   int i;
 
   // parse input parameters
@@ -183,24 +185,59 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 
   /* upConv has a bug for even-length kernels when using the reflect1, 
      extend, or repeat edge-handlers */
+  // 
+
+  printf("x_fdim=%d  y_fdim=%d  nd=%d dim0=%d dim1=%d\n", x_fdim, y_fdim, 
+	 filt->nd, filt->dimensions[0], filt->dimensions[1]);
+  for(x=0; x<x_fdim*y_fdim; x++)
+    printf("filt[%d] = %f\n", x, (image_type)filt->data[x]);
+  
   if ((!strcmp(edges,"reflect1") || !strcmp(edges,"extend") || 
        !strcmp(edges,"repeat"))
       &&
       ((x_fdim%2 == 0) || (y_fdim%2 == 0)))
     {
-      orig_filt = filt;
+      dimensions2[0] = x_fdim * y_fdim;
+      orig_filt = (PyArrayObject *)PyArray_FromDims(1, dimensions2, 
+						    PyArray_DOUBLE);
+      orig_filt->data = filt->data;
+      /* orig_filt->data = malloc(x_fdim * y_fdim * sizeof(double));
+	 for(x=0; x<x_fdim*y_fdim; x++)
+	 orig_filt->data[x] = filt->data[x];
+	 printf("checking orig_filt\n");
+      for(x=0; x<x_fdim*y_fdim; x++)
+      printf("orig_filt[%d] = %f\n", x, (image_type)orig_filt->data[x]); */
       orig_x = x_fdim; 
       orig_y = y_fdim;
       x_fdim = 2*(orig_x/2)+1;
       y_fdim = 2*(orig_y/2)+1;
-      filt = malloc(x_fdim * y_fdim * sizeof(double));
-      if (filt == NULL){
-	printf("Cannot allocate necessary temporary space");
-	exit(1);
+      printf("changed fdim: x=%d y=%d\n", x_fdim, y_fdim);
+      printf("going to malloc\n");
+      dimensions3[0] = (x_fdim * y_fdim) + 1;
+      filt = (PyArrayObject *)PyArray_FromDims(1, dimensions3, PyArray_DOUBLE);
+      /* filt->data = malloc(x_fdim * y_fdim * sizeof(double));
+	 filt->dimensions[0] = x_fdim * y_fdim;
+	 filt->dimensions[1] = 1;
+	 if (filt == NULL){
+	 printf("Cannot allocate necessary temporary space");
+	 exit(1);
+	 } 
+	 printf("done with malloc\n"); */
+
+      // initialize all values
+      /* for (x=0; x<x_fdim*y_fdim; x++)
+	 filt->data[x] = (image_type)0.0; */
+
+      // copy values back from orig_filt
+      for (y=0; y<orig_y; y++){
+	for (x=0; x<orig_x; x++){
+	  printf("writing: %d   reading: %d\n", y*x_fdim+x, y*orig_x+x);
+	  filt->data[y*x_fdim + x] = orig_filt->data[y*orig_x + x];
+	  printf("%f  %f\n", (image_type)filt->data[y*x_fdim+x], 
+		 (image_type)orig_filt->data[y*orig_x+x]);
+	}
       }
-      for (y=0; y<orig_y; y++)
-	for (x=0; x<orig_x; x++)
-	    filt[y*x_fdim + x] = orig_filt[y*orig_x + x];
+
     }
 
   //x_rdim = (x_stop-x_start+x_step-1) / x_step;
@@ -212,12 +249,16 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   dimensions[0] = x_rdim * y_rdim;
   printf("dimensions[0]=%d  x_rdim=%d  y_rdim=%d\n", dimensions[0], x_rdim, 
 	 y_rdim);
-  if(arg3 == NULL)
+  if(arg3 == NULL){
+    printf("flag 1\n");
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
-  else
+  }else{
+    printf("flag 2\n");
     result = (PyArrayObject *)PyArray_ContiguousFromObject(arg3, PyArray_DOUBLE,
 							   1, dimensions[0]);
+  }
   
+  printf("premalloc temp\n");
   double *temp = malloc(x_fdim * y_fdim * sizeof(double));
   if (temp == NULL){
     printf("Cannot allocate necessary temporary space");

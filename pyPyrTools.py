@@ -1753,6 +1753,7 @@ class Wpyr(pyramid):
                 #fp = open('tmp.txt', 'a')
                 #fp.write('%d ires\n' % lev)
                 #fp.close()
+                print "filt shape = %d %d\n" % (filt.shape[0], filt.shape[1])
                 ires = upConv(imageIn.shape[1], 
                               imageIn.shape[0],
                               imageIn.T, filt.shape[1], filt.shape[0], 

@@ -8,6 +8,7 @@ import scipy.stats as sps
 import math
 import struct
 import re
+from pyPyrCcode import *
 
 def showIm(*args):
     if len(args) == 0:
@@ -938,3 +939,64 @@ def modulateFlip(*args):
     hfilt = lfilt[ind].T * (-1)**((ind+1)-sz2)
 
     return hfilt
+
+# RES = blurDn(IM, LEVELS, FILT)
+# Blur and downsample an image.  The blurring is done with filter
+# kernel specified by FILT (default = 'binom5'), which can be a string
+# (to be passed to namedFilter), a vector (applied separably as a 1D
+# convolution kernel in X and Y), or a matrix (applied as a 2D
+# convolution kernel).  The downsampling is always by 2 in each
+# direction.
+# The procedure is applied recursively LEVELS times (default=1).
+# Eero Simoncelli, 3/97.  Ported to pytyon by Rob Young 4/14
+# function res = blurDn(im, nlevs, filt)
+def blurDn(*args):
+    if len(args) == 0:
+        print "Error: image input parameter required."
+        return
+
+    im = np.array(args[0])
+    
+    # optional args
+    if len(args) > 1:
+        nlevs = args[1]
+    else:
+        nlevs = 1
+
+    if len(args) > 2:
+        filt = args[2]
+        if isinstance(filt, basestring):
+            filt = namedFilter(filt)
+    else:
+        filt = namedFilter('binom5')
+    filt = [x/sum(filt) for x in filt]
+    filt = np.array(filt)
+    
+    if nlevs > 1:
+        im = blurDn(im, nlevs-1, filt)
+
+    if nlevs >= 1:
+        if len(im.shape) == 1:  # 1D image
+            if len(filt.shape) > 1 or (filt.shape[1]!=1 and filt.shape[2]!=1):
+                # >1D filter
+                print 'Error: Cannot apply 2D filter to 1D signal'
+                return
+            res = corrDn(im.shape[0], im.shape[1], im, filt.shape[0], 
+                         filt.shape[1], filt, 'reflect1')
+        elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
+            # 2D image and 1D filter
+            res = corrDn(im.shape[1], im.shape[0], im.T, filt.shape[0], 
+                         filt.shape[1], filt, 'reflect1', 2, 1)
+            res = np.reshape(res, (im.shape[1], np.ceil(im.shape[0]/2.0))).T
+
+            res = corrDn(res.shape[1], res.shape[0], res, filt.shape[0], 
+                         filt.shape[1], filt, 'reflect1', 2, 1)
+            res = np.reshape(res, (np.ceil(im.shape[0]/2.0),
+                                   np.ceil(im.shape[0]/2.0)))
+        else:  # 2D image and 2D filter
+            res = corrDn(im.shape[0], im.shape[1], im, filt.shape[0], 
+                         filt.shape[1], filt, 'reflect1', 2, 2)
+    else:
+        res = im
+            
+    return res
