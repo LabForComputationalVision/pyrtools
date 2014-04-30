@@ -241,32 +241,40 @@ class Spyr(pyramid):
         band = -1
         for lev in range(Nlevs-1,-1,-1):
             if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
+                print 'flag 1'
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 recon = self.pyr[len(self.pyrSize)-1].copy()
             elif lev == Nlevs-1:
+                print 'flag 2'
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 recon = np.zeros(self.pyr[len(self.pyrSize)-1].shape)
             elif lev == 0 and 0 in reconList:
+                print 'flag 3'
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
                 recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
                                hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[1], sz[0])
-                recon = np.array(recon).reshape(sz[0], sz[1])
+                print recon
+                #recon = np.array(recon).reshape(sz[0], sz[1])
                 recon = upConv(self.pyrSize[idx][0], self.pyrSize[idx][1], 
                                self.pyr[idx], hi0filt.shape[0], 
                                hi0filt.shape[1], hi0filt, edges, 
                                1, 1, 0, 0, 
                                self.pyrSize[idx][1], self.pyrSize[idx][0], 
                                recon)
-                recon = np.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
+                print recon
+                #recon = np.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
             elif lev == 0:
+                print 'flag 4'
                 sz = recon.shape
                 recon = upConv(sz[0], sz[1], recon, lo0filt.shape[0], 
                                lo0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[0], sz[1])
-                recon = np.array(recon).reshape(sz[0], sz[1])
+                print recon
+                #recon = np.array(recon).reshape(sz[0], sz[1])
             else:
+                print 'flag 5'
                 for band in range(Nbands-1,-1,-1):
                     idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                     if idx in reconList:
@@ -279,9 +287,10 @@ class Spyr(pyramid):
                                        bfiltsz, bfiltsz, filt, edges, 1, 1, 0, 
                                        0, self.pyrSize[idx][1], 
                                        self.pyrSize[idx][0], recon)
-                        recon = np.array(recon).reshape(self.pyrSize[idx][0], 
-                                                        self.pyrSize[idx][1],
-                                                        order='C')
+                        print recon
+                        #recon = np.array(recon).reshape(self.pyrSize[idx][0], 
+                        #                                self.pyrSize[idx][1],
+                        #                                order='C')
 
             # upsample
             #newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
@@ -293,8 +302,9 @@ class Spyr(pyramid):
                 recon = upConv(recon.shape[1], recon.shape[0], 
                                recon.T,
                                lofilt.shape[0], lofilt.shape[1], lofilt, edges, 
-                               mult, mult, 0, 0, newSz[0], newSz[1])
-                recon = np.array(recon).reshape(newSz[0], newSz[1], order='F')
+                               mult, mult, 0, 0, newSz[0], newSz[1]).T
+                print recon
+                #recon = np.array(recon).reshape(newSz[0], newSz[1], order='F')
         return recon
 
     def showPyr(self, *args):
@@ -1128,27 +1138,32 @@ class Lpyr(pyramid):
             if len(im_sz) == 1:
                 hi2 = upConv(im_sz[0], 1, im.T, filt_sz[0], filt_sz[1], 
                             filt, edges, 2, 1, 0, 0, los[ht].shape[0], im_sz[1])
-                hi2 = np.array(hi2).reshape(los[ht].shape[0], 1, order='F')
+                #hi2 = np.array(hi2).reshape(los[ht].shape[0], 1, order='F')
+                print hi2
             elif im_sz[0] == 1:
                 hi2 = upConv(1, im_sz[1], im.T, filt_sz[0], filt_sz[1], 
                             filt, edges, 1, 2, 0, 0, 1, los[ht].shape[1])
-                hi2 = np.array(hi2).reshape(1, los[ht].shape[1], order='F')
+                #hi2 = np.array(hi2).reshape(1, los[ht].shape[1], order='F')
+                print hi2
             elif im_sz[1] == 1:
                 hi2 = upConv(im_sz[0], 1, im.T, filt_sz[0], filt_sz[1], 
                             filt, edges, 2, 1, 0, 0, los[ht].shape[0], 1)
-                hi2 = np.array(hi2).reshape(los[ht].shape[0], im_sz[1], 
-                                            order='F')
+                #hi2 = np.array(hi2).reshape(los[ht].shape[0], im_sz[1], 
+                #order='F')
+                print hi2
             else:
                 hi = upConv(im_sz[0], im_sz[1], im.T, filt_sz[0], filt_sz[1], 
                             filt, edges, 2, 1, 0, 0, los[ht].shape[0], 
-                            im_sz[1])
-                hi = np.array(hi).reshape(los[ht].shape[0], im_sz[1], order='F')
+                            im_sz[1]).T
+                #hi = np.array(hi).reshape(los[ht].shape[0], im_sz[1], order='F')
+                print hi
                 int_sz = hi.shape
                 hi2 = upConv(los[ht].shape[0], im_sz[1], hi.T, filt_sz[1], 
                              filt_sz[0], filt, edges, 1, 2, 0, 0, 
-                             los[ht].shape[0], los[ht].shape[1])
-                hi2 = np.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
-                                            order='F')
+                             los[ht].shape[0], los[ht].shape[1]).T
+                #hi2 = np.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
+                #                            order='F')
+                print hi2
 
             hi2 = los[ht] - hi2
             #self.pyr[pyrCtr] = hi2
@@ -1197,13 +1212,13 @@ class Lpyr(pyramid):
                 filt2_sz = filt2.shape
                 hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
                             filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
-                            new_sz[0], res_sz[1])
-                hi = np.array(hi).reshape(new_sz[0], res_sz[1], order='F')
+                            new_sz[0], res_sz[1]).T
+                #hi = np.array(hi).reshape(new_sz[0], res_sz[1], order='F')
                 hi2 = upConv(new_sz[0], res_sz[1], hi.T, filt2_sz[1], 
                              filt2_sz[0], filt2, edges, 1, 2, 0, 0, 
-                             new_sz[0], new_sz[1])
-                hi2 = np.array(hi2).reshape(new_sz[0], new_sz[1],
-                                            order='F')
+                             new_sz[0], new_sz[1]).T
+                #hi2 = np.array(hi2).reshape(new_sz[0], new_sz[1],
+                #                            order='F')
                 if lev in levs:
                     bandIm = self.band(lev)
                     bandIm_sz = bandIm.shape
@@ -1781,8 +1796,8 @@ class Wpyr(pyramid):
                               imageIn.T, filt.shape[1], filt.shape[0], 
                               filt, edges, 1, 2, 0, stag-1, lres_sz[0], 
                               lres_sz[1])
-                ires = np.array(ires)
-                ires = ires.reshape(lres_sz[1], lres_sz[0]).T
+                ires = np.array(ires).T
+                #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
                 print "%d ires" % (lev)
                 print ires
                 print ires.shape
@@ -1794,9 +1809,9 @@ class Wpyr(pyramid):
                 res = upConv(ires.shape[1], ires.shape[0], ires.T, 
                              filt.shape[0],
                              filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
-                             res_sz[0], res_sz[1])
+                             res_sz[0], res_sz[1]).T
                 res = np.array(res)
-                res = res.reshape(res_sz[1], res_sz[0]).T
+                #res = res.reshape(res_sz[1], res_sz[0]).T
                 print "%d res" % (lev)
                 print res
 
@@ -1827,8 +1842,8 @@ class Wpyr(pyramid):
                                   filt.shape[1], filt.shape[0], filt, 
                                   edges, 1, 2, 0, stag-1, hres_sz[0], 
                                   hres_sz[1])
-                    ires = np.array(ires)
-                    ires = ires.reshape(hres_sz[1], hres_sz[0]).T
+                    ires = np.array(ires).T
+                    #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
                     print "ires"
                     print ires
                     print ires.shape
@@ -1871,8 +1886,8 @@ class Wpyr(pyramid):
                                   self.band(idx).T, 
                                   hfilt.shape[0], hfilt.shape[1], hfilt, edges,
                                   1, 2, 0, 1, lres_sz[0], lres_sz[1])
-                    ires = np.array(ires)
-                    ires = ires.reshape(lres_sz[1], lres_sz[0]).T
+                    ires = np.array(ires).T
+                    #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
                     print "ires"
                     print ires
                     print ires.shape
@@ -1901,8 +1916,8 @@ class Wpyr(pyramid):
                                  filt.shape[0], filt.shape[1], filt, 
                                  edges, 2, 1, stag-1, 0, 
                                  res_sz[0], res_sz[1], res.T)
-                    res = np.array(res)
-                    res = res.reshape(res_sz[1], res_sz[0]).T
+                    res = np.array(res).T
+                    #res = res.reshape(res_sz[1], res_sz[0]).T
                     print "res"
                     print res
                 idx += 1
@@ -1920,8 +1935,8 @@ class Wpyr(pyramid):
                                   self.band(idx).T,
                                   hfilt.shape[0], hfilt.shape[1], hfilt, 
                                   edges, 1, 2, 0, 1, hres_sz[0], hres_sz[1])
-                    ires = np.array(ires)
-                    ires = ires.reshape(hres_sz[1], hres_sz[0]).T
+                    ires = np.array(ires).T
+                    #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
                     print "ires"
                     print ires
                     print "pre res"

@@ -130,7 +130,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   int x_start = 0;
   int y_start = 0;
   int x_stop, y_stop, x_rdim, y_rdim;
-  int dimensions[1];
+  int dimensions[2];
   int dimensions2[1];
   int dimensions3[1];
   int i;
@@ -255,17 +255,22 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   y_rdim = y_stop;
 
   //dimensions[0] = (x_idim/y_step) * (y_idim/x_step);
-  dimensions[0] = x_rdim * y_rdim;
-  printf("dimensions[0]=%d  x_rdim=%d  y_rdim=%d\n", dimensions[0], x_rdim, 
-	 y_rdim);
+  //dimensions[0] = x_rdim * y_rdim;
+  dimensions[0] = y_rdim;
+  dimensions[1] = x_rdim;
+  //printf("dimensions[0]=%d  x_rdim=%d  y_rdim=%d\n", dimensions[0], x_rdim, 
+  //	 y_rdim);
   if(arg3 == NULL){
     //result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+    result = (PyArrayObject *)PyArray_FromDims(2, dimensions, PyArray_DOUBLE);
   }else{
     //result = (PyArrayObject *)PyArray_ContiguousFromObject(arg3, 
     //PyArray_DOUBLE, 1, dimensions[0]);
     result = (PyArrayObject *)PyArray_ContiguousFromObject(arg3, PyArray_DOUBLE,
-							   1, dimensions[0]);
+							   1, dimensions[0]*dimensions[1]);
+    //result = (PyArrayObject *)PyArray_ContiguousFromObject(arg3, PyArray_DOUBLE,
+    //							   dimensions[0], 
+    //							   dimensions[1]);
   }
   
   //double *temp = malloc(x_fdim * y_fdim * sizeof(double));
