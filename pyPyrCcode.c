@@ -21,7 +21,8 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   int x_start = 0;
   int y_start = 0;
   int x_stop, y_stop, x_rdim, y_rdim;
-  int dimensions[1];
+  //int dimensions[1];
+  int dimensions[2];
   int i;
 
   // parse input parameters
@@ -79,10 +80,13 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   y_rdim = (y_stop-y_start+y_step-1) / y_step;
 
   //dimensions[0] = (x_idim/y_step) * (y_idim/x_step);
-  dimensions[0] = x_rdim * y_rdim;
+  //dimensions[0] = x_rdim * y_rdim;
+  dimensions[0] = y_rdim;
+  dimensions[1] = x_rdim;
 
   if(result == NULL)
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+    //result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
+    result = (PyArrayObject *)PyArray_FromDims(2, dimensions, PyArray_DOUBLE);
 
   double *temp = malloc(x_fdim * y_fdim * sizeof(double));
   if (temp == NULL){
@@ -130,6 +134,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   int dimensions2[1];
   int dimensions3[1];
   int i;
+  double *filter2;
 
   // parse input parameters
   if( !PyArg_ParseTuple(args, "iiOiiO|siiiiiiO", &x_idim, &y_idim, &arg1, 
@@ -137,9 +142,9 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 			&x_start, &y_start, &x_stop, &y_stop, &arg3) )
     return NULL;
 
-  image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 1,
-							x_idim * y_idim);
-  
+  image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 
+							1, x_idim * y_idim);
+
   //x_stop = x_idim;
   //y_stop = y_idim;
   if(image == NULL)
@@ -149,9 +154,13 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 		    "array must be two-dimensional and of type double\n");
     return NULL;
   }
+  double *img = (double*)PyArray_DATA(image);
+  //for(x=0; x<x_idim*y_idim; x++)
+  //printf("img[%d] = %f\n", x, img[x]);
 
-  filt = (PyArrayObject *)PyArray_ContiguousFromObject(arg2, PyArray_DOUBLE, 
-						       1, x_fdim * y_fdim);
+  //filt = (PyArrayObject *)PyArray_ContiguousFromObject(arg2, PyArray_DOUBLE, 
+  //						       1, x_fdim * y_fdim);
+  filt = (PyArrayObject *)PyArray_FROM_OTF(arg2, NPY_DOUBLE, NPY_IN_ARRAY);
   if(filt == NULL)
     return NULL;
   if(filt->nd != 2 || filt->descr->type_num != PyArray_DOUBLE){
@@ -189,8 +198,9 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 
   printf("x_fdim=%d  y_fdim=%d  nd=%d dim0=%d dim1=%d\n", x_fdim, y_fdim, 
 	 filt->nd, filt->dimensions[0], filt->dimensions[1]);
-  for(x=0; x<x_fdim*y_fdim; x++)
-    printf("filt[%d] = %f\n", x, (image_type)filt->data[x]);
+  double *filter = (double*)PyArray_DATA(filt);
+  //for(x=0; x<x_fdim*y_fdim; x++)
+  //printf("filter[%d] = %f\n", x, filter[x]);
   
   if ((!strcmp(edges,"reflect1") || !strcmp(edges,"extend") || 
        !strcmp(edges,"repeat"))
@@ -198,45 +208,44 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
       ((x_fdim%2 == 0) || (y_fdim%2 == 0)))
     {
       dimensions2[0] = x_fdim * y_fdim;
+      //orig_filt = (PyArrayObject *)PyArray_FromDims(1, dimensions2, 
+      //					    PyArray_DOUBLE);
       orig_filt = (PyArrayObject *)PyArray_FromDims(1, dimensions2, 
-						    PyArray_DOUBLE);
+      					    NPY_DOUBLE);
       orig_filt->data = filt->data;
-      /* orig_filt->data = malloc(x_fdim * y_fdim * sizeof(double));
-	 for(x=0; x<x_fdim*y_fdim; x++)
-	 orig_filt->data[x] = filt->data[x];
-	 printf("checking orig_filt\n");
-      for(x=0; x<x_fdim*y_fdim; x++)
-      printf("orig_filt[%d] = %f\n", x, (image_type)orig_filt->data[x]); */
       orig_x = x_fdim; 
       orig_y = y_fdim;
       x_fdim = 2*(orig_x/2)+1;
       y_fdim = 2*(orig_y/2)+1;
-      printf("changed fdim: x=%d y=%d\n", x_fdim, y_fdim);
-      printf("going to malloc\n");
-      dimensions3[0] = (x_fdim * y_fdim) + 1;
-      filt = (PyArrayObject *)PyArray_FromDims(1, dimensions3, PyArray_DOUBLE);
-      /* filt->data = malloc(x_fdim * y_fdim * sizeof(double));
-	 filt->dimensions[0] = x_fdim * y_fdim;
-	 filt->dimensions[1] = 1;
-	 if (filt == NULL){
-	 printf("Cannot allocate necessary temporary space");
-	 exit(1);
-	 } 
-	 printf("done with malloc\n"); */
-
-      // initialize all values
-      /* for (x=0; x<x_fdim*y_fdim; x++)
-	 filt->data[x] = (image_type)0.0; */
-
+      //printf("changed fdim: x=%d y=%d\n", x_fdim, y_fdim);
+      filter2 = calloc(x_fdim*y_fdim, sizeof(double));
+      for(x=0; x<x_fdim*y_fdim-1; x++)
+	filter2[x] = filter[x];
+      filter2[x_fdim*y_fdim-1] = 0.0;
+      //for(x=0; x<x_fdim*y_fdim; x++)
+      //printf("filter2[%d] = %f\n", x, filter2[x]);
+      //dimensions3[0] = (x_fdim * y_fdim) + 1;
+      //filt = (PyArrayObject *)PyArray_FromDims(1, dimensions3, PyArray_DOUBLE);
+      //filt = (PyArrayObject *)PyArray_FromDims(1, dimensions3, NPY_DOUBLE);
       // copy values back from orig_filt
-      for (y=0; y<orig_y; y++){
+      /* for (y=0; y<orig_y; y++){
 	for (x=0; x<orig_x; x++){
 	  printf("writing: %d   reading: %d\n", y*x_fdim+x, y*orig_x+x);
 	  filt->data[y*x_fdim + x] = orig_filt->data[y*orig_x + x];
+	  //filt->data[y*x_fdim + x] = filter[y*orig_x + x];
 	  printf("%f  %f\n", (image_type)filt->data[y*x_fdim+x], 
-		 (image_type)orig_filt->data[y*orig_x+x]);
+	  	 filter[y*orig_x+x]);
 	}
-      }
+	}*/
+      //filt->data = filter;
+      //npy_intp dims[2] = {1, x_fdim*y_fdim};
+      //filt = (PyArrayObject *)PyArray_SimpleNewFromData(2, dims, NPY_DOUBLE, filter);
+      npy_intp dims[1] = {x_fdim*y_fdim};
+      // filter is smaller than dims says it is, so that's a problem!!
+      filt = (PyArrayObject *)PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, 
+							filter2);
+      //for(x=0; x<x_fdim*y_fdim; x++)
+      //printf("filt->data[%d] = %f\n", x, (image_type)filt->data[x]);
 
     }
 
@@ -250,16 +259,17 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   printf("dimensions[0]=%d  x_rdim=%d  y_rdim=%d\n", dimensions[0], x_rdim, 
 	 y_rdim);
   if(arg3 == NULL){
-    printf("flag 1\n");
+    //result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_DOUBLE);
   }else{
-    printf("flag 2\n");
+    //result = (PyArrayObject *)PyArray_ContiguousFromObject(arg3, 
+    //PyArray_DOUBLE, 1, dimensions[0]);
     result = (PyArrayObject *)PyArray_ContiguousFromObject(arg3, PyArray_DOUBLE,
 							   1, dimensions[0]);
   }
   
-  printf("premalloc temp\n");
-  double *temp = malloc(x_fdim * y_fdim * sizeof(double));
+  //double *temp = malloc(x_fdim * y_fdim * sizeof(double));
+  double *temp = calloc(x_fdim * y_fdim, sizeof(double));
   if (temp == NULL){
     printf("Cannot allocate necessary temporary space");
     exit(1);
@@ -275,7 +285,9 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
 			 y_step, y_stop, (image_type *)result->data, x_rdim,
 			 y_rdim);
   else
-    internal_expand((image_type *)image->data, (image_type *)filt->data, 
+    //internal_expand((image_type *)image->data, (image_type *)filt->data, 
+    internal_expand((image_type *)PyArray_DATA(image), 
+		    (image_type *)PyArray_DATA(filt),
 		    (image_type *)temp, x_fdim, y_fdim, x_start, x_step, x_stop,
 		    y_start, y_step, y_stop, (image_type *)result->data, x_stop,
 		    y_stop, edges);
@@ -283,7 +295,7 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   free(temp);
   if(orig_x)
     free(filt);
-
+  
   return PyArray_Return(result);
 } 
 

@@ -1075,33 +1075,41 @@ class Lpyr(pyramid):
             im_sz = im.shape
             filt_sz = filt.shape
             if len(im_sz) == 1:
-                lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
-                             edges, 2, 1, 0, 0, im_sz[0], 1)
-                lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 1, 
-                                            order='C')
+                lo2 = np.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], 
+                                       filt, edges, 2, 1, 0, 0, im_sz[0], 1) )
+                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 1, 
+                #                            order='C')
+                print lo2
             elif im_sz[0] == 1:
-                lo2 = corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1], filt, 
-                             edges, 1, 2, 0, 0, 1, im_sz[1])
-                lo2 = np.array(lo2).reshape(1, math.ceil(im_sz[1]/2.0), 
-                                            order='C')
+                lo2 = np.array( corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1],
+                                       filt, edges, 1, 2, 0, 0, 1, im_sz[1]) )
+                #lo2 = np.array(lo2).reshape(1, math.ceil(im_sz[1]/2.0), 
+                #                            order='C')
+                print lo2
             elif im_sz[1] == 1:
-                lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
-                             edges, 2, 1, 0, 0, math.ceil(im_sz[0]/2.0), 1)
-                lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 1, 
-                                            order='C')
+                lo2 = np.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1],
+                                       filt, edges, 2, 1, 0, 0, 
+                                       math.ceil(im_sz[0]/2.0), 1) )
+                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 1, 
+                #                            order='C')
+                print lo2
             else:
-                lo = corrDn(im_sz[1], im_sz[0], im, filt_sz[0], filt_sz[1], 
-                            filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-                lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
-                                          math.ceil(im_sz[1]/2.0), 
-                                          order='C')
-                lo2 = corrDn(math.ceil(im_sz[0]/1.0), math.ceil(im_sz[1]/2.0), 
-                             lo.T, filt_sz[0], filt_sz[1], filt, edges, 2, 1, 
-                             0, 0, im_sz[0], im_sz[1])
-                lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                                            math.ceil(im_sz[1]/2.0), 
-                                            order='F')
-
+                lo = np.array( corrDn(im_sz[1], im_sz[0], im, filt_sz[0], 
+                                      filt_sz[1], filt, edges, 2, 1, 0, 0, 
+                                      im_sz[0], im_sz[1]) )
+                #lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
+                #                          math.ceil(im_sz[1]/2.0), 
+                #                          order='C')
+                print lo
+                lo2 = np.array( corrDn(math.ceil(im_sz[0]/1.0), 
+                                       math.ceil(im_sz[1]/2.0), lo.T, 
+                                       filt_sz[0], filt_sz[1], filt, edges, 
+                                       2, 1, 0, 0, im_sz[0], im_sz[1]) ).T
+                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
+                #                            math.ceil(im_sz[1]/2.0), 
+                #                            order='F')
+                print lo2
+                
             los[ht] = lo2
                 
             im = lo2
@@ -1427,29 +1435,46 @@ class Gpyr(Lpyr):
             im_sz = im.shape
             filt_sz = filt.shape
             if len(im_sz) == 1:
-                lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
-                             edges, 2, 1, 0, 0, im_sz[0], 1)
-                lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
+                lo2 = np.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1],
+                                       filt, edges, 2, 1, 0, 0, im_sz[0], 1) )
+                #lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
+                print lo2
             elif im_sz[0] == 1:
-                lo2 = corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1], filt, 
-                             edges, 1, 2, 0, 0, 1, im_sz[1])
-                lo2 = np.array(lo2).reshape(1, im_sz[1]/2, order='C')
+                #lo2 = np.array( corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1],
+                #                       filt, edges, 1, 2, 0, 0, 1, im_sz[1]) )
+                print im
+                print im.shape
+                print filt
+                print filt.shape
+                filt = filt[0,:]
+                print filt.shape
+                lo2 = np.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1],
+                                       filt, edges, 2, 1, 0, 0, im_sz[0], 1) )
+                print lo2
+                #lo2 = np.array(lo2).reshape(1, im_sz[1]/2, order='C')
             elif im_sz[1] == 1:
-                lo2 = corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], filt, 
-                             edges, 2, 1, 0, 0, im_sz[0], 1)
-                lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
+                #lo2 = np.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1],
+                #                       filt, edges, 2, 1, 0, 0, im_sz[0], 1) )
+                lo2 = np.array( corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1],
+                                       filt, edges, 1, 2, 0, 0, 1, im_sz[1]) )
+                print lo2
+                #lo2 = np.array(lo2).reshape(im_sz[0]/2, 1, order='C')
             else:
-                lo = corrDn(im_sz[1], im_sz[0], im, filt_sz[0], filt_sz[1], 
-                            filt, edges, 2, 1, 0, 0, im_sz[0], im_sz[1])
-                lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
-                                          math.ceil(im_sz[1]/2.0), 
-                                          order='C')
-                lo2 = corrDn(math.ceil(im_sz[0]/1.0), math.ceil(im_sz[1]/2.0), 
-                             lo.T, filt_sz[0], filt_sz[1], filt, edges, 2, 1, 
-                             0, 0, im_sz[0], im_sz[1])
-                lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                                            math.ceil(im_sz[1]/2.0), 
-                                            order='F')
+                lo = np.array( corrDn(im_sz[1], im_sz[0], im, filt_sz[0], 
+                                      filt_sz[1], filt, edges, 2, 1, 0, 0, 
+                                      im_sz[0], im_sz[1]) )
+                print lo
+                #lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
+                #                          math.ceil(im_sz[1]/2.0), 
+                #                          order='C')
+                lo2 = np.array( corrDn(math.ceil(im_sz[0]/1.0), 
+                                       math.ceil(im_sz[1]/2.0), 
+                                       lo.T, filt_sz[0], filt_sz[1], filt, 
+                                       edges, 2, 1, 0, 0, im_sz[0], im_sz[1]) ).T
+                print lo2
+                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
+                #                            math.ceil(im_sz[1]/2.0), 
+                #                            order='F')
 
             #self.pyr[pyrCtr] = lo2
             #self.pyrSize[pyrCtr] = lo2.shape
@@ -1540,51 +1565,48 @@ class Wpyr(pyramid):
                 print "im_sz"
                 print im_sz
             if len(im_sz) == 1 or im_sz[1] == 1:
-                print "flag 1"
                 lolo = np.array( corrDn(im_sz[0], im_sz[1], im.T, filt_sz[0],
                                         filt_sz[1], filt, edges, 2, 1, stag-1, 
                                         0) )
                 hihi = np.array( corrDn(im_sz[0], im_sz[1], im.T, filt_sz[0], 
                                         filt_sz[1], hfilt, edges, 2, 1, 1, 0) )
             elif im_sz[0] == 1:
-                print "flag 2"
                 lolo = np.array( corrDn(im_sz[0], im_sz[1], im, filt_sz[0], 
                                         filt_sz[1], filt, edges, 1, 2, 0, 
                                         stag-1) )
-                print "flag 2.1"                
                 hihi = np.array( corrDn(im_sz[0], im_sz[1], im, filt_sz[0], 
                                         filt_sz[1], hfilt, edges, 1, 2, 0, 1) )
             else:
                 lo = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
                                       filt.shape[0], 1, filt, edges, 2, 1, 
-                                      stag-1, 0) )
-                lo = lo.reshape(math.ceil(im.shape[0]/2.0), 
-                                math.ceil(im.shape[1]/stag), order='F')
+                                      stag-1, 0) ).T
+                #lo = lo.reshape(math.ceil(im.shape[0]/2.0), 
+                #                math.ceil(im.shape[1]/stag), order='F')
                 hi = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
                                       hfilt.shape[0], 1, hfilt, edges, 2, 1, 1,
-                                      0) )
-                hi = hi.reshape(math.floor(im.shape[0]/2.0), im.shape[1], 
-                                order='F')
+                                      0) ).T
+                #hi = hi.reshape(math.floor(im.shape[0]/2.0), im.shape[1], 
+                #                order='F')
                 lolo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1, 
                                         filt.shape[0], filt, edges, 1, 2, 0, 
-                                        stag-1) ) 
-                lolo = lolo.reshape(math.ceil(lo.shape[0]/float(stag)), 
-                                    math.ceil(lo.shape[1]/2.0), order='F')
+                                        stag-1) ).T 
+                #lolo = lolo.reshape(math.ceil(lo.shape[0]/float(stag)), 
+                #                    math.ceil(lo.shape[1]/2.0), order='F')
                 lohi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
                                         filt.shape[0], filt, edges, 1, 2, 0, 
-                                        stag-1) )
-                lohi = lohi.reshape(hi.shape[0], math.ceil(hi.shape[1]/2.0), 
-                                    order='F')
+                                        stag-1) ).T
+                #lohi = lohi.reshape(hi.shape[0], math.ceil(hi.shape[1]/2.0), 
+                #                    order='F')
                 hilo = np.array( corrDn(lo.shape[0], lo.shape[1], lo.T, 1,
                                         hfilt.shape[0], hfilt, edges, 1, 2, 0, 
-                                        1) )
-                hilo = hilo.reshape(lo.shape[0], math.floor(lo.shape[1]/2.0), 
-                                    order='F')
+                                        1) ).T
+                #hilo = hilo.reshape(lo.shape[0], math.floor(lo.shape[1]/2.0), 
+                #                    order='F')
                 hihi = np.array( corrDn(hi.shape[0], hi.shape[1], hi.T, 1, 
                                         hfilt.shape[0], hfilt, edges, 1, 2, 0, 
-                                        1) )
-                hihi = hihi.reshape(hi.shape[0], math.floor(hi.shape[1]/2.0), 
-                                    order='F')
+                                        1) ).T
+                #hihi = hihi.reshape(hi.shape[0], math.floor(hi.shape[1]/2.0), 
+                #                    order='F')
             if im_sz[0] == 1 or im_sz[1] == 1:
                 self.pyr.append(hihi)
                 self.pyrSize.append(hihi.shape)
@@ -1791,11 +1813,19 @@ class Wpyr(pyramid):
                     #fp = open('tmp.txt', 'a')
                     #fp.write("ires 0 band\n")
                     #fp.close()
+                    # broken for even filters
+                    #ires = upConv(self.band(idx).shape[0], 
+                    #              self.band(idx).shape[1],
+                    #              self.band(idx).T, 
+                    #              filt.shape[1], filt.shape[0], filt, 
+                    #              edges, 1, 2, stag-1, 0, hres_sz[0], 
+                    #              hres_sz[1])
+                    # works with even filter
                     ires = upConv(self.band(idx).shape[0], 
                                   self.band(idx).shape[1],
                                   self.band(idx).T, 
                                   filt.shape[1], filt.shape[0], filt, 
-                                  edges, 1, 2, stag-1, 0, hres_sz[0], 
+                                  edges, 1, 2, 0, stag-1, hres_sz[0], 
                                   hres_sz[1])
                     ires = np.array(ires)
                     ires = ires.reshape(hres_sz[1], hres_sz[0]).T
@@ -1857,9 +1887,19 @@ class Wpyr(pyramid):
                     #fp = open('tmp.txt', 'a')
                     #fp.write("res 1 band\n")
                     #fp.close()
+                    # works with odd filters
+                    #res = upConv(ires.shape[0], ires.shape[1], ires.T, 
+                    #             filt.shape[0], filt.shape[1], filt, 
+                    #             edges, 2, 1, 0, 0, 
+                    #             res_sz[0], res_sz[1], res.T)
+                    # works with even filters
+                    #res = upConv(ires.shape[0], ires.shape[1], ires.T, 
+                    #             filt.shape[0], filt.shape[1], filt, 
+                    #             edges, 2, 1, 1, 0, 
+                    #             res_sz[0], res_sz[1], res.T)
                     res = upConv(ires.shape[0], ires.shape[1], ires.T, 
                                  filt.shape[0], filt.shape[1], filt, 
-                                 edges, 2, 1, 0, 0, 
+                                 edges, 2, 1, stag-1, 0, 
                                  res_sz[0], res_sz[1], res.T)
                     res = np.array(res)
                     res = res.reshape(res_sz[1], res_sz[0]).T
@@ -1886,9 +1926,9 @@ class Wpyr(pyramid):
                     print ires
                     print "pre res"
                     print res
-                    fp = open('tmp.txt', 'a')
-                    fp.write("res 2 band\n")
-                    fp.close()
+                    #fp = open('tmp.txt', 'a')
+                    #fp.write("res 2 band\n")
+                    #fp.close()
                     res = upConv(ires.shape[1], ires.shape[0], ires.T, 
                                  hfilt.shape[1], hfilt.shape[0], hfilt,
                                  edges, 2, 1, 1, 0, res_sz[0], res_sz[1], res.T)
