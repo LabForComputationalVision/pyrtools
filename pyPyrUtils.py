@@ -1416,7 +1416,6 @@ def modulateFlip(*args):
     sz2 = np.ceil(sz/2.0);
 
     ind = np.array(range(sz-1,-1,-1))
-    print ind
 
     hfilt = lfilt[ind].T * (-1)**((ind+1)-sz2)
 
@@ -1660,3 +1659,125 @@ def correctImage(img):
         img[:,i] = img[:,i+1]
     img[:, img.shape[1]-1] = tmpcol
     return img
+
+# Circular shift 2D matrix samples by OFFSET (a [Y,X] 2-tuple),
+# such that  RES(POS) = MTX(POS-OFFSET).
+def shift(mtx, offset):
+    dims = mtx.shape
+    if len(dims) == 1:
+        mtx = mtx.reshape((1, dims[0]))
+        dims = mtx.shape
+
+    offset = np.mod(np.negative(offset), dims)
+
+    top = np.column_stack((mtx[offset[0]:dims[0], offset[1]:dims[1]],
+                           mtx[offset[0]:dims[0], 0:offset[1]]))
+    bottom = np.column_stack((mtx[0:offset[0], offset[1]:dims[1]],
+                              mtx[0:offset[0], 0:offset[1]]))
+
+    ret = np.concatenate((top, bottom), axis=0)
+
+    return ret
+
+# round equivalent to matlab function
+def round(arr):
+    if len(arr) == 1:
+        outVal = roundVal(arr)
+    else:
+        outVal = np.zeros(len(arr))
+        for i in range(len(arr)):
+            outVal[i] = roundVal(arr[i])
+    return outVal
+
+def roundVal(val):
+    (fracPart, intPart) = math.modf(val)
+    if fracPart >= 0.5:
+        intPart += 1
+
+    return intPart
+
+# Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
+# containing samples of a radial ramp function, raised to power EXPT
+# (default = 1), with given ORIGIN (default = (size+1)/2, [1 1] =
+# upper left).  All but the first argument are optional.
+# Eero Simoncelli, 6/96.  Ported to Python by Rob Young, 5/14.
+def mkR(*args):
+    if len(args) == 0:
+        print 'Error: first input parameter is required!'
+        return
+    else:
+        sz = args[0]
+
+    if isinstance(sz, (int, long)) or len(sz) == 1:
+        sz = (sz, sz)
+
+    # -----------------------------------------------------------------
+    # OPTIONAL args:
+
+    if len(args) < 2:
+        expt = 1;
+    else:
+        expt = args[1]
+
+    if len(args) < 3:
+        origin = ((sz[0]+1)/2.0, (sz[1]+1)/2.0)
+    else:
+        origin = args[2]
+
+    # -----------------------------------------------------------------
+
+    (xramp2, yramp2) = np.meshgrid(np.array(range(1,sz[1]+1))-origin[1], 
+                                   np.array(range(1,sz[0]+1))-origin[0])
+
+    
+    res = (xramp2**2 + yramp2**2)**(expt/2.0)
+    
+    return res
+
+# Make a matrix of dimensions SIZE (a [Y X] 2-vector, or a scalar)
+# containing fractal (pink) noise with power spectral density of the
+# form: 1/f^(5-2*FRACT_DIM).  Image variance is normalized to 1.0.
+# FRACT_DIM defaults to 1.0
+# Eero Simoncelli, 6/96. Ported to Python by Rob Young, 5/14.
+
+# TODO: Verify that this  matches Mandelbrot defn of fractal dimension.
+#       Make this more efficient!
+
+def mkFract(*args):
+    if len(args) == 0:
+        print 'Error: input parameter dims required'
+    else:
+        if isinstance(args[0], (int, long)) or len(args[0]) == 1:
+            dims = (args[0], args[0])
+        elif args[0] == 1:
+            dims = (args[1], args[1])
+        elif args[1] == 1:
+            dims = (args[0], args[0])
+        else:
+            dims = args[0]
+
+    if len(args) < 2:
+        fract_dim = 1.0
+    else:
+        fract_dim = args[1]
+
+    res = np.random.randn(dims[0], dims[1])
+    fres = np.fft.fft2(res)
+
+    sz = res.shape
+    ctr = (int(np.ceil((sz[0]+1)/2.0)), int(np.ceil((sz[1]+1)/2.0)))
+
+    sh = np.fft.ifftshift(mkR(sz, -(2.5-fract_dim), ctr))
+    sh[0,0] = 1;  #DC term
+
+    fres = sh * fres
+    fres = np.fft.ifft2(fres)
+
+    #if any(max(max(abs(fres.imag))) > 1e-10):
+    if abs(fres.imag).max() > 1e-10:
+        print 'Symmetry error in creating fractal'
+    else:
+        res = np.real(fres)
+        res = res / np.sqrt(var2(res))
+
+    return res

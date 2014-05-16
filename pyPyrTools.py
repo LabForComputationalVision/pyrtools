@@ -23,6 +23,9 @@ class pyramid:  # pyramid
         return
 
     # methods
+    def nbands(self):
+        return len(self.pyr)
+
     def band(self, bandNum):
         return np.array(self.pyr[bandNum])
 
@@ -1033,26 +1036,34 @@ class Lpyr(pyramid):
             return
 
         if len(args) > 2:
-            filt = args[2]
-            if not (filt.shape == 1).any():
+            filt1 = args[2]
+            if isinstance(filt1, basestring):
+                filt1 = ppu.namedFilter(filt1)
+            elif len(filt1.shape) != 1 and ( filt1.shape[0] != 1 and
+                                             filt1.shape[1] != 1 ):
                 print "Error: filter1 should be a 1D filter (i.e., a vector)"
                 return
         else:
-            filt = ppu.namedFilter('binom5')
-            if self.image.shape[0] == 1:
-                filt = filt.reshape(1,5)
+            filt1 = ppu.namedFilter('binom5')
+        #if len(filt1.shape) == 1 or self.image.shape[0] == 1
+        #    filt1 = filt1.reshape(1,len(filt1))
+        if len(filt1.shape) == 1:
+            filt1 = filt1.reshape(1,len(filt1))
+        elif self.image.shape[0] == 1:
+            filt1 = filt1.reshape(filt1.shape[1], filt1.shape[0])
 
         if len(args) > 3:
-            filt = args[3]
-            if not (filt.shape == 1).any():
+            filt2 = args[3]
+            if isinstance(filt2, basestring):
+                filt2 = ppu.namedFilter(filt2)
+            elif len(filt2.shape) != 1 and ( filt2.shape[0] != 1 and
+                                            filt2.shape[1] != 1 ):
                 print "Error: filter2 should be a 1D filter (i.e., a vector)"
                 return
         else:
-            filt = ppu.namedFilter('binom5')
-            if self.image.shape[0] == 1:
-                filt = filt.reshape(1,5)
+            filt2 = filt1
 
-        maxHeight = 1 + ppu.maxPyrHt(self.image.shape, filt.shape)
+        maxHeight = 1 + ppu.maxPyrHt(self.image.shape, filt1.shape)
 
         if len(args) > 1:
             if args[1] is "auto":
@@ -1083,49 +1094,37 @@ class Lpyr(pyramid):
         # compute low bands
         for ht in range(self.height-1,0,-1):
             im_sz = im.shape
-            filt_sz = filt.shape
-            if len(im_sz) == 1:
-                lo2 = np.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1], 
-                                       filt, edges, 2, 1, 0, 0, im_sz[0], 1) )
-                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 1, 
-                #                            order='C')
-                print lo2
-            elif im_sz[0] == 1:
-                lo2 = np.array( corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1],
-                                       filt, edges, 1, 2, 0, 0, 1, im_sz[1]) )
-                #lo2 = np.array(lo2).reshape(1, math.ceil(im_sz[1]/2.0), 
-                #                            order='C')
-                print lo2
-            elif im_sz[1] == 1:
-                lo2 = np.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1],
-                                       filt, edges, 2, 1, 0, 0, 
-                                       math.ceil(im_sz[0]/2.0), 1) )
-                #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 1, 
-                #                            order='C')
-                print lo2
+            filt1_sz = filt1.shape
+            if im_sz[0] == 1:
+                lo2 = np.array( corrDn(1, im_sz[1], im, filt1_sz[0], 
+                                       filt1_sz[1], filt1, edges, 
+                                       1, 2, 0, 0, 
+                                       int(math.ceil(im_sz[1]/2.0)), 1) ).T
+            elif len(im_sz) == 1 or im_sz[1] == 1:
+                lo2 = np.array( corrDn(im_sz[0], 1, im, filt1_sz[0], 
+                                       filt1_sz[1], filt1, edges, 2, 1, 0, 0, 
+                                       int(math.ceil(im_sz[0]/2.0)), 1) ).T
             else:
-                lo = np.array( corrDn(im_sz[1], im_sz[0], im, filt_sz[0], 
-                                      filt_sz[1], filt, edges, 2, 1, 0, 0, 
+                lo = np.array( corrDn(im_sz[1], im_sz[0], im, filt1_sz[0], 
+                                      filt1_sz[1], filt1, edges, 2, 1, 0, 0, 
                                       im_sz[0], im_sz[1]) )
                 #lo = np.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
                 #                          math.ceil(im_sz[1]/2.0), 
                 #                          order='C')
-                print lo
-                lo2 = np.array( corrDn(math.ceil(im_sz[0]/1.0), 
-                                       math.ceil(im_sz[1]/2.0), lo.T, 
-                                       filt_sz[0], filt_sz[1], filt, edges, 
+                lo2 = np.array( corrDn(int(math.ceil(im_sz[0]/1.0)), 
+                                       int(math.ceil(im_sz[1]/2.0)), lo.T, 
+                                       filt1_sz[0], filt1_sz[1], filt1, edges, 
                                        2, 1, 0, 0, im_sz[0], im_sz[1]) ).T
                 #lo2 = np.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
                 #                            math.ceil(im_sz[1]/2.0), 
                 #                            order='F')
-                print lo2
-                
             los[ht] = lo2
                 
             im = lo2
 
         #self.pyr[self.height-1] = lo2
         #self.pyrSize[self.height-1] = lo2.shape
+        # adjust shape if 1D if needed
         self.pyr.append(lo2.copy())
         self.pyrSize.append(lo2.shape)
 
@@ -1134,36 +1133,26 @@ class Lpyr(pyramid):
         for ht in range(self.height, 1, -1):
             im = los[ht-1]
             im_sz = los[ht-1].shape
-            filt_sz = filt.shape
-            if len(im_sz) == 1:
-                hi2 = upConv(im_sz[0], 1, im.T, filt_sz[0], filt_sz[1], 
-                            filt, edges, 2, 1, 0, 0, los[ht].shape[0], im_sz[1])
-                #hi2 = np.array(hi2).reshape(los[ht].shape[0], 1, order='F')
-                print hi2
+            filt2_sz = filt2.shape
+            if len(im_sz) == 1 or im_sz[1] == 1:
+                hi2 = upConv(im_sz[0], im_sz[1], im, filt2_sz[0], filt2_sz[1], 
+                            filt2, edges, 2, 1, 0, 0, los[ht].shape[0], 
+                             los[ht].shape[1]).T
             elif im_sz[0] == 1:
-                hi2 = upConv(1, im_sz[1], im.T, filt_sz[0], filt_sz[1], 
-                            filt, edges, 1, 2, 0, 0, 1, los[ht].shape[1])
-                #hi2 = np.array(hi2).reshape(1, los[ht].shape[1], order='F')
-                print hi2
-            elif im_sz[1] == 1:
-                hi2 = upConv(im_sz[0], 1, im.T, filt_sz[0], filt_sz[1], 
-                            filt, edges, 2, 1, 0, 0, los[ht].shape[0], 1)
-                #hi2 = np.array(hi2).reshape(los[ht].shape[0], im_sz[1], 
-                #order='F')
-                print hi2
+                hi2 = upConv(im_sz[0], im_sz[1], im, filt2_sz[1], filt2_sz[0], 
+                            filt2, edges, 1, 2, 0, 0, los[ht].shape[0], 
+                             los[ht].shape[1]).T
             else:
-                hi = upConv(im_sz[0], im_sz[1], im.T, filt_sz[0], filt_sz[1], 
-                            filt, edges, 2, 1, 0, 0, los[ht].shape[0], 
+                hi = upConv(im_sz[0], im_sz[1], im.T, filt2_sz[0], filt2_sz[1], 
+                            filt2, edges, 2, 1, 0, 0, los[ht].shape[0], 
                             im_sz[1]).T
                 #hi = np.array(hi).reshape(los[ht].shape[0], im_sz[1], order='F')
-                print hi
                 int_sz = hi.shape
-                hi2 = upConv(los[ht].shape[0], im_sz[1], hi.T, filt_sz[1], 
-                             filt_sz[0], filt, edges, 1, 2, 0, 0, 
+                hi2 = upConv(los[ht].shape[0], im_sz[1], hi.T, filt2_sz[1], 
+                             filt2_sz[0], filt2, edges, 1, 2, 0, 0, 
                              los[ht].shape[0], los[ht].shape[1]).T
                 #hi2 = np.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
                 #                            order='F')
-                print hi2
 
             hi2 = los[ht] - hi2
             #self.pyr[pyrCtr] = hi2
@@ -1173,6 +1162,21 @@ class Lpyr(pyramid):
             pyrCtr += 1
 
     # methods
+    # return concatenation of all levels of 1d pyramid
+    def catBands(self, *args):
+        outarray = np.array([]).reshape((1,0))
+        for i in range(self.height):
+            tmp = self.band(i).T
+            outarray = np.concatenate((outarray, tmp), axis=1)
+        return outarray
+
+    # set a pyramid value
+    def set(self, *args):
+        if len(args) != 3:
+            print 'Error: three input parameters required:'
+            print '  set(band, element, value)'
+        self.pyr[args[0]][args[1]] = args[2] 
+
     def reconLpyr(self, *args):
         if len(args) > 0:
             levs = np.array(args[0])
@@ -1190,16 +1194,20 @@ class Lpyr(pyramid):
             edges = 'reflect1';
 
         maxLev = self.height
+
         if levs == 'all':
             levs = range(0,maxLev)
         else:
             if (levs > maxLev-1).any():
                 print ( "Error: level numbers must be in the range [0, %d]." % 
                         (maxLev-1) )
-                exit(1)
+                return
 
         if isinstance(filt2, basestring):
             filt2 = ppu.namedFilter(filt2)
+        else:
+            if len(filt2.shape) == 1:
+                filt2 = filt2.reshape(1, len(filt2))
 
         res = []
         lastLev = -1
@@ -1210,29 +1218,35 @@ class Lpyr(pyramid):
                 res_sz = res.shape
                 new_sz = self.band(lev).shape
                 filt2_sz = filt2.shape
-                hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
-                            filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
-                            new_sz[0], res_sz[1]).T
-                #hi = np.array(hi).reshape(new_sz[0], res_sz[1], order='F')
-                hi2 = upConv(new_sz[0], res_sz[1], hi.T, filt2_sz[1], 
-                             filt2_sz[0], filt2, edges, 1, 2, 0, 0, 
-                             new_sz[0], new_sz[1]).T
-                #hi2 = np.array(hi2).reshape(new_sz[0], new_sz[1],
-                #                            order='F')
+                if res_sz[0] == 1:
+                    hi2 = upConv(new_sz[0], res_sz[1], res.T, filt2_sz[1], 
+                                 filt2_sz[0], filt2, edges, 1, 2, 0, 0, 
+                                 new_sz[0], new_sz[1]).T
+                elif res_sz[1] == 1:
+                    hi2 = upConv(new_sz[0], res_sz[1], res.T, filt2_sz[0], 
+                                 filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
+                                 new_sz[0], new_sz[1]).T
+                else:
+                    hi = upConv(res_sz[0], res_sz[1], res.T, filt2_sz[0], 
+                                filt2_sz[1], filt2, edges, 2, 1, 0, 0, 
+                                new_sz[0], res_sz[1]).T
+                    hi2 = upConv(new_sz[0], res_sz[1], hi.T, filt2_sz[1], 
+                                 filt2_sz[0], filt2, edges, 1, 2, 0, 0, 
+                                 new_sz[0], new_sz[1]).T
                 if lev in levs:
                     bandIm = self.band(lev)
                     bandIm_sz = bandIm.shape
                     res = hi2 + bandIm
                 else:
                     res = hi2
-
         return res                           
                 
     def pyrLow(self):
         return np.array(self.band(self.height-1))
 
     def showPyr(self, *args):
-        if any(x == 1 for x in self.band(0).shape):
+        if ( len(self.band(0).shape) == 1 or self.band(0).shape[0] == 1 or
+             self.band(0).shape[1] == 1 ):
             oned = 1
         else:
             oned = 0
@@ -1252,7 +1266,8 @@ class Lpyr(pyramid):
             else:
                 scale = 2
 
-        nind = self.height - 1
+        #nind = self.height - 1
+        nind = self.height
             
         # auto range calculations
         if pRange == 'auto1':
@@ -1501,9 +1516,10 @@ class Gpyr(Lpyr):
         
     # methods
 
-class Wpyr(pyramid):
+class Wpyr(Lpyr):
     filt = ''
     edges = ''
+    height = ''
     
     #constructor
     def __init__(self, *args):    # (image, height, order, twidth)
@@ -1542,24 +1558,19 @@ class Wpyr(pyramid):
             stag = 2
         else:
             stag = 1
+        #print 'stag = %d' % (stag)
 
+        #im_sz = im.shape
+        if len(im.shape) == 1 or im.shape[1] == 1:
+            im = im.reshape(1, im.shape[0])
         im_sz = im.shape
-        if len(im.shape) == 1:
-            im_sz = (1, im.shape[0])
-        elif im.shape[1] == 1:
-            im_sz = (im.shape[1], im.shape[0])
-        print "im_sz"
-        print im_sz
-        if len(filt.shape) == 1:
-            filt_sz = (1, filt.shape[0])
-        #elif filt.shape[1] == 1:  # FIX for 1D: breaks other tests
-        #    filt_sz = (filt.shape[1], filt.shape[0])
-        else:
-            filt_sz = filt.shape
-        print "filt_sz"
-        print filt_sz
+
+        if len(filt.shape) == 1 or filt.shape[1] == 1:
+            filt = filt.reshape(1, filt.shape[0])
+        filt_sz = filt.shape
+
         max_ht = ppu.maxPyrHt(im_sz, filt_sz)
-        print "max_ht = %d" % (max_ht)
+
         if len(args) > 1:
             ht = args[1]
             if ht == 'auto':
@@ -1569,14 +1580,15 @@ class Wpyr(pyramid):
         else:
             ht = max_ht
         ht = int(ht)
+        self.height = ht + 1  # used with showPyr() method
 
         for lev in range(ht):
-            print "lev = %d" % (lev)
+            #print "lev = %d" % (lev)
             im_sz = im.shape
-            if len(im.shape) == 1:
-                im_sz = (1, im.shape[0])
-            elif im.shape[1] == 1:
-                im_sz = (im.shape[1], im.shape[0])
+            #if len(im.shape) == 1:
+            #    im_sz = (1, im.shape[0])
+            # elif im.shape[1] == 1:
+            #    im_sz = (im.shape[1], im.shape[0])
                 print "im_sz"
                 print im_sz
             if len(im_sz) == 1 or im_sz[1] == 1:
@@ -1586,11 +1598,13 @@ class Wpyr(pyramid):
                 hihi = np.array( corrDn(im_sz[0], im_sz[1], im.T, filt_sz[0], 
                                         filt_sz[1], hfilt, edges, 2, 1, 1, 0) )
             elif im_sz[0] == 1:
+                #lolo = np.array( corrDn(im_sz[0], im_sz[1], im, filt_sz[0], 
+                #                        filt_sz[1], filt, edges, 1, 2, 0, 
+                #                        stag-1) )
                 lolo = np.array( corrDn(im_sz[0], im_sz[1], im, filt_sz[0], 
-                                        filt_sz[1], filt, edges, 1, 2, 0, 
-                                        stag-1) )
+                                        filt_sz[1], filt, edges, 1, 2, 0, 1) ).T
                 hihi = np.array( corrDn(im_sz[0], im_sz[1], im, filt_sz[0], 
-                                        filt_sz[1], hfilt, edges, 1, 2, 0, 1) )
+                                        filt_sz[1], hfilt, edges, 1, 2, 0, 1) ).T
             else:
                 lo = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
                                       filt.shape[0], 1, filt, edges, 2, 1, 
@@ -1747,12 +1761,16 @@ class Wpyr(pyramid):
             elif lev > 0:
                 # compute size of result image: assumes critical sampling
                 resIdx = len(self.pyrSize)-(3*(lev-1))-3
-                res_sz = self.pyrSize[resIdx]
                 print "resIdx = %d" % resIdx
+                res_sz = self.pyrSize[resIdx]
+                print 'res_sz'
+                print res_sz
+                print 'self.pyrSize'
+                print self.pyrSize
                 if res_sz[0] == 1:
-                    res_sz[1] = sum(self.pyrSize[:,1])
+                    res_sz = (1, sum([i[1] for i in self.pyrSize]))
                 elif res_sz[1] == 1:
-                    res_sz[0] = sum(self.pyrSize[:,0])
+                    res_sz = (sum([i[0] for i in self.pyrSize]), 1)
                 else:
                 #horizontal + vertical bands
                     res_sz = (self.pyrSize[resIdx][0]+self.pyrSize[resIdx-1][0],
@@ -1760,82 +1778,80 @@ class Wpyr(pyramid):
                     lres_sz = np.array([self.pyrSize[resIdx][0], res_sz[1]])
                     hres_sz = np.array([self.pyrSize[resIdx-1][0], res_sz[1]])
 
-                print 'pyrSizes'
-                print self.pyrSize[resIdx]
-                print self.pyrSize[resIdx+1]
-                print self.pyrSize[resIdx-1]
-                print "res_sz"
-                print res_sz
-                print "hres_sz"
-                print hres_sz
-                print "lres_sz"
-                print lres_sz
-
-                # FIX: how is this changed with subsets of levs?
-                #if lev <= 1:
-                #    print "lev = %d" % lev
-                #    print "levs"
-                #    print levs
-                #    if lev in levs:
-                #        print "idx = %d" % (idx)
-                #        print self.pyrSize
-                #        imageIn = self.band(idx)
-                #    else:
-                #        imageIn = np.zeros(self.band(idx).shape)
-                #    print "input image"
-                #    print imageIn
-                #else:
-                #    imageIn = res
                 imageIn = res
                 #fp = open('tmp.txt', 'a')
                 #fp.write('%d ires\n' % lev)
                 #fp.close()
-                print "filt shape = %d %d\n" % (filt.shape[0], filt.shape[1])
-                ires = upConv(imageIn.shape[1], 
-                              imageIn.shape[0],
-                              imageIn.T, filt.shape[1], filt.shape[0], 
-                              filt, edges, 1, 2, 0, stag-1, lres_sz[0], 
-                              lres_sz[1])
-                ires = np.array(ires).T
-                #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
-                print "%d ires" % (lev)
-                print ires
-                print ires.shape
-                print "hfilt"
-                print hfilt
-                #fp = open('tmp.txt', 'a')
-                #fp.write("%d res\n" % (lev))
-                #fp.close()
-                res = upConv(ires.shape[1], ires.shape[0], ires.T, 
-                             filt.shape[0],
-                             filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
-                             res_sz[0], res_sz[1]).T
-                res = np.array(res)
-                #res = res.reshape(res_sz[1], res_sz[0]).T
-                print "%d res" % (lev)
-                print res
+                if res_sz[0] == 1:
+                    #res = upConv(nres, filt', edges, [1 2], [1 stag], res_sz);
+                    res = upConv(res.shape[0], res.shape[1], res, filt.shape[1],
+                                 filt.shape[0], filt, edges, 1, 2, 0, stag-1, 
+                                 res_sz[0], res_sz[1])
+                elif res_sz[1] == 1:
+                    #res = upConv(nres, filt, edges, [2 1], [stag 1], res_sz);
+                    res = upConv(res.shape[0], res.shape[1], res, filt.shape[0],
+                                 filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
+                                 res_sz[0], res_sz[1])
+                else:
+                    print "filt shape = %d %d\n" % (filt.shape[0], 
+                                                    filt.shape[1])
+                    ires = upConv(imageIn.shape[1], 
+                                  imageIn.shape[0],
+                                  imageIn.T, filt.shape[1], filt.shape[0], 
+                                  filt, edges, 1, 2, 0, stag-1, lres_sz[0], 
+                                  lres_sz[1])
+                    ires = np.array(ires).T
+                    print "%d ires" % (lev)
+                    print ires
+                    print ires.shape
+                    print "hfilt"
+                    print hfilt
+                    #fp = open('tmp.txt', 'a')
+                    #fp.write("%d res\n" % (lev))
+                    #fp.close()
+                    res = upConv(ires.shape[1], ires.shape[0], ires.T, 
+                                 filt.shape[0],
+                                 filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
+                                 res_sz[0], res_sz[1]).T
+                    res = np.array(res)
+                    print "%d res" % (lev)
+                    print res
 
                 idx = resIdx - 1
-
-                ### FIX: do we need stag here?! Check with even size filter
-                #if 0 in bands:
+                print 'starting bands idx = %d' % (idx)
+                #if res_sz[0] == 1:
+                #    #upConv(pyrBand(pyr,ind,1), hfilt', edges, [1 2], [1 2], 
+                #    #  res_sz, res);
+                #    res = upConv(self.band(0).shape[0], self.band(0).shape[1], 
+                #                 self.band(0), hfilt.shape[0], hfilt.shape[1], 
+                #                 hfilt, edges, 1, 2, 0, 1, res_sz[0], 
+                #                 res_sz[1], res)
+                #elif res_sz[1] == 1:
+                #    #upConv(pyrBand(pyr,ind,1), hfilt, edges, [2 1], [2 1], 
+                #    #  res_sz, res);
+                #    res = upConv(self.band(0).shape[0], self.band(0).shape[1],
+                #                 self.band(0), hfilt.shape[1], hfilt.shape[0], 
+                #                 hfilt, edges, 2, 2, 1, 0, res_sz[0], 
+                #                 res_sz[1], res)
+                #else:
+                    #if 0 in bands:
                 if 0 in bands and lev in levs:
                     print "0 band"
                     print "idx = %d" % idx
                     print "resIdx = %d" % resIdx
                     print "input band"
                     print self.band(idx)
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("ires 0 band\n")
-                    #fp.close()
-                    # broken for even filters
-                    #ires = upConv(self.band(idx).shape[0], 
-                    #              self.band(idx).shape[1],
-                    #              self.band(idx).T, 
-                    #              filt.shape[1], filt.shape[0], filt, 
-                    #              edges, 1, 2, stag-1, 0, hres_sz[0], 
-                    #              hres_sz[1])
-                    # works with even filter
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("ires 0 band\n")
+                        #fp.close()
+                        # broken for even filters
+                        #ires = upConv(self.band(idx).shape[0], 
+                        #              self.band(idx).shape[1],
+                        #              self.band(idx).T, 
+                        #              filt.shape[1], filt.shape[0], filt, 
+                        #              edges, 1, 2, stag-1, 0, hres_sz[0], 
+                        #              hres_sz[1])
+                        # works with even filter
                     ires = upConv(self.band(idx).shape[0], 
                                   self.band(idx).shape[1],
                                   self.band(idx).T, 
@@ -1843,16 +1859,16 @@ class Wpyr(pyramid):
                                   edges, 1, 2, 0, stag-1, hres_sz[0], 
                                   hres_sz[1])
                     ires = np.array(ires).T
-                    #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
+                        #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
                     print "ires"
                     print ires
                     print ires.shape
 
                     print "pre upconv res"
                     print res
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("res 0 band\n")
-                    #fp.close()
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("res 0 band\n")
+                        #fp.close()
                     print "pre res size"
                     print res.shape
                     res = upConv(ires.shape[0], ires.shape[1], ires.T, 
@@ -1866,7 +1882,7 @@ class Wpyr(pyramid):
                     print "post upconv res"
                     print res
                 idx += 1
-                #if 1 in bands:
+                    #if 1 in bands:
                 if 1 in bands and lev in levs:
                     print "1 band"
                     print "idx = %d" % idx
@@ -1878,16 +1894,15 @@ class Wpyr(pyramid):
                     print self.band(idx)
                     print self.band(idx).shape
                     print hfilt
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("ires 1 band\n")
-                    #fp.close()
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("ires 1 band\n")
+                        #fp.close()
                     ires = upConv(self.band(idx).shape[0], 
                                   self.band(idx).shape[1], 
                                   self.band(idx).T, 
-                                  hfilt.shape[0], hfilt.shape[1], hfilt, edges,
-                                  1, 2, 0, 1, lres_sz[0], lres_sz[1])
+                                  hfilt.shape[0], hfilt.shape[1], hfilt, 
+                                  edges, 1, 2, 0, 1, lres_sz[0], lres_sz[1])
                     ires = np.array(ires).T
-                    #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
                     print "ires"
                     print ires
                     print ires.shape
@@ -1897,60 +1912,49 @@ class Wpyr(pyramid):
                     print filt
                     print edges
                     print "stag = %d" % stag
-                    # FIX: stag is not correct here. does this need to flip
-                    #      because python is 0 based?
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("res 1 band\n")
-                    #fp.close()
-                    # works with odd filters
-                    #res = upConv(ires.shape[0], ires.shape[1], ires.T, 
-                    #             filt.shape[0], filt.shape[1], filt, 
-                    #             edges, 2, 1, 0, 0, 
-                    #             res_sz[0], res_sz[1], res.T)
-                    # works with even filters
-                    #res = upConv(ires.shape[0], ires.shape[1], ires.T, 
-                    #             filt.shape[0], filt.shape[1], filt, 
-                    #             edges, 2, 1, 1, 0, 
-                    #             res_sz[0], res_sz[1], res.T)
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("res 1 band\n")
+                        #fp.close()
                     res = upConv(ires.shape[0], ires.shape[1], ires.T, 
                                  filt.shape[0], filt.shape[1], filt, 
                                  edges, 2, 1, stag-1, 0, 
                                  res_sz[0], res_sz[1], res.T)
                     res = np.array(res).T
-                    #res = res.reshape(res_sz[1], res_sz[0]).T
+                        #res = res.reshape(res_sz[1], res_sz[0]).T
                     print "res"
                     print res
                 idx += 1
-                #if 2 in bands:
+                    #if 2 in bands:
                 if 2 in bands and lev in levs:
                     print "2 band"
                     print "idx = %d" % idx
                     print "input image"
                     print self.band(idx)
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("ires 2 band\n")
-                    #fp.close()
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("ires 2 band\n")
+                        #fp.close()
                     ires = upConv(self.band(idx).shape[0],
                                   self.band(idx).shape[1],
                                   self.band(idx).T,
                                   hfilt.shape[0], hfilt.shape[1], hfilt, 
                                   edges, 1, 2, 0, 1, hres_sz[0], hres_sz[1])
                     ires = np.array(ires).T
-                    #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
+                        #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
                     print "ires"
                     print ires
                     print "pre res"
                     print res
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("res 2 band\n")
-                    #fp.close()
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("res 2 band\n")
+                        #fp.close()
                     res = upConv(ires.shape[1], ires.shape[0], ires.T, 
                                  hfilt.shape[1], hfilt.shape[0], hfilt,
-                                 edges, 2, 1, 1, 0, res_sz[0], res_sz[1], res.T)
+                                 edges, 2, 1, 1, 0, res_sz[0], res_sz[1], 
+                                 res.T)
                     res = np.array(res).T
                     print "res"
                     print res
                 idx += 1
-                # need to jump back n bands in the idx each loop
+                    # need to jump back n bands in the idx each loop
                 idx -= 2*len(bands)
         return res

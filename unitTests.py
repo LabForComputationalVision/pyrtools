@@ -117,7 +117,7 @@ class LpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 #    def test5(self):
 #        matPyr = scipy.io.loadmat('matFiles/buildLpyr5.mat')
-#        pyRamp = np.array(range(200))
+#        pyRamp = np.array(range(200)).reshape(1, 200)
 #        pyPyr = ppt.Lpyr(pyRamp)
 #        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 #    def test6(self):
@@ -162,7 +162,6 @@ class LpyrTests(unittest.TestCase):
         pyPyr = ppt.Lpyr(pyRamp)
         recon = pyPyr.reconLpyr([0,2,4])
         self.failUnless((matPyr['recon'] == recon).all())
-
 
 class spFilterTests(unittest.TestCase):
     def test1(self):

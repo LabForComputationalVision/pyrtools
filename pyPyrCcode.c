@@ -25,6 +25,8 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   int dimensions[2];
   int i;
 
+  printf("starting corrDn\n");
+
   // parse input parameters
   if( !PyArg_ParseTuple(args, "iiOiiO|siiiiiiO", &x_idim, &y_idim, &arg1, 
 			&x_fdim, &y_fdim, &arg2, &edges, &x_step, &y_step, 
@@ -33,8 +35,6 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
   image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 1,
 							x_idim * y_idim);
 
-  x_stop = x_idim;
-  y_stop = y_idim;
   if(image == NULL)
     return NULL;
   /*if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
@@ -69,6 +69,9 @@ static PyObject* py_corrDn(PyObject* self, PyObject* args)
     printf("START values must lie between 1 and the image dimensions.");
     exit(1);
   }
+  
+  x_stop = x_idim;
+  y_stop = y_idim;
 
   if ( (x_stop < x_start) || (x_stop > x_idim) ||
        (y_stop < y_start) || (y_stop > y_idim) ){
@@ -129,7 +132,9 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   int y_step = 1;
   int x_start = 0;
   int y_start = 0;
-  int x_stop, y_stop, x_rdim, y_rdim;
+  int x_stop = -1;
+  int y_stop = -1;
+  int x_rdim, y_rdim;
   int dimensions[2];
   int dimensions2[1];
   int dimensions3[1];
@@ -145,8 +150,9 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
   image = (PyArrayObject *)PyArray_ContiguousFromObject(arg1, PyArray_DOUBLE, 
 							1, x_idim * y_idim);
 
-  //x_stop = x_idim;
-  //y_stop = y_idim;
+  printf("stop %d %d\n", x_stop, y_stop);
+  /* x_stop = x_idim;
+     y_stop = y_idim; */
   if(image == NULL)
     return NULL;
   if(image->nd != 2 || image->descr->type_num != PyArray_DOUBLE){
@@ -248,6 +254,11 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
       //printf("filt->data[%d] = %f\n", x, (image_type)filt->data[x]);
 
     }
+
+  if(x_stop == -1)  // not entered
+    x_stop = x_step * ((x_start/x_step) + x_idim);
+  if(y_stop == -1)  // not entered
+    y_stop = y_step * ((y_start/y_step) + y_idim);
 
   //x_rdim = (x_stop-x_start+x_step-1) / x_step;
   //y_rdim = (y_stop-y_start+y_step-1) / y_step;
