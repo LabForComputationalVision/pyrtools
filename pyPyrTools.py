@@ -1516,7 +1516,7 @@ class Gpyr(Lpyr):
         
     # methods
 
-class Wpyr(Lpyr):
+class Wpyr_new(Lpyr):
     filt = ''
     edges = ''
     height = ''
@@ -1560,10 +1560,9 @@ class Wpyr(Lpyr):
             stag = 1
         #print 'stag = %d' % (stag)
 
-        #im_sz = im.shape
+        im_sz = im.shape
         if len(im.shape) == 1 or im.shape[1] == 1:
             im = im.reshape(1, im.shape[0])
-        im_sz = im.shape
 
         if len(filt.shape) == 1 or filt.shape[1] == 1:
             filt = filt.reshape(1, filt.shape[0])
@@ -1587,10 +1586,10 @@ class Wpyr(Lpyr):
             im_sz = im.shape
             #if len(im.shape) == 1:
             #    im_sz = (1, im.shape[0])
-            # elif im.shape[1] == 1:
+            #elif im.shape[1] == 1:
             #    im_sz = (im.shape[1], im.shape[0])
-                print "im_sz"
-                print im_sz
+            #print "im_sz"
+            #print im_sz
             if len(im_sz) == 1 or im_sz[1] == 1:
                 lolo = np.array( corrDn(im_sz[0], im_sz[1], im.T, filt_sz[0],
                                         filt_sz[1], filt, edges, 2, 1, stag-1, 
