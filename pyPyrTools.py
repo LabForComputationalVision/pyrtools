@@ -34,6 +34,8 @@ class pyramid:  # pyramid
             self.showLpyr(args)
         elif self.pyrType == 'Laplacian':
             self.showLpyr(args)
+        elif self.pyrType == 'wavelet':
+            self.showLpyr(args)
         else:
             print "pyramid type %s not currently supported" % (args[0])
             return
@@ -2415,10 +2417,11 @@ class Wpyr_bak(pyramid):
                 idx -= 2*len(bands)
         return res
 
-class Wpyr(pyramid):
+class Wpyr(Lpyr):
     filt = ''
     edges = ''
-    
+    height = ''
+
     #constructor
     def __init__(self, *args):    # (image, height, order, twidth)
         self.pyr = []
@@ -2487,7 +2490,7 @@ class Wpyr(pyramid):
 
         #max_ht = ppu.maxPyrHt(im_sz, filt_sz)
         max_ht = ppu.maxPyrHt(im.shape, filt.shape)
-        print "max_ht = %d" % (max_ht)
+        #print "max_ht = %d" % (max_ht)
         if len(args) > 1:
             ht = args[1]
             if ht == 'auto':
@@ -2497,9 +2500,10 @@ class Wpyr(pyramid):
         else:
             ht = max_ht
         ht = int(ht)
+        self.height = ht + 1  # used with showPyr() method
 
         for lev in range(ht):
-            print "lev = %d" % (lev)
+            #print "lev = %d" % (lev)
             #im_sz = im.shape
             #if len(im.shape) == 1:
             #    im_sz = (1, im.shape[0])
