@@ -48,7 +48,7 @@ class Spyr(pyramid):
     def __init__(self, *args):    # (image height, filter file, edges)
         self.pyrType = 'steerable'
         if len(args) > 0:
-            self.image = args[0]
+            self.image = np.array(args[0])
         else:
             print "First argument (image) is required."
             return
@@ -56,16 +56,20 @@ class Spyr(pyramid):
         #------------------------------------------------
         # defaults:
 
-        if len(args) > 1:
-            if args[1] == 'sp0Filters':
+        if len(args) > 2:
+            if args[2] == 'sp0Filters':
                 filters = ppu.sp0Filters()
-            elif args[1] == 'sp1Filters':
+            elif args[2] == 'sp1Filters':
                 filters = ppu.sp1Filters()
-            elif os.path.isfile(args[1]):
+            elif args[2] == 'sp3Filters':
+                filters = ppu.sp3Filters()
+            elif args[2] == 'sp5Filters':
+                filters = ppu.sp5Filters()
+            elif os.path.isfile(args[2]):
                 print "Filter files not supported yet"
                 return
             else:
-                print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
+                print "filter parameters value %s not supported" % (args[2])
                 return
         else:
             filters = ppu.sp1Filters()
@@ -77,23 +81,24 @@ class Spyr(pyramid):
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
             
-        if len(args) > 2:
-            edges = args[2]
-        else:
-            edges = 'reflect1'
-
         max_ht = ppu.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
-        if len(args) > 3:
-            if args[3] == 'auto':
+        if len(args) > 1:
+            if args[1] == 'auto':
                 ht = max_ht
-            elif args[3] > max_ht:
+            elif args[1] > max_ht:
                 print "Error: cannot build pyramid higher than %d levels." % (
                     max_ht)
                 return
             else:
-                ht = args[3]
+                ht = args[1]
         else:
             ht = max_ht
+        print 'ht = %d  max_ht = %d' % (ht, max_ht)
+
+        if len(args) > 3:
+            edges = args[3]
+        else:
+            edges = 'reflect1'
 
         #------------------------------------------------------
 
@@ -124,8 +129,11 @@ class Spyr(pyramid):
 
             for b in range(bfilts.shape[1]-1,-1,-1):
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz)
-                band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, bfiltsz, 
-                                           bfiltsz, filt, edges) )
+                #band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, bfiltsz, 
+                #                           bfiltsz, filt, edges) )
+                band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, 
+                                           filt.shape[0], filt.shape[1], filt, 
+                                           edges) )
                 #self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
                 #                                                 lo_sz[1])
                 #self.pyrSize[pyrCtr] = lo_sz
@@ -145,6 +153,28 @@ class Spyr(pyramid):
         self.pyrSize.append(lo.shape)
 
     # methods
+    def spyrLev(self, lev):
+        if lev < 0 or lev > self.spyrHt()-1:
+            print 'Error: level parameter must be between 0 and %d!' % (self.spyrHt()-1)
+            return
+        
+        levArray = []
+        for n in range(self.numBands()):
+            levArray.append(self.spyrBand(lev, n))
+        levArray = np.array(levArray)
+
+        return levArray
+
+    def spyrBand(self, lev, band):
+        if lev < 0 or lev > self.spyrHt()-1:
+            print 'Error: level parameter must be between 0 and %d!' % (self.spyrHt()-1)
+            return
+        if band < 0 or band > self.numBands()-1:
+            print 'Error: band parameter must be between 0 and %d!' % (self.numBands()-1)
+
+        return self.band( ((lev*self.numBands())+band)+1 )
+
+
     def spyrHt(self):
         if len(self.pyrSize) > 2:
             spHt = (len(self.pyrSize)-2)/self.numBands()
@@ -169,12 +199,17 @@ class Spyr(pyramid):
         return np.array(self.band(0))
 
     def reconSpyr(self, *args):
+        print 'starting reconSpyr'
         # defaults
         if len(args) > 0:
             if args[0] == 'sp0Filters':
                 filters = ppu.sp0Filters()
             elif args[0] == 'sp1Filters':
                 filters = ppu.sp1Filters()
+            elif args[0] == 'sp3Filters':
+                filters = ppu.sp3Filters()
+            elif args[0] == 'sp5Filters':
+                filters = ppu.sp5Filters()
             elif os.path.isfile(args[0]):
                 print "Filter files not supported yet"
                 return
@@ -184,14 +219,15 @@ class Spyr(pyramid):
         else:
             filters = ppu.sp1Filters()
 
-        harmonics = filters['harmonics']
+        #harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
         hi0filt = filters['hi0filt']
         lofilt = filters['lofilt']
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
+        #print harmonics.shape
         # assume square filters  -- start of buildSpyrLevs
-        bfiltsz = math.floor(math.sqrt(bfilts.shape[0]))
+        bfiltsz = int(math.floor(math.sqrt(bfilts.shape[0])))
 
         if len(args) > 1:
             edges = args[1]
@@ -233,6 +269,7 @@ class Spyr(pyramid):
         # FIX: if not supplied by user
         Nlevs = self.spyrHt()+2
         Nbands = self.numBands()
+        print 'Nbands = %d' % (Nbands)
         reconList = []  # pyr indices used in reconstruction
         for lev in levs:
             if lev == 0 or lev == Nlevs-1 :
@@ -245,10 +282,11 @@ class Spyr(pyramid):
         # FIX: shouldn't have to enter step, start and stop in upConv!
         band = -1
         for lev in range(Nlevs-1,-1,-1):
+            print 'lev = %d' % (lev)
             if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
                 print 'flag 1'
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
-                recon = self.pyr[len(self.pyrSize)-1].copy()
+                recon = np.array(self.pyr[len(self.pyrSize)-1].copy())
             elif lev == Nlevs-1:
                 print 'flag 2'
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
@@ -257,10 +295,12 @@ class Spyr(pyramid):
                 print 'flag 3'
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
-                recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
-                               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
+                #recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
+                #               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
+                #               sz[1], sz[0])
+                recon = upConv(sz[0], sz[1], recon, lo0filt.shape[0], 
+                               lo0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[1], sz[0])
-                print recon
                 #recon = np.array(recon).reshape(sz[0], sz[1])
                 recon = upConv(self.pyrSize[idx][0], self.pyrSize[idx][1], 
                                self.pyr[idx], hi0filt.shape[0], 
@@ -268,7 +308,6 @@ class Spyr(pyramid):
                                1, 1, 0, 0, 
                                self.pyrSize[idx][1], self.pyrSize[idx][0], 
                                recon)
-                print recon
                 #recon = np.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
             elif lev == 0:
                 print 'flag 4'
@@ -276,26 +315,32 @@ class Spyr(pyramid):
                 recon = upConv(sz[0], sz[1], recon, lo0filt.shape[0], 
                                lo0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[0], sz[1])
-                print recon
                 #recon = np.array(recon).reshape(sz[0], sz[1])
             else:
-                print 'flag 5'
+                print 'flag 5'                
                 for band in range(Nbands-1,-1,-1):
                     idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                    print 'lev=%d band=%d Nlevs=%d Nbands=%d idx=%d' % (lev, band, Nlevs, Nbands, idx)
                     if idx in reconList:
+                        print 'band = %d' % (band)
+                        #print bfilts.shape
+                        #print bfilts[:,band]
+                        #print bfiltsz
                         filt = np.negative(bfilts[:,band].reshape(bfiltsz, 
                                                                   bfiltsz,
                                                                   order='C'))
+                        print self.pyrSize[idx]
+                        print self.pyr[idx].shape
                         recon = upConv(self.pyrSize[idx][0], 
                                        self.pyrSize[idx][1], 
                                        self.pyr[idx],
                                        bfiltsz, bfiltsz, filt, edges, 1, 1, 0, 
                                        0, self.pyrSize[idx][1], 
                                        self.pyrSize[idx][0], recon)
-                        print recon
                         #recon = np.array(recon).reshape(self.pyrSize[idx][0], 
                         #                                self.pyrSize[idx][1],
                         #                                order='C')
+                print 'flag 5 end'
 
             # upsample
             #newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
@@ -304,11 +349,12 @@ class Spyr(pyramid):
             if newSz[0] % recon.shape[0] > 0:
                 mult += 1
             if mult > 1:
+                print 'flag 6'
                 recon = upConv(recon.shape[1], recon.shape[0], 
                                recon.T,
                                lofilt.shape[0], lofilt.shape[1], lofilt, edges, 
                                mult, mult, 0, 0, newSz[0], newSz[1]).T
-                print recon
+                print 'flag 6 end'
                 #recon = np.array(recon).reshape(newSz[0], newSz[1], order='F')
         return recon
 
@@ -401,30 +447,40 @@ class Spyr(pyramid):
 
         # compute positions of subbands
         llpos = np.ones((nind,2));
+
         if nbands == 2:
             ncols = 1
             nrows = 2
         else:
-            ncols = np.ceil((nbands+1)/2)
-            nrows = np.ceil(nbands/2)
-        relpos = np.array([np.concatenate([ range(1-nrows,1), 
-                                            np.zeros(ncols-1)]), 
-                           np.concatenate([ np.zeros(nrows), 
-                                            range(-1, 1-ncols, -1) ])]).T
+            ncols = int(np.ceil((nbands+1)/2))
+            nrows = int(np.ceil(nbands/2))
+
+        #relpos = np.array([np.concatenate([ range(1-nrows,1), 
+        #                                    np.zeros(ncols-1)]), 
+        #                   np.concatenate([ np.zeros(nrows), 
+        #                                    range(-1, 1-ncols, -1) ])]).T
+        a = np.array(range(1-nrows, 1))
+        b = np.zeros((1,ncols))[0]
+        ab = np.concatenate((a,b))
+        c = np.zeros((1,nrows))[0]
+        d = range(-1, -ncols-1, -1)
+        cd = np.concatenate((c,d))
+        relpos = np.vstack((ab,cd)).T
         
         if nbands > 1:
-            mvpos = np.array([-1, -1])
+            mvpos = np.array([-1, -1]).reshape(1,2)
         else:
-            mvpos = np.array([0, -1])
-        basepos = np.array([0, 0])
+            mvpos = np.array([0, -1]).reshape(1,2)
+        basepos = np.array([0, 0]).reshape(1,2)
 
-        for lnum in range(ht):
-            ind1 = (lnum-1)*nbands + 2 + 1
+        for lnum in range(1,ht+1):
+            #ind1 = (lnum-1)*nbands + 2
+            ind1 = (lnum-1)*nbands + 1
             sz = np.array(self.pyrSize[ind1]) + gap
             basepos = basepos + mvpos * sz
             if nbands < 5:         # to align edges
                 sz += gap * (ht-lnum)
-            llpos[ind1:ind1+nbands, :] = np.dot(relpos, np.diag(sz)) + ( np.ones((nbands,nbands)) * basepos )
+            llpos[ind1:ind1+nbands, :] = np.dot(relpos, np.diag(sz)) + ( np.ones((nbands,1)) * basepos )
     
         # lowpass band
         sz = np.array(self.pyrSize[nind-1]) + gap
@@ -1662,7 +1718,7 @@ class Wpyr_new(Lpyr):
 
         ht = (len(self.pyrSize)-1)/float(nbands)
 
-        return ht
+        return int(ht)
 
 
     def reconWpyr(self, *args):
@@ -2438,7 +2494,7 @@ class Wpyr(Lpyr):
         # defaults:
 
         if len(args) > 2:
-            filt = args[1]
+            filt = args[2]
         else:
             filt = "qmf9"
         if isinstance(filt, basestring):
@@ -2450,7 +2506,7 @@ class Wpyr(Lpyr):
         hfilt = ppu.modulateFlip(filt).T
 
         if len(args) > 3:
-            edges = args[2]
+            edges = args[3]
         else:
             edges = "reflect1"
 
@@ -2518,7 +2574,7 @@ class Wpyr(Lpyr):
                                         filt.shape[0], filt.shape[1], filt, 
                                         edges, 2, 1, stag-1, 0) ).T
                 hihi = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
-                                        filt.shape[0], filt.shape[1], hfilt, 
+                                        hfilt.shape[1], hfilt.shape[0], hfilt, 
                                         edges, 2, 1, 1, 0) ).T
             #elif im_sz[0] == 1:
             elif im.shape[0] == 1:
@@ -2526,7 +2582,7 @@ class Wpyr(Lpyr):
                                         filt.shape[0], filt.shape[1], filt, 
                                         edges, 1, 2, 0, stag-1) ).T
                 hihi = np.array( corrDn(im.shape[0], im.shape[1], im, 
-                                        filt.shape[0], filt.shape[1], hfilt, 
+                                        hfilt.shape[1], hfilt.shape[0], hfilt, 
                                         edges, 1, 2, 0, 1) ).T
             else:
                 lo = np.array( corrDn(im.shape[0], im.shape[1], im.T, 
@@ -2588,7 +2644,7 @@ class Wpyr(Lpyr):
         return ht
 
 
-    def reconWpyr(self, *args):
+    def reconWpyr_old(self, *args):
         # Optional args
         if len(args) > 0:
             filt = args[0]
@@ -2613,7 +2669,7 @@ class Wpyr(Lpyr):
         #------------------------------------------------------
 
         print self.pyrSize
-        maxLev = self.wpyrHt() + 1
+        maxLev = int(self.wpyrHt() + 1)
         print "maxLev = %d" % maxLev
         if levs == 'all':
             levs = np.array(range(maxLev))
@@ -2630,7 +2686,11 @@ class Wpyr(Lpyr):
         print levs
         
         if bands == "all":
-            bands = np.array(range(3))
+            if ( len(self.band(0)) == 1 or self.band(0).shape[0] == 1 or 
+                 self.band(0).shape[1] == 1 ):
+                bands = np.array([0]);
+            else:
+                bands = np.array(range(3))
         else:
             bands = np.array(bands)
             if (bands < 0).any() or (bands > 2).any():
@@ -2666,6 +2726,7 @@ class Wpyr(Lpyr):
         print 'len pyrSize = %d' % (len(self.pyr))
 
         idx = len(self.pyrSize)-1
+        print 'idx = %d' % (idx)
 
         print "levs:"
         print levs
@@ -2684,30 +2745,40 @@ class Wpyr(Lpyr):
                 print res
             elif lev > 0:
                 # compute size of result image: assumes critical sampling
-                resIdx = len(self.pyrSize)-(3*(lev-1))-3
-                res_sz = self.pyrSize[resIdx]
-                print "resIdx = %d" % resIdx
-                if res_sz[0] == 1:
-                    res_sz[1] = sum(self.pyrSize[:,1])
-                elif res_sz[1] == 1:
-                    res_sz[0] = sum(self.pyrSize[:,0])
+                if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+                     self.pyrSize[0][1] == 1 ):
+                    resIdx = len(self.pyrSize)-2
                 else:
-                #horizontal + vertical bands
+                    resIdx = len(self.pyrSize)-(3*(lev-1))-3
+                print "resIdx = %d" % resIdx
+                res_sz = self.pyrSize[resIdx]
+                print 'pre res_sz'
+                print res_sz
+                if res_sz[0] == 1:
+                    #res_sz[1] = sum(self.pyrSize[:,1])
+                    res_sz = (res_sz[0], sum([x[1] for x in self.pyrSize]))
+                elif res_sz[1] == 1:
+                    #res_sz[0] = sum(self.pyrSize[:,0])
+                    res_sz = (res_sz[0], sum([x[0] for x in self.pyrSize]))
+                else:
+                    #horizontal + vertical bands
                     res_sz = (self.pyrSize[resIdx][0]+self.pyrSize[resIdx-1][0],
                               self.pyrSize[resIdx][1]+self.pyrSize[resIdx-1][1])
                     lres_sz = np.array([self.pyrSize[resIdx][0], res_sz[1]])
                     hres_sz = np.array([self.pyrSize[resIdx-1][0], res_sz[1]])
+                print 'post res_sz'
+                print res_sz
 
                 print 'pyrSizes'
                 print self.pyrSize[resIdx]
-                print self.pyrSize[resIdx+1]
-                print self.pyrSize[resIdx-1]
+                #print self.pyrSize[resIdx+1]
+                #print self.pyrSize[resIdx-1]
                 print "res_sz"
                 print res_sz
-                print "hres_sz"
-                print hres_sz
-                print "lres_sz"
-                print lres_sz
+                #print "hres_sz"
+                #print hres_sz
+                #print "lres_sz"
+                #print lres_sz
 
                 # FIX: how is this changed with subsets of levs?
                 #if lev <= 1:
@@ -2728,167 +2799,493 @@ class Wpyr(Lpyr):
                 #fp = open('tmp.txt', 'a')
                 #fp.write('%d ires\n' % lev)
                 #fp.close()
-                print "filt shape = %d %d\n" % (filt.shape[0], filt.shape[1])
-                ires = upConv(imageIn.shape[1], 
-                              imageIn.shape[0],
-                              imageIn.T, filt.shape[1], filt.shape[0], 
-                              filt, edges, 1, 2, 0, stag-1, lres_sz[0], 
-                              lres_sz[1])
-                ires = np.array(ires).T
-                #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
-                print "%d ires" % (lev)
-                print ires
-                print ires.shape
-                print "hfilt"
-                print hfilt
-                #fp = open('tmp.txt', 'a')
-                #fp.write("%d res\n" % (lev))
-                #fp.close()
-                res = upConv(ires.shape[1], ires.shape[0], ires.T, 
-                             filt.shape[0],
-                             filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
-                             res_sz[0], res_sz[1]).T
-                res = np.array(res)
-                #res = res.reshape(res_sz[1], res_sz[0]).T
-                print "%d res" % (lev)
-                print res
-
-                idx = resIdx - 1
-
-                ### FIX: do we need stag here?! Check with even size filter
-                #if 0 in bands:
-                if 0 in bands and lev in levs:
-                    print "0 band"
-                    print "idx = %d" % idx
-                    print "resIdx = %d" % resIdx
-                    print "input band"
-                    print self.band(idx)
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("ires 0 band\n")
-                    #fp.close()
-                    # broken for even filters
-                    #ires = upConv(self.band(idx).shape[0], 
-                    #              self.band(idx).shape[1],
-                    #              self.band(idx).T, 
-                    #              filt.shape[1], filt.shape[0], filt, 
-                    #              edges, 1, 2, stag-1, 0, hres_sz[0], 
-                    #              hres_sz[1])
-                    # works with even filter
-                    ires = upConv(self.band(idx).shape[0], 
-                                  self.band(idx).shape[1],
-                                  self.band(idx).T, 
-                                  filt.shape[1], filt.shape[0], filt, 
-                                  edges, 1, 2, 0, stag-1, hres_sz[0], 
-                                  hres_sz[1])
-                    ires = np.array(ires).T
-                    #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
-                    print "ires"
-                    print ires
-                    print ires.shape
-
-                    print "pre upconv res"
-                    print res
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("res 0 band\n")
-                    #fp.close()
-                    print "pre res size"
-                    print res.shape
-                    res = upConv(ires.shape[0], ires.shape[1], ires.T, 
-                                 hfilt.shape[1], hfilt.shape[0], hfilt, 
-                                 edges, 2, 1, 1, 0, 
-                                 res_sz[0], res_sz[1], res.T)
+                if res_sz[0] == 1:
+                    #res = upConv(nres, filt', edges, [1 2], [1 stag], res_sz);
+                    print 'flag 1'
+                    res = upConv(imageIn.shape[0], imageIn.shape[1], imageIn, 
+                                 filt.shape[1], filt.shape[0], filt, edges,
+                                 1, 2, 0, stag-1, res_sz[0], res_sz[1])
                     res = np.array(res).T
-                    print "res size %d %d" % (res_sz[1], res_sz[0])
-                    print "post res size"
-                    print res.shape
-                    print "post upconv res"
-                    print res
-                idx += 1
-                #if 1 in bands:
-                if 1 in bands and lev in levs:
-                    print "1 band"
-                    print "idx = %d" % idx
-                    print "lres_sz"
-                    print lres_sz
-                    print lres_sz[0]
-                    print lres_sz[1]
-                    print "self.band(idx)"
-                    print self.band(idx)
-                    print self.band(idx).shape
-                    print hfilt
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("ires 1 band\n")
-                    #fp.close()
-                    ires = upConv(self.band(idx).shape[0], 
-                                  self.band(idx).shape[1], 
-                                  self.band(idx).T, 
-                                  hfilt.shape[0], hfilt.shape[1], hfilt, edges,
-                                  1, 2, 0, 1, lres_sz[0], lres_sz[1])
+                elif res_sz[1] == 1:
+                    #res = upConv(nres, filt, edges, [2 1], [stag 1], res_sz);
+                    print 'flag 2'
+                    res = upConv(imageIn.shape[0], imageIn.shape[1], imageIn, 
+                                 filt.shape[0], filt.shape[1], filt, edges,
+                                 2, 1, stag-1, 1, res_sz[0], res_sz[1])
+                    res = np.array(res).T
+                else:
+                    print "filt shape = %d %d\n" % (filt.shape[0], 
+                                                    filt.shape[1])
+                    ires = upConv(imageIn.shape[1], 
+                                  imageIn.shape[0],
+                                  imageIn.T, filt.shape[1], filt.shape[0], 
+                                  filt, edges, 1, 2, 0, stag-1, lres_sz[0], 
+                                  lres_sz[1])
                     ires = np.array(ires).T
                     #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
-                    print "ires"
+                    print "%d ires" % (lev)
                     print ires
                     print ires.shape
-                    print filt.shape
-                    print "pre res"
-                    print res
-                    print filt
-                    print edges
-                    print "stag = %d" % stag
-                    # FIX: stag is not correct here. does this need to flip
-                    #      because python is 0 based?
+                    print "hfilt"
+                    print hfilt
                     #fp = open('tmp.txt', 'a')
-                    #fp.write("res 1 band\n")
-                    #fp.close()
-                    # works with odd filters
-                    #res = upConv(ires.shape[0], ires.shape[1], ires.T, 
-                    #             filt.shape[0], filt.shape[1], filt, 
-                    #             edges, 2, 1, 0, 0, 
-                    #             res_sz[0], res_sz[1], res.T)
-                    # works with even filters
-                    #res = upConv(ires.shape[0], ires.shape[1], ires.T, 
-                    #             filt.shape[0], filt.shape[1], filt, 
-                    #             edges, 2, 1, 1, 0, 
-                    #             res_sz[0], res_sz[1], res.T)
-                    res = upConv(ires.shape[0], ires.shape[1], ires.T, 
-                                 filt.shape[0], filt.shape[1], filt, 
-                                 edges, 2, 1, stag-1, 0, 
-                                 res_sz[0], res_sz[1], res.T)
-                    res = np.array(res).T
-                    #res = res.reshape(res_sz[1], res_sz[0]).T
-                    print "res"
-                    print res
-                idx += 1
-                #if 2 in bands:
-                if 2 in bands and lev in levs:
-                    print "2 band"
-                    print "idx = %d" % idx
-                    print "input image"
-                    print self.band(idx)
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("ires 2 band\n")
-                    #fp.close()
-                    ires = upConv(self.band(idx).shape[0],
-                                  self.band(idx).shape[1],
-                                  self.band(idx).T,
-                                  hfilt.shape[0], hfilt.shape[1], hfilt, 
-                                  edges, 1, 2, 0, 1, hres_sz[0], hres_sz[1])
-                    ires = np.array(ires).T
-                    #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
-                    print "ires"
-                    print ires
-                    print "pre res"
-                    print res
-                    #fp = open('tmp.txt', 'a')
-                    #fp.write("res 2 band\n")
+                    #fp.write("%d res\n" % (lev))
                     #fp.close()
                     res = upConv(ires.shape[1], ires.shape[0], ires.T, 
-                                 hfilt.shape[1], hfilt.shape[0], hfilt,
-                                 edges, 2, 1, 1, 0, res_sz[0], res_sz[1], res.T)
-                    res = np.array(res).T
-                    print "res"
+                                 filt.shape[0],
+                                 filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
+                                 res_sz[0], res_sz[1]).T
+                    res = np.array(res)
+                    #res = res.reshape(res_sz[1], res_sz[0]).T
+                    print "%d res" % (lev)
                     print res
-                idx += 1
+
+                print 'self.pyrSize'
+                print self.pyrSize[0]
+                if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+                     self.pyrSize[0][1] == 1 ):
+                    print 'idx flag 1'
+                    idx = idx
+                else:
+                    print 'idx flag 2'
+                    idx = resIdx - 1
+                print '1### idx = %d' % (idx)
+                if res_sz[0] ==1 and lev in levs:
+                    #upConv(pyrBand(pyr,ind,1), hfilt', edges, [1 2], [1 2], res_sz, res);
+                    print '1d band'
+                    print self.band(idx)
+                    res = upConv(self.band(idx).shape[0], 
+                                 self.band(idx).shape[1],
+                                 self.band(idx), hfilt.shape[0], hfilt.shape[1],
+                                 hfilt, edges, 1, 2, 0, 1, res_sz[0], res_sz[1],
+                                 res)
+                    res = np.array(res).T
+                    idx -= 1
+                    print '2### idx = %d' % (idx)
+                elif res_sz[1] == 1:
+                    #upConv(pyrBand(pyr,ind,1), hfilt, edges, [2 1], [2 1], res_sz, res);
+                    print '1d band'
+                    print self.band(idx)
+                    res = upConv(self.band(idx).shape[0], 
+                                 self.band(idx).shape[1],
+                                 self.band(idx), hfilt.shape[1], hfilt.shape[0],
+                                 hfilt, edges, 2, 1, 1, 0, res_sz[0], res_sz[1],
+                                 res)
+                    res = np.array(res).T
+                    idx -= 1
+                    print '3### idx = %d' % (idx)
+                else:
+                    #if 0 in bands:
+                    if 0 in bands and lev in levs:
+                        print "0 band"
+                        print "idx = %d" % idx
+                        print "resIdx = %d" % resIdx
+                        print "input band"
+                        print self.band(idx)
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("ires 0 band\n")
+                        #fp.close()
+                        ires = upConv(self.band(idx).shape[0], 
+                                      self.band(idx).shape[1],
+                                      self.band(idx).T, 
+                                      filt.shape[1], filt.shape[0], filt, 
+                                      edges, 1, 2, 0, stag-1, hres_sz[0], 
+                                      hres_sz[1])
+                        ires = np.array(ires).T
+                        #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
+                        print "ires"
+                        print ires
+                        print ires.shape
+
+                        print "pre upconv res"
+                        print res
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("res 0 band\n")
+                        #fp.close()
+                        print "pre res size"
+                        print res.shape
+                        res = upConv(ires.shape[0], ires.shape[1], ires.T, 
+                                     hfilt.shape[1], hfilt.shape[0], hfilt, 
+                                     edges, 2, 1, 1, 0, 
+                                     res_sz[0], res_sz[1], res.T)
+                        res = np.array(res).T
+                        print "res size %d %d" % (res_sz[1], res_sz[0])
+                        print "post res size"
+                        print res.shape
+                        print "post upconv res"
+                        print res
+                    idx += 1
+                    #if 1 in bands:
+                    if 1 in bands and lev in levs:
+                        print "1 band"
+                        print "idx = %d" % idx
+                        print "lres_sz"
+                        print lres_sz
+                        print lres_sz[0]
+                        print lres_sz[1]
+                        print "self.band(idx)"
+                        print self.band(idx)
+                        print self.band(idx).shape
+                        print hfilt
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("ires 1 band\n")
+                        #fp.close()
+                        ires = upConv(self.band(idx).shape[0], 
+                                      self.band(idx).shape[1], 
+                                      self.band(idx).T, 
+                                      hfilt.shape[0], hfilt.shape[1], hfilt, 
+                                      edges, 1, 2, 0, 1, lres_sz[0], lres_sz[1])
+                        ires = np.array(ires).T
+                        #ires = ires.reshape(lres_sz[1], lres_sz[0]).T
+                        print "ires"
+                        print ires
+                        print ires.shape
+                        print filt.shape
+                        print "pre res"
+                        print res
+                        print filt
+                        print edges
+                        print "stag = %d" % stag
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("res 1 band\n")
+                        #fp.close()
+                        res = upConv(ires.shape[0], ires.shape[1], ires.T, 
+                                     filt.shape[0], filt.shape[1], filt, 
+                                     edges, 2, 1, stag-1, 0, 
+                                     res_sz[0], res_sz[1], res.T)
+                        res = np.array(res).T
+                        print "res"
+                        print res
+                    idx += 1
+                    if 2 in bands and lev in levs:
+                        print "2 band"
+                        print "idx = %d" % idx
+                        print "input image"
+                        print self.band(idx)
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("ires 2 band\n")
+                        #fp.close()
+                        ires = upConv(self.band(idx).shape[0],
+                                      self.band(idx).shape[1],
+                                      self.band(idx).T,
+                                      hfilt.shape[0], hfilt.shape[1], hfilt, 
+                                      edges, 1, 2, 0, 1, hres_sz[0], hres_sz[1])
+                        ires = np.array(ires).T
+                        #ires = ires.reshape(hres_sz[1], hres_sz[0]).T
+                        print "ires"
+                        print ires
+                        print "pre res"
+                        print res
+                        #fp = open('tmp.txt', 'a')
+                        #fp.write("res 2 band\n")
+                        #fp.close()
+                        res = upConv(ires.shape[1], ires.shape[0], ires.T, 
+                                     hfilt.shape[1], hfilt.shape[0], hfilt,
+                                     edges, 2, 1, 1, 0, res_sz[0], res_sz[1], 
+                                     res.T)
+                        res = np.array(res).T
+                        print "res"
+                        print res
+                    idx += 1
                 # need to jump back n bands in the idx each loop
-                idx -= 2*len(bands)
+                print 'self.pyrSize[0]'
+                print self.pyrSize[0]
+                if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+                     self.pyrSize[0][1] == 1 ):
+                    #idx -= 1
+                    idx = idx
+                else:
+                    idx -= 2*len(bands)
+                    print '4### idx = %d' % (idx)
         return res
+
+    def reconWpyr(self, *args):
+        # Optional args
+        if len(args) > 0:
+            filt = args[0]
+        else:
+            filt = 'qmf9'
+            
+        if len(args) > 1:
+            edges = args[1]
+        else:
+            edges = 'reflect1'
+
+        if len(args) > 2:
+            levs = args[2]
+        else:
+            levs = 'all'
+
+        if len(args) > 3:
+            bands = args[3]
+        else:
+            bands = 'all'
+
+        #------------------------------------------------------
+
+        maxLev = int(self.wpyrHt() + 1)
+
+        if levs == 'all':
+            levs = np.array(range(maxLev))
+        else:
+            tmpLevs = []
+            for l in levs:
+                tmpLevs.append((maxLev-1)-l)
+            levs = np.array(tmpLevs)
+            if (levs > maxLev).any():
+                print "Error: level numbers must be in the range [0, %d]" % (maxLev)
+        allLevs = np.array(range(maxLev))
+
+        if bands == "all":
+            if ( len(self.band(0)) == 1 or self.band(0).shape[0] == 1 or 
+                 self.band(0).shape[1] == 1 ):
+                bands = np.array([0]);
+            else:
+                bands = np.array(range(3))
+        else:
+            bands = np.array(bands)
+            if (bands < 0).any() or (bands > 2).any():
+                print "Error: band numbers must be in the range [0,2]."
+        
+        if isinstance(filt, basestring):
+            filt = ppu.namedFilter(filt)
+
+        hfilt = ppu.modulateFlip(filt)
+
+        # for odd-length filters, stagger the sampling lattices:
+        if len(filt) % 2 == 0:
+            stag = 2
+        else:
+            stag = 1
+
+        idx = len(self.pyrSize)-1
+        #print 'idx = %d' % (idx)
+
+        #for lev in levs:
+        for lev in allLevs:
+            #print "starting levs loop lev = %d" % lev
+
+            if lev == 0:
+                if 0 in levs:
+                    res = self.pyr[len(self.pyr)-1]
+                else:
+                    res = np.zeros(self.pyr[len(self.pyr)-1].shape)
+                #print res
+                #print 'lev 0 res'
+                #print res
+            elif lev > 0:
+                # compute size of result image: assumes critical sampling
+                #if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+                #     self.pyrSize[0][1] == 1 ):
+                #    resIdx = len(self.pyrSize)-lev-2
+                #else:
+                #    resIdx = len(self.pyrSize)-(3*(lev-1))-3
+                #    #res_sz = self.pyrSize[resIdx]
+                #print "resIdx = %d" % resIdx
+                #res_sz = self.pyrSize[resIdx]
+                #print 'res_sz'
+                #print res_sz
+                #if res_sz[0] == 1:
+                #    #res_sz = (res_sz[0], sum([x[1] for x in self.pyrSize]))
+                #    if lev == 1:
+                #        res_sz = res_sz
+                #    else:
+                #        res_sz = (1, res_sz[1]*2)
+                #elif res_sz[1] == 1:
+                #    #res_sz = (res_sz[0], sum([x[0] for x in self.pyrSize]))
+                #    if lev == 1:
+                #        res_sz = res_sz
+                #    else:
+                #        res_sz = (res_sz[1]*2, 1)
+                #else:
+                #    #horizontal + vertical bands
+                #    res_sz = (self.pyrSize[resIdx][0]+self.pyrSize[resIdx-1][0],
+                #self.pyrSize[resIdx][1]+self.pyrSize[resIdx-1][1])
+                #    lres_sz = np.array([self.pyrSize[resIdx][0], res_sz[1]])
+                #    hres_sz = np.array([self.pyrSize[resIdx-1][0], res_sz[1]])
+                #print 'post res_sz'
+                #print res_sz
+                if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+                     self.pyrSize[0][1] == 1 ):
+                    resIdx = len(self.pyrSize)-lev-2
+                    #print "resIdx = %d" % resIdx
+                    #res_sz = self.pyrSize[resIdx]
+                    #print 'lev = %d' % (lev)
+                    #print 'allLevs'
+                    #print allLevs
+                    if self.pyrSize[0][0] == 1:
+                        #res_sz = (res_sz[0], sum([x[1] for x in self.pyrSize]))
+                        if lev == allLevs[-1]:
+                            #print 'lev flag 1'
+                            res_sz = (1, res_sz[1]*2)
+                        else:
+                            #print 'lev flag 2'
+                            res_sz = self.pyrSize[resIdx]
+                    elif self.pyrSize[0][1] == 1:
+                        #res_sz = (res_sz[0], sum([x[0] for x in self.pyrSize]))
+                        if lev == allLevs[-1]:
+                            #print 'lev flag 1'
+                            res_sz = (res_sz[1]*2, 1)
+                        else:
+                            #print 'lev flag 2'
+                            res_sz = self.pyrSize[resIdx]
+                else:
+                    resIdx = len(self.pyrSize)-(3*(lev-1))-3
+                    #print "resIdx = %d" % resIdx
+                    #horizontal + vertical bands
+                    res_sz = (self.pyrSize[resIdx][0]+self.pyrSize[resIdx-1][0],
+                              self.pyrSize[resIdx][1]+self.pyrSize[resIdx-1][1])
+                    lres_sz = np.array([self.pyrSize[resIdx][0], res_sz[1]])
+                    hres_sz = np.array([self.pyrSize[resIdx-1][0], res_sz[1]])
+                #print 'post res_sz'
+                #print res_sz
+
+
+
+                imageIn = res
+                if res_sz[0] == 1:
+                    #print 'imagein'
+                    #print imageIn
+                    res = upConv(imageIn.shape[0], imageIn.shape[1], imageIn, 
+                                 filt.shape[1], filt.shape[0], filt, edges,
+                                 1, 2, 0, stag-1, res_sz[0], res_sz[1])
+                    res = np.array(res).T
+                    #print 'lev %d res' % (lev)
+                    #print res
+                elif res_sz[1] == 1:
+                    #print 'imagein'
+                    #print imageIn
+                    res = upConv(imageIn.shape[0], imageIn.shape[1], imageIn, 
+                                 filt.shape[0], filt.shape[1], filt, edges,
+                                 2, 1, stag-1, 1, res_sz[0], res_sz[1])
+                    res = np.array(res).T
+                    #print 'lev %d res' % (lev)
+                    #print res
+                else:
+                    ires = upConv(imageIn.shape[1], 
+                                  imageIn.shape[0],
+                                  imageIn.T, filt.shape[1], filt.shape[0], 
+                                  filt, edges, 1, 2, 0, stag-1, lres_sz[0], 
+                                  lres_sz[1])
+                    ires = np.array(ires).T
+                    res = upConv(ires.shape[1], ires.shape[0], ires.T, 
+                                 filt.shape[0],
+                                 filt.shape[1], filt, edges, 2, 1, stag-1, 0, 
+                                 res_sz[0], res_sz[1]).T
+                    res = np.array(res)
+
+                if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+                     self.pyrSize[0][1] == 1 ):
+                    idx = resIdx + 1
+                else:
+                    idx = resIdx - 1
+
+                if res_sz[0] ==1 and lev in levs:
+                    #print 'self.band(idx)'
+                    #print self.band(idx)
+                    res = upConv(self.band(idx).shape[0], 
+                                 self.band(idx).shape[1],
+                                 self.band(idx), hfilt.shape[0], hfilt.shape[1],
+                                 hfilt, edges, 1, 2, 0, 1, res_sz[0], res_sz[1],
+                                 res)
+                    res = np.array(res)
+                    idx -= 1
+                    #print 'lev %d band res' % (lev)
+                    #print res
+                elif res_sz[1] == 1:
+                    #print 'self.band(idx)'
+                    #print self.band(idx)
+                    res = upConv(self.band(idx).shape[0], 
+                                 self.band(idx).shape[1],
+                                 self.band(idx), hfilt.shape[1], hfilt.shape[0],
+                                 hfilt, edges, 2, 1, 1, 0, res_sz[0], res_sz[1],
+                                 res)
+                    res = np.array(res)
+                    idx -= 1
+                    #print 'lev %d band res' % (lev)
+                    #print res
+                else:
+                    if 0 in bands and lev in levs:
+                        ires = upConv(self.band(idx).shape[0], 
+                                      self.band(idx).shape[1],
+                                      self.band(idx).T, 
+                                      filt.shape[1], filt.shape[0], filt, 
+                                      edges, 1, 2, 0, stag-1, hres_sz[0], 
+                                      hres_sz[1])
+                        ires = np.array(ires).T
+
+                        res = upConv(ires.shape[0], ires.shape[1], ires.T, 
+                                     hfilt.shape[1], hfilt.shape[0], hfilt, 
+                                     edges, 2, 1, 1, 0, 
+                                     res_sz[0], res_sz[1], res.T)
+                        res = np.array(res).T
+                    idx += 1
+                    if 1 in bands and lev in levs:
+                        ires = upConv(self.band(idx).shape[0], 
+                                      self.band(idx).shape[1], 
+                                      self.band(idx).T, 
+                                      hfilt.shape[0], hfilt.shape[1], hfilt, 
+                                      edges, 1, 2, 0, 1, lres_sz[0], lres_sz[1])
+                        ires = np.array(ires).T
+
+                        res = upConv(ires.shape[0], ires.shape[1], ires.T, 
+                                     filt.shape[0], filt.shape[1], filt, 
+                                     edges, 2, 1, stag-1, 0, 
+                                     res_sz[0], res_sz[1], res.T)
+                        res = np.array(res).T
+                    idx += 1
+                    if 2 in bands and lev in levs:
+                        ires = upConv(self.band(idx).shape[0],
+                                      self.band(idx).shape[1],
+                                      self.band(idx).T,
+                                      hfilt.shape[0], hfilt.shape[1], hfilt, 
+                                      edges, 1, 2, 0, 1, hres_sz[0], hres_sz[1])
+                        ires = np.array(ires).T
+
+                        res = upConv(ires.shape[1], ires.shape[0], ires.T, 
+                                     hfilt.shape[1], hfilt.shape[0], hfilt,
+                                     edges, 2, 1, 1, 0, res_sz[0], res_sz[1], 
+                                     res.T)
+                        res = np.array(res).T
+                    idx += 1
+                # need to jump back n bands in the idx each loop
+                if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+                     self.pyrSize[0][1] == 1 ):
+                    idx = idx
+                else:
+                    idx -= 2*len(bands)
+        return res
+
+    def set_old(self, *args):
+        if len(args) != 3:
+            print 'Error: three input parameters required:'
+            print '  set(band, location, value)'
+            print '  where band and value are integer and location is a tuple'
+        self.pyr[args[0]][args[1][0]][args[1][1]] = args[2] 
+
+    def set(self, *args):
+        if len(args) != 3:
+            print 'Error: three input parameters required:'
+            print '  set(band, location, value)'
+            print '  where band and value are integer and location is a tuple'
+        if isinstance(args[1], (int, long)):
+            self.pyr[args[0]][0][args[1]] = args[2]
+        elif isinstance(args[1], tuple):
+            self.pyr[args[0]][args[1][0]][args[1][1]] = args[2] 
+        else:
+            print 'Error: location parameter must be int or tuple!'
+            return
+            
+
+    def set1D(self, *args):
+        if len(args) != 3:
+            print 'Error: three input parameters required:'
+            print '  set(band, location, value)'
+            print '  where band and value are integer and location is a tuple'
+        print '%d %d %d' % (args[0], args[1], args[2])
+        print self.pyr[args[0]][0][1]
+        #self.pyr[args[0]][args[1]] = args[2] 
+
+    def pyrLow(self):
+        return np.array(self.band(len(self.pyrSize)-1))
+

@@ -1189,7 +1189,8 @@ def LB2idx(lev,band,nlevs,nbands):
     else:
         # (level-first level) * nbands + first level + current band 
         #idx = (nbands*(lev-1))+1+band
-        idx = (nbands*(lev-1))+1-band + 1
+        #idx = (nbands*(lev-1))+1-band + 1
+        idx = (nbands*lev)-band
     return idx
 
 # given and index into dictionary return level and band
@@ -1779,5 +1780,88 @@ def mkFract(*args):
     else:
         res = np.real(fres)
         res = res / np.sqrt(var2(res))
+
+    return res
+
+# Steer BASIS to the specfied ANGLE.  
+#function res = steer(basis,angle,harmonics,steermtx)
+# 
+# BASIS should be a matrix whose columns are vectorized rotated copies of a 
+# steerable function, or the responses of a set of steerable filters.
+# 
+# ANGLE can be a scalar, or a column vector the size of the basis.
+# 
+# HARMONICS (optional, default is N even or odd low frequencies, as for 
+# derivative filters) should be a list of harmonic numbers indicating
+# the angular harmonic content of the basis.
+# 
+# STEERMTX (optional, default assumes cosine phase harmonic components,
+# and filter positions at 2pi*n/N) should be a matrix which maps
+# the filters onto Fourier series components (ordered [cos0 cos1 sin1 
+# cos2 sin2 ... sinN]).  See steer2HarmMtx.m
+#
+# Eero Simoncelli, 7/96. Ported to Python by Rob Young, 5/14.
+def steer(*args):
+    
+    if len(args) < 2:
+        print 'Error: input parameters basis and angle are required!'
+        return
+
+    basis = args[0]
+
+    num = basis.shape[1]
+
+    #if ( any(size(angle) ~= [size(basis,1) 1]) & any(size(angle) ~= [1 1]) )
+    angle = args[1]
+    if isinstance(angle, (int, long, float)):
+        angle = np.array([angle])
+    else:
+        if angle.shape[0] != basis.shape[0] or angle.shape[1] != 1:
+            print 'ANGLE must be a scalar, or a column vector the size of the basis elements'
+            return
+
+    # If HARMONICS are not passed, assume derivatives.
+    if len(args) < 3:
+        if num%2 == 0:
+            harmonics = np.array(range(num/2))*2+1
+        else:
+            harmonics = np.array(range((15+1)/2))*2
+    else:
+        harmonics = arg[2]
+    if len(harmonics.shape) == 1 or harmonics.shape[0] == 1:
+        harmonics = harmonics.reshape(harmonics.shape[0], 1)
+    elif harmonics.shape[0] != 1 and harmonics.shape[1] != 1:
+        print 'Error: input parameter HARMONICS must be 1D!'
+        return
+
+        #if ((2*size(harmonics,1)-any(harmonics == 0)) ~= num)
+        if 2*np.nonzero(harmonics).shape[0] != num:
+            print 'harmonics list is incompatible with basis size!'
+            return
+
+    # If STEERMTX not passed, assume evenly distributed cosine-phase filters:
+    if len(args) < 4:
+        steermtx = steer2HarmMtx(harmonics, np.pi*np.array(range(num))/num, 
+                                 'even')
+    else:
+        steermtx = args[3]
+
+    steervect = np.zeros((angle.shape[0], num))
+    arg = angle * harmonics[np.nonzero(harmonics)[0]].T
+    if all(harmonics):
+	steervect[:, range(0,num,2)] = np.cos(arg)
+	steervect[:, range(1,num,2)] = np.sin(arg)
+    else:
+	steervect[:, 1] = np.ones((arg.shape[0],1))
+	steervect[:, range(0,num,2)] = np.cos(arg)
+	steervect[:, range(1,num,2)] = np.sin(arg)
+
+    steervect = np.dot(steervect,steermtx)
+
+    if steervect.shape[0] > 1:
+	tmp = np.dot(basis, steervect)
+	res = sum(tmp).T
+    else:
+	res = np.dot(basis, steervect.T)
 
     return res
