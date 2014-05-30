@@ -256,6 +256,7 @@ def compareRecon(recon1, recon2):
     return 1
 
 def comparePyr(matPyr, pyPyr):
+    prec = math.pow(10,-9)
     # compare two pyramids - return 0 for !=, 1 for == 
     # correct number of elements?
     matSz = sum(matPyr.shape)
@@ -300,10 +301,10 @@ def comparePyr(matPyr, pyPyr):
                         #                                  pyPyr.pyr[key][i,j]))
                         #if ( math.fabs(matTmp[i,j] - pyPyr.pyr[key][i,j]) > 
                         if ( math.fabs(matTmp[i,j] - pyPyr.pyr[idx][i,j]) > 
-                             math.pow(10,-9) ):
+                             prec ):
                             print "failed level:%d element:%d %d value:%.15f %.15f" % (idx, i, j, matTmp[i,j], pyPyr.pyr[idx][i,j])
                             return 0
-            print "same to at least 10^-9"
+            print "same to at least %f" % prec
 
     return 1
 
@@ -693,7 +694,7 @@ def sp1Filters():
                     -6.125880e-03, 1.287416e-02, 5.641530e-03, 8.957260e-03, 
                     0.000000e+00, -8.957260e-03, -5.641530e-03, -1.287416e-02, 
                     6.125880e-03]]).T )
-    filters['bfilts'] = -filters['bfilts']
+    filters['bfilts'] = np.negative(filters['bfilts'])
 
     return filters
 

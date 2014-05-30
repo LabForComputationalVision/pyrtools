@@ -209,6 +209,11 @@ class spFilterTests(unittest.TestCase):
             self.failUnless((matFilt5[key] == pySP5filt[key]).all())
 
 class SpyrTests(unittest.TestCase):
+    def test00(self):
+        matPyr = scipy.io.loadmat('matFiles/buildSpyr00.mat')
+        pyRamp = ppu.mkRamp((20,20))
+        pyPyr = ppt.Spyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('matFiles/buildSpyr1.mat')
         img = Image.open('lenna-256x256.tif')
