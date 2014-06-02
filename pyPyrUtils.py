@@ -1182,6 +1182,12 @@ def sp5Filters():
 
 # convert level and band to dictionary index
 def LB2idx(lev,band,nlevs,nbands):
+    print 'LB2idx:in lev=%d band=%d nlevs=%d nbands=%d' % (lev,band,nlevs,
+                                                           nbands)
+    # reset band to match matlab version
+    band += (nbands-1)
+    if band > nbands-1:
+        band = band - nbands
     if lev == 0:
         idx = 0
     elif lev == nlevs-1:
@@ -1192,6 +1198,10 @@ def LB2idx(lev,band,nlevs,nbands):
         #idx = (nbands*(lev-1))+1+band
         #idx = (nbands*(lev-1))+1-band + 1
         idx = (nbands*lev)-band
+        #idx = (nbands*lev)-band + 1
+    print 'LB2idx:out lev=%d band=%d nlevs=%d nbands=%d idx=%d' % (lev,band,
+                                                                   nlevs,nbands,
+                                                                   idx)
     return idx
 
 # given and index into dictionary return level and band

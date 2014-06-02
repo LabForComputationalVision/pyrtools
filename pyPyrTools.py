@@ -501,7 +501,7 @@ class SpyrORIG(pyramid):
         ppu.showIm(d_im)
 
 
-# works with sp3Filters, but not sp1Filters
+# works with all filters
 class Spyr(pyramid):
     filt = ''
     edges = ''
@@ -757,15 +757,20 @@ class Spyr(pyramid):
             bands = np.array(range(self.numBands()))
         else:
             bands = np.array(bands)
-            if (bands < 0).any() or (bands > self.numBands).any():
+            #if (bands < 0).any() or (bands > self.numBands).any():
+            if (bands < 0).any() or (bands > bfilts.shape[1]).any():
                 print "Error: band numbers must be in the range [0, %d]." % (self.numBands())
             else:
                 bands = np.array(bands)
+        print 'bands'
+        print bands
 
         # make a list of all pyramid layers to be used in reconstruction
         # FIX: if not supplied by user
         Nlevs = self.spyrHt()+2
+        print 'Nlevs = %d' % (Nlevs)
         Nbands = self.numBands()
+        print 'Nbands = %d' % (Nbands)
 
         reconList = []  # pyr indices used in reconstruction
         for lev in levs:
@@ -773,8 +778,10 @@ class Spyr(pyramid):
                 reconList.append( ppu.LB2idx(lev, -1, Nlevs, Nbands) )
             else:
                 for band in bands:
+                    print 'lev=%d band=%d idx=%d' % (lev, band, ppu.LB2idx(lev, band, Nlevs, Nbands) )
                     reconList.append( ppu.LB2idx(lev, band, Nlevs, Nbands) )
-                    
+        print 'reconList'
+        print reconList
         # reconstruct
         # FIX: shouldn't have to enter step, start and stop in upConv!
         band = -1
@@ -782,9 +789,13 @@ class Spyr(pyramid):
             if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 recon = np.array(self.pyr[len(self.pyrSize)-1].copy())
+                print 'recon'
+                print recon
             elif lev == Nlevs-1:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 recon = np.zeros(self.pyr[len(self.pyrSize)-1].shape)
+                print 'recon'
+                print recon
             elif lev == 0 and 0 in reconList:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
@@ -794,6 +805,8 @@ class Spyr(pyramid):
                 recon = upConv(sz[0], sz[1], recon, lo0filt.shape[0], 
                                lo0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[1], sz[0])
+                print 'recon'
+                print recon
                 #recon = np.array(recon).reshape(sz[0], sz[1])
                 recon = upConv(self.pyrSize[idx][0], self.pyrSize[idx][1], 
                                self.pyr[idx], hi0filt.shape[0], 
@@ -801,6 +814,8 @@ class Spyr(pyramid):
                                1, 1, 0, 0, 
                                self.pyrSize[idx][1], self.pyrSize[idx][0], 
                                recon)
+                print 'recon'
+                print recon
                 #recon = np.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
             elif lev == 0:
                 sz = recon.shape
@@ -812,15 +827,35 @@ class Spyr(pyramid):
                 for band in range(Nbands-1,-1,-1):
                     idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                     if idx in reconList:
-                        filt = np.negative(bfilts[:,band].reshape(bfiltsz, 
-                                                                  bfiltsz,
-                                                                  order='C'))
+                        print 'band = %d' % (band)
+                        print 'idx = %d' % (idx)
+                        print 'reconList'
+                        print reconList
+                        print bfilts
+                        print 'filter band idx = %d' % (band)
+                        # made filter band match matlab version
+                        #filtBand = band
+                        #if filtBand > Nbands-1:
+                        #    filtBand = filtBand - Nbands
+                        #print 'new filter band idx = %d' % (filtBand)
+                        #filt = np.negative(bfilts[:,band].reshape(bfiltsz, 
+                        #bfiltsz,
+                        #                                           order='C'))
+                        filt = bfilts[:,band].reshape(bfiltsz, 
+                                                      bfiltsz,
+                                                      order='F')
+                        print 'filt'
+                        print filt
+                        print 'recon band'
+                        print self.pyr[idx]
                         recon = upConv(self.pyrSize[idx][0], 
                                        self.pyrSize[idx][1], 
                                        self.pyr[idx],
                                        bfiltsz, bfiltsz, filt, edges, 1, 1, 0, 
                                        0, self.pyrSize[idx][1], 
                                        self.pyrSize[idx][0], recon)
+                        print 'recon'
+                        print recon
                         #recon = np.array(recon).reshape(self.pyrSize[idx][0], 
                         #                                self.pyrSize[idx][1],
                         #                                order='C')
@@ -836,6 +871,8 @@ class Spyr(pyramid):
                                recon.T,
                                lofilt.shape[0], lofilt.shape[1], lofilt, edges, 
                                mult, mult, 0, 0, newSz[0], newSz[1]).T
+                print 'recon'
+                print recon
                 #recon = np.array(recon).reshape(newSz[0], newSz[1], order='F')
         return recon
 
