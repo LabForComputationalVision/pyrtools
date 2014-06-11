@@ -555,7 +555,6 @@ class Spyr(pyramid):
                 ht = args[1]
         else:
             ht = max_ht
-        print 'ht = %d  max_ht = %d' % (ht, max_ht)
 
         if len(args) > 3:
             edges = args[3]
@@ -564,8 +563,6 @@ class Spyr(pyramid):
 
         #------------------------------------------------------
 
-        print 'bfilts.shape'
-        print bfilts.shape
         nbands = bfilts.shape[1]
 
         self.pyr = []
@@ -573,7 +570,6 @@ class Spyr(pyramid):
         for n in range((ht*nbands)+2):
             self.pyr.append([])
             self.pyrSize.append([])
-        print 'self.pyr len = %d' % (len(self.pyr))
 
         im = self.image
         im_sz = im.shape
@@ -582,11 +578,9 @@ class Spyr(pyramid):
         hi0 = corrDn(im_sz[1], im_sz[0], im, hi0filt.shape[0], hi0filt.shape[1],
                      hi0filt, edges);
         hi0 = np.array(hi0).reshape(im_sz[0], im_sz[1])
-        #print hi0
 
         self.pyr[pyrCtr] = hi0.copy()
         self.pyrSize[pyrCtr] = hi0.shape
-        print '1****** writing to %d' % (pyrCtr)
         #self.pyr.append(hi0.copy())
         #self.pyrSize.append(hi0.shape)
         pyrCtr += 1
@@ -594,8 +588,6 @@ class Spyr(pyramid):
         lo = corrDn(im_sz[1], im_sz[0], im, lo0filt.shape[0], lo0filt.shape[1],
                     lo0filt, edges);
         lo = np.array(lo).reshape(im_sz[0], im_sz[1])
-        #print lo
-        #print bfilts
         for i in range(ht):
             lo_sz = lo.shape
             # assume square filters  -- start of buildSpyrLevs
@@ -604,7 +596,6 @@ class Spyr(pyramid):
             #pyrCtr += nbands-1
             #for b in range(bfilts.shape[1]-1,-1,-1):
             for b in range(bfilts.shape[1]):
-                print 'b=%d' % (b)
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz).T
                 #print 'filt'
                 #print filt
@@ -612,11 +603,6 @@ class Spyr(pyramid):
                 #print lo
                 #band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, bfiltsz, 
                 #                           bfiltsz, filt, edges) )
-                print lo_sz
-                print lo
-                print bfiltsz
-                print filt
-                print edges
                 band = corrDn(lo_sz[1], lo_sz[0], lo, bfiltsz, bfiltsz, filt, 
                               edges)
                 #band = np.negative( corrDn(lo_sz[1], lo_sz[0], lo, 
@@ -624,7 +610,6 @@ class Spyr(pyramid):
                 #                           edges) )
                 #print 'band'
                 #print band
-                print '2****** writing to %d' % (pyrCtr)
                 self.pyr[pyrCtr] = np.array(band.copy()).reshape(lo_sz[0], 
                                                                  lo_sz[1])
                 self.pyrSize[pyrCtr] = lo_sz
@@ -643,7 +628,6 @@ class Spyr(pyramid):
             #print 'lo'
             #print lo
 
-        print '3****** writing to %d' % (pyrCtr)
         self.pyr[pyrCtr] = np.array(lo).copy()
         self.pyrSize[pyrCtr] = lo.shape
         #self.pyr.append(np.array(lo).copy())
@@ -697,6 +681,7 @@ class Spyr(pyramid):
 
     def reconSpyr(self, *args):
         # defaults
+
         if len(args) > 0:
             if args[0] == 'sp0Filters':
                 filters = ppu.sp0Filters()
@@ -762,15 +747,11 @@ class Spyr(pyramid):
                 print "Error: band numbers must be in the range [0, %d]." % (self.numBands())
             else:
                 bands = np.array(bands)
-        print 'bands'
-        print bands
 
         # make a list of all pyramid layers to be used in reconstruction
         # FIX: if not supplied by user
         Nlevs = self.spyrHt()+2
-        print 'Nlevs = %d' % (Nlevs)
         Nbands = self.numBands()
-        print 'Nbands = %d' % (Nbands)
 
         reconList = []  # pyr indices used in reconstruction
         for lev in levs:
@@ -778,10 +759,7 @@ class Spyr(pyramid):
                 reconList.append( ppu.LB2idx(lev, -1, Nlevs, Nbands) )
             else:
                 for band in bands:
-                    print 'lev=%d band=%d idx=%d' % (lev, band, ppu.LB2idx(lev, band, Nlevs, Nbands) )
                     reconList.append( ppu.LB2idx(lev, band, Nlevs, Nbands) )
-        print 'reconList'
-        print reconList
         # reconstruct
         # FIX: shouldn't have to enter step, start and stop in upConv!
         band = -1
@@ -789,13 +767,9 @@ class Spyr(pyramid):
             if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 recon = np.array(self.pyr[len(self.pyrSize)-1].copy())
-                print 'recon'
-                print recon
             elif lev == Nlevs-1:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 recon = np.zeros(self.pyr[len(self.pyrSize)-1].shape)
-                print 'recon'
-                print recon
             elif lev == 0 and 0 in reconList:
                 idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
@@ -805,8 +779,6 @@ class Spyr(pyramid):
                 recon = upConv(sz[0], sz[1], recon, lo0filt.shape[0], 
                                lo0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
                                sz[1], sz[0])
-                print 'recon'
-                print recon
                 #recon = np.array(recon).reshape(sz[0], sz[1])
                 recon = upConv(self.pyrSize[idx][0], self.pyrSize[idx][1], 
                                self.pyr[idx], hi0filt.shape[0], 
@@ -814,8 +786,6 @@ class Spyr(pyramid):
                                1, 1, 0, 0, 
                                self.pyrSize[idx][1], self.pyrSize[idx][0], 
                                recon)
-                print 'recon'
-                print recon
                 #recon = np.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
             elif lev == 0:
                 sz = recon.shape
@@ -827,12 +797,6 @@ class Spyr(pyramid):
                 for band in range(Nbands-1,-1,-1):
                     idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
                     if idx in reconList:
-                        print 'band = %d' % (band)
-                        print 'idx = %d' % (idx)
-                        print 'reconList'
-                        print reconList
-                        print bfilts
-                        print 'filter band idx = %d' % (band)
                         # made filter band match matlab version
                         #filtBand = band
                         #if filtBand > Nbands-1:
@@ -844,18 +808,12 @@ class Spyr(pyramid):
                         filt = bfilts[:,band].reshape(bfiltsz, 
                                                       bfiltsz,
                                                       order='F')
-                        print 'filt'
-                        print filt
-                        print 'recon band'
-                        print self.pyr[idx]
                         recon = upConv(self.pyrSize[idx][0], 
                                        self.pyrSize[idx][1], 
                                        self.pyr[idx],
                                        bfiltsz, bfiltsz, filt, edges, 1, 1, 0, 
                                        0, self.pyrSize[idx][1], 
                                        self.pyrSize[idx][0], recon)
-                        print 'recon'
-                        print recon
                         #recon = np.array(recon).reshape(self.pyrSize[idx][0], 
                         #                                self.pyrSize[idx][1],
                         #                                order='C')
@@ -871,8 +829,6 @@ class Spyr(pyramid):
                                recon.T,
                                lofilt.shape[0], lofilt.shape[1], lofilt, edges, 
                                mult, mult, 0, 0, newSz[0], newSz[1]).T
-                print 'recon'
-                print recon
                 #recon = np.array(recon).reshape(newSz[0], newSz[1], order='F')
         return recon
 

@@ -9,7 +9,12 @@ import math
 import struct
 import re
 from pyPyrCcode import *
+import sys
+#import PyQt4.QtGui import QApplication, QDialog
+from PyQt4 import QtGui
+from PyQt4 import QtCore
 
+# adding dpi as input parameter.  Assumes 96ppi as default
 def showIm(*args):
     if len(args) == 0:
         #print "showIm( matrix, range, zoom, label, colormap, colorbar )"
@@ -22,11 +27,12 @@ def showIm(*args):
         print "    range=[p1-(p2-p1)/8, p2+(p2-p1)/8], where p1 is the 10th "
         print "    percientile value of the sorted matix samples, and p2 is "
         print "    the 90th percentile value."
-        #print "  zoom specifies the number of matrix samples per screen pixel."
-        #print "    It will be rounded to an integer, or 1 divided by an "
-        #print "    integer.  A value of 'same' or 'auto' (default) causes the "
-        #print "    zoom value to be chosen automatically to fit the image into"
-        #print "    the current axes.  A value of 'full' fills the axis region "
+        print "  zoom specifies the number of matrix samples per screen pixel."
+        print "    It will be rounded to an integer, or 1 divided by an "
+        print "    integer.  A value of 'same' or 'auto' (default) causes the "
+        print "    zoom value to be chosen automatically to fit the image into"
+        print "    the current axes."
+        #print "    A value of 'full' fills the axis region "
         #print "    (leaving no room for labels)."
         print "  label - A string that is used as a figure title."
         print "  colormap must contain the string 'auto' (grey colormap will " 
@@ -42,6 +48,7 @@ def showIm(*args):
         label = 1
         colorbar = False
         colormap = cm.Greys_r
+        dpi = 96
     if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
             if args[1] is "auto":
@@ -63,28 +70,43 @@ def showIm(*args):
                 return
         else:
             imRange = args[1][0], args[1][1]
-    #if len(args) > 2:   # zoom entered
-    #    # no equivalent to matlab's pixelAxes in matplotlib. need dpi
-    #    # might work with tkinter, but then have to change everything
-    #    zoom = 1
-    if len(args) > 2:   # label entered
-        label = args[2]
-    if len(args) > 3:   # colormap entered
-        if args[3] is "auto":
+    if len(args) > 2:   # zoom entered
+        zoom = args[2]
+    else:
+        zoom = 1
+    if len(args) > 3:   # label entered
+        label = args[3]
+    if len(args) > 4:   # colormap entered
+        if args[4] is "auto":
             colormap = cm.Greys_r
         else:  # got a variable name
             colormap = args[3]
-    if len(args) > 4 and args[4]:   # colorbar entered and set to true
-        colorbar = args[4]
+    if len(args) > 5 and args[5]:   # colorbar entered and set to true
+        colorbar = args[5]
+    if len(args) > 6:
+        dpi = args[6]
         
+    dims = (matrix.shape[0]/dpi*zoom, matrix.shape[1]/dpi*zoom)
+    plt.figure(figsize=dims, dpi=dpi)
+    #figtxt = 'Range: [0,0]'
+    #plt.figtext(0.25, 0.05, figtxt)
+    #figtxt = 'Dims: [%d %d]/1' % (matrix.shape[0], matrix.shape[1])
+    #plt.figtext(0.25, 0.0005, figtxt)
+    figtxt = 'Dims: [%d %d]*%.1f' % (matrix.shape[0], matrix.shape[1], zoom)
+    #plt.figtext(0.1, 0.01, figtxt)
+    plt.xlabel(figtxt)
     #imgplot = plt.imshow(matrix, colormap, origin='lower').set_clim(imRange)
-    imgplot = plt.imshow(matrix, colormap).set_clim(imRange)
+    imgplot = plt.imshow(matrix, colormap, interpolation=None).set_clim(imRange)
     #plt.gca().invert_yaxis()  # default is inverted y from matlab
     if label != 0 and label != 1:
         plt.title(label)
     if colorbar:
         plt.colorbar(imgplot, cmap=colormap)
     #pylab.show()
+    #plt.axis('off')
+    ax = plt.gca()
+    ax.set_yticks([])
+    ax.set_xticks([])
     plt.show()
     
 # Compute maximum pyramid height for given image and filter sizes.
@@ -1182,8 +1204,6 @@ def sp5Filters():
 
 # convert level and band to dictionary index
 def LB2idx(lev,band,nlevs,nbands):
-    print 'LB2idx:in lev=%d band=%d nlevs=%d nbands=%d' % (lev,band,nlevs,
-                                                           nbands)
     # reset band to match matlab version
     band += (nbands-1)
     if band > nbands-1:
@@ -1198,10 +1218,6 @@ def LB2idx(lev,band,nlevs,nbands):
         #idx = (nbands*(lev-1))+1+band
         #idx = (nbands*(lev-1))+1-band + 1
         idx = (nbands*lev)-band
-        #idx = (nbands*lev)-band + 1
-    print 'LB2idx:out lev=%d band=%d nlevs=%d nbands=%d idx=%d' % (lev,band,
-                                                                   nlevs,nbands,
-                                                                   idx)
     return idx
 
 # given and index into dictionary return level and band
@@ -1876,3 +1892,65 @@ def steer(*args):
 	res = np.dot(basis, steervect.T)
 
     return res
+
+def showImWorks(im):
+    app = QtGui.QApplication(sys.argv)
+    window = QtGui.QMainWindow()
+
+    window.setWindowTitle('showIm')
+    window.setGeometry(0,0,265,295)
+
+    pic = QtGui.QLabel(window)
+    pic.setGeometry(5,5,260,260)
+
+    im = np.require(im, np.uint8, 'C')
+    (w, h) = im.shape
+    qim = QtGui.QImage(im.data, w, h, QtGui.QImage.Format_Indexed8)
+    qim.ndarray = im
+    for i in range(256):
+        qim.setColor(i, QtGui.QColor(i,i,i).rgb())
+
+    pixmap = QtGui.QPixmap()
+    pixmap = QtGui.QPixmap.fromImage(qim)
+
+    pic.setPixmap(pixmap)
+
+    window.show()
+    sys.exit(app.exec_())
+
+def showIm(im):
+    app = QtGui.QApplication(sys.argv)
+    window = QtGui.QMainWindow()
+
+    window.setWindowTitle('showIm')
+    #window.setGeometry(0,0,265,295)
+
+    im = np.require(im, np.uint8, 'C')
+    (w, h) = im.shape
+    qim = QtGui.QImage(im.data, w, h, QtGui.QImage.Format_Indexed8)
+    qim.ndarray = im
+    for i in range(256):
+        qim.setColor(i, QtGui.QColor(i,i,i).rgb())
+
+    pixmap = QtGui.QPixmap()
+    pixmap = QtGui.QPixmap.fromImage(qim)
+
+    mainWidget = QtGui.QWidget()
+    layout = QtGui.QVBoxLayout(mainWidget)
+    im = QtGui.QLabel()
+    im.setPixmap(pixmap)
+    layout.addWidget(im)
+    rlab = QtGui.QLabel()
+    rlab.setText('Range: [%d %d]' % (w, h))
+    rlab.setAlignment(QtCore.Qt.AlignCenter)
+    layout.addWidget(rlab)
+    dlab = QtGui.QLabel()
+    dlab.setText('Dims: [%d %d]' % (w, h))
+    dlab.setAlignment(QtCore.Qt.AlignCenter)
+    layout.addWidget(dlab)
+    mainWidget.setLayout(layout)
+    window.setCentralWidget(mainWidget)
+
+
+    window.show()
+    sys.exit(app.exec_())
