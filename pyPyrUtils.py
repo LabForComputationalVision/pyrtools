@@ -10,9 +10,9 @@ import struct
 import re
 from pyPyrCcode import *
 import sys
-#import PyQt4.QtGui import QApplication, QDialog
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+import JBhelpers as jbh
 
 # adding dpi as input parameter.  Assumes 96ppi as default
 def showIm(*args):
@@ -1893,64 +1893,125 @@ def steer(*args):
 
     return res
 
-def showImWorks(im):
+def showImNew(*args):
+    # check and set input parameters
+    if len(args) == 0:
+        print "showIm( matrix, range, zoom, label, nshades )"
+        print "  matrix is string. It should be the name of a 2D array."
+        print "  range is a two element tuple.  It specifies the values that "
+        print "    map to the min and max colormap values.  Passing a value "
+        print "    of 'auto' (default) sets range=[min,max].  'auto2' sets "
+        print "    range=[mean-2*stdev, mean+2*stdev].  'auto3' sets "
+        print "    range=[p1-(p2-p1)/8, p2+(p2-p1)/8], where p1 is the 10th "
+        print "    percientile value of the sorted matix samples, and p2 is "
+        print "    the 90th percentile value."
+        print "  zoom specifies the number of matrix samples per screen pixel."
+        print "    It will be rounded to an integer, or 1 divided by an "
+        print "    integer."
+        #print "    A value of 'same' or 'auto' (default) causes the "
+        #print "    zoom value to be chosen automatically to fit the image into"
+        #print "    the current axes."
+        #print "    A value of 'full' fills the axis region "
+        #print "    (leaving no room for labels)."
+        print "  label - A string that is used as a figure title."
+        print "  NSHADES (optional) specifies the number of gray shades, "
+        print "    and defaults to the size of the current colormap. "
+
+    if len(args) > 0:   # matrix entered
+        matrix = np.array(args[0])
+
+    if len(args) > 1:   # range entered
+        if isinstance(args[1], basestring):
+            if args[1] is "auto":
+                imRange = ( np.amin(matrix), np.amax(matrix) )
+            elif args[1] is "auto2":
+                imRange = ( matrix.mean()-2*matrix.std(), 
+                            matrix.mean()+2*matrix.std() )
+            elif args[1] is "auto3":
+                #p1 = np.percentile(matrix, 10)  not in python 2.6.6?!
+                #p2 = np.percentile(matrix, 90)
+                p1 = sps.scoreatpercentile(np.hstack(matrix), 10)
+                p2 = sps.scoreatpercentile(np.hstack(matrix), 90)
+                imRange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
+            else:
+                print "Error: range of %s is not recognized." % args[1]
+                print "       please use a two element tuple or "
+                print "       'auto', 'auto2' or 'auto3'"
+                print "       enter 'showIm' for more info about options"
+                return
+        else:
+            imRange = args[1][0], args[1][1]
+    else:
+        imRange = ( np.amin(matrix), np.amax(matrix) )
+    
+    if len(args) > 2:   # zoom entered
+        zoom = args[2]
+    else:
+        zoom = 1
+
+    if len(args) > 3:   # label entered
+        label = args[3]
+    else:
+        label = ''
+
+    if len(args) > 4:   # colormap entered
+        nshades = args[4]
+    else:
+        nshades = 256
+
+    # create window
     app = QtGui.QApplication(sys.argv)
     window = QtGui.QMainWindow()
-
     window.setWindowTitle('showIm')
-    window.setGeometry(0,0,265,295)
 
-    pic = QtGui.QLabel(window)
-    pic.setGeometry(5,5,260,260)
-
-    im = np.require(im, np.uint8, 'C')
-    (w, h) = im.shape
-    qim = QtGui.QImage(im.data, w, h, QtGui.QImage.Format_Indexed8)
-    qim.ndarray = im
+    # draw image in pixmap
+    matrix = jbh.rerange(matrix.astype(float), imRange[0], imRange[1])
+    matrix = np.require(matrix, np.uint8, 'C')
+    (w, h) = matrix.shape
+    qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
+    qim.ndarray = matrix
+    
+    # make colormap
+    incr = (256/nshades)+1
+    colors = range(0,255,(256/nshades)+1)
+    colors[-1] = 255
+    colctr = -1
     for i in range(256):
-        qim.setColor(i, QtGui.QColor(i,i,i).rgb())
+        if i % incr == 0:
+            colctr += 1
+        qim.setColor(i, QtGui.QColor(colors[colctr], colors[colctr], 
+                                     colors[colctr]).rgb())
+
+    # zoom
+    dims = (matrix.shape[0]*zoom, matrix.shape[1]*zoom)
+    qim = qim.scaled(dims[0], dims[1])
 
     pixmap = QtGui.QPixmap()
     pixmap = QtGui.QPixmap.fromImage(qim)
 
-    pic.setPixmap(pixmap)
-
-    window.show()
-    sys.exit(app.exec_())
-
-def showIm(im):
-    app = QtGui.QApplication(sys.argv)
-    window = QtGui.QMainWindow()
-
-    window.setWindowTitle('showIm')
-    #window.setGeometry(0,0,265,295)
-
-    im = np.require(im, np.uint8, 'C')
-    (w, h) = im.shape
-    qim = QtGui.QImage(im.data, w, h, QtGui.QImage.Format_Indexed8)
-    qim.ndarray = im
-    for i in range(256):
-        qim.setColor(i, QtGui.QColor(i,i,i).rgb())
-
-    pixmap = QtGui.QPixmap()
-    pixmap = QtGui.QPixmap.fromImage(qim)
-
+    # set up widgets and layout
     mainWidget = QtGui.QWidget()
     layout = QtGui.QVBoxLayout(mainWidget)
+    if len(label) > 0:
+        tlab = QtGui.QLabel()
+        tlab.setText(label)
+        tlab.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(tlab)
     im = QtGui.QLabel()
     im.setPixmap(pixmap)
     layout.addWidget(im)
     rlab = QtGui.QLabel()
-    rlab.setText('Range: [%d %d]' % (w, h))
+    rlab.setText('Range: [%.1f %.1f]' % (imRange[0], imRange[1]))
     rlab.setAlignment(QtCore.Qt.AlignCenter)
     layout.addWidget(rlab)
     dlab = QtGui.QLabel()
-    dlab.setText('Dims: [%d %d]' % (w, h))
+    dlab.setText('Dims: [%d %d] * %.2f' % (w, h, zoom))
     dlab.setAlignment(QtCore.Qt.AlignCenter)
     layout.addWidget(dlab)
     mainWidget.setLayout(layout)
     window.setCentralWidget(mainWidget)
 
-
+    # display window and exit when requested
     window.show()
     sys.exit(app.exec_())
+
