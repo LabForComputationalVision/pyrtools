@@ -9,6 +9,7 @@ from operator import mul
 import os
 import scipy.misc as spm
 import cmath
+import JBhelpers as jbh
 
 class pyramid:  # pyramid
     # properties
@@ -976,7 +977,7 @@ class Spyr(pyramid):
             d_im[llpos[bnum,0]:urpos[bnum,0], 
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
             
-        ppu.showIm(d_im)
+        ppu.showIm(d_im[:self.pyrSize[0][0]*2,:])
  
 class SpyrNEW2(pyramid):
     filt = ''
@@ -2367,7 +2368,7 @@ class Lpyr(pyramid):
             for i in pind:
                 pind[i] = self.band(i).shape
             urpos = llpos + pind
-            d_im = np.zeros((np.max(urpos), np.max(urpos)))  # need bg here?
+            d_im = np.ones((np.max(urpos), np.max(urpos))) * 255
             
             # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
             nshades = 256
@@ -2379,7 +2380,14 @@ class Lpyr(pyramid):
                 #d_im[llpos[bnum,0]:urpos[bnum,0],llpos[bnum,1]:urpos[bnum,1]]=(
                     #(bnum+1)*10 )
             
-            ppu.showIm(d_im)
+            ##ppu.showIm(d_im)  # works
+            ##plt.imshow(d_im, cm.Greys_r)
+            #plt.imshow(d_im[:self.band(0).shape[0]][:], cm.Greys_r)
+            #ax = plt.gca()
+            #ax.set_yticks([])
+            #ax.set_xticks([])
+            # FIX: need a mode to switch between above and below display
+            jbh.showIm(d_im[:self.band(0).shape[0]][:])
 
 class Gpyr(Lpyr):
     filt = ''
@@ -3567,6 +3575,13 @@ class Wpyr(Lpyr):
 
         return ht
 
+    def numBands(self):
+        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or 
+             self.pyrSize[0][1] == 1 ): 
+            nbands = 1
+        else:
+            nbands = 3
+        return nbands
 
     def reconWpyr_old(self, *args):
         # Optional args
@@ -4213,3 +4228,161 @@ class Wpyr(Lpyr):
     def pyrLow(self):
         return np.array(self.band(len(self.pyrSize)-1))
 
+    def showPyr(self, *args):
+        # determine 1D or 2D pyramid:
+        if self.pyrSize[0][0] == 1 or self.pyrSize[0][1] == 1:
+            nbands = 1
+        else:
+            nbands = 3
+
+        if len(args) > 0:
+            prange = args[0]
+        else:
+            if nbands == 1:
+                prange = 'auto1'
+            else:
+                prange = 'auto2'
+
+        if len(args) > 1:
+            gap = args[1]
+        else:
+            gap = 1
+
+        if len(args) > 2:
+            scale = args[2]
+        else:
+            if nbands == 1:
+                scale = np.sqrt(2)
+            else:
+                scale = 2
+
+        ht = int(self.wpyrHt())
+        nind = len(self.pyr)
+
+        ## Auto range calculations:
+        if prange == 'auto1':
+            prange = np.ones((nind,1))
+            mn = 0.0
+            mx = 0.0
+            for lnum in range(1,ht+1):
+                for bnum in range(nbands):
+                    idx = ppu.LB2idx(lnum, bnum, ht+2, nbands)
+                    band = self.band(idx)/(np.power(scale,lnum))
+                    prange[(lnum-1)*nbands+bnum+1] = np.power(scale,lnum-1)
+                    bmn = np.amin(band)
+                    bmx = np.amax(band)
+                    mn = min([mn, bmn])
+                    mx = max([mx, bmx])
+            if nbands == 1:
+                pad = (mx-mn)/12
+                mn = mn-pad
+                mx = mx+pad
+            prange = np.outer(prange, np.array([mn, mx]))
+            band = self.pyrLow()
+            mn = np.amin(band)
+            mx = np.amax(band)
+            if nbands == 1:
+                pad = (mx-mn)/12
+                mn = mn-pad
+                mx = mx+pad
+            prange[nind-1,:] = np.array([mn, mx])
+        elif prange == 'indep1':
+            prange = np.zeros((nind,2))
+            for bnum in range(nind):
+                band = self.band(bnum)
+                mn = band.min()
+                mx = band.max()
+                if nbands == 1:
+                    pad = (mx-mn)/12
+                    mn = mn-pad
+                    mx = mx+pad
+                prange[bnum,:] = np.array([mn, mx])
+        elif prange == 'auto2':
+            prange = np.ones(nind)
+            sqsum = 0
+            numpixels = 0
+            for lnum in range(1,ht+1):
+                for bnum in range(nbands):
+                    #band = self.band(ppu.LB2idx(lnum, bnum, ht+2, nbands))
+                    band = self.band(ppu.LB2idx(lnum, bnum, ht, nbands))
+                    band = band / np.power(scale,lnum-1)
+                    sqsum += np.sum( np.power(band, 2) )
+                    numpixels += band.shape[0] * band.shape[1]
+                    prange[(lnum-1)*nbands+bnum+1] = np.power(scale, lnum-1)
+            stdev = np.sqrt( sqsum / (numpixels-1) )
+            prange = np.outer(prange, np.array([-3*stdev, 3*stdev]))
+            band = self.pyrLow()
+            av = np.mean(band)
+            stdev = np.sqrt( np.var(band) )
+            prange[nind-1,:] = np.array([av-2*stdev, av+2*stdev])
+        elif prange == 'indep2':
+            prange = np.zeros((nind,2))
+            for bnum in range(nind-1):
+                band = self.band(bnum)
+                stdev = np.sqrt( np.var(band) )
+                prange[bnum,:] = np.array([-3*stdev, 3*stdev])
+            band = self.pyrLow()
+            av = np.mean(band)
+            stdev = np.sqrt( np.var(band) )
+            prange[nind-1,:] = np.array([av-2*stdev, av+2*stdev])
+        elif isinstance(prange, basestring):
+            print "Error:Bad RANGE argument: %s'" % (prange)
+        elif prange.shape[0] == 1 and prange.shape[1] == 2:
+            scales = np.power(scale, range(ht))
+            scales = np.outer( np.ones((nbands,1)), scales )
+            scales = np.array([1, scales, np.power(scale, ht)])
+            prange = np.outer(scales, prange)
+            band = self.pyrLow()
+            prange[nind,:] += np.mean(band) - np.mean(prange[nind,:])
+
+
+        if nbands == 1:   # 1D signal
+            fig = plt.figure()
+            ax0 = fig.add_subplot(len(self.pyrSize), 1, 0)
+            ax0.set_frame_on(False)
+            ax0.get_xaxis().tick_bottom()
+            ax0.get_xaxis().tick_top()
+            ax0.get_yaxis().tick_right()
+            ax0.get_yaxis().tick_left()
+            ax0.get_yaxis().set_visible(False)
+            for bnum in range(nind):
+                band = self.band(bnum)
+                subplot(len(self.pyrSize), 1, bnum+1)
+                plot(band.T)
+                #ylim(pRange[bnum,:])
+                #xlim((0,self.band(bnum).shape[1]-1))
+            plt.show()
+        else:
+            colormap = cm.Greys_r
+            bg = 255
+
+            # compute positions of subbands
+            llpos = np.ones((nind,2));
+
+            #for lnum in range(1,ht+1):
+            for lnum in range(ht):
+                #ind1 = (lnum-1)*nbands + 1
+                #ind1 = lnum*nbands + 1
+                ind1 = lnum*nbands
+                xpos = self.pyrSize[ind1][1] + 1 + gap*(ht-lnum+1);
+                ypos = self.pyrSize[ind1+1][0] + 1 + gap*(ht-lnum+1);
+                llpos[ind1:ind1+3, :] = [[ypos, 1], [1, xpos], [ypos, xpos]]
+            llpos[nind-1,:] = [1, 1]   # lowpass
+    
+            # make position list positive, and allocate appropriate image:
+            llpos = llpos - ((np.ones((nind,1)) * np.amin(llpos, axis=0)) + 1) + 1
+            #urpos = llpos + self.pyrSize - 1
+            urpos = llpos + self.pyrSize
+            d_im = np.ones((np.amax(urpos), np.amax(urpos))) * bg
+        
+            # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
+            nshades = 64;
+            #print llpos
+            #print urpos
+            #for bnum in range(1,nind):
+            for bnum in range(nind):
+                mult = (nshades-1) / (prange[bnum,1]-prange[bnum,0])
+                d_im[llpos[bnum,0]:urpos[bnum,0], 
+                     llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
+            
+            ppu.showIm(d_im, 'auto', 3)

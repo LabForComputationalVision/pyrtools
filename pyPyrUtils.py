@@ -1682,11 +1682,12 @@ def imStats(*args):
         
 # makes image the same as read in by matlab
 def correctImage(img):
-    tmpcol = img[:,0]
-    for i in range(img.shape[1]-1):
-        img[:,i] = img[:,i+1]
-    img[:, img.shape[1]-1] = tmpcol
-    return img
+    #tmpcol = img[:,0]
+    #for i in range(img.shape[1]-1):
+    #    img[:,i] = img[:,i+1]
+    #img[:, img.shape[1]-1] = tmpcol
+    #return img
+    return np.roll(img, -1)
 
 # Circular shift 2D matrix samples by OFFSET (a [Y,X] 2-tuple),
 # such that  RES(POS) = MTX(POS-OFFSET).
@@ -1854,7 +1855,7 @@ def steer(*args):
         else:
             harmonics = np.array(range((15+1)/2))*2
     else:
-        harmonics = arg[2]
+        harmonics = args[2]
     if len(harmonics.shape) == 1 or harmonics.shape[0] == 1:
         harmonics = harmonics.reshape(harmonics.shape[0], 1)
     elif harmonics.shape[0] != 1 and harmonics.shape[1] != 1:
@@ -1919,6 +1920,7 @@ def showImNew(*args):
 
     if len(args) > 0:   # matrix entered
         matrix = np.array(args[0])
+    print matrix
 
     if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
@@ -1966,10 +1968,16 @@ def showImNew(*args):
 
     # draw image in pixmap
     matrix = jbh.rerange(matrix.astype(float), imRange[0], imRange[1])
-    matrix = np.require(matrix, np.uint8, 'C')
+    #matrix = np.require(matrix, np.uint8, 'C')
+    # thanks to Johannes for the following two line fix!!
+    data = np.empty( ( matrix.shape[ 0 ], 
+                          ( matrix.shape[ 1 ] + 3 ) // 4 * 4 ), 
+                        np.uint8 )
+    data[ :, :matrix.shape[ 1 ] ] = matrix
     (w, h) = matrix.shape
-    qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
-    qim.ndarray = matrix
+    matrix = data[:]
+    qim = QtGui.QImage(matrix, w, h, QtGui.QImage.Format_Indexed8)
+    #qim.ndarray = matrix
     
     # make colormap
     incr = (256/nshades)+1
@@ -1985,8 +1993,9 @@ def showImNew(*args):
     # zoom
     dims = (matrix.shape[0]*zoom, matrix.shape[1]*zoom)
     qim = qim.scaled(dims[0], dims[1])
-
-    pixmap = QtGui.QPixmap()
+    #pixmap = QtGui.QPixmap()
+    #pixmap = QtGui.QPixmap(dims[0], dims[1])
+    pixmap = QtGui.QPixmap(w,h)
     pixmap = QtGui.QPixmap.fromImage(qim)
 
     # set up widgets and layout
@@ -2013,5 +2022,6 @@ def showImNew(*args):
 
     # display window and exit when requested
     window.show()
-    sys.exit(app.exec_())
+    #sys.exit(app.exec_())
+    app.exec_()
 
