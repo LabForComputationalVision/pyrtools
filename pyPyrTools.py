@@ -1,5 +1,6 @@
 import numpy
-import pyPyrUtils as ppu
+#import pyPyrUtils as ppu
+import pyPyrUtils
 import pyPyrCcode
 import math
 import matplotlib.cm
@@ -58,13 +59,13 @@ class SpyrORIG(pyramid):
     
         if len(args) > 2:
             if args[2] == 'sp0Filters':
-                filters = ppu.sp0Filters()
+                filters = pyPyrUtils.sp0Filters()
             elif args[2] == 'sp1Filters':
-                filters = ppu.sp1Filters()
+                filters = pyPyrUtils.sp1Filters()
             elif args[2] == 'sp3Filters':
-                filters = ppu.sp3Filters()
+                filters = pyPyrUtils.sp3Filters()
             elif args[2] == 'sp5Filters':
-                filters = ppu.sp5Filters()
+                filters = pyPyrUtils.sp5Filters()
             elif os.path.isfile(args[2]):
                 print "Filter files not supported yet"
                 return
@@ -72,7 +73,7 @@ class SpyrORIG(pyramid):
                 print "filter parameters value %s not supported" % (args[2])
                 return
         else:
-            filters = ppu.sp1Filters()
+            filters = pyPyrUtils.sp1Filters()
 
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -81,7 +82,7 @@ class SpyrORIG(pyramid):
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
             
-        max_ht = ppu.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
+        max_ht = pyPyrUtils.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
         if len(args) > 1:
             if args[1] == 'auto':
                 ht = max_ht
@@ -214,13 +215,13 @@ class SpyrORIG(pyramid):
         # defaults
         if len(args) > 0:
             if args[0] == 'sp0Filters':
-                filters = ppu.sp0Filters()
+                filters = pyPyrUtils.sp0Filters()
             elif args[0] == 'sp1Filters':
-                filters = ppu.sp1Filters()
+                filters = pyPyrUtils.sp1Filters()
             elif args[0] == 'sp3Filters':
-                filters = ppu.sp3Filters()
+                filters = pyPyrUtils.sp3Filters()
             elif args[0] == 'sp5Filters':
-                filters = ppu.sp5Filters()
+                filters = pyPyrUtils.sp5Filters()
             elif os.path.isfile(args[0]):
                 print "Filter files not supported yet"
                 return
@@ -228,7 +229,7 @@ class SpyrORIG(pyramid):
                 print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
                 return
         else:
-            filters = ppu.sp1Filters()
+            filters = pyPyrUtils.sp1Filters()
 
         #harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -285,23 +286,23 @@ class SpyrORIG(pyramid):
         reconList = []  # pyr indices used in reconstruction
         for lev in levs:
             if lev == 0 or lev == Nlevs-1 :
-                reconList.append( ppu.LB2idx(lev, -1, Nlevs, Nbands) )
+                reconList.append( pyPyrUtils.LB2idx(lev, -1, Nlevs, Nbands) )
             else:
                 for band in bands:
-                    reconList.append( ppu.LB2idx(lev, band, Nlevs, Nbands) )
+                    reconList.append( pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands) )
                     
         # reconstruct
         # FIX: shouldn't have to enter step, start and stop in upConv!
         band = -1
         for lev in range(Nlevs-1,-1,-1):
-            if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+            if lev == Nlevs-1 and pyPyrUtils.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
             elif lev == Nlevs-1:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
             elif lev == 0 and 0 in reconList:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
                 #recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
                 #               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
@@ -325,7 +326,7 @@ class SpyrORIG(pyramid):
                 #recon = numpy.array(recon).reshape(sz[0], sz[1])
             else:
                 for band in range(Nbands-1,-1,-1):
-                    idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                    idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                     if idx in reconList:
                         filt = numpy.negative(bfilts[:,band].reshape(bfiltsz, 
                                                                   bfiltsz,
@@ -342,7 +343,7 @@ class SpyrORIG(pyramid):
 
             # upsample
             #newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
-            newSz = ppu.nextSz(recon.shape, self.pyrSize)
+            newSz = pyPyrUtils.nextSz(recon.shape, self.pyrSize)
             mult = newSz[0] / recon.shape[0]
             if newSz[0] % recon.shape[0] > 0:
                 mult += 1
@@ -382,7 +383,7 @@ class SpyrORIG(pyramid):
             mx = numpy.amax(band)
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
-                    idx = ppu.LB2idx(lnum, bnum, ht+2, nbands)
+                    idx = pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands)
                     band = self.band(idx)/(numpy.power(scale,lnum))
                     prange[(lnum-1)*nbands+bnum+1] = numpy.power(scale,lnum-1)
                     bmn = numpy.amin(band)
@@ -408,7 +409,7 @@ class SpyrORIG(pyramid):
             numpixels = band.shape[0] * band.shape[1]
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
-                    band = self.band(ppu.LB2idx(lnum, bnum, ht+2, nbands))
+                    band = self.band(pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands))
                     band = band / numpy.power(scale,lnum-1)
                     sqsum += numpy.sum( numpy.power(band, 2) )
                     numpixels += band.shape[0] * band.shape[1]
@@ -498,7 +499,7 @@ class SpyrORIG(pyramid):
             d_im[llpos[bnum,0]:urpos[bnum,0], 
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
             
-        ppu.showIm(d_im)
+        pyPyrUtils.showIm(d_im)
 
 
 # works with all filters
@@ -520,13 +521,13 @@ class Spyr(pyramid):
 
         if len(args) > 2:
             if args[2] == 'sp0Filters':
-                filters = ppu.sp0Filters()
+                filters = pyPyrUtils.sp0Filters()
             elif args[2] == 'sp1Filters':
-                filters = ppu.sp1Filters()
+                filters = pyPyrUtils.sp1Filters()
             elif args[2] == 'sp3Filters':
-                filters = ppu.sp3Filters()
+                filters = pyPyrUtils.sp3Filters()
             elif args[2] == 'sp5Filters':
-                filters = ppu.sp5Filters()
+                filters = pyPyrUtils.sp5Filters()
             elif os.path.isfile(args[2]):
                 print "Filter files not supported yet"
                 return
@@ -534,7 +535,7 @@ class Spyr(pyramid):
                 print "filter parameters value %s not supported" % (args[2])
                 return
         else:
-            filters = ppu.sp1Filters()
+            filters = pyPyrUtils.sp1Filters()
 
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -543,7 +544,7 @@ class Spyr(pyramid):
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
             
-        max_ht = ppu.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
+        max_ht = pyPyrUtils.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
         if len(args) > 1:
             if args[1] == 'auto':
                 ht = max_ht
@@ -684,13 +685,13 @@ class Spyr(pyramid):
 
         if len(args) > 0:
             if args[0] == 'sp0Filters':
-                filters = ppu.sp0Filters()
+                filters = pyPyrUtils.sp0Filters()
             elif args[0] == 'sp1Filters':
-                filters = ppu.sp1Filters()
+                filters = pyPyrUtils.sp1Filters()
             elif args[0] == 'sp3Filters':
-                filters = ppu.sp3Filters()
+                filters = pyPyrUtils.sp3Filters()
             elif args[0] == 'sp5Filters':
-                filters = ppu.sp5Filters()
+                filters = pyPyrUtils.sp5Filters()
             elif os.path.isfile(args[0]):
                 print "Filter files not supported yet"
                 return
@@ -698,7 +699,7 @@ class Spyr(pyramid):
                 print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
                 return
         else:
-            filters = ppu.sp1Filters()
+            filters = pyPyrUtils.sp1Filters()
 
         #harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -756,22 +757,22 @@ class Spyr(pyramid):
         reconList = []  # pyr indices used in reconstruction
         for lev in levs:
             if lev == 0 or lev == Nlevs-1 :
-                reconList.append( ppu.LB2idx(lev, -1, Nlevs, Nbands) )
+                reconList.append( pyPyrUtils.LB2idx(lev, -1, Nlevs, Nbands) )
             else:
                 for band in bands:
-                    reconList.append( ppu.LB2idx(lev, band, Nlevs, Nbands) )
+                    reconList.append( pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands) )
         # reconstruct
         # FIX: shouldn't have to enter step, start and stop in upConv!
         band = -1
         for lev in range(Nlevs-1,-1,-1):
-            if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+            if lev == Nlevs-1 and pyPyrUtils.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
             elif lev == Nlevs-1:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
             elif lev == 0 and 0 in reconList:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
                 #recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
                 #               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
@@ -795,7 +796,7 @@ class Spyr(pyramid):
                 #recon = numpy.array(recon).reshape(sz[0], sz[1])
             else:
                 for band in range(Nbands-1,-1,-1):
-                    idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                    idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                     if idx in reconList:
                         # made filter band match matlab version
                         #filtBand = band
@@ -820,7 +821,7 @@ class Spyr(pyramid):
 
             # upsample
             #newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
-            newSz = ppu.nextSz(recon.shape, self.pyrSize)
+            newSz = pyPyrUtils.nextSz(recon.shape, self.pyrSize)
             mult = newSz[0] / recon.shape[0]
             if newSz[0] % recon.shape[0] > 0:
                 mult += 1
@@ -846,7 +847,7 @@ class Spyr(pyramid):
             mx = numpy.amax(band)
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
-                    idx = ppu.LB2idx(lnum, bnum, ht+2, nbands)
+                    idx = pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands)
                     band = self.band(idx)/(numpy.power(scale,lnum))
                     prange[(lnum-1)*nbands+bnum+1] = numpy.power(scale,lnum-1)
                     bmn = numpy.amin(band)
@@ -872,7 +873,7 @@ class Spyr(pyramid):
             numpixels = band.shape[0] * band.shape[1]
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
-                    band = self.band(ppu.LB2idx(lnum, bnum, ht+2, nbands))
+                    band = self.band(pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands))
                     band = band / numpy.power(scale,lnum-1)
                     sqsum += numpy.sum( numpy.power(band, 2) )
                     numpixels += band.shape[0] * band.shape[1]
@@ -963,7 +964,7 @@ class Spyr(pyramid):
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
 
         if disp == 'qt':
-            ppu.showIm(d_im[:self.pyrSize[0][0]*2,:])
+            pyPyrUtils.showIm(d_im[:self.pyrSize[0][0]*2,:])
         elif disp == 'nb':
             JBhelpers.showIm(d_im[:self.pyrSize[0][0]*2,:])
  
@@ -985,13 +986,13 @@ class SpyrNEW2(pyramid):
     
         if len(args) > 2:
             if args[2] == 'sp0Filters':
-                filters = ppu.sp0Filters()
+                filters = pyPyrUtils.sp0Filters()
             elif args[2] == 'sp1Filters':
-                filters = ppu.sp1Filters()
+                filters = pyPyrUtils.sp1Filters()
             elif args[2] == 'sp3Filters':
-                filters = ppu.sp3Filters()
+                filters = pyPyrUtils.sp3Filters()
             elif args[2] == 'sp5Filters':
-                filters = ppu.sp5Filters()
+                filters = pyPyrUtils.sp5Filters()
             elif os.path.isfile(args[2]):
                 print "Filter files not supported yet"
                 return
@@ -999,7 +1000,7 @@ class SpyrNEW2(pyramid):
                 print "filter parameters value %s not supported" % (args[2])
                 return
         else:
-            filters = ppu.sp1Filters()
+            filters = pyPyrUtils.sp1Filters()
 
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -1008,7 +1009,7 @@ class SpyrNEW2(pyramid):
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
             
-        max_ht = ppu.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
+        max_ht = pyPyrUtils.maxPyrHt(self.image.shape, lofilt.shape)  # just lofilt[1]?
         if len(args) > 1:
             if args[1] == 'auto':
                 ht = max_ht
@@ -1132,13 +1133,13 @@ class SpyrNEW2(pyramid):
         # defaults
         if len(args) > 0:
             if args[0] == 'sp0Filters':
-                filters = ppu.sp0Filters()
+                filters = pyPyrUtils.sp0Filters()
             elif args[0] == 'sp1Filters':
-                filters = ppu.sp1Filters()
+                filters = pyPyrUtils.sp1Filters()
             elif args[0] == 'sp3Filters':
-                filters = ppu.sp3Filters()
+                filters = pyPyrUtils.sp3Filters()
             elif args[0] == 'sp5Filters':
-                filters = ppu.sp5Filters()
+                filters = pyPyrUtils.sp5Filters()
             elif os.path.isfile(args[0]):
                 print "Filter files not supported yet"
                 return
@@ -1146,7 +1147,7 @@ class SpyrNEW2(pyramid):
                 print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
                 return
         else:
-            filters = ppu.sp1Filters()
+            filters = pyPyrUtils.sp1Filters()
 
         #harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -1203,23 +1204,23 @@ class SpyrNEW2(pyramid):
         reconList = []  # pyr indices used in reconstruction
         for lev in levs:
             if lev == 0 or lev == Nlevs-1 :
-                reconList.append( ppu.LB2idx(lev, -1, Nlevs, Nbands) )
+                reconList.append( pyPyrUtils.LB2idx(lev, -1, Nlevs, Nbands) )
             else:
                 for band in bands:
-                    reconList.append( ppu.LB2idx(lev, band, Nlevs, Nbands) )
+                    reconList.append( pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands) )
                     
         # reconstruct
         # FIX: shouldn't have to enter step, start and stop in upConv!
         band = -1
         for lev in range(Nlevs-1,-1,-1):
-            if lev == Nlevs-1 and ppu.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+            if lev == Nlevs-1 and pyPyrUtils.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
             elif lev == Nlevs-1:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
             elif lev == 0 and 0 in reconList:
-                idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 sz = recon.shape
                 #recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
                 #               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
@@ -1243,7 +1244,7 @@ class SpyrNEW2(pyramid):
                 #recon = numpy.array(recon).reshape(sz[0], sz[1])
             else:
                 for band in range(Nbands-1,-1,-1):
-                    idx = ppu.LB2idx(lev, band, Nlevs, Nbands)
+                    idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                     if idx in reconList:
                         filt = numpy.negative(bfilts[:,band].reshape(bfiltsz, 
                                                                   bfiltsz,
@@ -1260,7 +1261,7 @@ class SpyrNEW2(pyramid):
 
             # upsample
             #newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
-            newSz = ppu.nextSz(recon.shape, self.pyrSize)
+            newSz = pyPyrUtils.nextSz(recon.shape, self.pyrSize)
             mult = newSz[0] / recon.shape[0]
             if newSz[0] % recon.shape[0] > 0:
                 mult += 1
@@ -1300,7 +1301,7 @@ class SpyrNEW2(pyramid):
             mx = numpy.amax(band)
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
-                    idx = ppu.LB2idx(lnum, bnum, ht+2, nbands)
+                    idx = pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands)
                     band = self.band(idx)/(numpy.power(scale,lnum))
                     prange[(lnum-1)*nbands+bnum+1] = numpy.power(scale,lnum-1)
                     bmn = numpy.amin(band)
@@ -1326,7 +1327,7 @@ class SpyrNEW2(pyramid):
             numpixels = band.shape[0] * band.shape[1]
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
-                    band = self.band(ppu.LB2idx(lnum, bnum, ht+2, nbands))
+                    band = self.band(pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands))
                     band = band / numpy.power(scale,lnum-1)
                     sqsum += numpy.sum( numpy.power(band, 2) )
                     numpixels += band.shape[0] * band.shape[1]
@@ -1416,7 +1417,7 @@ class SpyrNEW2(pyramid):
             d_im[llpos[bnum,0]:urpos[bnum,0], 
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
             
-        ppu.showIm(d_im)
+        pyPyrUtils.showIm(d_im)
 
 
 class SFpyr(Spyr):
@@ -1473,9 +1474,9 @@ class SFpyr(Spyr):
         else:
             harmonics = numpy.array(range((nbands-1)/2)) * 2
 
-        steermtx = ppu.steer2HarmMtx(harmonics, 
-                                     numpy.pi*numpy.array(range(nbands))/nbands,
-                                     'even')
+        steermtx = pyPyrUtils.steer2HarmMtx(harmonics, 
+                                            numpy.pi*numpy.array(range(nbands))/nbands,
+                                            'even')
         #------------------------------------------------------
         
         dims = numpy.array(self.image.shape)
@@ -1491,7 +1492,7 @@ class SFpyr(Spyr):
         log_rad = numpy.log2(log_rad);
 
         ## Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = ppu.rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
+        (Xrcos, Yrcos) = pyPyrUtils.rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
         Yrcos = numpy.sqrt(Yrcos)
 
         YIrcos = numpy.sqrt(1.0 - Yrcos**2)
@@ -1673,7 +1674,7 @@ class SFpyr(Spyr):
         log_rad = numpy.log2(log_rad);
 
         ## Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = ppu.rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
+        (Xrcos, Yrcos) = pyPyrUtils.rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
         Yrcos = numpy.sqrt(Yrcos)
         YIrcos = numpy.sqrt(1.0 - Yrcos**2)
 
@@ -1847,7 +1848,7 @@ class SCFpyr(SFpyr):
         else:
             harmonics = numpy.array(range((nbands-1)/2)) * 2
 
-        steermtx = ppu.steer2HarmMtx(harmonics, 
+        steermtx = pyPyrUtils.steer2HarmMtx(harmonics, 
                                      numpy.pi*numpy.array(range(nbands))/nbands,
                                      'even')
         #------------------------------------------------------
@@ -1865,7 +1866,7 @@ class SCFpyr(SFpyr):
         log_rad = numpy.log2(log_rad);
 
         ## Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = ppu.rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
+        (Xrcos, Yrcos) = pyPyrUtils.rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
         Yrcos = numpy.sqrt(Yrcos)
 
         YIrcos = numpy.sqrt(1.0 - Yrcos**2)
@@ -1986,7 +1987,7 @@ class SCFpyr(SFpyr):
             firstBnum = nsc * Nor+2
             dims = pind[firstBnum.astype(int)][:]
             ctr = (numpy.ceil((dims[0]+0.5)/2.0), numpy.ceil((dims[1]+0.5)/2.0)) #-1?
-            ang = ppu.mkAngle(dims, 0, ctr)
+            ang = pyPyrUtils.mkAngle(dims, 0, ctr)
             ang[ctr[0]-1, ctr[1]-1] = -numpy.pi/2.0
             for nor in range(Nor):
                 nband = nsc * Nor + nor + 1
@@ -2029,13 +2030,13 @@ class Lpyr(pyramid):
         if len(args) > 2:
             filt1 = args[2]
             if isinstance(filt1, basestring):
-                filt1 = ppu.namedFilter(filt1)
+                filt1 = pyPyrUtils.namedFilter(filt1)
             elif len(filt1.shape) != 1 and ( filt1.shape[0] != 1 and
                                              filt1.shape[1] != 1 ):
                 print "Error: filter1 should be a 1D filter (i.e., a vector)"
                 return
         else:
-            filt1 = ppu.namedFilter('binom5')
+            filt1 = pyPyrUtils.namedFilter('binom5')
         #if len(filt1.shape) == 1 or self.image.shape[0] == 1
         #    filt1 = filt1.reshape(1,len(filt1))
         if len(filt1.shape) == 1:
@@ -2046,7 +2047,7 @@ class Lpyr(pyramid):
         if len(args) > 3:
             filt2 = args[3]
             if isinstance(filt2, basestring):
-                filt2 = ppu.namedFilter(filt2)
+                filt2 = pyPyrUtils.namedFilter(filt2)
             elif len(filt2.shape) != 1 and ( filt2.shape[0] != 1 and
                                             filt2.shape[1] != 1 ):
                 print "Error: filter2 should be a 1D filter (i.e., a vector)"
@@ -2054,7 +2055,7 @@ class Lpyr(pyramid):
         else:
             filt2 = filt1
 
-        maxHeight = 1 + ppu.maxPyrHt(self.image.shape, filt1.shape)
+        maxHeight = 1 + pyPyrUtils.maxPyrHt(self.image.shape, filt1.shape)
 
         if len(args) > 1:
             if args[1] is "auto":
@@ -2200,7 +2201,7 @@ class Lpyr(pyramid):
                 return
 
         if isinstance(filt2, basestring):
-            filt2 = ppu.namedFilter(filt2)
+            filt2 = pyPyrUtils.namedFilter(filt2)
         else:
             if len(filt2.shape) == 1:
                 filt2 = filt2.reshape(1, len(filt2))
@@ -2422,7 +2423,7 @@ class Lpyr(pyramid):
             if disp == 'nb':
                 JBhelpers.showIm(d_im[:self.band(0).shape[0]][:])
             elif disp == 'qt':
-                ppu.showIm(d_im[:self.band(0).shape[0]][:])
+                pyPyrUtils.showIm(d_im[:self.band(0).shape[0]][:])
 
 class Gpyr(Lpyr):
     filt = ''
@@ -2446,13 +2447,13 @@ class Gpyr(Lpyr):
                 return
         else:
             print "no filter set, so filter is binom5"
-            filt = ppu.namedFilter('binom5')
+            filt = pyPyrUtils.namedFilter('binom5')
             if self.image.shape[0] == 1:
                 filt = filt.reshape(1,5)
             else:
                 filt = filt.reshape(5,1)
 
-        maxHeight = 1 + ppu.maxPyrHt(self.image.shape, filt.shape)
+        maxHeight = 1 + pyPyrUtils.maxPyrHt(self.image.shape, filt.shape)
 
         if len(args) > 1:
             if args[1] is "auto":
@@ -2575,12 +2576,12 @@ class Wpyr_new(Lpyr):
         else:
             filt = "qmf9"
         if isinstance(filt, basestring):
-            filt = ppu.namedFilter(filt)
+            filt = pyPyrUtils.namedFilter(filt)
 
         if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
             print "Error: filter should be 1D (i.e., a vector)";
             return
-        hfilt = ppu.modulateFlip(filt).T
+        hfilt = pyPyrUtils.modulateFlip(filt).T
 
         if len(args) > 3:
             edges = args[2]
@@ -2602,7 +2603,7 @@ class Wpyr_new(Lpyr):
             filt = filt.reshape(1, filt.shape[0])
         filt_sz = filt.shape
 
-        max_ht = ppu.maxPyrHt(im_sz, filt_sz)
+        max_ht = pyPyrUtils.maxPyrHt(im_sz, filt_sz)
 
         if len(args) > 1:
             ht = args[1]
@@ -2756,11 +2757,11 @@ class Wpyr_new(Lpyr):
                 print "Error: band numbers must be in the range [0,2]."
         
         if isinstance(filt, basestring):
-            filt = ppu.namedFilter(filt)
+            filt = pyPyrUtils.namedFilter(filt)
 
         print "filt"
         print filt
-        hfilt = ppu.modulateFlip(filt)
+        hfilt = pyPyrUtils.modulateFlip(filt)
         print "hfilt"
         print hfilt
 
@@ -3026,12 +3027,12 @@ class Wpyr_bak(pyramid):
         else:
             filt = "qmf9"
         if isinstance(filt, basestring):
-            filt = ppu.namedFilter(filt)
+            filt = pyPyrUtils.namedFilter(filt)
 
         if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
             print "Error: filter should be 1D (i.e., a vector)";
             return
-        hfilt = ppu.modulateFlip(filt).T
+        hfilt = pyPyrUtils.modulateFlip(filt).T
 
         if len(args) > 3:
             edges = args[2]
@@ -3062,7 +3063,7 @@ class Wpyr_bak(pyramid):
             filt_sz = filt.shape
         print "filt_sz"
         print filt_sz
-        max_ht = ppu.maxPyrHt(im_sz, filt_sz)
+        max_ht = pyPyrUtils.maxPyrHt(im_sz, filt_sz)
         print "max_ht = %d" % (max_ht)
         if len(args) > 1:
             ht = args[1]
@@ -3213,11 +3214,11 @@ class Wpyr_bak(pyramid):
                 print "Error: band numbers must be in the range [0,2]."
         
         if isinstance(filt, basestring):
-            filt = ppu.namedFilter(filt)
+            filt = pyPyrUtils.namedFilter(filt)
 
         print "filt"
         print filt
-        hfilt = ppu.modulateFlip(filt)
+        hfilt = pyPyrUtils.modulateFlip(filt)
         print "hfilt"
         print hfilt
 
@@ -3494,12 +3495,12 @@ class Wpyr(Lpyr):
         else:
             filt = "qmf9"
         if isinstance(filt, basestring):
-            filt = ppu.namedFilter(filt)
+            filt = pyPyrUtils.namedFilter(filt)
 
         if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
             print "Error: filter should be 1D (i.e., a vector)";
             return
-        hfilt = ppu.modulateFlip(filt).T
+        hfilt = pyPyrUtils.modulateFlip(filt).T
 
         if len(args) > 3:
             edges = args[3]
@@ -3541,7 +3542,7 @@ class Wpyr(Lpyr):
                 filt = filt.reshape(filt.shape[1], 1)
 
         #max_ht = ppu.maxPyrHt(im_sz, filt_sz)
-        max_ht = ppu.maxPyrHt(im.shape, filt.shape)
+        max_ht = pyPyrUtils.maxPyrHt(im.shape, filt.shape)
         #print "max_ht = %d" % (max_ht)
         if len(args) > 1:
             ht = args[1]
@@ -3710,11 +3711,11 @@ class Wpyr(Lpyr):
                 print "Error: band numbers must be in the range [0,2]."
         
         if isinstance(filt, basestring):
-            filt = ppu.namedFilter(filt)
+            filt = pyPyrUtils.namedFilter(filt)
 
         print "filt"
         print filt
-        hfilt = ppu.modulateFlip(filt)
+        hfilt = pyPyrUtils.modulateFlip(filt)
         print "hfilt"
         print hfilt
 
@@ -4067,9 +4068,9 @@ class Wpyr(Lpyr):
                 print "Error: band numbers must be in the range [0,2]."
         
         if isinstance(filt, basestring):
-            filt = ppu.namedFilter(filt)
+            filt = pyPyrUtils.namedFilter(filt)
 
-        hfilt = ppu.modulateFlip(filt)
+        hfilt = pyPyrUtils.modulateFlip(filt)
 
         # for odd-length filters, stagger the sampling lattices:
         if len(filt) % 2 == 0:
@@ -4364,7 +4365,7 @@ class Wpyr(Lpyr):
             mx = 0.0
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
-                    idx = ppu.LB2idx(lnum, bnum, ht+2, nbands)
+                    idx = pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands)
                     band = self.band(idx)/(numpy.power(scale,lnum))
                     prange[(lnum-1)*nbands+bnum+1] = numpy.power(scale,lnum-1)
                     bmn = numpy.amin(band)
@@ -4402,7 +4403,7 @@ class Wpyr(Lpyr):
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
                     #band = self.band(ppu.LB2idx(lnum, bnum, ht+2, nbands))
-                    band = self.band(ppu.LB2idx(lnum, bnum, ht, nbands))
+                    band = self.band(pyPyrUtils.LB2idx(lnum, bnum, ht, nbands))
                     band = band / numpy.power(scale,lnum-1)
                     sqsum += numpy.sum( numpy.power(band, 2) )
                     numpixels += band.shape[0] * band.shape[1]
@@ -4484,6 +4485,6 @@ class Wpyr(Lpyr):
                      llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
             
             if disp == 'qt':
-                ppu.showIm(d_im, 'auto', 2)
+                pyPyrUtils.showIm(d_im, 'auto', 2)
             elif disp == 'nb':
                 JBhelpers.showIm(d_im, 'auto', 2)
