@@ -30,16 +30,16 @@ class pyramid:  # pyramid
     def band(self, bandNum):
         return np.array(self.pyr[bandNum])
 
-    def showPyr(self, *args):
-        if self.pyrType == 'Gaussian':
-            self.showLpyr(args)
-        elif self.pyrType == 'Laplacian':
-            self.showLpyr(args)
-        elif self.pyrType == 'wavelet':
-            self.showLpyr(args)
-        else:
-            print "pyramid type %s not currently supported" % (args[0])
-            return
+    #def showPyr(self, *args):
+    #    if self.pyrType == 'Gaussian':
+    #        self.showLpyr(args)
+    #    elif self.pyrType == 'Laplacian':
+    #        self.showLpyr(args)
+    #    elif self.pyrType == 'wavelet':
+    #        self.showLpyr(args)
+    #    else:
+    #        print "pyramid type %s not currently supported" % (args[0])
+    #        return
 
 # works with sp1Filters, but not sp3Filters
 class SpyrORIG(pyramid):
@@ -833,22 +833,8 @@ class Spyr(pyramid):
                 #recon = np.array(recon).reshape(newSz[0], newSz[1], order='F')
         return recon
 
-    def showPyr(self, *args):
-        if len(args) > 0:
-            prange = args[0]
-        else:
-            prange = 'auto2'
-
-        if len(args) > 1:
-            gap = args[1]
-        else:
-            gap = 1
-
-        if len(args) > 2:
-            scale = args[2]
-        else:
-            scale = 2
-
+    #def showPyr(self, *args):
+    def showPyr(self, prange = 'auto2', gap = 1, scale = 2, disp = 'qt'):
         ht = self.spyrHt()
         nind = len(self.pyr)
         nbands = self.numBands()
@@ -976,8 +962,11 @@ class Spyr(pyramid):
             mult = (nshades-1) / (prange[bnum,1]-prange[bnum,0])
             d_im[llpos[bnum,0]:urpos[bnum,0], 
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
-            
-        ppu.showIm(d_im[:self.pyrSize[0][0]*2,:])
+
+        if disp == 'qt':
+            ppu.showIm(d_im[:self.pyrSize[0][0]*2,:])
+        elif disp == 'nb':
+            jbh.showIm(d_im[:self.pyrSize[0][0]*2,:])
  
 class SpyrNEW2(pyramid):
     filt = ''
@@ -2227,27 +2216,42 @@ class Lpyr(pyramid):
     def pyrLow(self):
         return np.array(self.band(self.height-1))
 
-    def showPyr(self, *args):
+    #def showPyr(self, *args):
+    # options for disp are 'qt' and 'nb'
+    def showPyr(self, pRange = None, gap = 1, scale = None, disp = 'qt'):
         if ( len(self.band(0).shape) == 1 or self.band(0).shape[0] == 1 or
              self.band(0).shape[1] == 1 ):
             oned = 1
         else:
             oned = 0
 
-        if len(args) <= 1:
-            if oned == 1:
-                pRange = 'auto1'
-            else:
-                pRange = 'auto2'
+        #if oned == 1:
+        #    pRange = 'auto1'
+        #else:
+        #    pRange = 'auto2'
         
-        if len(args) <= 2:
-            gap = 1
+        #if len(args) > 1:
+        #    gap = args[1]
+        #else:
+        #    gap = 1
 
-        if len(args) <= 3:
-            if oned == 1:
-                scale = math.sqrt(2)
-            else:
-                scale = 2
+        #if len(args) > 2:
+        #    scale = args[2]
+        #else:
+        #    if oned == 1:
+        #        scale = math.sqrt(2)
+        #    else:
+        #        scale = 2
+        
+        if pRange == None and oned == 1:
+            pRange = 'auto1'
+        elif pRange == None and oned == 0:
+            pRange = 'auto2'
+
+        if scale == None and oned == 1:
+            scale = math.sqrt(2)
+        elif scale == None and oned == 0:
+            scale = 2
 
         #nind = self.height - 1
         nind = self.height
@@ -2387,7 +2391,10 @@ class Lpyr(pyramid):
             #ax.set_yticks([])
             #ax.set_xticks([])
             # FIX: need a mode to switch between above and below display
-            jbh.showIm(d_im[:self.band(0).shape[0]][:])
+            if disp == 'nb':
+                jbh.showIm(d_im[:self.band(0).shape[0]][:])
+            elif disp == 'qt':
+                ppu.showIm(d_im[:self.band(0).shape[0]][:])
 
 class Gpyr(Lpyr):
     filt = ''
@@ -4228,34 +4235,45 @@ class Wpyr(Lpyr):
     def pyrLow(self):
         return np.array(self.band(len(self.pyrSize)-1))
 
-    def showPyr(self, *args):
+    #def showPyr(self, *args):
+    def showPyr(self, prange = None, gap = 1, scale = None, disp = 'qt'):
         # determine 1D or 2D pyramid:
         if self.pyrSize[0][0] == 1 or self.pyrSize[0][1] == 1:
             nbands = 1
         else:
             nbands = 3
 
-        if len(args) > 0:
-            prange = args[0]
-        else:
-            if nbands == 1:
-                prange = 'auto1'
-            else:
-                prange = 'auto2'
+        #if len(args) > 0:
+        #    prange = args[0]
+        #else:
+        #    if nbands == 1:
+        #        prange = 'auto1'
+        #    else:
+        #        prange = 'auto2'
 
-        if len(args) > 1:
-            gap = args[1]
-        else:
-            gap = 1
+        #if len(args) > 1:
+        #    gap = args[1]
+        #else:
+        #    gap = 1
 
-        if len(args) > 2:
-            scale = args[2]
-        else:
-            if nbands == 1:
-                scale = np.sqrt(2)
-            else:
-                scale = 2
+        #if len(args) > 2:
+        #    scale = args[2]
+        #else:
+        #    if nbands == 1:
+        #        scale = np.sqrt(2)
+        #    else:
+        #        scale = 2
 
+        if prange == None and nbands == 1:
+            prange = 'auto1'
+        elif prange == None and nbands == 3:
+            prange = 'auto2'
+
+        if scale == None and nbands == 1:
+            scale = np.sqrt(2)
+        elif scale == None and nbands == 3:
+            scale = 2
+        
         ht = int(self.wpyrHt())
         nind = len(self.pyr)
 
@@ -4385,4 +4403,7 @@ class Wpyr(Lpyr):
                 d_im[llpos[bnum,0]:urpos[bnum,0], 
                      llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
             
-            ppu.showIm(d_im, 'auto', 3)
+            if disp == 'qt':
+                ppu.showIm(d_im, 'auto', 2)
+            elif disp == 'nb':
+                jbh.showIm(d_im, 'auto', 2)
