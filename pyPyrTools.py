@@ -211,7 +211,8 @@ class SpyrORIG(pyramid):
     def pyrHigh(self):
         return numpy.array(self.band(0))
 
-    def reconSpyr(self, *args):
+    #def reconSpyr(self, *args):
+    def reconPyr(self, *args):
         # defaults
         if len(args) > 0:
             if args[0] == 'sp0Filters':
@@ -680,7 +681,8 @@ class Spyr(pyramid):
     def pyrHigh(self):
         return numpy.array(self.band(0))
 
-    def reconSpyr(self, *args):
+    #def reconSpyr(self, *args):
+    def reconPyr(self, *args):
         # defaults
 
         if len(args) > 0:
@@ -1129,7 +1131,8 @@ class SpyrNEW2(pyramid):
     def pyrHigh(self):
         return numpy.array(self.band(0))
 
-    def reconSpyr(self, *args):
+    #def reconSpyr(self, *args):
+    def reconPyr(self, *args):
         # defaults
         if len(args) > 0:
             if args[0] == 'sp0Filters':
@@ -1597,6 +1600,7 @@ class SFpyr(Spyr):
         return spHt
 
     def reconSFpyr(self, *args):
+    #def reconPyr(self, *args):
         if len(args) > 0:
             levs = args[0]
         else:
@@ -1956,7 +1960,8 @@ class SCFpyr(SFpyr):
         self.pyrSize.append(lodft.shape)
 
     # methods
-    def reconSCFpyr(self, *args):
+    #def reconSCFpyr(self, *args):
+    def reconPyr(self, *args):
         if len(args) > 0:
             levs = args[0]
         else:
@@ -2008,6 +2013,7 @@ class SCFpyr(SFpyr):
                 pyrIdx += 1
 
         res = self.reconSFpyr(levs, bands, twidth);
+        #res = self.reconPyr(levs, bands, twidth);
 
         return res
 
@@ -2174,7 +2180,8 @@ class Lpyr(pyramid):
             print '  set(band, element, value)'
         self.pyr[args[0]][args[1]] = args[2] 
 
-    def reconLpyr(self, *args):
+    #def reconLpyr(self, *args):
+    def reconPyr(self, *args):
         if len(args) > 0:
             levs = numpy.array(args[0])
         else:
@@ -2708,7 +2715,8 @@ class Wpyr_new(Lpyr):
         return int(ht)
 
 
-    def reconWpyr(self, *args):
+    #def reconWpyr(self, *args):
+    def reconPyr(self, *args):
         # Optional args
         if len(args) > 0:
             filt = args[0]
@@ -3165,7 +3173,8 @@ class Wpyr_bak(pyramid):
         return ht
 
 
-    def reconWpyr(self, *args):
+    #def reconWpyr(self, *args):
+    def reconPyr(self, *args):
         # Optional args
         if len(args) > 0:
             filt = args[0]
@@ -4019,7 +4028,8 @@ class Wpyr(Lpyr):
                     print '4### idx = %d' % (idx)
         return res
 
-    def reconWpyr(self, *args):
+    #def reconWpyr(self, *args):
+    def reconPyr(self, *args):
         # Optional args
         if len(args) > 0:
             filt = args[0]
