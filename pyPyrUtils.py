@@ -1,18 +1,25 @@
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import numpy as np
+#import matplotlib.pyplot as plt
+import matplotlib.pyplot
+#import matplotlib.cm as cm
+import matplotlib.cm
+#import numpy as np
+import numpy
 import pylab
-import scipy.linalg as spl
-import scipy.signal as spsig
-import scipy.stats as sps
+#import scipy.linalg as spl
+#import scipy.signal as spsig
+import scipy.signal
+#import scipy.stats as sps
+import scipy.stats
 import math
 import struct
 import re
-from pyPyrCcode import *
+#from pyPyrCcode import *
+import pyPyrCcode
 import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
-import JBhelpers as jbh
+#import JBhelpers as jbh
+import JBhelpers
 
 # adding dpi as input parameter.  Assumes 96ppi as default
 def showIm(*args):
@@ -43,24 +50,24 @@ def showIm(*args):
     if len(args) > 0:   # matrix entered
         matrix = args[0]
         # defaults for all other values in case they weren't entered
-        imRange = ( np.amin(matrix), np.amax(matrix) )
+        imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
         zoom = 1
         label = 1
         colorbar = False
-        colormap = cm.Greys_r
+        colormap = matplotlib.cm.Greys_r
         dpi = 96
     if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
             if args[1] is "auto":
-                imRange = ( np.amin(matrix), np.amax(matrix) )
+                imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
             elif args[1] is "auto2":
                 imRange = ( matrix.mean()-2*matrix.std(), 
                             matrix.mean()+2*matrix.std() )
             elif args[1] is "auto3":
-                #p1 = np.percentile(matrix, 10)  not in python 2.6.6?!
-                #p2 = np.percentile(matrix, 90)
-                p1 = sps.scoreatpercentile(np.hstack(matrix), 10)
-                p2 = sps.scoreatpercentile(np.hstack(matrix), 90)
+                #p1 = numpy.percentile(matrix, 10)  not in python 2.6.6?!
+                #p2 = numpy.percentile(matrix, 90)
+                p1 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 10)
+                p2 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 90)
                 imRange = p1-(p2-p1)/8, p2+(p2-p1)/8
             else:
                 print "Error: range of %s is not recognized." % args[1]
@@ -78,7 +85,7 @@ def showIm(*args):
         label = args[3]
     if len(args) > 4:   # colormap entered
         if args[4] is "auto":
-            colormap = cm.Greys_r
+            colormap = matplotlib.cm.Greys_r
         else:  # got a variable name
             colormap = args[3]
     if len(args) > 5 and args[5]:   # colorbar entered and set to true
@@ -87,27 +94,28 @@ def showIm(*args):
         dpi = args[6]
         
     dims = (matrix.shape[0]/dpi*zoom, matrix.shape[1]/dpi*zoom)
-    plt.figure(figsize=dims, dpi=dpi)
+    matplotlib.pyplot.figure(figsize=dims, dpi=dpi)
     #figtxt = 'Range: [0,0]'
     #plt.figtext(0.25, 0.05, figtxt)
     #figtxt = 'Dims: [%d %d]/1' % (matrix.shape[0], matrix.shape[1])
     #plt.figtext(0.25, 0.0005, figtxt)
     figtxt = 'Dims: [%d %d]*%.1f' % (matrix.shape[0], matrix.shape[1], zoom)
     #plt.figtext(0.1, 0.01, figtxt)
-    plt.xlabel(figtxt)
+    matplotlib.pyplot.xlabel(figtxt)
     #imgplot = plt.imshow(matrix, colormap, origin='lower').set_clim(imRange)
-    imgplot = plt.imshow(matrix, colormap, interpolation=None).set_clim(imRange)
+    imgplot = matplotlib.pyplot.imshow(matrix, colormap, 
+                                       interpolation=None).set_clim(imRange)
     #plt.gca().invert_yaxis()  # default is inverted y from matlab
     if label != 0 and label != 1:
-        plt.title(label)
+        matplotlib.pyplot.title(label)
     if colorbar:
-        plt.colorbar(imgplot, cmap=colormap)
+        matplotlib.pyplot.colorbar(imgplot, cmap=colormap)
     #pylab.show()
     #plt.axis('off')
-    ax = plt.gca()
+    ax = matplotlib.pyplot.gca()
     ax.set_yticks([])
     ax.set_xticks([])
-    plt.show()
+    matplotlib.pyplot.show()
     
 # Compute maximum pyramid height for given image and filter sizes.
 # Specifically: the number of corrDn operations that can be sequentially
@@ -183,10 +191,10 @@ def maxPyrHt(imsz, filtsz):
     if not isinstance(imsz, tuple) and not isinstance(filtsz, tuple) and imsz < filtsz:
         height = 0
     elif not isinstance(imsz, tuple) and not isinstance(filtsz, tuple):
-        height = 1 + maxPyrHt( np.floor(imsz/2.0), filtsz )
+        height = 1 + maxPyrHt( numpy.floor(imsz/2.0), filtsz )
     else:
-        height = 1 + maxPyrHt( (np.floor(imsz[0]/2.0), 
-                                np.floor(imsz[1]/2.0)), 
+        height = 1 + maxPyrHt( (numpy.floor(imsz[0]/2.0), 
+                                numpy.floor(imsz[1]/2.0)), 
                                filtsz )
 
     return height
@@ -197,12 +205,12 @@ def binomialFilter(size):
         print "Error: size argument must be larger than 1"
         exit(1)
     
-    kernel = np.array([[0.5], [0.5]])
+    kernel = numpy.array([[0.5], [0.5]])
 
     for i in range(0, size-2):
-        kernel = spsig.convolve(np.array([[0.5], [0.5]]), kernel)
+        kernel = scipy.signal.convolve(numpy.array([[0.5], [0.5]]), kernel)
 
-    return np.asarray(kernel)
+    return numpy.asarray(kernel)
 
 # Some standard 1D filter kernels. These are scaled such that their L2-norm 
 #   is 1.0
@@ -234,33 +242,33 @@ def namedFilter(name):
     if len(name) > 5 and name[:5] == "binom":
         kernel = math.sqrt(2) * binomialFilter(int(name[5:]))
     elif name is "qmf5":
-        kernel = np.array([[-0.076103], [0.3535534], [0.8593118], [0.3535534], [-0.076103]])
+        kernel = numpy.array([[-0.076103], [0.3535534], [0.8593118], [0.3535534], [-0.076103]])
     elif name is "qmf9":
-        kernel = np.array([[0.02807382], [-0.060944743], [-0.073386624], [0.41472545], [0.7973934], [0.41472545], [-0.073386624], [-0.060944743], [0.02807382]])
+        kernel = numpy.array([[0.02807382], [-0.060944743], [-0.073386624], [0.41472545], [0.7973934], [0.41472545], [-0.073386624], [-0.060944743], [0.02807382]])
     elif name is "qmf13":
-        kernel = np.array([[-0.014556438], [0.021651438], [0.039045125], [-0.09800052], [-0.057827797], [0.42995453], [0.7737113], [0.42995453], [-0.057827797], [-0.09800052], [0.039045125], [0.021651438], [-0.014556438]])
+        kernel = numpy.array([[-0.014556438], [0.021651438], [0.039045125], [-0.09800052], [-0.057827797], [0.42995453], [0.7737113], [0.42995453], [-0.057827797], [-0.09800052], [0.039045125], [0.021651438], [-0.014556438]])
     elif name is "qmf8":
-        kernel = math.sqrt(2) * np.array([[0.00938715], [-0.07065183], [0.06942827], [0.4899808], [0.4899808], [0.06942827], [-0.07065183], [0.00938715]])
+        kernel = math.sqrt(2) * numpy.array([[0.00938715], [-0.07065183], [0.06942827], [0.4899808], [0.4899808], [0.06942827], [-0.07065183], [0.00938715]])
     elif name is "qmf12":
-        kernel = math.sqrt(2) * np.array([[-0.003809699], [0.01885659], [-0.002710326], [-0.08469594], [0.08846992], [0.4843894], [0.4843894], [0.08846992], [-0.08469594], [-0.002710326], [0.01885659], [-0.003809699]])
+        kernel = math.sqrt(2) * numpy.array([[-0.003809699], [0.01885659], [-0.002710326], [-0.08469594], [0.08846992], [0.4843894], [0.4843894], [0.08846992], [-0.08469594], [-0.002710326], [0.01885659], [-0.003809699]])
     elif name is "qmf16":
-        kernel = math.sqrt(2) * np.array([[0.001050167], [-0.005054526], [-0.002589756], [0.0276414], [-0.009666376], [-0.09039223], [0.09779817], [0.4810284], [0.4810284], [0.09779817], [-0.09039223], [-0.009666376], [0.0276414], [-0.002589756], [-0.005054526], [0.001050167]])
+        kernel = math.sqrt(2) * numpy.array([[0.001050167], [-0.005054526], [-0.002589756], [0.0276414], [-0.009666376], [-0.09039223], [0.09779817], [0.4810284], [0.4810284], [0.09779817], [-0.09039223], [-0.009666376], [0.0276414], [-0.002589756], [-0.005054526], [0.001050167]])
     elif name is "haar":
-        kernel = np.array([[1], [1]]) / math.sqrt(2)
+        kernel = numpy.array([[1], [1]]) / math.sqrt(2)
     elif name is "daub2":
-        kernel = np.array([[0.482962913145], [0.836516303738], [0.224143868042], [-0.129409522551]]);
+        kernel = numpy.array([[0.482962913145], [0.836516303738], [0.224143868042], [-0.129409522551]]);
     elif name is "daub3":
-        kernel = np.array([[0.332670552950], [0.806891509311], [0.459877502118], [-0.135011020010], [-0.085441273882], [0.035226291882]])
+        kernel = numpy.array([[0.332670552950], [0.806891509311], [0.459877502118], [-0.135011020010], [-0.085441273882], [0.035226291882]])
     elif name is "daub4":
-        kernel = np.array([[0.230377813309], [0.714846570553], [0.630880767930], [-0.027983769417], [-0.187034811719], [0.030841381836], [0.032883011667], [-0.010597401785]])
+        kernel = numpy.array([[0.230377813309], [0.714846570553], [0.630880767930], [-0.027983769417], [-0.187034811719], [0.030841381836], [0.032883011667], [-0.010597401785]])
     elif name is "gauss5":  # for backward-compatibility
-        kernel = math.sqrt(2) * np.array([[0.0625], [0.25], [0.375], [0.25], [0.0625]])
+        kernel = math.sqrt(2) * numpy.array([[0.0625], [0.25], [0.375], [0.25], [0.0625]])
     elif name is "gauss3":  # for backward-compatibility
-        kernel = math.sqrt(2) * np.array([[0.25], [0.5], [0.25]])
+        kernel = math.sqrt(2) * numpy.array([[0.25], [0.5], [0.25]])
     else:
         print "Error: Bad filter name: %s" % (name)
         exit(1)
-    return np.array(kernel)
+    return numpy.array(kernel)
 
 def strictly_decreasing(L):
     return all(x>y for x, y in zip(L, L[1:]))
@@ -307,7 +315,7 @@ def comparePyr(matPyr, pyPyr):
         else:
             matLen = bandSz[0] * bandSz[1]
         matTmp = matPyr[matStart:matStart + matLen]
-        matTmp = np.reshape(matTmp, bandSz, order='F')
+        matTmp = numpy.reshape(matTmp, bandSz, order='F')
         matStart = matStart+matLen
         #if (matTmp != pyPyr.pyr[key]).any():
         if (matTmp != pyPyr.pyr[idx]).any():
@@ -378,8 +386,8 @@ def mkRamp(*args):
     xinc = slope * math.cos(direction)
     yinc = slope * math.sin(direction)
 
-    [xramp, yramp] = np.meshgrid( xinc * (np.array(range(sz[1]))-origin[1]),
-                                  yinc * (np.array(range(sz[0]))-origin[0]) )
+    [xramp, yramp] = numpy.meshgrid( xinc * (numpy.array(range(sz[1]))-origin[1]),
+                                  yinc * (numpy.array(range(sz[0]))-origin[0]) )
 
     res = intercept + xramp + yramp
 
@@ -404,9 +412,9 @@ def mkRamp(*args):
 #	MONTH = "May",	YEAR = 1996 }
 def sp0Filters():
     filters = {}
-    filters['harmonics'] = np.array([0])
+    filters['harmonics'] = numpy.array([0])
     filters['lo0filt'] =  ( 
-        np.array([[-4.514000e-04, -1.137100e-04, -3.725800e-04, -3.743860e-03, 
+        numpy.array([[-4.514000e-04, -1.137100e-04, -3.725800e-04, -3.743860e-03, 
                    -3.725800e-04, -1.137100e-04, -4.514000e-04], 
                   [-1.137100e-04, -6.119520e-03, -1.344160e-02, -7.563200e-03, 
                     -1.344160e-02, -6.119520e-03, -1.137100e-04],
@@ -421,7 +429,7 @@ def sp0Filters():
                   [-4.514000e-04, -1.137100e-04, -3.725800e-04, -3.743860e-03,
                     -3.725800e-04, -1.137100e-04, -4.514000e-04]]) )
     filters['lofilt'] = (
-        np.array([[-2.257000e-04, -8.064400e-04, -5.686000e-05, 8.741400e-04, 
+        numpy.array([[-2.257000e-04, -8.064400e-04, -5.686000e-05, 8.741400e-04, 
                    -1.862800e-04, -1.031640e-03, -1.871920e-03, -1.031640e-03,
                    -1.862800e-04, 8.741400e-04, -5.686000e-05, -8.064400e-04,
                    -2.257000e-04],
@@ -473,9 +481,9 @@ def sp0Filters():
                    -1.862800e-04, -1.031640e-03, -1.871920e-03, -1.031640e-03,
                     -1.862800e-04, 8.741400e-04, -5.686000e-05, -8.064400e-04,
                     -2.257000e-04]]) )
-    filters['mtx'] = np.array([ 1.000000 ])
+    filters['mtx'] = numpy.array([ 1.000000 ])
     filters['hi0filt'] = ( 
-        np.array([[5.997200e-04, -6.068000e-05, -3.324900e-04, -3.325600e-04, 
+        numpy.array([[5.997200e-04, -6.068000e-05, -3.324900e-04, -3.325600e-04, 
                    -2.406600e-04, -3.325600e-04, -3.324900e-04, -6.068000e-05, 
                    5.997200e-04],
                   [-6.068000e-05, 1.263100e-04, 4.927100e-04, 1.459700e-04, 
@@ -503,7 +511,7 @@ def sp0Filters():
                    -2.406600e-04, -3.325600e-04, -3.324900e-04, -6.068000e-05, 
                    5.997200e-04]]) )
     filters['bfilts'] = ( 
-        np.array([-9.066000e-05, -1.738640e-03, -4.942500e-03, -7.889390e-03, 
+        numpy.array([-9.066000e-05, -1.738640e-03, -4.942500e-03, -7.889390e-03, 
                    -1.009473e-02, -7.889390e-03, -4.942500e-03, -1.738640e-03, 
                    -9.066000e-05, -1.738640e-03, -4.625150e-03, -7.272540e-03, 
                    -7.623410e-03, -9.091950e-03, -7.623410e-03, -7.272540e-03, 
@@ -529,10 +537,10 @@ def sp0Filters():
 
 def sp1Filters():
     filters = {}
-    filters['harmonics'] = np.array([ 1 ])
-    filters['mtx'] = np.eye(2)
+    filters['harmonics'] = numpy.array([ 1 ])
+    filters['mtx'] = numpy.eye(2)
     filters['lo0filt'] = ( 
-        np.array([[-8.701000e-05, -1.354280e-03, -1.601260e-03, -5.033700e-04, 
+        numpy.array([[-8.701000e-05, -1.354280e-03, -1.601260e-03, -5.033700e-04, 
                     2.524010e-03, -5.033700e-04, -1.601260e-03, -1.354280e-03, 
                     -8.701000e-05],
                   [-1.354280e-03, 2.921580e-03, 7.522720e-03, 8.224420e-03, 
@@ -560,7 +568,7 @@ def sp1Filters():
                     2.524010e-03, -5.033700e-04, -1.601260e-03, -1.354280e-03, 
                     -8.701000e-05]]) )
     filters['lofilt'] = (
-        np.array([[-4.350000e-05, 1.207800e-04, -6.771400e-04, -1.243400e-04, 
+        numpy.array([[-4.350000e-05, 1.207800e-04, -6.771400e-04, -1.243400e-04, 
                     -8.006400e-04, -1.597040e-03, -2.516800e-04, -4.202000e-04,
                     1.262000e-03, -4.202000e-04, -2.516800e-04, -1.597040e-03,
                     -8.006400e-04, -1.243400e-04, -6.771400e-04, 1.207800e-04,
@@ -646,7 +654,7 @@ def sp1Filters():
                     -8.006400e-04, -1.243400e-04, -6.771400e-04, 1.207800e-04,
                     -4.350000e-05] ]) )
     filters['hi0filt'] = (
-        np.array([[-9.570000e-04, -2.424100e-04, -1.424720e-03, -8.742600e-04, 
+        numpy.array([[-9.570000e-04, -2.424100e-04, -1.424720e-03, -8.742600e-04, 
                     -1.166810e-03, -8.742600e-04, -1.424720e-03, -2.424100e-04,
                     -9.570000e-04],
                   [-2.424100e-04, -4.317530e-03, 8.998600e-04, 9.156420e-03, 
@@ -674,7 +682,7 @@ def sp1Filters():
                     -1.166810e-03, -8.742600e-04, -1.424720e-03, -2.424100e-04,
                     -9.570000e-04]]) )
     filters['bfilts'] = (
-        np.array([[6.125880e-03, -8.052600e-03, -2.103714e-02, -1.536890e-02, 
+        numpy.array([[6.125880e-03, -8.052600e-03, -2.103714e-02, -1.536890e-02, 
                    -1.851466e-02, -1.536890e-02, -2.103714e-02, -8.052600e-03, 
                    6.125880e-03, -1.287416e-02, -9.611520e-03, 1.023569e-02, 
                    6.009450e-03, 1.872620e-03, 6.009450e-03, 1.023569e-02, 
@@ -716,20 +724,20 @@ def sp1Filters():
                     -6.125880e-03, 1.287416e-02, 5.641530e-03, 8.957260e-03, 
                     0.000000e+00, -8.957260e-03, -5.641530e-03, -1.287416e-02, 
                     6.125880e-03]]).T )
-    filters['bfilts'] = np.negative(filters['bfilts'])
+    filters['bfilts'] = numpy.negative(filters['bfilts'])
 
     return filters
 
 def sp3Filters():
     filters = {}
-    filters['harmonics'] = np.array([1, 3])
+    filters['harmonics'] = numpy.array([1, 3])
     filters['mtx'] = (
-        np.array([[0.5000, 0.3536, 0, -0.3536],
+        numpy.array([[0.5000, 0.3536, 0, -0.3536],
                   [-0.0000, 0.3536, 0.5000, 0.3536],
                   [0.5000, -0.3536, 0, 0.3536],
                   [-0.0000, 0.3536, -0.5000, 0.3536]]))
     filters['hi0filt'] = (
-        np.array([[-4.0483998600E-4, -6.2596000498E-4, -3.7829999201E-5,
+        numpy.array([[-4.0483998600E-4, -6.2596000498E-4, -3.7829999201E-5,
                     8.8387000142E-4, 1.5450799838E-3, 1.9235999789E-3,
                     2.0687500946E-3, 2.0898699295E-3, 2.0687500946E-3,
                     1.9235999789E-3, 1.5450799838E-3, 8.8387000142E-4,
@@ -805,7 +813,7 @@ def sp3Filters():
                     1.9235999789E-3, 1.5450799838E-3, 8.8387000142E-4,
                     -3.7829999201E-5, -6.2596000498E-4, -4.0483998600E-4]]))
     filters['lo0filt'] = (
-        np.array([[-8.7009997515E-5, -1.3542800443E-3, -1.6012600390E-3,
+        numpy.array([[-8.7009997515E-5, -1.3542800443E-3, -1.6012600390E-3,
                     -5.0337001448E-4, 2.5240099058E-3, -5.0337001448E-4,
                     -1.6012600390E-3, -1.3542800443E-3, -8.7009997515E-5],
                   [-1.3542800443E-3, 2.9215801042E-3, 7.5227199122E-3,
@@ -833,7 +841,7 @@ def sp3Filters():
                     -5.0337001448E-4, 2.5240099058E-3, -5.0337001448E-4,
                     -1.6012600390E-3, -1.3542800443E-3, -8.7009997515E-5]]))
     filters['lofilt'] = (
-        np.array([[-4.3500000174E-5, 1.2078000145E-4, -6.7714002216E-4,
+        numpy.array([[-4.3500000174E-5, 1.2078000145E-4, -6.7714002216E-4,
                     -1.2434000382E-4, -8.0063997302E-4, -1.5970399836E-3,
                     -2.5168000138E-4, -4.2019999819E-4, 1.2619999470E-3,
                     -4.2019999819E-4, -2.5168000138E-4, -1.5970399836E-3,
@@ -936,7 +944,7 @@ def sp3Filters():
                     -8.0063997302E-4, -1.2434000382E-4, -6.7714002216E-4,
                     1.2078000145E-4, -4.3500000174E-5]]))
     filters['bfilts'] = (
-        np.array([[-8.1125000725E-4, 4.4451598078E-3, 1.2316980399E-2,
+        numpy.array([[-8.1125000725E-4, 4.4451598078E-3, 1.2316980399E-2,
                     1.3955879956E-2,  1.4179450460E-2, 1.3955879956E-2,
                     1.2316980399E-2, 4.4451598078E-3, -8.1125000725E-4,
                     3.9103501476E-3, 4.4565401040E-3, -5.8724298142E-3,
@@ -1048,16 +1056,16 @@ def sp3Filters():
 
 def sp5Filters():
     filters = {}
-    filters['harmonics'] = np.array([1, 3, 5])
+    filters['harmonics'] = numpy.array([1, 3, 5])
     filters['mtx'] = (
-        np.array([[0.3333, 0.2887, 0.1667, 0.0000, -0.1667, -0.2887],
+        numpy.array([[0.3333, 0.2887, 0.1667, 0.0000, -0.1667, -0.2887],
                   [0.0000, 0.1667, 0.2887, 0.3333, 0.2887, 0.1667],
                   [0.3333, -0.0000, -0.3333, -0.0000, 0.3333, -0.0000],
                   [0.0000, 0.3333, 0.0000, -0.3333, 0.0000, 0.3333],
                   [0.3333, -0.2887, 0.1667, -0.0000, -0.1667, 0.2887],
                   [-0.0000, 0.1667, -0.2887, 0.3333, -0.2887, 0.1667]]))
     filters['hi0filt'] = (
-        np.array([[-0.00033429, -0.00113093, -0.00171484,
+        numpy.array([[-0.00033429, -0.00113093, -0.00171484,
                     -0.00133542, -0.00080639, -0.00133542,
                     -0.00171484, -0.00113093, -0.00033429],
                   [-0.00113093, -0.00350017, -0.00243812,
@@ -1085,7 +1093,7 @@ def sp5Filters():
                     -0.00133542, -0.00080639, -0.00133542,
                     -0.00171484, -0.00113093, -0.00033429]]))
     filters['lo0filt'] = (
-        np.array([[0.00341614, -0.01551246, -0.03848215, -0.01551246,
+        numpy.array([[0.00341614, -0.01551246, -0.03848215, -0.01551246,
                   0.00341614],
                  [-0.01551246, 0.05586982, 0.15925570, 0.05586982,
                    -0.01551246],
@@ -1096,7 +1104,7 @@ def sp5Filters():
                  [0.00341614, -0.01551246, -0.03848215, -0.01551246,
                   0.00341614]]))
     filters['lofilt'] = (
-        2 * np.array([[0.00085404, -0.00244917, -0.00387812, -0.00944432,
+        2 * numpy.array([[0.00085404, -0.00244917, -0.00387812, -0.00944432,
                        -0.00962054, -0.00944432, -0.00387812, -0.00244917,
                        0.00085404],
                       [-0.00244917, -0.00523281, -0.00661117, 0.00410600,
@@ -1124,7 +1132,7 @@ def sp5Filters():
                        -0.00962054, -0.00944432, -0.00387812, -0.00244917,
                        0.00085404]]))
     filters['bfilts'] = (
-        np.array([[0.00277643, 0.00496194, 0.01026699, 0.01455399, 0.01026699,
+        numpy.array([[0.00277643, 0.00496194, 0.01026699, 0.01455399, 0.01026699,
                    0.00496194, 0.00277643, -0.00986904, -0.00893064, 
                    0.01189859, 0.02755155, 0.01189859, -0.00893064,
                    -0.00986904, -0.01021852, -0.03075356, -0.08226445,
@@ -1264,14 +1272,14 @@ def mkImpulse(*args):
     if(len(args) > 1):
         origin = args[1]
     else:
-        origin = ( np.ceil(sz[0]/2.0), np.ceil(sz[1]/2.0) )
+        origin = ( numpy.ceil(sz[0]/2.0), numpy.ceil(sz[1]/2.0) )
 
     if(len(args) > 2):
         amplitude = args[2]
     else:
         amplitude = 1
 
-    res = np.zeros(sz);
+    res = numpy.zeros(sz);
     res[origin[0], origin[1]] = amplitude
 
     return res
@@ -1291,14 +1299,14 @@ def steer2HarmMtx(*args):
         return
     
     if len(args) > 0:
-        harmonics = np.array(args[0])
+        harmonics = numpy.array(args[0])
 
     # optional parameters
     numh = (2*harmonics.shape[0]) - (harmonics == 0).sum()
     if len(args) > 1:
         angles = args[1]
     else:
-        angles = np.pi * np.array(range(numh)) / numh
+        angles = numpy.pi * numpy.array(range(numh)) / numh
         
     if len(args) > 2:
         if isinstance(args[2], basestring):
@@ -1316,27 +1324,27 @@ def steer2HarmMtx(*args):
 
     # Compute inverse matrix, which maps to Fourier components onto 
     #   steerable basis
-    imtx = np.zeros((angles.shape[0], numh))
+    imtx = numpy.zeros((angles.shape[0], numh))
     col = 0
     for h in harmonics:
         args = h * angles
         if h == 0:
-            imtx[:, col] = np.ones(angles.shape)
+            imtx[:, col] = numpy.ones(angles.shape)
             col += 1
         elif evenorodd:
-            imtx[:, col] = np.sin(args)
-            imtx[:, col+1] = np.negative( np.cos(args) )
+            imtx[:, col] = numpy.sin(args)
+            imtx[:, col+1] = numpy.negative( numpy.cos(args) )
             col += 2
         else:
-            imtx[:, col] = np.cos(args)
-            imtx[:, col+1] = np.sin(args)
+            imtx[:, col] = numpy.cos(args)
+            imtx[:, col+1] = numpy.sin(args)
             col += 2
 
-    r = np.rank(imtx)
+    r = numpy.rank(imtx)
     if r != numh and r != angles.shape[0]:
         print "Warning: matrix is not full rank"
 
-    mtx = np.linalg.pinv(imtx)
+    mtx = numpy.linalg.pinv(imtx)
     
     return mtx
 
@@ -1373,15 +1381,15 @@ def rcosFn(*args):
 
     sz = 256   # arbitrary!
 
-    X = np.pi * np.array(range(-sz-1,2)) / (2*sz)
+    X = numpy.pi * numpy.array(range(-sz-1,2)) / (2*sz)
 
-    Y = values[0] + (values[1]-values[0]) * np.cos(X)**2;
+    Y = values[0] + (values[1]-values[0]) * numpy.cos(X)**2;
 
     # make sure end values are repeated, for extrapolation...
     Y[0] = Y[1]
     Y[sz+2] = Y[sz+1]
     
-    X = position + (2*width/np.pi) * (X + np.pi/4)
+    X = position + (2*width/numpy.pi) * (X + numpy.pi/4)
 
     return (X,Y)
 
@@ -1415,15 +1423,15 @@ def mkAngle(*args):
 
     #------------------------------------------------------------------
 
-    (xramp, yramp) = np.meshgrid(np.array(range(1,sz[1]+1))-origin[1], 
-                                 (np.array(range(1,sz[0]+1)))-origin[0])
-    xramp = np.array(xramp)
-    yramp = np.array(yramp)
+    (xramp, yramp) = numpy.meshgrid(numpy.array(range(1,sz[1]+1))-origin[1], 
+                                 (numpy.array(range(1,sz[0]+1)))-origin[0])
+    xramp = numpy.array(xramp)
+    yramp = numpy.array(yramp)
 
-    res = np.arctan2(yramp, xramp)
+    res = numpy.arctan2(yramp, xramp)
     
     if phase != 'not set':
-        res = ((res+(np.pi-phase)) % (2*np.pi)) - np.pi
+        res = ((res+(numpy.pi-phase)) % (2*numpy.pi)) - numpy.pi
 
     return res
 
@@ -1441,9 +1449,9 @@ def modulateFlip(*args):
     lfilt = args[0]
     
     sz = len(lfilt)
-    sz2 = np.ceil(sz/2.0);
+    sz2 = numpy.ceil(sz/2.0);
 
-    ind = np.array(range(sz-1,-1,-1))
+    ind = numpy.array(range(sz-1,-1,-1))
 
     hfilt = lfilt[ind].T * (-1)**((ind+1)-sz2)
 
@@ -1464,7 +1472,7 @@ def blurDn(*args):
         print "Error: image input parameter required."
         return
 
-    im = np.array(args[0])
+    im = numpy.array(args[0])
     
     # optional args
     if len(args) > 1:
@@ -1479,7 +1487,7 @@ def blurDn(*args):
     else:
         filt = namedFilter('binom5')
     filt = [x/sum(filt) for x in filt]
-    filt = np.array(filt)
+    filt = numpy.array(filt)
     
     if nlevs > 1:
         im = blurDn(im, nlevs-1, filt)
@@ -1499,26 +1507,28 @@ def blurDn(*args):
                 if filt.shape[0] == 1:
                     filt = filt.T
                 
-            res = corrDn(im.shape[0], im.shape[1], im, filt.shape[0], 
-                         filt.shape[1], filt, 'reflect1', 2, 2)
+            res = pyPyrCcode.corrDn(im.shape[0], im.shape[1], im, filt.shape[0],
+                                    filt.shape[1], filt, 'reflect1', 2, 2)
             if len(im.shape) == 1 or im.shape[1] == 1:
-                res = np.reshape(res, (np.ceil(im.shape[0]/2.0), 1))
+                res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0), 1))
             else:
-                res = np.reshape(res, (1, np.ceil(im.shape[1]/2.0)))
+                res = numpy.reshape(res, (1, numpy.ceil(im.shape[1]/2.0)))
         elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
             # 2D image and 1D filter
-            res = corrDn(im.shape[0], im.shape[1], im.T, filt.shape[0], 
-                         filt.shape[1], filt, 'reflect1', 2, 1).T
-            #res = np.reshape(res, (im.shape[1], np.ceil(im.shape[0]/2.0))).T
+            res = pyPyrCcode.corrDn(im.shape[0], im.shape[1], im.T, 
+                                    filt.shape[0], filt.shape[1], filt, 
+                                    'reflect1', 2, 1).T
+            #res = numpy.reshape(res, (im.shape[1], numpy.ceil(im.shape[0]/2.0))).T
             print res
-            res = corrDn(res.shape[1], res.shape[0], res, filt.shape[0], 
-                         filt.shape[1], filt, 'reflect1', 2, 1)
-            #res = np.reshape(res, (np.ceil(im.shape[0]/2.0),
-            #                       np.ceil(im.shape[1]/2.0)))
+            res = pyPyrCcode.corrDn(res.shape[1], res.shape[0], res, 
+                                    filt.shape[0], filt.shape[1], filt, 
+                                    'reflect1', 2, 1)
+            #res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0),
+            #                       numpy.ceil(im.shape[1]/2.0)))
             print res
         else:  # 2D image and 2D filter
-            res = corrDn(im.shape[0], im.shape[1], im, filt.shape[0], 
-                         filt.shape[1], filt, 'reflect1', 2, 2)
+            res = pyPyrCcode.corrDn(im.shape[0], im.shape[1], im, filt.shape[0],
+                                    filt.shape[1], filt, 'reflect1', 2, 2)
     else:
         res = im
             
@@ -1562,8 +1572,8 @@ def rconv2(*args):
     ## These values are one less than the index of the small mtx that falls on 
     ## the border pixel of the large matrix when computing the first 
     ## convolution response sample:
-    sy2 = np.floor((sy+ctr-1)/2)
-    sx2 = np.floor((sx+ctr-1)/2)
+    sy2 = numpy.floor((sy+ctr-1)/2)
+    sx2 = numpy.floor((sx+ctr-1)/2)
 
     # pad with reflected copies
     #nw = large[sy-sy2:2:-1, sx-sx2:2:-1]
@@ -1583,18 +1593,18 @@ def rconv2(*args):
     s = large[ly-2:ly-sy2-2:-1, :]
     se = large[ly-2:ly-sy2-2:-1, lx-2:lx-sx2-2:-1]
 
-    n = np.column_stack((nw, n, ne))
-    c = np.column_stack((w,large,e))
-    s = np.column_stack((sw, s, se))
+    n = numpy.column_stack((nw, n, ne))
+    c = numpy.column_stack((w,large,e))
+    s = numpy.column_stack((sw, s, se))
 
-    clarge = np.concatenate((n, c), axis=0)
-    clarge = np.concatenate((clarge, s), axis=0)
+    clarge = numpy.concatenate((n, c), axis=0)
+    clarge = numpy.concatenate((clarge, s), axis=0)
     
-    return spsig.convolve(clarge, small, 'valid')
+    return scipy.signal.convolve(clarge, small, 'valid')
 
 # compute minimum and maximum values of input matrix, returning them as tuple
 def range2(*args):
-    if not np.isreal(args[0]).all():
+    if not numpy.isreal(args[0]).all():
         print 'Error: matrix must be real-valued'
 
     return (args[0].min(), args[0].max())
@@ -1605,11 +1615,11 @@ def var2(*args):
     if len(args) == 1:
         mn = args[0].mean()
     
-    if(np.isreal(args[0]).all()):
-        res = sum(sum((args[0]-mn)**2)) / max(np.prod(args[0].shape)-1, 1)
+    if(numpy.isreal(args[0]).all()):
+        res = sum(sum((args[0]-mn)**2)) / max(numpy.prod(args[0].shape)-1, 1)
     else:
         res = sum((args[0]-mn).real**2) + 1j*sum((args[0]-mn).imag)**2
-        res = res /  max(np.prod(args[0].shape)-1, 1)
+        res = res /  max(numpy.prod(args[0].shape)-1, 1)
 
     return res
 
@@ -1630,11 +1640,11 @@ def kurt2(*args):
     else:
         v = args[2]
 
-    if np.isreal(args[0]).all():
-        res = (np.abs(args[0]-mn)**4).mean() / v**2
+    if numpy.isreal(args[0]).all():
+        res = (numpy.abs(args[0]-mn)**4).mean() / v**2
     else:
         res = ( (((args[0]-mn).real**4).mean() / v.real**2) + 
-                ((np.i * (args[0]-mn).imag**4).mean() / v.imag**2) )
+                ((numpy.i * (args[0]-mn).imag**4).mean() / v.imag**2) )
 
     return res
 
@@ -1648,10 +1658,10 @@ def imStats(*args):
     if len(args) == 0:
         print 'Error: at least one input image is required'
         return
-    elif len(args) == 1 and not np.isreal(args[0]).all():
+    elif len(args) == 1 and not numpy.isreal(args[0]).all():
         print 'Error: input images must be real-valued matrices'
         return
-    elif len(args) == 2 and ( not np.isreal(args[0]).all() or not np.isreal(args[1]).all()):
+    elif len(args) == 2 and ( not numpy.isreal(args[0]).all() or not numpy.isreal(args[1]).all()):
         print 'Error: input images must be real-valued matrices'
         return
     elif len(args) > 2:
@@ -1663,18 +1673,18 @@ def imStats(*args):
         (mn, mx) = range2(difference)
         mean = difference.mean()
         v = var2(difference)
-        if v < np.finfo(np.double).tiny:
-            snr = np.inf
+        if v < numpy.finfo(numpy.double).tiny:
+            snr = numpy.inf
         else:
-            snr = 10 * np.log10(var2(args[0])/v)
+            snr = 10 * numpy.log10(var2(args[0])/v)
         print 'Difference statistics:'
         print '  Range: [%d, %d]' % (mn, mx)
-        print '  Mean: %f,  Stdev (rmse): %f,  SNR (dB): %f' % (mean, np.sqrt(v), snr)
+        print '  Mean: %f,  Stdev (rmse): %f,  SNR (dB): %f' % (mean, numpy.sqrt(v), snr)
     else:
         (mn, mx) = range2(args[0])
         mean = args[0].mean()
         var = var2(args[0])
-        stdev = np.sqrt(var.real) + np.sqrt(var.imag)
+        stdev = numpy.sqrt(var.real) + numpy.sqrt(var.imag)
         kurt = kurt2(args[0], mean, stdev**2)
         print 'Image statistics:'
         print '  Range: [%f, %f]' % (mn, mx)
@@ -1687,7 +1697,7 @@ def correctImage(img):
     #    img[:,i] = img[:,i+1]
     #img[:, img.shape[1]-1] = tmpcol
     #return img
-    return np.roll(img, -1)
+    return numpy.roll(img, -1)
 
 # Circular shift 2D matrix samples by OFFSET (a [Y,X] 2-tuple),
 # such that  RES(POS) = MTX(POS-OFFSET).
@@ -1697,14 +1707,14 @@ def shift(mtx, offset):
         mtx = mtx.reshape((1, dims[0]))
         dims = mtx.shape
 
-    offset = np.mod(np.negative(offset), dims)
+    offset = numpy.mod(numpy.negative(offset), dims)
 
-    top = np.column_stack((mtx[offset[0]:dims[0], offset[1]:dims[1]],
+    top = numpy.column_stack((mtx[offset[0]:dims[0], offset[1]:dims[1]],
                            mtx[offset[0]:dims[0], 0:offset[1]]))
-    bottom = np.column_stack((mtx[0:offset[0], offset[1]:dims[1]],
+    bottom = numpy.column_stack((mtx[0:offset[0], offset[1]:dims[1]],
                               mtx[0:offset[0], 0:offset[1]]))
 
-    ret = np.concatenate((top, bottom), axis=0)
+    ret = numpy.concatenate((top, bottom), axis=0)
 
     return ret
 
@@ -1713,7 +1723,7 @@ def round(arr):
     if len(arr) == 1:
         outVal = roundVal(arr)
     else:
-        outVal = np.zeros(len(arr))
+        outVal = numpy.zeros(len(arr))
         for i in range(len(arr)):
             outVal[i] = roundVal(arr[i])
     return outVal
@@ -1755,8 +1765,8 @@ def mkR(*args):
 
     # -----------------------------------------------------------------
 
-    (xramp2, yramp2) = np.meshgrid(np.array(range(1,sz[1]+1))-origin[1], 
-                                   np.array(range(1,sz[0]+1))-origin[0])
+    (xramp2, yramp2) = numpy.meshgrid(numpy.array(range(1,sz[1]+1))-origin[1], 
+                                   numpy.array(range(1,sz[0]+1))-origin[0])
 
     
     res = (xramp2**2 + yramp2**2)**(expt/2.0)
@@ -1790,24 +1800,24 @@ def mkFract(*args):
     else:
         fract_dim = args[1]
 
-    res = np.random.randn(dims[0], dims[1])
-    fres = np.fft.fft2(res)
+    res = numpy.random.randn(dims[0], dims[1])
+    fres = numpy.fft.fft2(res)
 
     sz = res.shape
-    ctr = (int(np.ceil((sz[0]+1)/2.0)), int(np.ceil((sz[1]+1)/2.0)))
+    ctr = (int(numpy.ceil((sz[0]+1)/2.0)), int(numpy.ceil((sz[1]+1)/2.0)))
 
-    sh = np.fft.ifftshift(mkR(sz, -(2.5-fract_dim), ctr))
+    sh = numpy.fft.ifftshift(mkR(sz, -(2.5-fract_dim), ctr))
     sh[0,0] = 1;  #DC term
 
     fres = sh * fres
-    fres = np.fft.ifft2(fres)
+    fres = numpy.fft.ifft2(fres)
 
     #if any(max(max(abs(fres.imag))) > 1e-10):
     if abs(fres.imag).max() > 1e-10:
         print 'Symmetry error in creating fractal'
     else:
-        res = np.real(fres)
-        res = res / np.sqrt(var2(res))
+        res = numpy.real(fres)
+        res = res / numpy.sqrt(var2(res))
 
     return res
 
@@ -1842,7 +1852,7 @@ def steer(*args):
     #if ( any(size(angle) ~= [size(basis,1) 1]) & any(size(angle) ~= [1 1]) )
     angle = args[1]
     if isinstance(angle, (int, long, float)):
-        angle = np.array([angle])
+        angle = numpy.array([angle])
     else:
         if angle.shape[0] != basis.shape[0] or angle.shape[1] != 1:
             print 'ANGLE must be a scalar, or a column vector the size of the basis elements'
@@ -1851,9 +1861,9 @@ def steer(*args):
     # If HARMONICS are not passed, assume derivatives.
     if len(args) < 3:
         if num%2 == 0:
-            harmonics = np.array(range(num/2))*2+1
+            harmonics = numpy.array(range(num/2))*2+1
         else:
-            harmonics = np.array(range((15+1)/2))*2
+            harmonics = numpy.array(range((15+1)/2))*2
     else:
         harmonics = args[2]
     if len(harmonics.shape) == 1 or harmonics.shape[0] == 1:
@@ -1863,34 +1873,34 @@ def steer(*args):
         return
 
         #if ((2*size(harmonics,1)-any(harmonics == 0)) ~= num)
-        if 2*np.nonzero(harmonics).shape[0] != num:
+        if 2*numpy.nonzero(harmonics).shape[0] != num:
             print 'harmonics list is incompatible with basis size!'
             return
 
     # If STEERMTX not passed, assume evenly distributed cosine-phase filters:
     if len(args) < 4:
-        steermtx = steer2HarmMtx(harmonics, np.pi*np.array(range(num))/num, 
+        steermtx = steer2HarmMtx(harmonics, numpy.pi*numpy.array(range(num))/num, 
                                  'even')
     else:
         steermtx = args[3]
 
-    steervect = np.zeros((angle.shape[0], num))
-    arg = angle * harmonics[np.nonzero(harmonics)[0]].T
+    steervect = numpy.zeros((angle.shape[0], num))
+    arg = angle * harmonics[numpy.nonzero(harmonics)[0]].T
     if all(harmonics):
-	steervect[:, range(0,num,2)] = np.cos(arg)
-	steervect[:, range(1,num,2)] = np.sin(arg)
+	steervect[:, range(0,num,2)] = numpy.cos(arg)
+	steervect[:, range(1,num,2)] = numpy.sin(arg)
     else:
-	steervect[:, 1] = np.ones((arg.shape[0],1))
-	steervect[:, range(0,num,2)] = np.cos(arg)
-	steervect[:, range(1,num,2)] = np.sin(arg)
+	steervect[:, 1] = numpy.ones((arg.shape[0],1))
+	steervect[:, range(0,num,2)] = numpy.cos(arg)
+	steervect[:, range(1,num,2)] = numpy.sin(arg)
 
-    steervect = np.dot(steervect,steermtx)
+    steervect = numpy.dot(steervect,steermtx)
 
     if steervect.shape[0] > 1:
-	tmp = np.dot(basis, steervect)
+	tmp = numpy.dot(basis, steervect)
 	res = sum(tmp).T
     else:
-	res = np.dot(basis, steervect.T)
+	res = numpy.dot(basis, steervect.T)
 
     return res
 
@@ -1919,21 +1929,21 @@ def showImNew(*args):
         print "    and defaults to the size of the current colormap. "
 
     if len(args) > 0:   # matrix entered
-        matrix = np.array(args[0])
+        matrix = numpy.array(args[0])
     print matrix
 
     if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
             if args[1] is "auto":
-                imRange = ( np.amin(matrix), np.amax(matrix) )
+                imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
             elif args[1] is "auto2":
                 imRange = ( matrix.mean()-2*matrix.std(), 
                             matrix.mean()+2*matrix.std() )
             elif args[1] is "auto3":
-                #p1 = np.percentile(matrix, 10)  not in python 2.6.6?!
-                #p2 = np.percentile(matrix, 90)
-                p1 = sps.scoreatpercentile(np.hstack(matrix), 10)
-                p2 = sps.scoreatpercentile(np.hstack(matrix), 90)
+                #p1 = numpy.percentile(matrix, 10)  not in python 2.6.6?!
+                #p2 = numpy.percentile(matrix, 90)
+                p1 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 10)
+                p2 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 90)
                 imRange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
             else:
                 print "Error: range of %s is not recognized." % args[1]
@@ -1944,7 +1954,7 @@ def showImNew(*args):
         else:
             imRange = args[1][0], args[1][1]
     else:
-        imRange = ( np.amin(matrix), np.amax(matrix) )
+        imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
     
     if len(args) > 2:   # zoom entered
         zoom = args[2]
@@ -1967,12 +1977,12 @@ def showImNew(*args):
     window.setWindowTitle('showIm')
 
     # draw image in pixmap
-    matrix = jbh.rerange(matrix.astype(float), imRange[0], imRange[1])
-    #matrix = np.require(matrix, np.uint8, 'C')
+    matrix = JBhelpers.rerange(matrix.astype(float), imRange[0], imRange[1])
+    #matrix = numpy.require(matrix, numpy.uint8, 'C')
     # thanks to Johannes for the following two line fix!!
-    data = np.empty( ( matrix.shape[ 0 ], 
+    data = numpy.empty( ( matrix.shape[ 0 ], 
                           ( matrix.shape[ 1 ] + 3 ) // 4 * 4 ), 
-                        np.uint8 )
+                        numpy.uint8 )
     data[ :, :matrix.shape[ 1 ] ] = matrix
     (w, h) = matrix.shape
     matrix = data[:]
