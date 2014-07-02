@@ -311,7 +311,8 @@ class pointOpTests(unittest.TestCase):
         matImg = scipy.io.loadmat('matFiles/pointOp1.mat')
         img = ppu.mkRamp((200,200))
         filt = np.array([0.2, 0.5, 1.0, 0.4, 0.1]);
-        foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
+        #foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
+        foo = ppu.pointOp(img, filt, 0, 1, 0);
         foo = np.reshape(foo,(200,200))
         self.failUnless((matImg['foo'] == foo).all())
 

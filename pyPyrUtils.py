@@ -2035,3 +2035,60 @@ def showImNew(*args):
     #sys.exit(app.exec_())
     app.exec_()
 
+# wrapper for C function corrDn
+# required input parameters: image, filter
+# optonal input parameters: edges, (xstep,ystep), (xstart,ystart), (xstop,ystop)
+#                           result
+def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+           start = (0,0), stop = None, result = None):
+    
+    if image == None or filt == None:
+        print 'Error: image and filter are required input parameters!'
+        return
+
+    if stop == None:
+        stop = (image.shape[0]-1, image.shape[1]-1)
+
+    if result == None:
+        res = pyPyrCcode.corrDn(image.shape[0], image.shape[1], image, 
+                                filt.shape[0], filt.shape[1], filt, edges, 
+                                step[0], step[1], start[0], start[1], stop[0], 
+                                stop[1])
+    else:
+        res = pyPyrCcode.corrDn(image.shape[0], image.shape[1], image, 
+                                filt.shape[0], filt.shape[1], filt, edges, 
+                                step[0], step[1], start[0], start[1], stop[0],
+                                stop[1], result)
+    return res
+
+# wrapper for C function upConv
+def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+           start = (0,0), stop = None, result = None):
+
+    if image == None or filt == None:
+        print 'Error: image and filter are required input parameters!'
+        return
+
+    if stop == None:
+        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
+
+    if result == None:
+        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+                                filt.shape[0], filt.shape[1], filt, edges,
+                                step[0], step[1], start[0], start[1], stop[0], 
+                                stop[1])
+    else:
+        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+                                filt.shape[0], filt.shape[1], filt, edges,
+                                step[0], step[1], start[0], start[1], stop[0], 
+                                stop[1], result)
+    return res
+
+# wrapper for C function pointOp
+def pointOp(image, lut, origin, increment, warnings):
+
+    res = pyPyrCcode.pointOp(image.shape[0], image.shape[1], image, 
+                             lut.shape[0], lut, origin, increment, warnings)
+    return res
+
+    

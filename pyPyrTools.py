@@ -1599,6 +1599,10 @@ class SFpyr(Spyr):
             spHt = 0
         return spHt
 
+    def reconPyr(self, *args):
+        res = self.reconSFpyr(self, *args)
+        return res
+
     def reconSFpyr(self, *args):
     #def reconPyr(self, *args):
         if len(args) > 0:
