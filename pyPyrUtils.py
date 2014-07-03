@@ -1507,28 +1507,46 @@ def blurDn(*args):
                 if filt.shape[0] == 1:
                     filt = filt.T
                 
-            res = pyPyrCcode.corrDn(im.shape[0], im.shape[1], im, filt.shape[0],
-                                    filt.shape[1], filt, 'reflect1', 2, 2)
+            #res = pyPyrCcode.corrDn(im.shape[0],im.shape[1], im, filt.shape[0],
+            #                        filt.shape[1], filt, 'reflect1', 2, 2)
+            res = corrDn(image = im, filt = filt, step = (2, 2))
             if len(im.shape) == 1 or im.shape[1] == 1:
                 res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0), 1))
             else:
                 res = numpy.reshape(res, (1, numpy.ceil(im.shape[1]/2.0)))
         elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
             # 2D image and 1D filter
-            res = pyPyrCcode.corrDn(im.shape[0], im.shape[1], im.T, 
-                                    filt.shape[0], filt.shape[1], filt, 
-                                    'reflect1', 2, 1).T
-            #res = numpy.reshape(res, (im.shape[1], numpy.ceil(im.shape[0]/2.0))).T
-            print res
-            res = pyPyrCcode.corrDn(res.shape[1], res.shape[0], res, 
-                                    filt.shape[0], filt.shape[1], filt, 
-                                    'reflect1', 2, 1)
-            #res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0),
-            #                       numpy.ceil(im.shape[1]/2.0)))
-            print res
+            # no wrapper -- works
+            #res = pyPyrCcode.corrDn(im.shape[0], im.shape[1], im.T, 
+            #                        filt.shape[0], filt.shape[1], filt, 
+            #                        'reflect1', 2, 1).T
+            #res = pyPyrCcode.corrDn(res.shape[1], res.shape[0], res, 
+            #                        filt.shape[0], filt.shape[1], filt, 
+            #                        'reflect1', 2, 1)
+            # wrapper -- works
+            foo = im.reshape(im.shape[1], im.shape[0], order='F').T
+            res = corrDn(image = foo, filt = filt, step = (2, 1)).T
+            res = res.reshape(res.shape[1], res.shape[0], order='C')
+            res = corrDn(image = res, filt = filt, step = (2, 1))
+
+            #foo = im.reshape(im.shape[1], im.shape[0], order='F').T
+            #res = corrDn(image = foo, filt = filt, step = (2, 1)).T
+            #res = res.reshape(res.shape[1], res.shape[0], order='C')
+            #print 'res'
+            #print res
+            #res = corrDn(image = res, filt = filt, step = (2, 1))
+            #print 'res'
+            #print res
+            #res2 = corrDn(image = im, filt = filt.T, step = (1, 2))
+            #print 'res2'
+            #print res2
+            #res2 = corrDn(image = res2, filt = filt.T, step = (1, 2))
+            #print 'res2'
+            #print res2
         else:  # 2D image and 2D filter
-            res = pyPyrCcode.corrDn(im.shape[0], im.shape[1], im, filt.shape[0],
+            res = pyPyrCcode.corrDn(im.shape[0],im.shape[1], im, filt.shape[0],
                                     filt.shape[1], filt, 'reflect1', 2, 2)
+            #res = corrDn(im = im, filt = filt, step = (2, 2))
     else:
         res = im
             

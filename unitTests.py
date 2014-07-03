@@ -6,7 +6,7 @@ import numpy as np
 import scipy.io
 import Image
 from operator import mul
-from pyPyrCcode import *
+#from pyPyrCcode import *
 
 class maxPyrHtTests(unittest.TestCase):
     def test1(self):
