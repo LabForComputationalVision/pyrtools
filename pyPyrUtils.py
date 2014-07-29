@@ -1,22 +1,169 @@
+#import matplotlib.pyplot as plt
 import matplotlib.pyplot
+#import matplotlib.cm as cm
 import matplotlib.cm
+#import numpy as np
 import numpy
 import pylab
+#import scipy.linalg as spl
+#import scipy.signal as spsig
 import scipy.signal
+#import scipy.stats as sps
 import scipy.stats
 import math
 import struct
 import re
+#from pyPyrCcode import *
 import pyPyrCcode
 import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+#import JBhelpers as jbh
 import JBhelpers
-import ctypes
 
+# adding dpi as input parameter.  Assumes 96ppi as default
+def showIm(*args):
+    if len(args) == 0:
+        #print "showIm( matrix, range, zoom, label, colormap, colorbar )"
+        print "showIm( matrix, range, label, colormap, colorbar )"
+        print "  matrix is string. It should be the name of a 2D array."
+        print "  range is a two element tuple.  It specifies the values that "
+        print "    map to the min and max colormap values.  Passing a value "
+        print "    of 'auto' (default) sets range=[min,max].  'auto2' sets "
+        print "    range=[mean-2*stdev, mean+2*stdev].  'auto3' sets "
+        print "    range=[p1-(p2-p1)/8, p2+(p2-p1)/8], where p1 is the 10th "
+        print "    percientile value of the sorted matix samples, and p2 is "
+        print "    the 90th percentile value."
+        print "  zoom specifies the number of matrix samples per screen pixel."
+        print "    It will be rounded to an integer, or 1 divided by an "
+        print "    integer.  A value of 'same' or 'auto' (default) causes the "
+        print "    zoom value to be chosen automatically to fit the image into"
+        print "    the current axes."
+        #print "    A value of 'full' fills the axis region "
+        #print "    (leaving no room for labels)."
+        print "  label - A string that is used as a figure title."
+        print "  colormap must contain the string 'auto' (grey colormap will " 
+        print "    be used), or a string that is the name of a colormap "
+        print "    variable"
+        print "  colorbar is a boolean that specifies whether or not a "
+        print "    colorbar is displayed"
+    if len(args) > 0:   # matrix entered
+        matrix = args[0]
+        # defaults for all other values in case they weren't entered
+        imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
+        zoom = 1
+        label = 1
+        colorbar = False
+        colormap = matplotlib.cm.Greys_r
+        dpi = 96
+    if len(args) > 1:   # range entered
+        if isinstance(args[1], basestring):
+            if args[1] is "auto":
+                imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
+            elif args[1] is "auto2":
+                imRange = ( matrix.mean()-2*matrix.std(), 
+                            matrix.mean()+2*matrix.std() )
+            elif args[1] is "auto3":
+                #p1 = numpy.percentile(matrix, 10)  not in python 2.6.6?!
+                #p2 = numpy.percentile(matrix, 90)
+                p1 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 10)
+                p2 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 90)
+                imRange = p1-(p2-p1)/8, p2+(p2-p1)/8
+            else:
+                print "Error: range of %s is not recognized." % args[1]
+                print "       please use a two element tuple or "
+                print "       'auto', 'auto2' or 'auto3'"
+                print "       enter 'showIm' for more info about options"
+                return
+        else:
+            imRange = args[1][0], args[1][1]
+    if len(args) > 2:   # zoom entered
+        zoom = args[2]
+    else:
+        zoom = 1
+    if len(args) > 3:   # label entered
+        label = args[3]
+    if len(args) > 4:   # colormap entered
+        if args[4] is "auto":
+            colormap = matplotlib.cm.Greys_r
+        else:  # got a variable name
+            colormap = args[3]
+    if len(args) > 5 and args[5]:   # colorbar entered and set to true
+        colorbar = args[5]
+    if len(args) > 6:
+        dpi = args[6]
+        
+    dims = (matrix.shape[0]/dpi*zoom, matrix.shape[1]/dpi*zoom)
+    matplotlib.pyplot.figure(figsize=dims, dpi=dpi)
+    #figtxt = 'Range: [0,0]'
+    #plt.figtext(0.25, 0.05, figtxt)
+    #figtxt = 'Dims: [%d %d]/1' % (matrix.shape[0], matrix.shape[1])
+    #plt.figtext(0.25, 0.0005, figtxt)
+    figtxt = 'Dims: [%d %d]*%.1f' % (matrix.shape[0], matrix.shape[1], zoom)
+    #plt.figtext(0.1, 0.01, figtxt)
+    matplotlib.pyplot.xlabel(figtxt)
+    #imgplot = plt.imshow(matrix, colormap, origin='lower').set_clim(imRange)
+    imgplot = matplotlib.pyplot.imshow(matrix, colormap, 
+                                       interpolation=None).set_clim(imRange)
+    #plt.gca().invert_yaxis()  # default is inverted y from matlab
+    if label != 0 and label != 1:
+        matplotlib.pyplot.title(label)
+    if colorbar:
+        matplotlib.pyplot.colorbar(imgplot, cmap=colormap)
+    #pylab.show()
+    #plt.axis('off')
+    ax = matplotlib.pyplot.gca()
+    ax.set_yticks([])
+    ax.set_xticks([])
+    matplotlib.pyplot.show()
+    
 # Compute maximum pyramid height for given image and filter sizes.
 # Specifically: the number of corrDn operations that can be sequentially
 # performed when subsampling by a factor of 2.
+def maxPyrHt_old(imsz, filtsz):
+    if isinstance(imsz, int):
+        imsz = (imsz, 1)
+    if isinstance(filtsz, int):
+        filtsz = (filtsz, 1)
+
+    if len(imsz) == 1 and len(filtsz) == 1:
+        imsz = (imsz[0], 1)
+        filtsz = (filtsz[0], 1)
+    elif len(imsz) == 1 and not any(f == 1 for f in filtsz):
+            print "Error: cannot have a 1D 'image' and 2D filter"
+            exit(1)
+    elif len(imsz) == 1:
+        imsz = (imsz[0], 1)
+    elif len(filtsz) == 1:
+        filtsz = (filtsz[0], 1)
+
+    if filtsz[0] == 1 or filtsz[1] == 1:
+        filtsz = (max(filtsz), max(filtsz))
+
+    if imsz == 0:
+        height = 0
+    elif isinstance(imsz, tuple):
+        if any( i < f for i,f in zip(imsz, filtsz) ):
+            height = 0
+        else:
+            #if any( i == 1 for i in imsz):
+            if imsz[0] == 1:
+                imsz = (1, int(math.floor(imsz[1]/2) ) )
+            elif imsz[1] == 1:
+                imsz = (int( math.floor(imsz[0]/2) ), 1)
+            else:
+                imsz = ( int( math.floor(imsz[0]/2) ), 
+                         int( math.floor(imsz[1]/2) ))
+            height = 1 + maxPyrHt(imsz, filtsz)
+    else:
+        if any(imsz < f for f in filtsz):
+            height = 0;
+        else:
+            imsz = ( int( math.floor(imsz/2) ), 1 )
+            height = 1 + maxPyrHt(imsz, filtsz)
+            
+    return height
+
 def maxPyrHt(imsz, filtsz):
     if not isinstance(imsz, tuple) or not isinstance(filtsz, tuple):
         if imsz < filtsz:
@@ -88,6 +235,8 @@ def binomialFilter(size):
 # [Simoncelli90] -  E P Simoncelli and E H Adelson, "Subband image coding",
 #    Subband Transforms, chapter 4, ed. John W Woods, Kluwer Academic 
 #    Publishers,  Norwell, MA, 1990, pp 143--192.
+#
+# Rob Young, 4/13
 #
 def namedFilter(name):
     if len(name) > 5 and name[:5] == "binom":
@@ -1773,7 +1922,7 @@ def steer(*args):
 
     return res
 
-def showIm(*args):
+def showImNew(*args):
     # check and set input parameters
     if len(args) == 0:
         print "showIm( matrix, range, zoom, label, nshades )"
@@ -1930,35 +2079,6 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                 stop[1], result)
     return res
 
-# new version calls C functions directly using cytpes
-def corrDn_new(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-               start = (0,0), stop = None, result = None):
-    lib = ctypes.cdll.LoadLibrary('./wrapConv.so')
-    if image == None or filt == None:
-        print 'Error: image and filter are required input parameters!'
-        return
-
-    if stop == None:
-        stop = (image.shape[0]-1, image.shape[1]-1)
-
-    if result == None:
-        rxsz = len(range(start[0], stop[0]+1, step[0]))
-        rysz = len(range(start[1], stop[1]+1, step[1]))
-        result = numpy.zeros((rxsz, rysz))
-
-    if edges == 'circular':
-        result = lib.internal_wrap_reduce(image, image.shape[0], image.shape[1],
-                                          filt, filt.shape[0], filt.shape[1],
-                                          start[0], step[0], stop[0], start[1],
-                                          step[1], stop[1], results)
-    else:
-        result = lib.internal_reduce(image, image.shape[0], image.shape[1], 
-                                     filt, filt.shape[0], filt.shape[1], 
-                                     start[0], step[0], stop[0], start[1], 
-                                     step[1], stop[1], result, edges)
-
-    return result
-
 # wrapper for C function upConv
 def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
            start = (0,0), stop = None, result = None):
@@ -1988,44 +2108,5 @@ def pointOp(image, lut, origin, increment, warnings):
     res = pyPyrCcode.pointOp(image.shape[0], image.shape[1], image, 
                              lut.shape[0], lut, origin, increment, warnings)
     return res
-
-# IM = mkAngle(SIZE, PHASE, ORIGIN)
-# Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
-# containing samples of the polar angle (in radians, CW from the
-# X-axis, ranging from -pi to pi), relative to angle PHASE (default =
-# 0), about ORIGIN pixel (default = (size+1)/2).    
-def mkAngle(size = None, phase = 0, origin = None):
-    if size == None:
-        print 'Error: input parameter "size" is required!'
-        return
-    else:
-        if isinstance(size, (int, long)):
-            size = (size, size)
-        elif not isinstance(size, (tuple)):
-            print 'Error: input parameter "size" must be an integer or a tuple!'
-            return
-
-    if not isinstance(phase, (int, long)):
-        print 'Error: input parameter "phase" must be an integer!'
-
-    if origin == None:
-        origin = ( (size[0]+1)/2, (size[1]+1)/2 )
-    else:
-        if not isinstance(origin, (tuple)):
-            print 'Error: input parameter "origin" must be a tuple!'
-        
-    [xramp, yramp] = numpy.meshgrid( numpy.array(range(size[1]))-origin[1], 
-                                     numpy.array(range(size[0]))-origin[0])
-    print xramp
-    print yramp
-    res = numpy.arctan2(yramp, xramp)
-
-    res = (res+(numpy.pi-phase) % 2*numpy.pi) - numpy.pi
-
-    return res
-
-
-
-    
 
     
