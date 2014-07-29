@@ -1527,19 +1527,21 @@ class SCFpyr(SFpyr):
         #-----------------------------------------------------------------
 
         pind = self.pyrSize
-        Nsc = numpy.log2(pind[0][0] / pind[-1][0])
+        Nsc = int(numpy.log2(pind[0][0] / pind[-1][0]))
         Nor = (len(pind)-2) / Nsc
 
         pyrIdx = 1
         for nsc in range(Nsc):
             firstBnum = nsc * Nor+2
-            dims = pind[firstBnum.astype(int)][:]
+            #dims = pind[firstBnum.astype(int)][:]
+            dims = pind[firstBnum][:]
             ctr = (numpy.ceil((dims[0]+0.5)/2.0), numpy.ceil((dims[1]+0.5)/2.0)) #-1?
             ang = pyPyrUtils.mkAngle(dims, 0, ctr)
             ang[ctr[0]-1, ctr[1]-1] = -numpy.pi/2.0
             for nor in range(Nor):
                 nband = nsc * Nor + nor + 1
-                ch = self.pyr[nband.astype(int)]
+                #ch = self.pyr[nband.astype(int)]
+                ch = self.pyr[nband]
                 ang0 = numpy.pi * nor / Nor
                 xang = ((ang-ang0+numpy.pi) % (2.0*numpy.pi)) - numpy.pi
                 amask = 2 * (numpy.abs(xang) < (numpy.pi/2.0)).astype(int) + (numpy.abs(xang) == (numpy.pi/2.0)).astype(int)

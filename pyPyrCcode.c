@@ -1,9 +1,13 @@
 #include <Python.h>
-/* #include "Numeric/arrayobject.h" */
-#include "numpy/arrayobject.h"
+#include <numpy/arrayobject.h>
 #include "convolve.h"
+#include "internal_pointOp.h"
+
+/* remove convolve.h; causes error for mac and not needed for linux */
 
 /* compile with: gcc -shared -I/usr/include/python2.6/ -lpython2.6 -o pyPyrCcode.so -fPIC pyPyrCcode.c convolve.c convolve.h edges.c wrap.c internal_pointOp.c*/
+
+/* compile with: gcc -shared -L/root/anaconda/lib/ -I/root/anaconda/include/python2.7/ -lpython2.7 -o pyPyrCcode.so -fPIC pyPyrCcode.c convolve.c convolve.h edges.c wrap.c internal_pointOp.c*/
 
 #define notDblMtx(it) (!mxIsNumeric(it) || !mxIsDouble(it) || mxIsSparse(it) || mxIsComplex(it))
 
@@ -202,8 +206,8 @@ static PyObject* py_upConv(PyObject* self, PyObject* args)
      extend, or repeat edge-handlers */
   // 
 
-  printf("x_fdim=%d  y_fdim=%d  nd=%d dim0=%d dim1=%d\n", x_fdim, y_fdim, 
-	 filt->nd, filt->dimensions[0], filt->dimensions[1]);
+  /* printf("x_fdim=%d  y_fdim=%d  nd=%d dim0=%d dim1=%d\n", x_fdim, y_fdim, 
+     filt->nd, filt->dimensions[0], filt->dimensions[1]); */
   double *filter = (double*)PyArray_DATA(filt);
   //for(x=0; x<x_fdim*y_fdim; x++)
   //printf("filter[%d] = %f\n", x, filter[x]);
@@ -363,16 +367,21 @@ static PyObject* py_pointOp(PyObject* self, PyObject* args)
  * Bind Python function names to our C functions
  */
 static PyMethodDef c_methods[] = {
-	{"corrDn", py_corrDn, METH_VARARGS},
-	{"upConv", py_upConv, METH_VARARGS},
-	{"pointOp", py_pointOp, METH_VARARGS},
-	{NULL, NULL}
+  //{"corrDn", py_corrDn, METH_VARARGS},
+  //{"upConv", py_upConv, METH_VARARGS},
+  //{"pointOp", py_pointOp, METH_VARARGS},
+  //{NULL, NULL}   /* Sentinel */
+  {"corrDn", py_corrDn, METH_VARARGS, NULL},
+  {"upConv", py_upConv, METH_VARARGS, NULL},
+  {"pointOp", py_pointOp, METH_VARARGS, NULL},
+  {NULL, NULL, 0, NULL}   /* Sentinel */
 };
 
 /*
  * Python calls this to let us initialize our module
  */
-void initpyPyrCcode()
+PyMODINIT_FUNC initpyPyrCcode()
+/*void initpyPyrCcode()*/
 {
 	(void) Py_InitModule("pyPyrCcode", c_methods);
 	import_array();
