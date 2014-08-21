@@ -1,9 +1,12 @@
-#include <Python.h>
+#include "Python.h"
 /* #include "Numeric/arrayobject.h" */
 #include "numpy/arrayobject.h"
 #include "convolve.h"
 
 /* compile with: gcc -shared -I/usr/include/python2.6/ -lpython2.6 -o pyPyrCcode.so -fPIC pyPyrCcode.c convolve.c convolve.h edges.c wrap.c internal_pointOp.c*/
+
+/* compile with: gcc -shared -L/root/anaconda/lib/ -I/root/anaconda/include/pyth
+on2.7/ -lpython2.7 -o pyPyrCcode.so -fPIC pyPyrCcode.c convolve.c edges.c wrap.c internal_pointOp.c*/
 
 #define notDblMtx(it) (!mxIsNumeric(it) || !mxIsDouble(it) || mxIsSparse(it) || mxIsComplex(it))
 

@@ -20,103 +20,9 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 #import JBhelpers as jbh
 import JBhelpers
+import ctypes
+lib = ctypes.cdll.LoadLibrary('./wrapConv.so')
 
-# adding dpi as input parameter.  Assumes 96ppi as default
-def showIm(*args):
-    if len(args) == 0:
-        #print "showIm( matrix, range, zoom, label, colormap, colorbar )"
-        print "showIm( matrix, range, label, colormap, colorbar )"
-        print "  matrix is string. It should be the name of a 2D array."
-        print "  range is a two element tuple.  It specifies the values that "
-        print "    map to the min and max colormap values.  Passing a value "
-        print "    of 'auto' (default) sets range=[min,max].  'auto2' sets "
-        print "    range=[mean-2*stdev, mean+2*stdev].  'auto3' sets "
-        print "    range=[p1-(p2-p1)/8, p2+(p2-p1)/8], where p1 is the 10th "
-        print "    percientile value of the sorted matix samples, and p2 is "
-        print "    the 90th percentile value."
-        print "  zoom specifies the number of matrix samples per screen pixel."
-        print "    It will be rounded to an integer, or 1 divided by an "
-        print "    integer.  A value of 'same' or 'auto' (default) causes the "
-        print "    zoom value to be chosen automatically to fit the image into"
-        print "    the current axes."
-        #print "    A value of 'full' fills the axis region "
-        #print "    (leaving no room for labels)."
-        print "  label - A string that is used as a figure title."
-        print "  colormap must contain the string 'auto' (grey colormap will " 
-        print "    be used), or a string that is the name of a colormap "
-        print "    variable"
-        print "  colorbar is a boolean that specifies whether or not a "
-        print "    colorbar is displayed"
-    if len(args) > 0:   # matrix entered
-        matrix = args[0]
-        # defaults for all other values in case they weren't entered
-        imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
-        zoom = 1
-        label = 1
-        colorbar = False
-        colormap = matplotlib.cm.Greys_r
-        dpi = 96
-    if len(args) > 1:   # range entered
-        if isinstance(args[1], basestring):
-            if args[1] is "auto":
-                imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
-            elif args[1] is "auto2":
-                imRange = ( matrix.mean()-2*matrix.std(), 
-                            matrix.mean()+2*matrix.std() )
-            elif args[1] is "auto3":
-                #p1 = numpy.percentile(matrix, 10)  not in python 2.6.6?!
-                #p2 = numpy.percentile(matrix, 90)
-                p1 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 10)
-                p2 = scipy.stats.scoreatpercentile(numpy.hstack(matrix), 90)
-                imRange = p1-(p2-p1)/8, p2+(p2-p1)/8
-            else:
-                print "Error: range of %s is not recognized." % args[1]
-                print "       please use a two element tuple or "
-                print "       'auto', 'auto2' or 'auto3'"
-                print "       enter 'showIm' for more info about options"
-                return
-        else:
-            imRange = args[1][0], args[1][1]
-    if len(args) > 2:   # zoom entered
-        zoom = args[2]
-    else:
-        zoom = 1
-    if len(args) > 3:   # label entered
-        label = args[3]
-    if len(args) > 4:   # colormap entered
-        if args[4] is "auto":
-            colormap = matplotlib.cm.Greys_r
-        else:  # got a variable name
-            colormap = args[3]
-    if len(args) > 5 and args[5]:   # colorbar entered and set to true
-        colorbar = args[5]
-    if len(args) > 6:
-        dpi = args[6]
-        
-    dims = (matrix.shape[0]/dpi*zoom, matrix.shape[1]/dpi*zoom)
-    matplotlib.pyplot.figure(figsize=dims, dpi=dpi)
-    #figtxt = 'Range: [0,0]'
-    #plt.figtext(0.25, 0.05, figtxt)
-    #figtxt = 'Dims: [%d %d]/1' % (matrix.shape[0], matrix.shape[1])
-    #plt.figtext(0.25, 0.0005, figtxt)
-    figtxt = 'Dims: [%d %d]*%.1f' % (matrix.shape[0], matrix.shape[1], zoom)
-    #plt.figtext(0.1, 0.01, figtxt)
-    matplotlib.pyplot.xlabel(figtxt)
-    #imgplot = plt.imshow(matrix, colormap, origin='lower').set_clim(imRange)
-    imgplot = matplotlib.pyplot.imshow(matrix, colormap, 
-                                       interpolation=None).set_clim(imRange)
-    #plt.gca().invert_yaxis()  # default is inverted y from matlab
-    if label != 0 and label != 1:
-        matplotlib.pyplot.title(label)
-    if colorbar:
-        matplotlib.pyplot.colorbar(imgplot, cmap=colormap)
-    #pylab.show()
-    #plt.axis('off')
-    ax = matplotlib.pyplot.gca()
-    ax.set_yticks([])
-    ax.set_xticks([])
-    matplotlib.pyplot.show()
-    
 # Compute maximum pyramid height for given image and filter sizes.
 # Specifically: the number of corrDn operations that can be sequentially
 # performed when subsampling by a factor of 2.
@@ -308,6 +214,7 @@ def comparePyr(matPyr, pyPyr):
     matStart = 0
     #for key, value in pyPyr.pyrSize.iteritems():
     for idx in range(len(pyPyr.pyrSize)):
+        #print 'checking level %d' % (idx)
         #bandSz = value
         bandSz = pyPyr.pyrSize[idx]
         if len(bandSz) == 1:
@@ -324,6 +231,8 @@ def comparePyr(matPyr, pyPyr):
             #    for j in range(value[1]):
             for i in range(bandSz[0]):
                 for j in range(bandSz[1]):
+                    #print 'mat = %f   py = %f' % (matTmp[i,j], 
+                    #                              pyPyr.pyr[idx][i,j])
                     #if matTmp[i,j] != pyPyr.pyr[key][i,j]:
                     if matTmp[i,j] != pyPyr.pyr[idx][i,j]:
                         #print "%d %d : %.20f" % (i,j,
@@ -1467,7 +1376,7 @@ def modulateFlip(*args):
 # The procedure is applied recursively LEVELS times (default=1).
 # Eero Simoncelli, 3/97.  Ported to python by Rob Young 4/14
 # function res = blurDn(im, nlevs, filt)
-def blurDn(*args):
+def blurDn_old(*args):   # works with old corrDn
     if len(args) == 0:
         print "Error: image input parameter required."
         return
@@ -1509,7 +1418,7 @@ def blurDn(*args):
                 
             #res = pyPyrCcode.corrDn(im.shape[0],im.shape[1], im, filt.shape[0],
             #                        filt.shape[1], filt, 'reflect1', 2, 2)
-            res = corrDn(image = im, filt = filt, step = (2, 2))
+            res = corrDn_old(image = im, filt = filt, step = (2, 2))
             if len(im.shape) == 1 or im.shape[1] == 1:
                 res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0), 1))
             else:
@@ -1525,9 +1434,9 @@ def blurDn(*args):
             #                        'reflect1', 2, 1)
             # wrapper -- works
             foo = im.reshape(im.shape[1], im.shape[0], order='F').T
-            res = corrDn(image = foo, filt = filt, step = (2, 1)).T
+            res = corrDn_old(image = foo, filt = filt, step = (2, 1)).T
             res = res.reshape(res.shape[1], res.shape[0], order='C')
-            res = corrDn(image = res, filt = filt, step = (2, 1))
+            res = corrDn_old(image = res, filt = filt, step = (2, 1))
 
             #foo = im.reshape(im.shape[1], im.shape[0], order='F').T
             #res = corrDn(image = foo, filt = filt, step = (2, 1)).T
@@ -1544,6 +1453,66 @@ def blurDn(*args):
             #print 'res2'
             #print res2
         else:  # 2D image and 2D filter
+            res = pyPyrCcode.corrDn(im.shape[0],im.shape[1], im, filt.shape[0],
+                                    filt.shape[1], filt, 'reflect1', 2, 2)
+            #res = corrDn(im = im, filt = filt, step = (2, 2))
+    else:
+        res = im
+            
+    return res
+
+def blurDn(*args):
+    if len(args) == 0:
+        print "Error: image input parameter required."
+        return
+
+    im = numpy.array(args[0])
+    
+    # optional args
+    if len(args) > 1:
+        nlevs = args[1]
+    else:
+        nlevs = 1
+
+    if len(args) > 2:
+        filt = args[2]
+        if isinstance(filt, basestring):
+            filt = namedFilter(filt)
+    else:
+        filt = namedFilter('binom5')
+    filt = [x/sum(filt) for x in filt]
+    filt = numpy.array(filt)
+    
+    if nlevs > 1:
+        im = blurDn(im, nlevs-1, filt)
+
+    if nlevs >= 1:
+        if len(im.shape) == 1 or im.shape[0] == 1 or im.shape[1] == 1:
+            # 1D image
+            if len(filt.shape) > 1 and (filt.shape[1]!=1 and filt.shape[2]!=1):
+                # >1D filter
+                print 'Error: Cannot apply 2D filter to 1D signal'
+                return
+            # orient filter and image correctly
+            if im.shape[0] == 1:
+                if len(filt.shape) == 1 or filt.shape[1] == 1:
+                    filt = filt.T
+            else:
+                if filt.shape[0] == 1:
+                    filt = filt.T
+                
+            res = corrDn(image = im, filt = filt, step = (2, 2))
+            if len(im.shape) == 1 or im.shape[1] == 1:
+                res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0), 1))
+            else:
+                res = numpy.reshape(res, (1, numpy.ceil(im.shape[1]/2.0)))
+        elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
+            # 2D image and 1D filter
+            res = corrDn(image = im, filt = filt.T, step = (2, 1))
+            res = corrDn(image = res, filt = filt, step = (1, 2))
+
+        else:  # 2D image and 2D filter
+            # FIX: still not using new wrapper
             res = pyPyrCcode.corrDn(im.shape[0],im.shape[1], im, filt.shape[0],
                                     filt.shape[1], filt, 'reflect1', 2, 2)
             #res = corrDn(im = im, filt = filt, step = (2, 2))
@@ -1922,7 +1891,7 @@ def steer(*args):
 
     return res
 
-def showImNew(*args):
+def showIm(*args):
     # check and set input parameters
     if len(args) == 0:
         print "showIm( matrix, range, zoom, label, nshades )"
@@ -1949,6 +1918,7 @@ def showImNew(*args):
     if len(args) > 0:   # matrix entered
         matrix = numpy.array(args[0])
     print matrix
+    print 'showIm range %f %f' % (matrix.min(), matrix.max())
 
     if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
@@ -2002,9 +1972,11 @@ def showImNew(*args):
                           ( matrix.shape[ 1 ] + 3 ) // 4 * 4 ), 
                         numpy.uint8 )
     data[ :, :matrix.shape[ 1 ] ] = matrix
-    (w, h) = matrix.shape
+    #(w, h) = matrix.shape
+    (nRows, nCols) = matrix.shape
     matrix = data[:]
-    qim = QtGui.QImage(matrix, w, h, QtGui.QImage.Format_Indexed8)
+    #qim = QtGui.QImage(matrix, w, h, QtGui.QImage.Format_Indexed8)
+    qim = QtGui.QImage(matrix, nCols, nRows, QtGui.QImage.Format_Indexed8)
     #qim.ndarray = matrix
     
     # make colormap
@@ -2019,11 +1991,17 @@ def showImNew(*args):
                                      colors[colctr]).rgb())
 
     # zoom
-    dims = (matrix.shape[0]*zoom, matrix.shape[1]*zoom)
-    qim = qim.scaled(dims[0], dims[1])
+    #dims = (matrix.shape[0]*zoom, matrix.shape[1]*zoom)
+    dims = (nRows*zoom, nCols*zoom)
+    print 'dims'
+    print dims
+    print 'nRows=%d nCols=%d' % (nRows, nCols)
+    #qim = qim.scaled(dims[0], dims[1])
+    qim = qim.scaled(nCols, nRows)
     #pixmap = QtGui.QPixmap()
     #pixmap = QtGui.QPixmap(dims[0], dims[1])
-    pixmap = QtGui.QPixmap(w,h)
+    #pixmap = QtGui.QPixmap(w,h)
+    pixmap = QtGui.QPixmap(nCols, nRows)
     pixmap = QtGui.QPixmap.fromImage(qim)
 
     # set up widgets and layout
@@ -2042,7 +2020,8 @@ def showImNew(*args):
     rlab.setAlignment(QtCore.Qt.AlignCenter)
     layout.addWidget(rlab)
     dlab = QtGui.QLabel()
-    dlab.setText('Dims: [%d %d] * %.2f' % (w, h, zoom))
+    #dlab.setText('Dims: [%d %d] * %.2f' % (w, h, zoom))
+    dlab.setText('Dims: [%d %d] * %.2f' % (nRows, nCols, zoom))
     dlab.setAlignment(QtCore.Qt.AlignCenter)
     layout.addWidget(dlab)
     mainWidget.setLayout(layout)
@@ -2057,7 +2036,7 @@ def showImNew(*args):
 # required input parameters: image, filter
 # optonal input parameters: edges, (xstep,ystep), (xstart,ystart), (xstop,ystop)
 #                           result
-def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+def corrDn_old(image = None, filt = None, edges = 'reflect1', step = (1,1), 
            start = (0,0), stop = None, result = None):
     
     if image == None or filt == None:
@@ -2077,15 +2056,70 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                 filt.shape[0], filt.shape[1], filt, edges, 
                                 step[0], step[1], start[0], start[1], stop[0],
                                 stop[1], result)
+    print res
     return res
 
-# wrapper for C function upConv
-def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+# new version calls C functions directly using cytpes
+def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1), 
            start = (0,0), stop = None, result = None):
+    if image == None or filt == None:
+        print 'Error: image and filter are required input parameters!'
+        return
+
+    if stop == None:
+        #stop = (image.shape[0]-1, image.shape[1]-1)
+        stop = (image.shape[0], image.shape[1])
+
+    if result == None:
+        #rxsz = len(range(start[0], stop[0]+1, step[0]))
+        #rysz = len(range(start[1], stop[1]+1, step[1]))
+        rxsz = len(range(start[0], stop[0], step[0]))
+        rysz = len(range(start[1], stop[1], step[1]))
+        result = numpy.zeros((rxsz, rysz))
+        
+    if edges == 'circular':
+        # FIX: fix interface for this version too!
+        #result = lib.internal_wrap_reduce(image,image.shape[0], image.shape[1],
+        #filt, filt.shape[0], filt.shape[1],
+        #                                  start[0], step[0], stop[0], start[1],
+        #                                  step[1], stop[1], result)
+        lib.internal_wrap_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                                 image.shape[1], image.shape[0], 
+                                 filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                                 tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                                 filt.shape[1], filt.shape[0], 
+                                 #start[0], step[0], stop[0], start[1], step[1], 
+                                 #stop[1], 
+                                 start[1], step[1], stop[1], start[0], step[0], 
+                                 stop[0], 
+                                 result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
+    else:
+        tmp = numpy.zeros((filt.shape[0], filt.shape[1]))
+        #image = numpy.reshape(image,(image.shape[1],image.shape[0]), order='F')
+        lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                            image.shape[1], image.shape[0], 
+                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                            tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                            filt.shape[1], filt.shape[0], 
+                            #start[0], step[0], stop[0], start[1], step[1], 
+                            #stop[1], 
+                            start[1], step[1], stop[1], start[0], step[0], 
+                            stop[0], 
+                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                            edges)
+
+    return result
+
+# wrapper for C function upConv
+def upConv_old(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+               start = (0,0), stop = None, result = None):
 
     if image == None or filt == None:
         print 'Error: image and filter are required input parameters!'
         return
+
+    if len(filt.shape) == 1:
+        filt = numpy.reshape(filt, (filt.shape[0],1))
 
     if stop == None:
         stop = (image.shape[0]*step[0], image.shape[1]*step[1])
@@ -2102,11 +2136,74 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                 stop[1], result)
     return res
 
+def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+           start = (0,0), stop = None, result = None):
+
+    print 'upConv - result in'
+    print result
+
+    if image == None or filt == None:
+        print 'Error: image and filter are required input parameters!'
+        return
+
+    if len(filt.shape) == 1:
+        filt = numpy.reshape(filt, (filt.shape[0],1))
+
+    # FIX: are these two lines needed? should be.
+    step = (step[1], step[0])
+    start = (start[1], start[0])
+
+    if stop == None and result == None:
+        stop = (image.shape[1]*step[1], image.shape[0]*step[0])
+    elif stop == None:
+        stop = (result.shape[1], result.shape[0])
+
+    if result == None:
+        rxsz = len(range(start[0], stop[0], step[0]))
+        rysz = len(range(start[1], stop[1], step[1]))
+        result = numpy.zeros((rysz, rxsz))
+    else:
+        (rysz, rxsz) = result.shape
+
+    temp = numpy.zeros(filt.shape)
+
+    if edges == 'circular':
+        lib.internal_wrap_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 filt.shape[0], filt.shape[1], start[0], 
+                                 step[0], stop[0], start[1], step[1], stop[1],
+                                 result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 rxsz, rysz)
+    else:
+        print 'c call in'
+        lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.shape[0], filt.shape[1], start[0], step[0],
+                            stop[0], start[1], step[1], stop[1],
+                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            rxsz, rysz, edges)
+        print 'c call out'
+        
+    return result
+
 # wrapper for C function pointOp
-def pointOp(image, lut, origin, increment, warnings):
+def pointOp_old(image, lut, origin, increment, warnings):
 
     res = pyPyrCcode.pointOp(image.shape[0], image.shape[1], image, 
                              lut.shape[0], lut, origin, increment, warnings)
     return res
 
+def pointOp(image, lut, origin, increment, warnings):
+    result = numpy.zeros((image.shape[0], image.shape[1]))
+
+    lib.internal_pointop(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+                         result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                         image.shape[0] * image.shape[1], 
+                         lut.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                         lut.shape[0], ctypes.c_double(origin), 
+                         ctypes.c_double(increment), warnings)
+
+    return result
     

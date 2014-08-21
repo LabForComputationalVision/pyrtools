@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/users-local/ryoung/anaconda/bin/python
 import unittest
 import pyPyrUtils as ppu
 import pyPyrTools as ppt
@@ -222,8 +222,8 @@ class SpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('matFiles/buildSpyr1.mat')
-        img = Image.open('lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = np.array(Image.open('lenna-256x256.tif')).astype(float)
+        #img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Spyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -250,8 +250,8 @@ class SpyrTests(unittest.TestCase):
         self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
     def test5(self):
         matPyr = scipy.io.loadmat('matFiles/buildSpyr5.mat')
-        img = Image.open('lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = np.array(Image.open('lenna-256x256.tif')).astype(float)
+        #img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Spyr(img)
         #recon = pyPyr.reconSpyr()
         recon = pyPyr.reconPyr()
@@ -407,7 +407,6 @@ class SFpyrTests(unittest.TestCase):
         recon = pyPyr.reconSFpyr([0,2,4], [1])
         #recon = pyPyr.reconPyr([0,2,4], [1])
         self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
-
 
 class SCFpyrTests(unittest.TestCase):
     def test0(self):
@@ -651,7 +650,6 @@ class blurDnTests(unittest.TestCase):
     #    pyRamp = ppu.mkRamp((256, 256))
     #    res = ppu.blurDn(pyRamp, 2dfilt)
     #    self.failUnless(ppu.compareRecon(matPyr['res'], res))
-    
 
 def main():
     unittest.main()
