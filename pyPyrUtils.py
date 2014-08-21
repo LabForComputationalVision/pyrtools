@@ -2036,7 +2036,7 @@ def showIm(*args):
 # required input parameters: image, filter
 # optonal input parameters: edges, (xstep,ystep), (xstart,ystart), (xstop,ystop)
 #                           result
-def corrDn_old(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+def corrDn_orig(image = None, filt = None, edges = 'reflect1', step = (1,1), 
            start = (0,0), stop = None, result = None):
     
     if image == None or filt == None:
@@ -2086,7 +2086,6 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
         lib.internal_wrap_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
                                  image.shape[1], image.shape[0], 
                                  filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
-                                 tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
                                  filt.shape[1], filt.shape[0], 
                                  #start[0], step[0], stop[0], start[1], step[1], 
                                  #stop[1], 
@@ -2107,6 +2106,41 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
                             stop[0], 
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
                             edges)
+
+    return result
+
+def corrDn_new2(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+           start = (0,0), stop = None, result = None):
+    #lib = ctypes.cdll.LoadLibrary('./wrapConv.so')
+    if image == None or filt == None:
+        print 'Error: image and filter are required input parameters!'
+        return
+
+    if stop == None:
+        stop = (image.shape[0]-1, image.shape[1]-1)
+
+    if result == None:
+        rxsz = len(range(start[0], stop[0]+1, step[0]))
+        rysz = len(range(start[1], stop[1]+1, step[1]))
+        result = numpy.zeros((rxsz, rysz))
+
+    if edges == 'circular':
+        result = lib.internal_wrap_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                          image.shape[0], image.shape[1],
+                                          filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                          filt.shape[0], filt.shape[1],
+                                          start[0], step[0], stop[0], start[1],
+                                          step[1], stop[1], 
+                                          result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
+    else:
+        result = lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                     image.shape[0], image.shape[1], 
+                                     filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                     filt.shape[0], filt.shape[1], 
+                                     start[0], step[0], stop[0], start[1], 
+                                     step[1], stop[1], 
+                                     result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                     edges)
 
     return result
 
