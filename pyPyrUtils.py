@@ -2136,8 +2136,8 @@ def upConv_old(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                 stop[1], result)
     return res
 
-def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-           start = (0,0), stop = None, result = None):
+def upConv_new(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+               start = (0,0), stop = None, result = None):
 
     print 'upConv - result in'
     print result
@@ -2187,6 +2187,28 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
         print 'c call out'
         
     return result
+
+def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+           start = (0,0), stop = None, result = None):
+
+    if image == None or filt == None:
+        print 'Error: image and filter are required input parameters!'
+        return
+
+    if stop == None:
+        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
+
+    if result == None:
+        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+                                filt.shape[0], filt.shape[1], filt, edges,
+                                step[0], step[1], start[0], start[1], stop[0], 
+                                stop[1])
+    else:
+        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+                                filt.shape[0], filt.shape[1], filt, edges,
+                                step[0], step[1], start[0], start[1], stop[0], 
+                                stop[1], result)
+    return res
 
 # wrapper for C function pointOp
 def pointOp_old(image, lut, origin, increment, warnings):
