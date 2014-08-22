@@ -1736,38 +1736,54 @@ class Lpyr(pyramid):
         los = {}
         los[self.height] = im
         # compute low bands
+        #im_test = im
         for ht in range(self.height-1,0,-1):
             im_sz = im.shape
             filt1_sz = filt1.shape
             if im_sz[0] == 1:
-                lo2 = numpy.array( pyPyrCcode.corrDn(1, im_sz[1], im, 
-                                                     filt1_sz[0], filt1_sz[1], 
-                                                     filt1, edges, 1, 2, 0, 0, 
-                                                     int(math.ceil(im_sz[1]/2.0)), 1) ).T
-                #lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, step = (1,2),
-                #                        stop = (int(math.ceil(im_sz[1]/2.0)),1)).T
+                #lo2 = numpy.array( pyPyrCcode.corrDn(1, im_sz[1], im, 
+                #                                     filt1_sz[0], filt1_sz[1], 
+                #                                     filt1, edges, 1, 2, 0, 0, 
+                #                                     int(math.ceil(im_sz[1]/2.0)), 1) ).T
+                lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, step = (1,2),
+                                        stop = (int(math.ceil(im_sz[1]/2.0)),1)
+                ).T
+                lo2 = numpy.array(lo2)
             elif len(im_sz) == 1 or im_sz[1] == 1:
-                lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
-                                                     filt1_sz[0], filt1_sz[1], 
-                                                     filt1, edges, 2, 1, 0, 0, 
-                                                     int(math.ceil(im_sz[0]/2.0)), 1) ).T
+                #lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
+                #                                     filt1_sz[0], filt1_sz[1], 
+                #                                     filt1, edges, 2, 1, 0, 0, 
+                #                                     int(math.ceil(im_sz[0]/2.0)), 1) ).T
+                lo2  = pyPyrUtils.corrDn(image = im, filt = filt1, step = (2,1),
+                                         stop = (int(math.ceil(im_sz[0]/2.0)),1)
+                                         ).T
+                lo2 = numpy.array(lo2)
             else:
-                lo = numpy.array( pyPyrCcode.corrDn(im_sz[1], im_sz[0], im, 
-                                                    filt1_sz[0], filt1_sz[1], 
-                                                    filt1, edges, 2, 1, 0, 0, 
-                                                    im_sz[0], im_sz[1]) )
-                #lo = numpy.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
-                #                          math.ceil(im_sz[1]/2.0), 
-                #                          order='C')
-                lo2 = numpy.array( pyPyrCcode.corrDn(int(math.ceil(im_sz[0]/1.0)), 
-                                                     int(math.ceil(im_sz[1]/2.0)), 
-                                                     lo.T, filt1_sz[0], 
-                                                     filt1_sz[1], filt1, edges, 
-                                                     2, 1, 0, 0, im_sz[0], 
-                                                     im_sz[1]) ).T
-                #lo2 = numpy.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                #                            math.ceil(im_sz[1]/2.0), 
-                #                            order='F')
+                # orig version
+                #lo = numpy.array( pyPyrCcode.corrDn(im_sz[1], im_sz[0], im, 
+                #                                    filt1_sz[0], filt1_sz[1], 
+                #                                    filt1, edges, 2, 1, 0, 0, 
+                #                                    im_sz[0], im_sz[1]) )
+                ##lo = numpy.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
+                ##                          math.ceil(im_sz[1]/2.0), 
+                ##                          order='C')
+                #lo2 = numpy.array( pyPyrCcode.corrDn(int(math.ceil(im_sz[0]/1.0)), 
+                #                                     int(math.ceil(im_sz[1]/2.0)), 
+                #                                     lo.T, filt1_sz[0], 
+                #                                     filt1_sz[1], filt1, edges, 
+                #                                     2, 1, 0, 0, im_sz[0], 
+                #                                     im_sz[1]) ).T
+                ##lo2 = numpy.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
+                ##                            math.ceil(im_sz[1]/2.0), 
+                ##                            order='F')
+                # new version
+                lo = pyPyrUtils.corrDn(image = im, filt = filt1.T, 
+                                       step = (1,2), start = (0,0))
+                lo = numpy.array(lo)
+                lo2 = pyPyrUtils.corrDn(image = lo, filt = filt1, 
+                                        step = (2,1), start = (0,0))
+                lo2 = numpy.array(lo2)
+
             los[ht] = lo2
                 
             im = lo2
@@ -1793,17 +1809,44 @@ class Lpyr(pyramid):
                                         filt2_sz[0], filt2, edges, 1, 2, 0, 0,
                                         los[ht].shape[0], los[ht].shape[1]).T
             else:
-                hi = pyPyrCcode.upConv(im_sz[0], im_sz[1], im.T, filt2_sz[0],
-                                       filt2_sz[1], filt2, edges, 2, 1, 0, 0,
-                                       los[ht].shape[0], im_sz[1]).T
-                #hi = numpy.array(hi).reshape(los[ht].shape[0], im_sz[1], order='F')
-                int_sz = hi.shape
-                hi2 = pyPyrCcode.upConv(los[ht].shape[0], im_sz[1], hi.T, 
-                                        filt2_sz[1], filt2_sz[0], filt2, edges,
-                                        1, 2, 0, 0, los[ht].shape[0],
-                                        los[ht].shape[1]).T
-                #hi2 = numpy.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
-                #                            order='F')
+                ## orig code
+                #hi = pyPyrCcode.upConv(im_sz[0], im_sz[1], im.T, filt2_sz[0],
+                #                       filt2_sz[1], filt2, edges, 2, 1, 0, 0,
+                #                       los[ht].shape[0], im_sz[1]).T
+                ##hi = numpy.array(hi).reshape(los[ht].shape[0], im_sz[1], order='F')
+                #int_sz = hi.shape
+                #hi2 = pyPyrCcode.upConv(los[ht].shape[0], im_sz[1], hi.T, 
+                #                        filt2_sz[1], filt2_sz[0], filt2, edges,
+                #                        1, 2, 0, 0, los[ht].shape[0],
+                #                        los[ht].shape[1]).T
+                ##hi2 = numpy.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
+                ##                            order='F')
+                ## working version of original
+                #hi = pyPyrCcode.upConv(im_sz[0], im_sz[1], im.T, filt2_sz[0],
+                #                       filt2_sz[1], filt2, edges, 2, 1, 0, 0,
+                #                       los[ht].shape[0], im_sz[1]).T
+                #print 'hi'
+                #print hi
+                #hi2 = pyPyrCcode.upConv(los[ht].shape[0], im_sz[1], hi.T, 
+                #                        filt2_sz[1], filt2_sz[0], filt2, edges,
+                #                        1, 2, 0, 0, los[ht].shape[0],
+                #                        los[ht].shape[1]).T
+                #print 'hi2'
+                #print hi2
+                ## new code
+                hi = pyPyrUtils.upConv(image = im.T, filt = filt2, 
+                                       step = (2,1), 
+                                       stop = (los[ht].shape[0], 
+                                               im_sz[1])).T
+                #print 'hi_test'
+                #print hi_test
+                hi2 = pyPyrUtils.upConv(image = hi.T, filt = filt2.T, 
+                                        step = (1,2), 
+                                        stop = (los[ht].shape[0], 
+                                                los[ht].shape[1])).T
+                #print 'hi2_test'
+                #print hi2_test
+                                       
 
             hi2 = los[ht] - hi2
             #self.pyr[pyrCtr] = hi2
@@ -1881,14 +1924,23 @@ class Lpyr(pyramid):
                                             edges, 2, 1, 0, 0, new_sz[0],
                                             new_sz[1]).T
                 else:
-                    hi = pyPyrCcode.upConv(res_sz[0], res_sz[1], res.T,
-                                           filt2_sz[0], filt2_sz[1], filt2,
-                                           edges, 2, 1, 0, 0, new_sz[0],
-                                           res_sz[1]).T
-                    hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], hi.T,
-                                            filt2_sz[1], filt2_sz[0], filt2,
-                                            edges, 1, 2, 0, 0, new_sz[0],
-                                            new_sz[1]).T
+                    # orig code
+                    #hi = pyPyrCcode.upConv(res_sz[0], res_sz[1], res.T,
+                    #                       filt2_sz[0], filt2_sz[1], filt2,
+                    #                       edges, 2, 1, 0, 0, new_sz[0],
+                    #                       res_sz[1]).T
+                    #hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], hi.T,
+                    #                        filt2_sz[1], filt2_sz[0], filt2,
+                    #                        edges, 1, 2, 0, 0, new_sz[0],
+                    #                        new_sz[1]).T
+                    # new code
+                    hi = pyPyrUtils.upConv(image = res, filt = filt2.T, 
+                                           step = (1,2), 
+                                           stop = (res_sz[1], new_sz[0]))
+                    hi2 = pyPyrUtils.upConv(image = hi.T, 
+                                            filt = filt2.T,
+                                            step = (1,2),
+                                            stop = new_sz).T
                 if lev in levs:
                     bandIm = self.band(lev)
                     bandIm_sz = bandIm.shape
