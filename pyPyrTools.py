@@ -1741,22 +1741,22 @@ class Lpyr(pyramid):
             im_sz = im.shape
             filt1_sz = filt1.shape
             if im_sz[0] == 1:
+                print 'flag lo 1'
                 #lo2 = numpy.array( pyPyrCcode.corrDn(1, im_sz[1], im, 
                 #                                     filt1_sz[0], filt1_sz[1], 
                 #                                     filt1, edges, 1, 2, 0, 0, 
                 #                                     int(math.ceil(im_sz[1]/2.0)), 1) ).T
-                lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, step = (1,2),
-                                        stop = (int(math.ceil(im_sz[1]/2.0)),1)
-                ).T
+                lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, 
+                                        step = (1,2))
                 lo2 = numpy.array(lo2)
             elif len(im_sz) == 1 or im_sz[1] == 1:
+                print 'flag lo 2'
                 #lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
                 #                                     filt1_sz[0], filt1_sz[1], 
                 #                                     filt1, edges, 2, 1, 0, 0, 
                 #                                     int(math.ceil(im_sz[0]/2.0)), 1) ).T
-                lo2  = pyPyrUtils.corrDn(image = im, filt = filt1, step = (2,1),
-                                         stop = (int(math.ceil(im_sz[0]/2.0)),1)
-                                         ).T
+                lo2  = pyPyrUtils.corrDn(image = im, filt = filt1, 
+                                         step = (2,1))
                 lo2 = numpy.array(lo2)
             else:
                 # orig version
@@ -1801,13 +1801,17 @@ class Lpyr(pyramid):
             im_sz = los[ht-1].shape
             filt2_sz = filt2.shape
             if len(im_sz) == 1 or im_sz[1] == 1:
-                hi2 = pyPyrCcode.upConv(im_sz[0], im_sz[1], im, filt2_sz[0],
-                                        filt2_sz[1], filt2, edges, 2, 1, 0, 0,
-                                        los[ht].shape[0], los[ht].shape[1]).T
+                #hi2 = pyPyrCcode.upConv(im_sz[0], im_sz[1], im, filt2_sz[0],
+                #                        filt2_sz[1], filt2, edges, 2, 1, 0, 0,
+                #                        los[ht].shape[0], los[ht].shape[1]).T
+                hi2 = pyPyrUtils.upConv(image = im, filt = filt2, step = (2,1))
             elif im_sz[0] == 1:
-                hi2 = pyPyrCcode.upConv(im_sz[0], im_sz[1], im, filt2_sz[1],
-                                        filt2_sz[0], filt2, edges, 1, 2, 0, 0,
-                                        los[ht].shape[0], los[ht].shape[1]).T
+                #hi2 = pyPyrCcode.upConv(im_sz[0], im_sz[1], im, filt2_sz[1],
+                #                        filt2_sz[0], filt2, edges, 1, 2, 0, 0,
+                #                        los[ht].shape[0], los[ht].shape[1]).T
+                hi2 = pyPyrUtils.upConv(image = im, filt = filt2.T, 
+                                        step = (2,1), stop = (los[ht].shape[1],
+                                                              los[ht].shape[0]))
             else:
                 ## orig code
                 #hi = pyPyrCcode.upConv(im_sz[0], im_sz[1], im.T, filt2_sz[0],
@@ -1821,31 +1825,15 @@ class Lpyr(pyramid):
                 #                        los[ht].shape[1]).T
                 ##hi2 = numpy.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
                 ##                            order='F')
-                ## working version of original
-                #hi = pyPyrCcode.upConv(im_sz[0], im_sz[1], im.T, filt2_sz[0],
-                #                       filt2_sz[1], filt2, edges, 2, 1, 0, 0,
-                #                       los[ht].shape[0], im_sz[1]).T
-                #print 'hi'
-                #print hi
-                #hi2 = pyPyrCcode.upConv(los[ht].shape[0], im_sz[1], hi.T, 
-                #                        filt2_sz[1], filt2_sz[0], filt2, edges,
-                #                        1, 2, 0, 0, los[ht].shape[0],
-                #                        los[ht].shape[1]).T
-                #print 'hi2'
-                #print hi2
                 ## new code
                 hi = pyPyrUtils.upConv(image = im.T, filt = filt2, 
                                        step = (2,1), 
                                        stop = (los[ht].shape[0], 
                                                im_sz[1])).T
-                #print 'hi_test'
-                #print hi_test
                 hi2 = pyPyrUtils.upConv(image = hi.T, filt = filt2.T, 
                                         step = (1,2), 
                                         stop = (los[ht].shape[0], 
                                                 los[ht].shape[1])).T
-                #print 'hi2_test'
-                #print hi2_test
                                        
 
             hi2 = los[ht] - hi2
@@ -1914,15 +1902,19 @@ class Lpyr(pyramid):
                 new_sz = self.band(lev).shape
                 filt2_sz = filt2.shape
                 if res_sz[0] == 1:
-                    hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
-                                            filt2_sz[1], filt2_sz[0], filt2,
-                                            edges, 1, 2, 0, 0, new_sz[0],
-                                            new_sz[1]).T
+                    #hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
+                    #                        filt2_sz[1], filt2_sz[0], filt2,
+                    #                        edges, 1, 2, 0, 0, new_sz[0],
+                    #                        new_sz[1]).T
+                    hi2 = pyPyrUtils.upConv(image = res, filt = filt2.T,
+                                            step = (1,2), stop = new_sz)
                 elif res_sz[1] == 1:
-                    hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
-                                            filt2_sz[0], filt2_sz[1], filt2,
-                                            edges, 2, 1, 0, 0, new_sz[0],
-                                            new_sz[1]).T
+                    #hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
+                    #                        filt2_sz[0], filt2_sz[1], filt2,
+                    #                        edges, 2, 1, 0, 0, new_sz[0],
+                    #                        new_sz[1]).T
+                    hi2 = pyPyrUtils.upConv(image = res, filt = filt2,
+                                            step = (2,1), stop = new_sz)
                 else:
                     # orig code
                     #hi = pyPyrCcode.upConv(res_sz[0], res_sz[1], res.T,
@@ -2197,56 +2189,58 @@ class Gpyr(Lpyr):
         for ht in range(self.height-1,0,-1):
             im_sz = im.shape
             filt_sz = filt.shape
-            if len(im_sz) == 1:
-                lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
-                                                     filt_sz[0], filt_sz[1],
-                                                     filt, edges, 2, 1, 0, 0, 
-                                                     im_sz[0], 1) )
-                #lo2 = numpy.array(lo2).reshape(im_sz[0]/2, 1, order='C')
-                print lo2
-            elif im_sz[0] == 1:
+            if im_sz[0] == 1:
                 #lo2 = numpy.array( corrDn(1, im_sz[1], im, filt_sz[0], filt_sz[1],
                 #                       filt, edges, 1, 2, 0, 0, 1, im_sz[1]) )
-                print im
-                print im.shape
-                print filt
-                print filt.shape
                 filt = filt[0,:]
-                print filt.shape
-                lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
-                                                     filt_sz[0], filt_sz[1],
-                                                     filt, edges, 2, 1, 0, 0, 
-                                                     im_sz[0], 1) )
-                print lo2
-                #lo2 = numpy.array(lo2).reshape(1, im_sz[1]/2, order='C')
-            elif im_sz[1] == 1:
+                ## orig code
+                #lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
+                #                                     filt_sz[0], filt_sz[1],
+                #                                     filt, edges, 2, 1, 0, 0, 
+                #                                     im_sz[0], 1) )
+                ##lo2 = numpy.array(lo2).reshape(1, im_sz[1]/2, order='C')
+                ## new code
+                lo2 = pyPyrUitls.corrDn(image = im, filt = filt, step = (1,2))
+                lo2 = numpy.array(lo2)
+            elif len(im_sz) == 1 or im_sz[1] == 1:
                 #lo2 = numpy.array( corrDn(im_sz[0], 1, im, filt_sz[0], filt_sz[1],
                 #                       filt, edges, 2, 1, 0, 0, im_sz[0], 1) )
-                lo2 = numpy.array( pyPyrCcode.corrDn(1, im_sz[1], im, 
-                                                     filt_sz[0], filt_sz[1],
-                                                     filt, edges, 1, 2, 0, 0, 1,
-                                                     im_sz[1]) )
-                print lo2
-                #lo2 = numpy.array(lo2).reshape(im_sz[0]/2, 1, order='C')
+                ## orig code
+                #lo2 = numpy.array( pyPyrCcode.corrDn(1, im_sz[1], im, 
+                #                                 filt_sz[0], filt_sz[1],
+                #                                    filt, edges, 1, 2, 0, 0, 1,
+                #                                     im_sz[1]) )
+                #print lo2
+                ##lo2 = numpy.array(lo2).reshape(im_sz[0]/2, 1, order='C')
+                ## new code
+                lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, step = (2,1))
+                lo2 = numpy.array(lo2)
             else:
-                lo = numpy.array( pyPyrCcode.corrDn(im_sz[1], im_sz[0], im, 
-                                                    filt_sz[0], filt_sz[1], 
-                                                    filt, edges, 2, 1, 0, 0, 
-                                                    im_sz[0], im_sz[1]) )
-                print lo
-                #lo = numpy.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
-                #                          math.ceil(im_sz[1]/2.0), 
-                #                          order='C')
-                lo2 = numpy.array( pyPyrCcode.corrDn(int(math.ceil(im_sz[0]/1.0)), 
-                                                     int(math.ceil(im_sz[1]/2.0)), 
-                                                     lo.T, filt_sz[0], 
-                                                     filt_sz[1], filt, edges, 
-                                                     2, 1, 0, 0, im_sz[0], 
-                                                     im_sz[1]) ).T
-                print lo2
-                #lo2 = numpy.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
-                #                            math.ceil(im_sz[1]/2.0), 
-                #                            order='F')
+                ## orig version
+                #lo = numpy.array( pyPyrCcode.corrDn(im_sz[1], im_sz[0], im, 
+                #                                    filt_sz[0], filt_sz[1], 
+                #                                    filt, edges, 2, 1, 0, 0, 
+                #                                    im_sz[0], im_sz[1]) )
+                #print lo
+                ##lo = numpy.array(lo).reshape(math.ceil(im_sz[0]/1.0), 
+                ##                          math.ceil(im_sz[1]/2.0), 
+                ##                          order='C')
+                #lo2 = numpy.array( pyPyrCcode.corrDn(int(math.ceil(im_sz[0]/1.0)), 
+                #int(math.ceil(im_sz[1]/2.0)), 
+                #                                     lo.T, filt_sz[0], 
+                #                                     filt_sz[1], filt, edges, 
+                #                                     2, 1, 0, 0, im_sz[0], 
+                #                                     im_sz[1]) ).T
+                #print lo2
+                ##lo2 = numpy.array(lo2).reshape(math.ceil(im_sz[0]/2.0), 
+                ##                            math.ceil(im_sz[1]/2.0), 
+                ##                            order='F')
+                lo = pyPyrUtils.corrDn(image = im, filt = filt.T, 
+                                       step = (1,2), start = (0,0))
+                lo = numpy.array(lo)
+                lo2 = pyPyrUtils.corrDn(image = lo, filt = filt, 
+                                        step = (2,1), start = (0,0))
+                lo2 = numpy.array(lo2)                
 
             #self.pyr[pyrCtr] = lo2
             #self.pyrSize[pyrCtr] = lo2.shape
@@ -2257,7 +2251,7 @@ class Gpyr(Lpyr):
             im = lo2
         
     # methods
-
+'''
 class Wpyr_new(Lpyr):
     filt = ''
     edges = ''
@@ -3178,7 +3172,7 @@ class Wpyr_bak(pyramid):
                 # need to jump back n bands in the idx each loop
                 idx -= 2*len(bands)
         return res
-
+'''
 class Wpyr(Lpyr):
     filt = ''
     edges = ''
@@ -3263,7 +3257,7 @@ class Wpyr(Lpyr):
             ht = max_ht
         ht = int(ht)
         self.height = ht + 1  # used with showPyr() method
-
+        #im_test = im
         for lev in range(ht):
             #print "lev = %d" % (lev)
             #im_sz = im.shape
@@ -3276,61 +3270,208 @@ class Wpyr(Lpyr):
             if len(im.shape) == 1 or im.shape[1] == 1:
                 im = im.reshape(1, im.shape[0])
             if len(im.shape) == 1 or im.shape[1] == 1:
-                lolo = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
-                                                      im.T, filt.shape[0], 
-                                                      filt.shape[1], filt, 
-                                                      edges, 2, 1, stag-1, 0)).T
-                hihi = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
-                                                      im.T, hfilt.shape[1], 
-                                                      hfilt.shape[0], hfilt,
-                                                      edges, 2, 1, 1, 0) ).T
+                ## orig code
+                #lolo = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
+                #                                      im.T, filt.shape[0], 
+                #                                      filt.shape[1], filt, 
+                #                                      edges, 2, 1, stag-1, 
+                #                                      0)).T
+                #hihi = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
+                #                                      im.T, hfilt.shape[1], 
+                #                                      hfilt.shape[0], hfilt,
+                #                                      edges, 2, 1, 1, 0) ).T
+                lolo = pyPyrUtils.corrDn(image = im.T, filt = filt, 
+                                         edges = edges, step = (2,1), 
+                                         start = (stag-1,0)).T
+                lolo = numpy.array(lolo)
+                hihi = pyPyrUtils.corrDn(image = im.T, filt = hfilt, 
+                                         edges = edges, step = (2,1), 
+                                         start = (1, 0)).T
+                hihi = numpy.array(hihi)
             #elif im_sz[0] == 1:
             elif im.shape[0] == 1:
-                lolo = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
-                                                      im, filt.shape[0], 
-                                                      filt.shape[1], filt, 
-                                                      edges, 1, 2, 0, stag-1)).T
-                hihi = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
-                                                      im, hfilt.shape[1], 
-                                                      hfilt.shape[0], hfilt, 
-                                                      edges, 1, 2, 0, 1) ).T
+                ## orig code
+                #lolo = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
+                #                                      im, filt.shape[0], 
+                #                                      filt.shape[1], filt, 
+                #                                      edges, 1, 2, 0, 
+                #                                      stag-1)).T
+                #hihi = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1],
+                #                                      im, hfilt.shape[1], 
+                #                                      hfilt.shape[0], hfilt, 
+                #                                      edges, 1, 2, 0, 1) ).T
+                ## new code
+                lolo = pyPyrUtils.corrDn(image = im, filt = filt, edges = edges,
+                                         step = (1,2), start = (0, stag-1)).T
+                lolo = numpy.array(lolo)
+                hihi = pyPyrUtils.corrDn(image = im, filt = hfilt, 
+                                         edges = edges, step = (1,2), 
+                                         start = (0,1)).T
+                hihi = numpy.array(hihi)
             else:
+                ## orig code
+                #lo = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1], 
+                #                                    im.T, filt.shape[0], 1, 
+                #                                    filt, edges, 2, 1, stag-1,
+                #                                    0) ).T
+                ##lo = lo.reshape(math.ceil(im.shape[0]/2.0), 
+                ##                math.ceil(im.shape[1]/stag), order='F')
+                #hi = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1], 
+                #                                    im.T, hfilt.shape[0], 1, 
+                #                                    hfilt, edges, 2, 1, 1,
+                #                                    0) ).T
+                ##hi = hi.reshape(math.floor(im.shape[0]/2.0), im.shape[1], 
+                ##                order='F')
+                #lolo = numpy.array( pyPyrCcode.corrDn(lo.shape[0], lo.shape[1],
+                #                                      lo.T, 1, filt.shape[0],
+                #                                      filt, edges, 1, 2, 0, 
+                #                                      stag-1) ).T 
+                ##lolo = lolo.reshape(math.ceil(lo.shape[0]/float(stag)), 
+                ##                    math.ceil(lo.shape[1]/2.0), order='F')
+                #lohi = numpy.array( pyPyrCcode.corrDn(hi.shape[0], hi.shape[1],
+                #                                      hi.T, 1, filt.shape[0],
+                #                                      filt, edges, 1, 2, 0, 
+                #                                      stag-1) ).T
+                ##lohi = lohi.reshape(hi.shape[0], math.ceil(hi.shape[1]/2.0), 
+                ##                    order='F')
+                #hilo = numpy.array( pyPyrCcode.corrDn(lo.shape[0], lo.shape[1],
+                #                                      lo.T, 1, hfilt.shape[0],
+                #                                      hfilt, edges, 1, 2, 0, 
+                #                                      1) ).T
+                ##hilo = hilo.reshape(lo.shape[0], math.floor(lo.shape[1]/2.0), 
+                ##                    order='F')
+                #hihi = numpy.array( pyPyrCcode.corrDn(hi.shape[0], hi.shape[1],
+                #                                      hi.T, 1, hfilt.shape[0],
+                #                                      hfilt, edges, 1, 2, 0, 
+                #                                      1) ).T
+                ##hihi = hihi.reshape(hi.shape[0], math.floor(hi.shape[1]/2.0), 
+                ##                    order='F')
+                ## orig code - working version
+                '''
+                print 'filt'
+                print filt
+                print 'stag = %d' % (stag)
                 lo = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1], 
                                                     im.T, filt.shape[0], 1, 
                                                     filt, edges, 2, 1, stag-1,
                                                     0) ).T
-                #lo = lo.reshape(math.ceil(im.shape[0]/2.0), 
-                #                math.ceil(im.shape[1]/stag), order='F')
+                print 'lo'
+                print lo
                 hi = numpy.array( pyPyrCcode.corrDn(im.shape[0], im.shape[1], 
                                                     im.T, hfilt.shape[0], 1, 
                                                     hfilt, edges, 2, 1, 1,
                                                     0) ).T
-                #hi = hi.reshape(math.floor(im.shape[0]/2.0), im.shape[1], 
-                #                order='F')
+                print 'hi'
+                print hi
                 lolo = numpy.array( pyPyrCcode.corrDn(lo.shape[0], lo.shape[1],
                                                       lo.T, 1, filt.shape[0],
                                                       filt, edges, 1, 2, 0, 
                                                       stag-1) ).T 
-                #lolo = lolo.reshape(math.ceil(lo.shape[0]/float(stag)), 
-                #                    math.ceil(lo.shape[1]/2.0), order='F')
+                print 'lolo'
+                print lolo
                 lohi = numpy.array( pyPyrCcode.corrDn(hi.shape[0], hi.shape[1],
                                                       hi.T, 1, filt.shape[0],
                                                       filt, edges, 1, 2, 0, 
                                                       stag-1) ).T
-                #lohi = lohi.reshape(hi.shape[0], math.ceil(hi.shape[1]/2.0), 
-                #                    order='F')
+                print 'lohi'
+                print lohi
                 hilo = numpy.array( pyPyrCcode.corrDn(lo.shape[0], lo.shape[1],
                                                       lo.T, 1, hfilt.shape[0],
                                                       hfilt, edges, 1, 2, 0, 
                                                       1) ).T
-                #hilo = hilo.reshape(lo.shape[0], math.floor(lo.shape[1]/2.0), 
-                #                    order='F')
+                print 'hilo'
+                print hilo
                 hihi = numpy.array( pyPyrCcode.corrDn(hi.shape[0], hi.shape[1],
                                                       hi.T, 1, hfilt.shape[0],
                                                       hfilt, edges, 1, 2, 0, 
                                                       1) ).T
-                #hihi = hihi.reshape(hi.shape[0], math.floor(hi.shape[1]/2.0), 
-                #                    order='F')
+                print 'hihi'
+                print hihi
+                
+                ## new code - work first time through loop then is wrong?!!
+                
+                print 'filt'
+                print filt
+                lo_test = pyPyrUtils.corrDn(image = im_test, filt = filt, 
+                                            edges = edges, step = (2,1), 
+                                            start = (stag-1,0))
+                lo_test = numpy.array(lo_test)
+                print 'lo_test'
+                print lo_test
+                hi_test = pyPyrUtils.corrDn(image = im_test, filt = hfilt, 
+                                            edges = edges, step = (2,1), 
+                                            start = (1,0))
+                hi_test = numpy.array(hi_test)
+                print 'hi_test'
+                print hi_test
+                lolo_test = pyPyrUtils.corrDn(image = lo_test, filt = filt.T, 
+                                              edges = edges, step = (1,2), 
+                                              start = (0, stag-1))
+                lolo_test = numpy.array(lolo_test)
+                print 'lolo_test'
+                print lolo_test
+                lohi_test = pyPyrUtils.corrDn(image = hi_test, filt = filt.T, 
+                                              edges = edges, step = (1,2),
+                                              start = (0,stag-1))
+                lohi_test = numpy.array(lohi_test)
+                print 'lohi_test'
+                print lohi_test
+                # close
+                hilo_test = pyPyrUtils.corrDn(image = lo_test, filt = hfilt.T, 
+                                              edges = edges, step = (1,2), 
+                                              start = (0,1))
+                hilo_test = numpy.array(hilo_test)
+                print 'hilo_test'
+                print hilo_test
+                hihi_test = pyPyrUtils.corrDn(image = hi_test, filt = hfilt.T, 
+                                              edges = edges, step = (1,2), 
+                                              start = (0,1))
+                hihi_test = numpy.array(hihi_test)
+                print 'hihi_test'
+                print hihi_test
+                '''
+                ### another try
+                #print 'filt'
+                #print filt
+                #print 'stag = %d' % (stag)
+                lo = pyPyrUtils.corrDn(image = im, filt = filt, 
+                                       edges = edges, step = (2,1), 
+                                       start = (stag-1,0))
+                lo = numpy.array(lo)
+                #print 'lo_test'
+                #print lo_test
+                hi = pyPyrUtils.corrDn(image = im, filt = hfilt, 
+                                       edges = edges, step = (2,1), 
+                                       start = (1,0))
+                hi = numpy.array(hi)
+                #print 'hi_test'
+                #print hi_test
+                lolo = pyPyrUtils.corrDn(image = lo, filt = filt.T, 
+                                         edges = edges, step = (1,2), 
+                                         start = (0, stag-1))
+                lolo = numpy.array(lolo)
+                #print 'lolo_test'
+                #print lolo_test
+                lohi = pyPyrUtils.corrDn(image = hi, filt = filt.T, 
+                                         edges = edges, step = (1,2),
+                                         start = (0,stag-1))
+                lohi = numpy.array(lohi)
+                #print 'lohi_test'
+                #print lohi_test
+                # close
+                hilo = pyPyrUtils.corrDn(image = lo, filt = hfilt.T, 
+                                         edges = edges, step = (1,2), 
+                                         start = (0,1))
+                hilo = numpy.array(hilo)
+                #print 'hilo_test'
+                #print hilo_test
+                hihi = pyPyrUtils.corrDn(image = hi, filt = hfilt.T, 
+                                         edges = edges, step = (1,2), 
+                                         start = (0,1))
+                hihi = numpy.array(hihi)
+                #print 'hihi_test'
+                #print hihi_test
+
             #if im_sz[0] == 1 or im_sz[1] == 1:
             if im.shape[0] == 1 or im.shape[1] == 1:
                 self.pyr.append(hihi)
@@ -3342,7 +3483,8 @@ class Wpyr(Lpyr):
                 self.pyrSize.append(hilo.shape)
                 self.pyr.append(hihi)
                 self.pyrSize.append(hihi.shape)
-            im = lolo
+            im = lolo.copy()
+            #im_test = lolo.copy()
         self.pyr.append(lolo)
         self.pyrSize.append(lolo.shape)
 

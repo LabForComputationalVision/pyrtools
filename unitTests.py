@@ -115,16 +115,17 @@ class LpyrTests(unittest.TestCase):
         pyRamp = ppu.mkRamp(200,100)
         pyPyr = ppt.Lpyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
-#    def test5(self):
-#        matPyr = scipy.io.loadmat('matFiles/buildLpyr5.mat')
-#        pyRamp = np.array(range(200)).reshape(1, 200)
-#        pyPyr = ppt.Lpyr(pyRamp)
-#        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
-#    def test6(self):
-#        matPyr = scipy.io.loadmat('matFiles/buildLpyr6.mat')
-#        pyRamp = np.array(range(200)).T
-#        pyPyr = ppt.Lpyr(pyRamp)
-#        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    # 1D Lpyr broken
+    def test5(self):   
+        matPyr = scipy.io.loadmat('matFiles/buildLpyr5.mat')
+        pyRamp = np.array(range(200)).reshape(1, 200)
+        pyPyr = ppt.Lpyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    #def test6(self):
+    #    matPyr = scipy.io.loadmat('matFiles/buildLpyr6.mat')
+    #    pyRamp = np.array(range(200)).T
+    #    pyPyr = ppt.Lpyr(pyRamp)
+    #    self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test7(self):
         matPyr = scipy.io.loadmat('matFiles/buildLpyr7.mat')
         img = Image.open('lenna-256x256.tif')
@@ -499,8 +500,9 @@ class WpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('matFiles/buildWpyr1.mat')
-        img = Image.open('lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        #img = Image.open('lenna-256x256.tif')
+        img = np.array(Image.open('lenna-256x256.tif')).astype(float)
+        #img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Wpyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -520,8 +522,9 @@ class WpyrTests(unittest.TestCase):
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test5(self):
         matPyr = scipy.io.loadmat('matFiles/buildWpyr5.mat')
-        img = Image.open('lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        #img = Image.open('lenna-256x256.tif')
+        img = np.array(Image.open('lenna-256x256.tif')).astype(float)
+        #img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Wpyr(img)
         #recon = pyPyr.reconWpyr()
         recon = pyPyr.reconPyr()
