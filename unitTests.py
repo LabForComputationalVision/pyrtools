@@ -606,6 +606,16 @@ class WpyrTests(unittest.TestCase):
         #recon = pyPyr.reconWpyr('qmf8')
         recon = pyPyr.reconPyr('qmf8')
         self.failUnless(ppu.compareRecon(matPyr['recon'], recon))
+    def test17(self):
+        matPyr = scipy.io.loadmat('matFiles/buildWpyr17.mat')
+        pyRamp = ppu.mkRamp((1,200))
+        pyPyr = ppt.Wpyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test18(self):
+        matPyr = scipy.io.loadmat('matFiles/buildWpyr18.mat')
+        pyRamp = ppu.mkRamp((1,200)).T
+        pyPyr = ppt.Wpyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 
 class blurDnTests(unittest.TestCase):
     def test0(self):
