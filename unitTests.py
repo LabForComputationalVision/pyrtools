@@ -121,11 +121,11 @@ class LpyrTests(unittest.TestCase):
         pyRamp = np.array(range(200)).reshape(1, 200)
         pyPyr = ppt.Lpyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
-    #def test6(self):
-    #    matPyr = scipy.io.loadmat('matFiles/buildLpyr6.mat')
-    #    pyRamp = np.array(range(200)).T
-    #    pyPyr = ppt.Lpyr(pyRamp)
-    #    self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test6(self):
+        matPyr = scipy.io.loadmat('matFiles/buildLpyr6.mat')
+        pyRamp = np.array(range(200))
+        pyPyr = ppt.Lpyr(pyRamp)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test7(self):
         matPyr = scipy.io.loadmat('matFiles/buildLpyr7.mat')
         img = Image.open('lenna-256x256.tif')

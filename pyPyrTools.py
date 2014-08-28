@@ -1746,18 +1746,22 @@ class Lpyr(pyramid):
                 #                                     filt1_sz[0], filt1_sz[1], 
                 #                                     filt1, edges, 1, 2, 0, 0, 
                 #                                     int(math.ceil(im_sz[1]/2.0)), 1) ).T
-                lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, 
+                lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, edges = edges,
                                         step = (1,2))
                 lo2 = numpy.array(lo2)
+                print 'lo2'
+                print lo2
             elif len(im_sz) == 1 or im_sz[1] == 1:
                 print 'flag lo 2'
                 #lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
                 #                                     filt1_sz[0], filt1_sz[1], 
                 #                                     filt1, edges, 2, 1, 0, 0, 
                 #                                     int(math.ceil(im_sz[0]/2.0)), 1) ).T
-                lo2  = pyPyrUtils.corrDn(image = im, filt = filt1, 
+                lo2  = pyPyrUtils.corrDn(image = im, filt = filt1, edges = edges,
                                          step = (2,1))
                 lo2 = numpy.array(lo2)
+                print 'lo2'
+                print lo2
             else:
                 # orig version
                 #lo = numpy.array( pyPyrCcode.corrDn(im_sz[1], im_sz[0], im, 
@@ -1777,10 +1781,10 @@ class Lpyr(pyramid):
                 ##                            math.ceil(im_sz[1]/2.0), 
                 ##                            order='F')
                 # new version
-                lo = pyPyrUtils.corrDn(image = im, filt = filt1.T, 
+                lo = pyPyrUtils.corrDn(image = im, filt = filt1.T, edges = edges,
                                        step = (1,2), start = (0,0))
                 lo = numpy.array(lo)
-                lo2 = pyPyrUtils.corrDn(image = lo, filt = filt1, 
+                lo2 = pyPyrUtils.corrDn(image = lo, filt = filt1, edges = edges,
                                         step = (2,1), start = (0,0))
                 lo2 = numpy.array(lo2)
 
@@ -1801,17 +1805,32 @@ class Lpyr(pyramid):
             im_sz = los[ht-1].shape
             filt2_sz = filt2.shape
             if len(im_sz) == 1 or im_sz[1] == 1:
+                print 'flag hi 1'
                 #hi2 = pyPyrCcode.upConv(im_sz[0], im_sz[1], im, filt2_sz[0],
                 #                        filt2_sz[1], filt2, edges, 2, 1, 0, 0,
                 #                        los[ht].shape[0], los[ht].shape[1]).T
-                hi2 = pyPyrUtils.upConv(image = im, filt = filt2, step = (2,1))
+                hi2 = pyPyrUtils.upConv(image = im, filt = filt2.T, 
+                                        edges = edges, step = (1,2),
+                                        stop = (los[ht].shape[1],
+                                                los[ht].shape[0]))
+                print 'hi2'
+                print hi2
             elif im_sz[0] == 1:
+                print 'flag hi 2'
                 #hi2 = pyPyrCcode.upConv(im_sz[0], im_sz[1], im, filt2_sz[1],
                 #                        filt2_sz[0], filt2, edges, 1, 2, 0, 0,
                 #                        los[ht].shape[0], los[ht].shape[1]).T
+                # wrong for circualr edges?!
+                #hi2 = pyPyrUtils.upConv(image = im, filt = filt2.T, 
+                #                        edges = edges, step = (2,1), 
+                #                        stop = (los[ht].shape[1],
+                #                                los[ht].shape[0]))
                 hi2 = pyPyrUtils.upConv(image = im, filt = filt2.T, 
-                                        step = (2,1), stop = (los[ht].shape[1],
-                                                              los[ht].shape[0]))
+                                        edges = edges, step = (2,1), 
+                                        stop = (los[ht].shape[1],
+                                                los[ht].shape[0]))
+                print 'hi2'
+                print hi2
             else:
                 ## orig code
                 #hi = pyPyrCcode.upConv(im_sz[0], im_sz[1], im.T, filt2_sz[0],
@@ -1826,12 +1845,11 @@ class Lpyr(pyramid):
                 ##hi2 = numpy.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
                 ##                            order='F')
                 ## new code
-                hi = pyPyrUtils.upConv(image = im.T, filt = filt2, 
-                                       step = (2,1), 
-                                       stop = (los[ht].shape[0], 
-                                               im_sz[1])).T
+                hi = pyPyrUtils.upConv(image = im.T, filt = filt2, edges = edges,
+                                       step = (2,1), stop = (los[ht].shape[0], 
+                                                             im_sz[1])).T
                 hi2 = pyPyrUtils.upConv(image = hi.T, filt = filt2.T, 
-                                        step = (1,2), 
+                                        edges = edges, step = (1,2), 
                                         stop = (los[ht].shape[0], 
                                                 los[ht].shape[1])).T
                                        
@@ -1853,11 +1871,21 @@ class Lpyr(pyramid):
         return outarray
 
     # set a pyramid value
-    def set(self, *args):
+    def set_old(self, *args):
         if len(args) != 3:
             print 'Error: three input parameters required:'
             print '  set(band, element, value)'
+        print 'band=%d  element=%d  value=%d' % (args[0],args[1],args[2])
+        print self.pyr[args[0]].shape
         self.pyr[args[0]][args[1]] = args[2] 
+
+    def set(self, *args):
+        if len(args) != 3:
+            print 'Error: three input parameters required:'
+            print '  set(band, element(tuple), value)'
+        #print 'band=%d  element=%d  value=%d' % (args[0],args[1],args[2])
+        print self.pyr[args[0]].shape
+        self.pyr[args[0]][args[1][0]][args[1][1]] = args[2] 
 
     #def reconLpyr(self, *args):
     def reconPyr(self, *args):
@@ -1902,19 +1930,23 @@ class Lpyr(pyramid):
                 new_sz = self.band(lev).shape
                 filt2_sz = filt2.shape
                 if res_sz[0] == 1:
+                    #print 'recon flag 1'
                     #hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
                     #                        filt2_sz[1], filt2_sz[0], filt2,
                     #                        edges, 1, 2, 0, 0, new_sz[0],
                     #                        new_sz[1]).T
-                    hi2 = pyPyrUtils.upConv(image = res, filt = filt2.T,
-                                            step = (1,2), stop = new_sz)
+                    hi2 = pyPyrUtils.upConv(image = res, filt = filt2,
+                                            edges = edges, step = (2,1), 
+                                            stop = (new_sz[1], new_sz[0]))
                 elif res_sz[1] == 1:
+                    #print 'recon flag 2'
                     #hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
                     #                        filt2_sz[0], filt2_sz[1], filt2,
                     #                        edges, 2, 1, 0, 0, new_sz[0],
                     #                        new_sz[1]).T
-                    hi2 = pyPyrUtils.upConv(image = res, filt = filt2,
-                                            step = (2,1), stop = new_sz)
+                    hi2 = pyPyrUtils.upConv(image = res, filt = filt2.T,
+                                            edges = edges, step = (1,2), 
+                                            stop = (new_sz[1], new_sz[0]))
                 else:
                     # orig code
                     #hi = pyPyrCcode.upConv(res_sz[0], res_sz[1], res.T,
@@ -1927,11 +1959,10 @@ class Lpyr(pyramid):
                     #                        new_sz[1]).T
                     # new code
                     hi = pyPyrUtils.upConv(image = res, filt = filt2.T, 
-                                           step = (1,2), 
+                                           edges = edges, step = (1,2), 
                                            stop = (res_sz[1], new_sz[0]))
-                    hi2 = pyPyrUtils.upConv(image = hi.T, 
-                                            filt = filt2.T,
-                                            step = (1,2),
+                    hi2 = pyPyrUtils.upConv(image = hi.T, filt = filt2.T, 
+                                            edges = edges, step = (1,2),
                                             stop = new_sz).T
                 if lev in levs:
                     bandIm = self.band(lev)
@@ -4030,7 +4061,7 @@ class Wpyr(Lpyr):
                     #print res
                 else:
                     #imageIn_test = imageIn
-                    print 'flag 0'
+                    #print 'flag 0'
                     ## orig code
                     #ires = pyPyrCcode.upConv(imageIn.shape[1], imageIn.shape[0],
                     #                         imageIn.T, filt.shape[1],
@@ -4052,15 +4083,15 @@ class Wpyr(Lpyr):
                                              start = (0,stag-1), 
                                              stop = lres_sz).T
                     ires = numpy.array(ires)
-                    print 'ires'
-                    print ires
+                    #print 'ires'
+                    #print ires
                     res = pyPyrUtils.upConv(image = ires.T, filt = filt,
                                             edges = edges, step = (2,1), 
                                             start = (stag-1,0), 
                                             stop = res_sz).T
                     res = numpy.array(res)
-                    print 'res'
-                    print res
+                    #print 'res'
+                    #print res
 
                 if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
                      self.pyrSize[0][1] == 1 ):
@@ -4161,16 +4192,8 @@ class Wpyr(Lpyr):
                                                  stop = (hres_sz[1],
                                                          hres_sz[0]))
                         ires = numpy.array(ires)
-                        print 'ires'
-                        print ires
-                        # top left corner correct
-                        #res = pyPyrUtils.upConv(image = ires.T, 
-                        #                        filt = hfilt.T, 
-                        #                        edges = edges, step = (2,1),
-                        #                        start = (1,0), 
-                        #                        stop = (res_sz[1],
-                        #                                res_sz[0]),
-                        #                        result = res)
+                        #print 'ires'
+                        #print ires
                         res = pyPyrUtils.upConv(image = ires, 
                                                 filt = hfilt, 
                                                 edges = edges, step = (1,2),
@@ -4179,11 +4202,11 @@ class Wpyr(Lpyr):
                                                         res_sz[0]),
                                                 result = res)
                         res = numpy.array(res)
-                        print 'res'
-                        print res
+                        #print 'res'
+                        #print res
                     idx += 1
                     if 1 in bands and lev in levs:
-                        print 'flag 2'
+                        #print 'flag 2'
                         ## orig code
                         #ires = pyPyrCcode.upConv(self.band(idx).shape[0], 
                         #                         self.band(idx).shape[1], 
@@ -4210,8 +4233,8 @@ class Wpyr(Lpyr):
                                                  start = (0,1),
                                                  stop = lres_sz)
                         ires = numpy.array(ires).T
-                        print 'ires'
-                        print ires
+                        #print 'ires'
+                        #print ires
                         res = pyPyrUtils.upConv(image = ires.T, 
                                                 filt = filt,
                                                 edges = edges, step = (2,1),
@@ -4219,11 +4242,11 @@ class Wpyr(Lpyr):
                                                 stop = res_sz, 
                                                 result = res.T)
                         res = numpy.array(res).T
-                        print 'res'
-                        print res
+                        #print 'res'
+                        #print res
                     idx += 1
                     if 2 in bands and lev in levs:
-                        print 'flag 3'
+                        #print 'flag 3'
                         ## orig code
                         #ires = pyPyrCcode.upConv(self.band(idx).shape[0],
                         #                         self.band(idx).shape[1],
@@ -4252,8 +4275,8 @@ class Wpyr(Lpyr):
                                                  stop = (hres_sz[0],
                                                          hres_sz[1]))
                         ires = numpy.array(ires).T
-                        print 'ires'
-                        print ires
+                        #print 'ires'
+                        #print ires
                         res = pyPyrUtils.upConv(image = ires.T, 
                                                 filt = hfilt.T,
                                                 edges = edges, step = (2,1),
@@ -4262,8 +4285,8 @@ class Wpyr(Lpyr):
                                                         res_sz[1]),
                                                 result = res.T)
                         res = numpy.array(res).T
-                        print 'res'
-                        print res
+                        #print 'res'
+                        #print res
                     idx += 1
                 # need to jump back n bands in the idx each loop
                 if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
