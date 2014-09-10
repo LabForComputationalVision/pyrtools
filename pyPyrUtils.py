@@ -1376,6 +1376,7 @@ def modulateFlip(*args):
 # The procedure is applied recursively LEVELS times (default=1).
 # Eero Simoncelli, 3/97.  Ported to python by Rob Young 4/14
 # function res = blurDn(im, nlevs, filt)
+'''
 def blurDn_old(*args):   # works with old corrDn
     if len(args) == 0:
         print "Error: image input parameter required."
@@ -1460,7 +1461,7 @@ def blurDn_old(*args):   # works with old corrDn
         res = im
             
     return res
-
+'''
 def blurDn(*args):
     if len(args) == 0:
         print "Error: image input parameter required."
@@ -2066,6 +2067,9 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
         print 'Error: image and filter are required input parameters!'
         return
 
+    if len(filt.shape) == 1:
+        filt = numpy.reshape(filt, (1,len(filt)))
+
     if stop == None:
         #stop = (image.shape[0]-1, image.shape[1]-1)
         stop = (image.shape[0], image.shape[1])
@@ -2078,7 +2082,6 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
         result = numpy.zeros((rxsz, rysz))
         
     if edges == 'circular':
-        # FIX: fix interface for this version too!
         #result = lib.internal_wrap_reduce(image,image.shape[0], image.shape[1],
         #filt, filt.shape[0], filt.shape[1],
         #                                  start[0], step[0], stop[0], start[1],
@@ -2093,6 +2096,8 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                  stop[0], 
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
     else:
+        print 'filt.shape'
+        print filt.shape
         tmp = numpy.zeros((filt.shape[0], filt.shape[1]))
         #image = numpy.reshape(image,(image.shape[1],image.shape[0]), order='F')
         lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
@@ -2170,59 +2175,101 @@ def upConv_old(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                 stop[1], result)
     return res
 
-def upConv_new(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-               start = (0,0), stop = None, result = None):
-
-    print 'upConv - result in'
-    print result
+# this version was broken after the update. reverted back to one below
+def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+           start = (0,0), stop = None, result = None):
 
     if image == None or filt == None:
         print 'Error: image and filter are required input parameters!'
         return
 
+    origShape = filt.shape
     if len(filt.shape) == 1:
-        filt = numpy.reshape(filt, (filt.shape[0],1))
+        filt = numpy.reshape(filt, (1,len(filt)))
+
+    # FIX: this condition can't be correct, but this is what's in C code
+    if ( (edges != "reflect1" or edges != "extend" or edges != "repeat") and
+         (filt.shape[0] % 2 == 0 or filt.shape[1] % 2 == 0) ):
+        if filt.shape[1] == 1:
+            filt = numpy.append(filt,0.0);
+            filt = numpy.reshape(filt, (len(filt), 1))
+        elif filt.shape[0] == 1:
+            filt = numpy.append(filt,0.0);
+            filt = numpy.reshape(filt, (1, len(filt)))
+        else:
+            print 'Even sized 2D filters not yet supported by upConv.'
+            return
 
     # FIX: are these two lines needed? should be.
-    step = (step[1], step[0])
-    start = (start[1], start[0])
+    #step = (step[1], step[0])
+    print 'step'
+    print step
+    #start = (start[1], start[0])
+    print 'start'
+    print start
 
     if stop == None and result == None:
-        stop = (image.shape[1]*step[1], image.shape[0]*step[0])
+        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
+        stop = (stop[0], stop[1])
     elif stop == None:
-        stop = (result.shape[1], result.shape[0])
-
+        stop = (result.shape[0], result.shape[1])
+    print 'stop'
+    print stop
     if result == None:
-        rxsz = len(range(start[0], stop[0], step[0]))
-        rysz = len(range(start[1], stop[1], step[1]))
-        result = numpy.zeros((rysz, rxsz))
-    else:
-        (rysz, rxsz) = result.shape
+        result = numpy.zeros((stop[1], stop[0]))
 
-    temp = numpy.zeros(filt.shape)
+    temp = numpy.zeros((filt.shape[1], filt.shape[0]))
 
     if edges == 'circular':
         lib.internal_wrap_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 filt.shape[0], filt.shape[1], start[0], 
-                                 step[0], stop[0], start[1], step[1], stop[1],
+                                 filt.shape[1], filt.shape[0], start[1], 
+                                 step[1], stop[1], start[0], step[0], stop[0],
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 rxsz, rysz)
+                                 stop[1], stop[0])
     else:
         print 'c call in'
+        # close to drop in replacement
+        '''  close but wrong dims for 1D
+        lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.shape[1], filt.shape[0], start[1], step[1],
+                            stop[1], start[0], step[0], stop[0],
+                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            stop[1], stop[0], edges)
+        correct for transposed filter
+        lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.shape[1], filt.shape[0], start[0], step[0],
+                            stop[0], start[1], step[1], stop[1],
+                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            stop[0], stop[1], edges)
+        '''
+        lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.shape[1], filt.shape[0], start[1], step[1],
+                            stop[1], start[0], step[0], stop[0],
+                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            stop[1], stop[0], edges)
+        result = numpy.reshape(result, stop)
+
+        '''
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             filt.shape[0], filt.shape[1], start[0], step[0],
                             stop[0], start[1], step[1], stop[1],
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            rxsz, rysz, edges)
+                            stop[0], stop[1], edges)
+        '''
         print 'c call out'
-        
     return result
 
-def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+def upConv_old2(image = None, filt = None, edges = 'reflect1', step = (1,1), 
            start = (0,0), stop = None, result = None):
 
     if image == None or filt == None:
@@ -2232,6 +2279,12 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
     if stop == None:
         stop = (image.shape[0]*step[0], image.shape[1]*step[1])
 
+    print 'step'
+    print step
+    print 'start'
+    print start
+    print 'stop'
+    print stop
     if result == None:
         res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
                                 filt.shape[0], filt.shape[1], filt, edges,

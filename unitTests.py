@@ -51,18 +51,18 @@ class GpyrTests(unittest.TestCase):
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Gpyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
-    #def test2(self):
-    #    matPyr = scipy.io.loadmat('matFiles/buildGpyr2row.mat')
-    #    img = np.array(range(256)).astype(float)
-    #    img = img.reshape(1, 256)
-    #    pyPyr = ppt.Gpyr(img)
-    #    self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
-    #def test3(self):
-    #    matPyr = scipy.io.loadmat('matFiles/buildGpyr2col.mat')
-    #    img = np.array(range(256)).astype(float)
-    #    img = img.reshape(256, 1)
-    #    pyPyr = ppt.Gpyr(img)
-    #    self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/buildGpyr2row.mat')
+        img = np.array(range(256)).astype(float)
+        img = img.reshape(1, 256)
+        pyPyr = ppt.Gpyr(img)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/buildGpyr2col.mat')
+        img = np.array(range(256)).astype(float)
+        img = img.reshape(256, 1)
+        pyPyr = ppt.Gpyr(img)
+        self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
     def test4(self):
         matPyr = scipy.io.loadmat('matFiles/buildGpyr3.mat')
         img = ppu.mkRamp(10)
@@ -93,6 +93,7 @@ class mkRampTests(unittest.TestCase):
         pyRamp = ppu.mkRamp(20, 10)
         self.failUnless((matRamp['foo'] == pyRamp).all())
 
+
 class LpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('matFiles/buildLpyr1.mat')
@@ -115,7 +116,6 @@ class LpyrTests(unittest.TestCase):
         pyRamp = ppu.mkRamp(200,100)
         pyPyr = ppt.Lpyr(pyRamp)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
-    # 1D Lpyr broken
     def test5(self):   
         matPyr = scipy.io.loadmat('matFiles/buildLpyr5.mat')
         pyRamp = np.array(range(200)).reshape(1, 200)
