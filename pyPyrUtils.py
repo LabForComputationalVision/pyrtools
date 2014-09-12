@@ -1756,8 +1756,7 @@ def mkR(*args):
     (xramp2, yramp2) = numpy.meshgrid(numpy.array(range(1,sz[1]+1))-origin[1], 
                                    numpy.array(range(1,sz[0]+1))-origin[0])
 
-    
-    res = (xramp2**2 + yramp2**2)**(expt/2.0)
+    res = (xramp2**2 + yramp2**2)**(expt/2)
     
     return res
 
@@ -2200,6 +2199,12 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
             print 'Even sized 2D filters not yet supported by upConv.'
             return
 
+    # if image and filter are both 1D match their orientation
+    #if (image.shape[0] == 1 or image.shape[1] == 1) and (filt.shape[0] == 1 or
+    #                                                     filt.shape[1] == 1):
+    #    if ( (image.shape[0] == 1 and filt.shape[1] == 1) or 
+    #         (image.shape[1] == 1 and filt.shape[0] == 1) ):
+    #        filt = filt.T
     # FIX: are these two lines needed? should be.
     #step = (step[1], step[0])
     #print 'step'
@@ -2221,13 +2226,26 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
     temp = numpy.zeros((filt.shape[1], filt.shape[0]))
 
     if edges == 'circular':
+    # if image and filter are both 1D match their orientation
+        #if ( (image.shape[0] == 1 and filt.shape[1] == 1) or 
+        #     (image.shape[1] == 1 and filt.shape[0] == 1) ):
+        #   filt = filt
+        #else:
+        #    filt = filt.T
+        #lib.internal_wrap_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #                         filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 #temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #                         filt.shape[1], filt.shape[0], start[1], 
+        #                         step[1], stop[1], start[0], step[0], stop[0],
+        #                         result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #                         stop[1], stop[0])
         lib.internal_wrap_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 #temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  filt.shape[1], filt.shape[0], start[1], 
                                  step[1], stop[1], start[0], step[0], stop[0],
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  stop[1], stop[0])
+        result = result.T
     else:
         #print 'c call in'
         # close to drop in replacement

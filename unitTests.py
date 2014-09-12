@@ -93,7 +93,6 @@ class mkRampTests(unittest.TestCase):
         pyRamp = ppu.mkRamp(20, 10)
         self.failUnless((matRamp['foo'] == pyRamp).all())
 
-
 class LpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('matFiles/buildLpyr1.mat')
