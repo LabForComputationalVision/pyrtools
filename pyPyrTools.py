@@ -1181,8 +1181,8 @@ class SFpyr(Spyr):
         #                                         Xrcos[0], Xrcos[1]-Xrcos[0],
         #                                         0))
         # new C interface
-        hi0mask = pyPyrUtils.pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
-                                     0)
+        hi0mask = pyPyrUtils.pointOp(log_rad, Yrcos, Xrcos[0], 
+                                     Xrcos[1]-Xrcos[0], 0)
         hi0mask = numpy.array(hi0mask)
 
         hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
@@ -1207,30 +1207,47 @@ class SFpyr(Spyr):
             const = (2**(2*order))*(scipy.misc.factorial(order, exact=True)**2)/float(nbands*scipy.misc.factorial(2*order, exact=True))
             Ycosn = numpy.sqrt(const) * (numpy.cos(Xcosn))**order
             # old C interface
-            himask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
-                                                    log_rad.shape[1], log_rad,
-                                                    Yrcos.shape[0], Yrcos,
-                                                    Xrcos[0], Xrcos[1]-Xrcos[0],
-                                                    0))
-            himask = himask.reshape(lodft.shape[0], lodft.shape[1])
+            #himask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
+            #                                        log_rad.shape[1], log_rad,
+            #                                        Yrcos.shape[0], Yrcos,
+            #                                        Xrcos[0], Xrcos[1]-Xrcos[0],
+            #                                        0))
+            #print 'himask before reshape'
+            #print himask
+            #himask = himask.reshape(lodft.shape[0], lodft.shape[1])
             #print 'old himask'
             #print himask
-            # new C interface - works above, but not here??!!
-            #himask_test = pyPyrUtils.pointOp(log_rad, Yrcos, Xrcos[0], 
-            #                                 Xrcos[1]-Xrcos[0], 0)
-            #himask_test = numpy.array(himask_test)
+            # new C interface
+            log_rad_test = numpy.reshape(log_rad,(1,
+                                                  log_rad.shape[0]*
+                                                  log_rad.shape[1]))
+            himask = pyPyrUtils.pointOp(log_rad_test, Yrcos, Xrcos[0], 
+                                        Xrcos[1]-Xrcos[0], 0)
+            himask = numpy.array(himask)
+            himask = numpy.reshape(himask, 
+                                   (lodft.shape[0], lodft.shape[1]))
             #print 'new himask'
             #print himask_test
+            #print himask == himask_test
 
             for b in range(nbands):
-                anglemask = numpy.array(pyPyrCcode.pointOp(angle.shape[0],
-                                                           angle.shape[1], 
-                                                           angle,
-                                                           Ycosn.shape[0],
-                                                           Ycosn, 
-                                                           Xcosn[0]+numpy.pi*b/nbands,
-                                                           Xcosn[1]-Xcosn[0],
-                                                           0))
+                # old C interface
+                #anglemask = numpy.array(pyPyrCcode.pointOp(angle.shape[0],
+                #                                           angle.shape[1], 
+                #                                           angle,
+                #                                           Ycosn.shape[0],
+                #                                           Ycosn, 
+                #                                           Xcosn[0]+numpy.pi*b/nbands,
+                #Xcosn[1]-Xcosn[0],
+                #                                           0))
+                # new C interface
+                angle_tmp = numpy.reshape(angle, 
+                                          (1,angle.shape[0]*angle.shape[1]))
+                anglemask = pyPyrUtils.pointOp(angle_tmp, Ycosn, 
+                                               Xcosn[0]+numpy.pi*b/nbands,
+                                               Xcosn[1]-Xcosn[0],0)
+                anglemask = numpy.array(anglemask)
+
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 banddft = ((-numpy.power(-1+0j,0.5))**order) * lodft * anglemask * himask
                 band = numpy.fft.ifft2(numpy.fft.ifftshift(banddft))
@@ -1249,11 +1266,19 @@ class SFpyr(Spyr):
             angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
             YIrcos = numpy.abs(numpy.sqrt(1.0 - Yrcos**2))
-            lomask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
-                                                    log_rad.shape[1], 
-                                                    log_rad, YIrcos.shape[0],
-                                                    YIrcos, Xrcos[0],
-                                                    Xrcos[1]-Xrcos[0], 0))
+            # orig C interface
+            #lomask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
+            #                                        log_rad.shape[1], 
+            #                                        log_rad, YIrcos.shape[0],
+            #                                        YIrcos, Xrcos[0],
+            #                                        Xrcos[1]-Xrcos[0], 0))
+            # new C interface
+            log_rad_tmp = numpy.reshape(log_rad, 
+                                        (1,log_rad.shape[0]*log_rad.shape[1]))
+            lomask = pyPyrUtils.pointOp(log_rad_tmp, YIrcos, Xrcos[0], 
+                                        Xrcos[1]-Xrcos[0], 0)
+            lomask = numpy.array(lomask)
+            
             lodft = lodft * lomask.reshape(lodft.shape[0], lodft.shape[1])
 
         lodft = numpy.fft.ifft2(numpy.fft.ifftshift(lodft))
@@ -1391,10 +1416,17 @@ class SFpyr(Spyr):
             Xrcos -= numpy.log2(2.0)
         nlog_rad = log_rad[bounds[0]:bounds[2], bounds[1]:bounds[3]]
 
-        lomask = numpy.array(pyPyrCcode.pointOp(nlog_rad.shape[0],
-                                                nlog_rad.shape[1], nlog_rad,
-                                                YIrcos.shape[0], YIrcos,
-                                                Xrcos[0], Xrcos[1]-Xrcos[0], 0))
+        # orig C interface
+        #lomask = numpy.array(pyPyrCcode.pointOp(nlog_rad.shape[0],
+        #                                        nlog_rad.shape[1], nlog_rad,
+        #                                        YIrcos.shape[0], YIrcos,
+        #                                        Xrcos[0], Xrcos[1]-Xrcos[0], 0))
+        # new C interface
+        nlog_rad_tmp = numpy.reshape(nlog_rad, 
+                                     (1,nlog_rad.shape[0]*nlog_rad.shape[1]))
+        lomask = pyPyrUtils.pointOp(nlog_rad_tmp, YIrcos, Xrcos[0], 
+                                    Xrcos[1]-Xrcos[0], 0)
+        lomask = numpy.array(lomask)
         lomask = lomask.reshape(nres.shape[0], nres.shape[1])
         lomask = lomask + 0j
         resdft[boundList[1][0]:boundList[1][2], 
@@ -1421,12 +1453,21 @@ class SFpyr(Spyr):
             YIrcos = numpy.abs(numpy.sqrt(1.0 - Yrcos**2))
             if idx > 1:
                 Xrcos += numpy.log2(2.0)
-                lomask = numpy.array(pyPyrCcode.pointOp(nlog_rad2.shape[0], 
-                                                        nlog_rad2.shape[1], 
-                                                        nlog_rad2,
-                                                        YIrcos.shape[0], YIrcos,
-                                                        Xrcos[0],
-                                                        Xrcos[1]-Xrcos[0], 0))
+                # orig C interface
+                #lomask = numpy.array(pyPyrCcode.pointOp(nlog_rad2.shape[0], 
+                #                                        nlog_rad2.shape[1], 
+                #                                        nlog_rad2,
+                #                                        YIrcos.shape[0], YIrcos,
+                #                                        Xrcos[0],
+                #                                        Xrcos[1]-Xrcos[0], 0))
+                # new C interface
+                nlog_rad2_tmp = numpy.reshape(nlog_rad2, 
+                                              (1,nlog_rad2.shape[0]*
+                                               nlog_rad2.shape[1]))
+                lomask = pyPyrUtils.pointOp(nlog_rad2_tmp, YIrcos,
+                                            Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+                lomask = numpy.array(lomask)
+
                 lomask = lomask.reshape(bounds2[2]-bounds2[0],
                                         bounds2[3]-bounds2[1])
                 lomask = lomask + 0j
@@ -1441,9 +1482,29 @@ class SFpyr(Spyr):
             if idx != 0 and idx != len(boundList)-1:
                 for b in range(nbands):
                     if (bands == b).any():
-                        himask = numpy.array(pyPyrCcode.pointOp(nlog_rad1.shape[0], nlog_rad1.shape[1], nlog_rad1, Yrcos.shape[0], Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0))
+                        # orig C interface
+                        #himask = numpy.array(pyPyrCcode.pointOp(nlog_rad1.shape[0], nlog_rad1.shape[1], nlog_rad1, Yrcos.shape[0], Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0))
+                        # new C interface
+                        nlog_rad1_tmp = numpy.reshape(nlog_rad1, 
+                                                      (1,nlog_rad1.shape[0]*
+                                                       nlog_rad1.shape[1]))
+                        himask = pyPyrUtils.pointOp(nlog_rad1_tmp, Yrcos, 
+                                                    Xrcos[0], Xrcos[1]-Xrcos[0],
+                                                    0)
+
                         himask = himask.reshape(nlog_rad1.shape)
-                        anglemask = numpy.array(pyPyrCcode.pointOp(nangle.shape[0], nangle.shape[1], nangle, Ycosn.shape[0], Ycosn, Xcosn[0]+numpy.pi*b/nbands, Xcosn[1]-Xcosn[0], 0))
+                        # orig C interface
+                        #anglemask = numpy.array(pyPyrCcode.pointOp(nangle.shape[0], nangle.shape[1], nangle, Ycosn.shape[0], Ycosn, Xcosn[0]+numpy.pi*b/nbands, Xcosn[1]-Xcosn[0], 0))
+                        # new C interface
+                        nangle_tmp = numpy.reshape(nangle, (1,
+                                                            nangle.shape[0]*
+                                                            nangle.shape[1]))
+                        anglemask = pyPyrUtils.pointOp(nangle_tmp, Ycosn, 
+                                                       Xcosn[0]+numpy.pi*
+                                                       b/nbands,
+                                                       Xcosn[1]-Xcosn[0], 0)
+                        anglemask = numpy.array(anglemask)
+
                         anglemask = anglemask.reshape(nangle.shape)
                         band = self.pyr[bandIdx]
                         curLev = self.spyrHt() - (idx-1)
@@ -1457,19 +1518,31 @@ class SFpyr(Spyr):
 
         # apply lo0mask
         Xrcos += numpy.log2(2.0)
-        lo0mask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
-                                                 log_rad.shape[1], log_rad,
-                                                 YIrcos.shape[0], YIrcos,
-                                                 Xrcos[0], Xrcos[1]-Xrcos[0],
-                                                 0))
+        # orig C interface
+        #lo0mask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
+        #                                         log_rad.shape[1], log_rad,
+        #                                         YIrcos.shape[0], YIrcos,
+        #                                         Xrcos[0], Xrcos[1]-Xrcos[0],
+        #                                         0))
+        # new C interface
+        lo0mask = pyPyrUtils.pointOp(log_rad, YIrcos, Xrcos[0], 
+                                     Xrcos[1]-Xrcos[0], 0)
+        lo0mask = numpy.array(lo0mask)
+
         lo0mask = lo0mask.reshape(dims[0], dims[1])
         resdft = resdft * lo0mask
         
         # residual highpass subband
-        hi0mask = pyPyrCcode.pointOp(log_rad.shape[0], log_rad.shape[1],
-                                     log_rad, Yrcos.shape[0], Yrcos, Xrcos[0],
-                                     Xrcos[1]-Xrcos[0], 0)
+        # orig C interface
+        #hi0mask = pyPyrCcode.pointOp(log_rad.shape[0], log_rad.shape[1],
+        #                             log_rad, Yrcos.shape[0], Yrcos, Xrcos[0],
+        #                             Xrcos[1]-Xrcos[0], 0)
+        #hi0mask = numpy.array(hi0mask)
+        # new C interface
+        hi0mask = pyPyrUtils.pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
+                                     0)
         hi0mask = numpy.array(hi0mask)
+
         hi0mask = hi0mask.reshape(resdft.shape[0], resdft.shape[1])
         if 0 in levs:
             hidft = numpy.fft.fftshift(numpy.fft.fft2(self.pyr[0]))
@@ -1557,22 +1630,33 @@ class SCFpyr(SFpyr):
         Yrcos = numpy.sqrt(Yrcos)
 
         YIrcos = numpy.sqrt(1.0 - Yrcos**2)
-        lo0mask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
-                                                 log_rad.shape[1], log_rad,
-                                                 YIrcos.shape[0], YIrcos,
-                                                 Xrcos[0], Xrcos[1]-Xrcos[0],
-                                                 0))
+        # orig C interface
+        #lo0mask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
+        #                                         log_rad.shape[1], log_rad,
+        #                                         YIrcos.shape[0], YIrcos,
+        #                                         Xrcos[0], Xrcos[1]-Xrcos[0],
+        #                                         0))
+        # new C interface
+        lo0mask = pyPyrUtils.pointOp(log_rad, YIrcos, Xrcos[0],
+                                     Xrcos[1]-Xrcos[0], 0)
+        lo0mask = numpy.array(lo0mask)
 
         imdft = numpy.fft.fftshift(numpy.fft.fft2(self.image))
 
         self.pyr = []
         self.pyrSize = []
 
+        # orig C interface
         hi0mask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
                                                  log_rad.shape[1], log_rad,
                                                  Yrcos.shape[0], Yrcos,
                                                  Xrcos[0], Xrcos[1]-Xrcos[0],
                                                  0))
+        # new C interface
+        hi0mask = pyPyrUtils.pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
+                                     0)
+        hi0mask = numpy.array(hi0mask)
+
         hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
         hi0 = numpy.fft.ifft2(numpy.fft.ifftshift(hi0dft))
 
@@ -1597,22 +1681,37 @@ class SCFpyr(SFpyr):
             alfa = ( (numpy.pi+Xcosn) % (2.0*numpy.pi) ) - numpy.pi
             Ycosn = ( 2.0*numpy.sqrt(const) * (numpy.cos(Xcosn)**order) * 
                       (numpy.abs(alfa)<numpy.pi/2.0).astype(int) )
+            # orig C interface
             himask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
                                                     log_rad.shape[1], log_rad,
                                                     Yrcos.shape[0], Yrcos,
                                                     Xrcos[0], Xrcos[1]-Xrcos[0],
                                                     0))
+            # new C interface
+            log_rad_tmp = numpy.reshape(log_rad, (1,log_rad.shape[0]*
+                                                  log_rad.shape[1]))
+            himask = pyPyrUtils.pointOp(log_rad_tmp, Yrcos, Xrcos[0], 
+                                        Xrcos[1]-Xrcos[0], 0)
+            himask = numpy.array(himask)
+            
             himask = himask.reshape(lodft.shape[0], lodft.shape[1])
-
             for b in range(nbands):
-                anglemask = numpy.array(pyPyrCcode.pointOp(angle.shape[0],
-                                                           angle.shape[1], 
-                                                           angle,
-                                                           Ycosn.shape[0],
-                                                           Ycosn, 
-                                                           Xcosn[0]+numpy.pi*b/nbands, 
-                                                           Xcosn[1]-Xcosn[0],
-                                                           0))
+                # orig C interface
+                #anglemask = numpy.array(pyPyrCcode.pointOp(angle.shape[0],
+                #                                           angle.shape[1], 
+                #                                           angle,
+                #                                           Ycosn.shape[0],
+                #                                           Ycosn, 
+                #                                           Xcosn[0]+numpy.pi*b/nbands, 
+                #                                           Xcosn[1]-Xcosn[0],
+                #                                           0))
+                # new C interface
+                angle_tmp = numpy.reshape(angle, 
+                                          (1,angle.shape[0]*angle.shape[1]))
+                anglemask = pyPyrUtils.pointOp(angle_tmp, Ycosn, 
+                                               Xcosn[0]+numpy.pi*b/nbands, 
+                                               Xcosn[1]-Xcosn[0], 0)
+                anglemask = numpy.array(anglemask)
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 banddft = (cmath.sqrt(-1)**order) * lodft * anglemask * himask
                 band = numpy.negative(numpy.fft.ifft2(numpy.fft.ifftshift(banddft)))
@@ -1631,11 +1730,18 @@ class SCFpyr(SFpyr):
             angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
             YIrcos = numpy.abs(numpy.sqrt(1.0 - Yrcos**2))
+            # orig C interface
             lomask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
                                                     log_rad.shape[1], log_rad,
                                                     YIrcos.shape[0], YIrcos, 
                                                     Xrcos[0], Xrcos[1]-Xrcos[0],
                                                     0))
+            # new C interface
+            log_rad_tmp = numpy.reshape(log_rad, 
+                                        (1,log_rad.shape[0]*log_rad.shape[1]))
+            lomask = pyPyrUtils.pointOp(log_rad_tmp, YIrcos, Xrcos[0], 
+                                        Xrcos[1]-Xrcos[0], 0)
+            lomask = numpy.array(lomask)
             lodft = lodft * lomask.reshape(lodft.shape[0], lodft.shape[1])
 
         lodft = numpy.fft.ifft2(numpy.fft.ifftshift(lodft))
@@ -1780,7 +1886,7 @@ class Lpyr(pyramid):
             im_sz = im.shape
             filt1_sz = filt1.shape
             if im_sz[0] == 1:
-                #print 'flag lo 1'
+                print 'flag lo 1'
                 #lo2 = numpy.array( pyPyrCcode.corrDn(1, im_sz[1], im, 
                 #                                     filt1_sz[0], filt1_sz[1], 
                 #                                     filt1, edges, 1, 2, 0, 0, 
@@ -1788,10 +1894,10 @@ class Lpyr(pyramid):
                 lo2 = pyPyrUtils.corrDn(image = im, filt = filt1, edges = edges,
                                         step = (1,2))
                 lo2 = numpy.array(lo2)
-                #print 'lo2'
-                #print lo2
+                print 'lo2'
+                print lo2
             elif len(im_sz) == 1 or im_sz[1] == 1:
-                #print 'flag lo 2'
+                print 'flag lo 2'
                 #lo2 = numpy.array( pyPyrCcode.corrDn(im_sz[0], 1, im, 
                 #                                     filt1_sz[0], filt1_sz[1], 
                 #                                     filt1, edges, 2, 1, 0, 0, 
@@ -1799,8 +1905,8 @@ class Lpyr(pyramid):
                 lo2  = pyPyrUtils.corrDn(image = im, filt = filt1, edges = edges,
                                          step = (2,1))
                 lo2 = numpy.array(lo2)
-                #print 'lo2'
-                #print lo2
+                print 'lo2'
+                print lo2
             else:
                 # orig version
                 #lo = numpy.array( pyPyrCcode.corrDn(im_sz[1], im_sz[0], im, 
@@ -1884,12 +1990,12 @@ class Lpyr(pyramid):
                 ##hi2 = numpy.array(hi2).reshape(los[ht].shape[0], los[ht].shape[1],
                 ##                            order='F')
                 ## new code
-                print 'flag 1'
+                #print 'flag 1'
                 hi = pyPyrUtils.upConv(image = im, filt = filt2, 
                                        edges = edges, step = (2,1), 
                                        stop = (los[ht].shape[0], im_sz[1]))
-                print 'hi'
-                print hi
+                #print 'hi'
+                #print hi
                 #hi2 = pyPyrUtils.upConv(image = hi, filt = filt2.T, 
                 #                        edges = edges, step = (1,2), 
                 #                        stop = (los[ht].shape[1], 
@@ -1898,14 +2004,14 @@ class Lpyr(pyramid):
                                         edges = edges, step = (1,2), 
                                         stop = (los[ht].shape[0], 
                                                 los[ht].shape[1]))
-                print 'hi2'
-                print hi2
+                #print 'hi2'
+                #print hi2
                                        
-            print 'los[ht]'
-            print los[ht]
+            #print 'los[ht]'
+            #print los[ht]
             hi2 = los[ht] - hi2
-            print 'hi2 - after sub'
-            print hi2
+            #print 'hi2 - after sub'
+            #print hi2
             #self.pyr[pyrCtr] = hi2
             #self.pyrSize[pyrCtr] = hi2.shape
             self.pyr.insert(pyrCtr, hi2.copy())
@@ -1981,7 +2087,7 @@ class Lpyr(pyramid):
                 new_sz = self.band(lev).shape
                 filt2_sz = filt2.shape
                 if res_sz[0] == 1:
-                    print 'recon flag 1'
+                    #print 'recon flag 1'
                     #hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
                     #                        filt2_sz[1], filt2_sz[0], filt2,
                     #                        edges, 1, 2, 0, 0, new_sz[0],
@@ -1989,10 +2095,10 @@ class Lpyr(pyramid):
                     hi2 = pyPyrUtils.upConv(image = res, filt = filt2,
                                             edges = edges, step = (2,1), 
                                             stop = (new_sz[1], new_sz[0])).T
-                    print 'hi2'
-                    print hi2
+                    #print 'hi2'
+                    #print hi2
                 elif res_sz[1] == 1:
-                    print 'recon flag 2'
+                    #print 'recon flag 2'
                     #hi2 = pyPyrCcode.upConv(new_sz[0], res_sz[1], res.T,
                     #                        filt2_sz[0], filt2_sz[1], filt2,
                     #                        edges, 2, 1, 0, 0, new_sz[0],
@@ -2000,10 +2106,10 @@ class Lpyr(pyramid):
                     hi2 = pyPyrUtils.upConv(image = res, filt = filt2.T,
                                             edges = edges, step = (1,2), 
                                             stop = (new_sz[1], new_sz[0])).T
-                    print 'hi2'
-                    print hi2
+                    #print 'hi2'
+                    #print hi2
                 else:
-                    print 'flag 3'
+                    #print 'flag 3'
                     # orig code
                     #hi = pyPyrCcode.upConv(res_sz[0], res_sz[1], res.T,
                     #                       filt2_sz[0], filt2_sz[1], filt2,
@@ -2014,21 +2120,21 @@ class Lpyr(pyramid):
                     #                        edges, 1, 2, 0, 0, new_sz[0],
                     #                        new_sz[1]).T
                     # new code
-                    print 'res'
-                    print res
+                    #print 'res'
+                    #print res
                     hi = pyPyrUtils.upConv(image = res, filt = filt2, 
                                            edges = edges, step = (2,1), 
                                            stop = (new_sz[0], res_sz[1]))
-                    print 'hi'
-                    print hi
+                    #print 'hi'
+                    #print hi
                     #hi2 = pyPyrUtils.upConv(image = hi, filt = filt2, 
                     #                        edges = edges, step = (2,1),
                     #                        stop = new_sz).T
                     hi2 = pyPyrUtils.upConv(image = hi, filt = filt2.T, 
                                             edges = edges, step = (1,2),
                                             stop = (new_sz[0], new_sz[1]))
-                    print 'hi2'
-                    print hi2
+                    #print 'hi2'
+                    #print hi2
                 if lev in levs:
                     bandIm = self.band(lev)
                     bandIm_sz = bandIm.shape

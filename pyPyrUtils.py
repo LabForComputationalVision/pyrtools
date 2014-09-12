@@ -2096,8 +2096,8 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                  stop[0], 
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
     else:
-        print 'filt.shape'
-        print filt.shape
+        #print 'filt.shape'
+        #print filt.shape
         tmp = numpy.zeros((filt.shape[0], filt.shape[1]))
         #image = numpy.reshape(image,(image.shape[1],image.shape[0]), order='F')
         lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
@@ -2202,19 +2202,19 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
 
     # FIX: are these two lines needed? should be.
     #step = (step[1], step[0])
-    print 'step'
-    print step
+    #print 'step'
+    #print step
     #start = (start[1], start[0])
-    print 'start'
-    print start
+    #print 'start'
+    #print start
 
     if stop == None and result == None:
         stop = (image.shape[0]*step[0], image.shape[1]*step[1])
         stop = (stop[0], stop[1])
     elif stop == None:
         stop = (result.shape[0], result.shape[1])
-    print 'stop'
-    print stop
+    #print 'stop'
+    #print stop
     if result == None:
         result = numpy.zeros((stop[1], stop[0]))
 
@@ -2223,13 +2223,13 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
     if edges == 'circular':
         lib.internal_wrap_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 #temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  filt.shape[1], filt.shape[0], start[1], 
                                  step[1], stop[1], start[0], step[0], stop[0],
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  stop[1], stop[0])
     else:
-        print 'c call in'
+        #print 'c call in'
         # close to drop in replacement
         '''  close but wrong dims for 1D
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -2266,7 +2266,7 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             stop[0], stop[1], edges)
         '''
-        print 'c call out'
+        #print 'c call out'
     return result
 
 def upConv_old2(image = None, filt = None, edges = 'reflect1', step = (1,1), 
@@ -2311,7 +2311,8 @@ def pointOp(image, lut, origin, increment, warnings):
                          result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                          image.shape[0] * image.shape[1], 
                          lut.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                         lut.shape[0], ctypes.c_double(origin), 
+                         lut.shape[0], 
+                         ctypes.c_double(origin), 
                          ctypes.c_double(increment), warnings)
 
     return result
