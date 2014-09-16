@@ -14,7 +14,7 @@ import math
 import struct
 import re
 #from pyPyrCcode import *
-import pyPyrCcode
+#import pyPyrCcode
 import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -2036,28 +2036,28 @@ def showIm(*args):
 # required input parameters: image, filter
 # optonal input parameters: edges, (xstep,ystep), (xstart,ystart), (xstop,ystop)
 #                           result
-def corrDn_orig(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-           start = (0,0), stop = None, result = None):
-    
-    if image == None or filt == None:
-        print 'Error: image and filter are required input parameters!'
-        return
-
-    if stop == None:
-        stop = (image.shape[0]-1, image.shape[1]-1)
-
-    if result == None:
-        res = pyPyrCcode.corrDn(image.shape[0], image.shape[1], image, 
-                                filt.shape[0], filt.shape[1], filt, edges, 
-                                step[0], step[1], start[0], start[1], stop[0], 
-                                stop[1])
-    else:
-        res = pyPyrCcode.corrDn(image.shape[0], image.shape[1], image, 
-                                filt.shape[0], filt.shape[1], filt, edges, 
-                                step[0], step[1], start[0], start[1], stop[0],
-                                stop[1], result)
-    print res
-    return res
+#def corrDn_orig(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+#           start = (0,0), stop = None, result = None):
+#    
+#    if image == None or filt == None:
+#        print 'Error: image and filter are required input parameters!'
+#        return
+#
+#    if stop == None:
+#        stop = (image.shape[0]-1, image.shape[1]-1)
+#
+#    if result == None:
+#        res = pyPyrCcode.corrDn(image.shape[0], image.shape[1], image, 
+#                                filt.shape[0], filt.shape[1], filt, edges, 
+#                                step[0], step[1], start[0], start[1], stop[0], 
+#                                stop[1])
+#    else:
+#        res = pyPyrCcode.corrDn(image.shape[0], image.shape[1], image, 
+#                                filt.shape[0], filt.shape[1], filt, edges, 
+#                                step[0], step[1], start[0], start[1], stop[0],
+#                                stop[1], result)
+#    print res
+#    return res
 
 # new version calls C functions directly using cytpes
 def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1), 
@@ -2149,30 +2149,30 @@ def corrDn_new2(image = None, filt = None, edges = 'reflect1', step = (1,1),
     return result
 
 # wrapper for C function upConv
-def upConv_old(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-               start = (0,0), stop = None, result = None):
-
-    if image == None or filt == None:
-        print 'Error: image and filter are required input parameters!'
-        return
-
-    if len(filt.shape) == 1:
-        filt = numpy.reshape(filt, (filt.shape[0],1))
-
-    if stop == None:
-        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
-
-    if result == None:
-        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
-                                filt.shape[0], filt.shape[1], filt, edges,
-                                step[0], step[1], start[0], start[1], stop[0], 
-                                stop[1])
-    else:
-        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
-                                filt.shape[0], filt.shape[1], filt, edges,
-                                step[0], step[1], start[0], start[1], stop[0], 
-                                stop[1], result)
-    return res
+#def upConv_old(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+#               start = (0,0), stop = None, result = None):
+#
+#    if image == None or filt == None:
+#        print 'Error: image and filter are required input parameters!'
+#        return
+#
+#    if len(filt.shape) == 1:
+#        filt = numpy.reshape(filt, (filt.shape[0],1))
+#
+#    if stop == None:
+#        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
+#
+#    if result == None:
+#        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+#                                filt.shape[0], filt.shape[1], filt, edges,
+#                                step[0], step[1], start[0], start[1], stop[0], 
+#                                stop[1])
+#    else:
+#        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+#                                filt.shape[0], filt.shape[1], filt, edges,
+#                                step[0], step[1], start[0], start[1], stop[0], 
+#                                stop[1], result)
+#    return res
 
 # this version was broken after the update. reverted back to one below
 def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
@@ -2247,7 +2247,7 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                  stop[1], stop[0])
         result = result.T
     else:
-        #print 'c call in'
+        print 'c call in'
         # close to drop in replacement
         '''  close but wrong dims for 1D
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -2266,6 +2266,17 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             stop[0], stop[1], edges)
         '''
+        print 'parameters'
+        print image
+        print filt
+        print temp
+        print filt.shape
+        print start
+        print step
+        print stop
+        print result
+        print edges
+        print 'end parameters'
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -2284,43 +2295,43 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             stop[0], stop[1], edges)
         '''
-        #print 'c call out'
+        print 'c call out'
     return result
 
-def upConv_old2(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-           start = (0,0), stop = None, result = None):
-
-    if image == None or filt == None:
-        print 'Error: image and filter are required input parameters!'
-        return
-
-    if stop == None:
-        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
-
-    print 'step'
-    print step
-    print 'start'
-    print start
-    print 'stop'
-    print stop
-    if result == None:
-        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
-                                filt.shape[0], filt.shape[1], filt, edges,
-                                step[0], step[1], start[0], start[1], stop[0], 
-                                stop[1])
-    else:
-        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
-                                filt.shape[0], filt.shape[1], filt, edges,
-                                step[0], step[1], start[0], start[1], stop[0], 
-                                stop[1], result)
-    return res
+#def upConv_old2(image = None, filt = None, edges = 'reflect1', step = (1,1), 
+#           start = (0,0), stop = None, result = None):
+#
+#    if image == None or filt == None:
+#        print 'Error: image and filter are required input parameters!'
+#        return
+#
+#    if stop == None:
+#        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
+#
+#    print 'step'
+#    print step
+#    print 'start'
+#    print start
+#    print 'stop'
+#    print stop
+#    if result == None:
+#        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+#                                filt.shape[0], filt.shape[1], filt, edges,
+#                                step[0], step[1], start[0], start[1], stop[0], 
+#                                stop[1])
+#    else:
+#        res = pyPyrCcode.upConv(image.shape[0], image.shape[1], image,
+#                                filt.shape[0], filt.shape[1], filt, edges,
+#                                step[0], step[1], start[0], start[1], stop[0], 
+#                                stop[1], result)
+#    return res
 
 # wrapper for C function pointOp
-def pointOp_old(image, lut, origin, increment, warnings):
-
-    res = pyPyrCcode.pointOp(image.shape[0], image.shape[1], image, 
-                             lut.shape[0], lut, origin, increment, warnings)
-    return res
+#def pointOp_old(image, lut, origin, increment, warnings):
+#
+#    res = pyPyrCcode.pointOp(image.shape[0], image.shape[1], image, 
+#                             lut.shape[0], lut, origin, increment, warnings)
+#    return res
 
 def pointOp(image, lut, origin, increment, warnings):
     result = numpy.zeros((image.shape[0], image.shape[1]))

@@ -1,7 +1,7 @@
 import numpy
 #import pyPyrUtils as ppu
 import pyPyrUtils
-import pyPyrCcode
+#import pyPyrCcode
 import math
 import matplotlib.cm
 import os
@@ -803,18 +803,18 @@ class Spyr(pyramid):
         for lev in range(Nlevs-1,-1,-1):
             if lev == Nlevs-1 and pyPyrUtils.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
                 idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                #print 'flag 1'
+                print 'flag 1'
                 recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
-                #print 'recon'
-                #print recon
+                print 'recon'
+                print recon
             elif lev == Nlevs-1:
-                #print 'flag 2'
+                print 'flag 2'
                 idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
-                #print 'recon'
-                #print recon
+                print 'recon'
+                print recon
             elif lev == 0 and 0 in reconList:
-                #print 'flag 3'
+                print 'flag 3'
                 ### orig working code
                 #idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                 #sz = recon.shape
@@ -858,56 +858,59 @@ class Spyr(pyramid):
                 #### new code -- output from individual functions looks the
                 #                same, but fails unit test 12. WHY?!
                 sz = recon.shape
-                #print 'recon2_1_start'
+                print 'recon2_1_start'
                 recon = pyPyrUtils.upConv(image = recon, filt = lo0filt, 
                                           edges = edges, step = (1,1), 
                                           #start = (0,0), stop = (sz[0], sz[1]))
                                           start = (0,0), stop = sz)
-                #print 'recon2_1_end'
-                #print recon
+                print 'recon2_1_end'
+                print recon
                 idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                #print 'recon2_2_start'
+                print 'recon2_2_start'
                 pyPyrUtils.upConv(image = self.pyr[idx],
                                   filt = hi0filt, edges = edges,
                                   #stop = (self.pyrSize[idx][0], 
                                   #        self.pyrSize[idx][1]), 
                                   stop = self.pyrSize[idx], 
                                   result = recon)
-                #print 'recon2_2_end'
-                #print recon
+                print 'recon2_2_end'
+                print recon
             elif lev == 0:
-                #print 'flag 4'
+                print 'flag 4'
                 sz = recon.shape
                 #recon = pyPyrCcode.upConv(sz[0],sz[1], recon, lo0filt.shape[0],
                 #                          lo0filt.shape[1], lo0filt, edges, 
                 #                          1, 1, 0, 0, sz[0], sz[1])
                 recon = pyPyrUtils.upConv(image = recon, filt = lo0filt, 
                                           edges = edges, stop = sz)
-                #print 'recon'
-                #print recon
+                print 'recon'
+                print recon
             else:
-                #print 'flag 5'
+                print 'flag 5'
                 for band in range(Nbands-1,-1,-1):
-                    #print 'band = %d' % (band)
+                    print 'band = %d' % (band)
                     idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
                     if idx in reconList:
                         filt = bfilts[:,band].reshape(bfiltsz, 
                                                       bfiltsz,
                                                       order='F')
-                        recon2 = recon.copy()
-                        recon = pyPyrCcode.upConv(self.pyrSize[idx][0], 
-                                                  self.pyrSize[idx][1], 
-                                                  self.pyr[idx], bfiltsz, 
-                                                  bfiltsz, filt, edges, 1, 1, 
-                                                  0, 0, self.pyrSize[idx][1], 
-                                                  self.pyrSize[idx][0], recon)
+                        #recon2 = recon.copy()
+                        #recon = pyPyrCcode.upConv(self.pyrSize[idx][0], 
+                        #                          self.pyrSize[idx][1], 
+                        #                          self.pyr[idx], bfiltsz, 
+                        #                          bfiltsz, filt, edges, 1, 1, 
+                        #                          0, 0, self.pyrSize[idx][1], 
+                        #                          self.pyrSize[idx][0], recon)
                         #print 'recon'
                         #print recon
-                        #recon2 = pyPyrUtils.upConv(image = self.pyr[idx], 
-                        #                           filt = filt, edges = edges,
-                        #                           stop = (self.pyrSize[idx][0],
-                        #                                   self.pyrSize[idx][1]),
-                        #                           result = recon2).T
+
+                        # new C interface
+                        recon = pyPyrUtils.upConv(image = self.pyr[idx].copy(), 
+                                                  filt = filt.copy(), 
+                                                  edges = edges,
+                                                  stop = (self.pyrSize[idx][0],
+                                                          self.pyrSize[idx][1]),
+                                                  result = recon)
                         #print 'recon2'
                         #print recon2
                         #print 'same?'
@@ -922,7 +925,7 @@ class Spyr(pyramid):
             if newSz[0] % recon.shape[0] > 0:
                 mult += 1
             if mult > 1:
-                #print 'flag 6'
+                print 'flag 6'
                 # old working code
                 #recon = pyPyrCcode.upConv(recon.shape[1], recon.shape[0], 
                 #                          recon.T, lofilt.shape[0], 
@@ -943,8 +946,8 @@ class Spyr(pyramid):
                                           #stop = (newSz[1], newSz[0]))
                                           #stop = (newSz[0], newSz[1]))
                                           stop = newSz)
-                #print 'upsample - recon'
-                #print recon
+                print 'upsample - recon'
+                print recon
         return recon
 
     #def showPyr(self, *args):
@@ -1647,11 +1650,11 @@ class SCFpyr(SFpyr):
         self.pyrSize = []
 
         # orig C interface
-        hi0mask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
-                                                 log_rad.shape[1], log_rad,
-                                                 Yrcos.shape[0], Yrcos,
-                                                 Xrcos[0], Xrcos[1]-Xrcos[0],
-                                                 0))
+        #hi0mask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
+        #                                         log_rad.shape[1], log_rad,
+        #                                         Yrcos.shape[0], Yrcos,
+        #                                         Xrcos[0], Xrcos[1]-Xrcos[0],
+        #                                         0))
         # new C interface
         hi0mask = pyPyrUtils.pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
                                      0)
@@ -1682,11 +1685,11 @@ class SCFpyr(SFpyr):
             Ycosn = ( 2.0*numpy.sqrt(const) * (numpy.cos(Xcosn)**order) * 
                       (numpy.abs(alfa)<numpy.pi/2.0).astype(int) )
             # orig C interface
-            himask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
-                                                    log_rad.shape[1], log_rad,
-                                                    Yrcos.shape[0], Yrcos,
-                                                    Xrcos[0], Xrcos[1]-Xrcos[0],
-                                                    0))
+            #himask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
+            #                                        log_rad.shape[1], log_rad,
+            #                                        Yrcos.shape[0], Yrcos,
+            #                                        Xrcos[0], Xrcos[1]-Xrcos[0],
+            #                                        0))
             # new C interface
             log_rad_tmp = numpy.reshape(log_rad, (1,log_rad.shape[0]*
                                                   log_rad.shape[1]))
@@ -1731,11 +1734,11 @@ class SCFpyr(SFpyr):
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
             YIrcos = numpy.abs(numpy.sqrt(1.0 - Yrcos**2))
             # orig C interface
-            lomask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
-                                                    log_rad.shape[1], log_rad,
-                                                    YIrcos.shape[0], YIrcos, 
-                                                    Xrcos[0], Xrcos[1]-Xrcos[0],
-                                                    0))
+            #lomask = numpy.array(pyPyrCcode.pointOp(log_rad.shape[0],
+            #                                        log_rad.shape[1], log_rad,
+            #                                        YIrcos.shape[0], YIrcos, 
+            #                                        Xrcos[0], Xrcos[1]-Xrcos[0],
+            #                                        0))
             # new C interface
             log_rad_tmp = numpy.reshape(log_rad, 
                                         (1,log_rad.shape[0]*log_rad.shape[1]))
