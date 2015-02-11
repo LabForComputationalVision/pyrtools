@@ -23,6 +23,11 @@ import JBhelpers
 import ctypes
 lib = ctypes.cdll.LoadLibrary('./wrapConv.so')
 
+##############
+#  This code uses C code from wrapConv.so.  To compile type:
+#  gcc -shared -L/users-local/ryoung/anaconda/lib -I/users-local/ryoung/anaconda/lib/python2.7/site-packages/numpy/core/include/ -I/users-local/ryoung/anaconda/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c
+
+
 # Compute maximum pyramid height for given image and filter sizes.
 # Specifically: the number of corrDn operations that can be sequentially
 # performed when subsampling by a factor of 2.
@@ -2247,7 +2252,7 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                  stop[1], stop[0])
         result = result.T
     else:
-        print 'c call in'
+        #print 'c call in'
         # close to drop in replacement
         '''  close but wrong dims for 1D
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -2266,17 +2271,6 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             stop[0], stop[1], edges)
         '''
-        print 'parameters'
-        print image
-        print filt
-        print temp
-        print filt.shape
-        print start
-        print step
-        print stop
-        print result
-        print edges
-        print 'end parameters'
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -2295,7 +2289,7 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             stop[0], stop[1], edges)
         '''
-        print 'c call out'
+        #print 'c call out'
     return result
 
 #def upConv_old2(image = None, filt = None, edges = 'reflect1', step = (1,1), 

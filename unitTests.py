@@ -79,20 +79,6 @@ class GpyrTests(unittest.TestCase):
         pyPyr = ppt.Gpyr(img)
         self.failUnless(ppu.comparePyr(matPyr['pyr'], pyPyr))
 
-class mkRampTests(unittest.TestCase):
-    def test1(self):
-        matRamp = scipy.io.loadmat('matFiles/mkRamp1.mat')
-        pyRamp = ppu.mkRamp(10)
-        self.failUnless((matRamp['foo'] == pyRamp).all())
-    def test2(self):
-        matRamp = scipy.io.loadmat('matFiles/mkRamp2.mat')
-        pyRamp = ppu.mkRamp(10,20)
-        self.failUnless((matRamp['foo'] == pyRamp).all())
-    def test3(self):
-        matRamp = scipy.io.loadmat('matFiles/mkRamp3.mat')
-        pyRamp = ppu.mkRamp(20, 10)
-        self.failUnless((matRamp['foo'] == pyRamp).all())
-
 class LpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('matFiles/buildLpyr1.mat')
