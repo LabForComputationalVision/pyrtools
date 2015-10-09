@@ -10,6 +10,7 @@ import pylab
 import scipy.signal
 #import scipy.stats as sps
 import scipy.stats
+from scipy import interpolate
 import math
 import struct
 import re
@@ -25,7 +26,7 @@ lib = ctypes.cdll.LoadLibrary('./wrapConv.so')
 
 ##############
 #  This code uses C code from wrapConv.so.  To compile type:
-#  gcc -shared -L/users-local/ryoung/anaconda/lib -I/users-local/ryoung/anaconda/lib/python2.7/site-packages/numpy/core/include/ -I/users-local/ryoung/anaconda/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c
+#  gcc -shared -L/users-local/ryoung/anaconda/lib -I/users-local/ryoung/anaconda/lib/python2.7/site-packages/numpy/core/include/ -I/users-local/ryoung/anaconda/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c histo.c
 
 
 # Compute maximum pyramid height for given image and filter sizes.
@@ -185,14 +186,32 @@ def strictly_decreasing(L):
     return all(x>y for x, y in zip(L, L[1:]))
 
 def compareRecon(recon1, recon2):
+    prec = -11
     if recon1.shape != recon2.shape:
+        print 'shape is different!'
+        print recon1.shape
+        print recon2.shape
         return 0
 
     for i in range(recon1.shape[0]):
         for j in range(recon2.shape[1]):
-            if math.fabs(recon1[i,j] - recon2[i,j]) > math.pow(10,-11):
-                print "i=%d j=%d %f %f diff=%f" % (i, j, recon1[i,j], recon2[i,j], math.fabs(recon1[i,j]-recon2[i,j]))
+            #if math.fabs(recon1[i,j] - recon2[i,j]) > math.pow(10,-11):
+            if numpy.absolute(recon1[i,j].real - recon2[i,j].real) > math.pow(10,-11):
+                print "real: i=%d j=%d %.15f %.15f diff=%.15f" % (i, j, recon1[i,j].real, recon2[i,j].real, numpy.absolute(recon1[i,j].real-recon2[i,j].real))
                 return 0
+            ## FIX: need a better way to test
+            # if we have many significant digits to the left of decimal we 
+            #   need to be less stringent about digits to the right.
+            # The code below works, but there must be a better way.
+            if isinstance(recon1, complex):
+                if int(math.log(numpy.abs(recon1[i,j].imag), 10)) > 1:
+                    prec = prec + int(math.log(numpy.abs(recon1[i,j].imag), 10))
+                    if prec > 0:
+                        prec = -1
+                print prec
+                if numpy.absolute(recon1[i,j].imag - recon2[i,j].imag) > math.pow(10, prec):
+                    print "imag: i=%d j=%d %.15f %.15f diff=%.15f" % (i, j, recon1[i,j].imag, recon2[i,j].imag, numpy.absolute(recon1[i,j].imag-recon2[i,j].imag))
+                    return 0
 
     return 1
 
@@ -251,6 +270,407 @@ def comparePyr(matPyr, pyPyr):
             print "same to at least %f" % prec
 
     return 1
+
+def mkAngularSine(*args):
+    # IM = mkAngularSine(SIZE, HARMONIC, AMPL, PHASE, ORIGIN)
+    #
+    # Make an angular sinusoidal image:
+    #     AMPL * sin( HARMONIC*theta + PHASE),
+    # where theta is the angle about the origin.
+    # SIZE specifies the matrix size, as for zeros().  
+    # AMPL (default = 1) and PHASE (default = 0) are optional.
+    
+    # Eero Simoncelli, 2/97.  Python port by Rob Young, 7/15.
+
+    if len(args) == 0:
+        print "mkAngularSine(SIZE, HARMONIC, AMPL, PHASE, ORIGIN)"
+        print "first argument is required"
+        exit(1)
+    else:
+        sz = args[0]
+        if isinstance(sz, (int)):
+            sz = (sz, sz)
+        elif not isinstance(sz, (tuple)):
+            print "first argument must be a two element tuple or an integer"
+            exit(1)
+
+    # OPTIONAL args:
+
+    if len(args) > 1:
+        harmonic = args[1]
+    else:
+        harmonic = 1
+
+    if len(args) > 2:
+        ampl = args[2]
+    else:
+        ampl = 1
+
+    if len(args) > 3:
+        ph = args[3]
+    else:
+        ph = 0
+
+    if len(args) > 4:
+        origin = args[4]
+    else:
+        origin = ( (sz[0]+1.0)/2.0, (sz[1]+1.0)/2.0 )
+        
+    res = ampl * numpy.sin( harmonic * mkAngle(sz, ph, origin) + ph )
+
+    return res
+
+def mkGaussian(*args):
+# IM = mkGaussian(SIZE, COVARIANCE, MEAN, AMPLITUDE)
+# 
+# Compute a matrix with dimensions SIZE (a [Y X] 2-vector, or a
+#   scalar) containing a Gaussian function, centered at pixel position
+# specified by MEAN (default = (size+1)/2), with given COVARIANCE (can
+# be a scalar, 2-vector, or 2x2 matrix.  Default = (min(size)/6)^2),
+# and AMPLITUDE.  AMPLITUDE='norm' (default) will produce a
+# probability-normalized function.  All but the first argument are
+# optional.
+#
+# Eero Simoncelli, 6/96. Python port by Rob Young, 7/15.
+
+    if len(args) == 0:
+        print "mkRamp(SIZE, COVARIANCE, MEAN, AMPLITUDE)"
+        print "first argument is required"
+        exit(1)
+    else:
+        sz = args[0]
+        if isinstance(sz, (int)):
+            sz = (sz, sz)
+        elif not isinstance(sz, (tuple)):
+            print "first argument must be a two element tuple or an integer"
+            exit(1)
+
+    # OPTIONAL args:
+
+    if len(args) > 1:
+        cov = args[1]
+    else:
+        cov = (min([sz[0], sz[1]]) / 6.0) ** 2
+
+    if len(args) > 2:
+        mn = args[2]
+        if isinstance(mn, int):
+            mn = [mn, mn]
+    else:
+        mn = ( (sz[0]+1.0)/2.0, (sz[1]+1.0)/2.0 )
+
+    if len(args) > 3:
+        ampl = args[3]
+    else:
+        ampl = 'norm'
+
+    #---------------------------------------------------------------
+        
+    (xramp, yramp) = numpy.meshgrid(numpy.array(range(1,sz[1]+1))-mn[1], 
+                                    numpy.array(range(1,sz[0]+1))-mn[0])
+
+    if isinstance(cov, (int, long, float)):
+        if 'norm' == ampl:
+            ampl = 1.0 / (2.0 * numpy.pi * cov)
+        e = ( (xramp**2) + (yramp**2) ) / ( -2.0 * cov )
+    elif len(cov) == 2 and isinstance(cov[0], (int, long, float)):
+        if 'norm' == ampl:
+            if cov[0]*cov[1] < 0:
+                ampl = 1.0 / (2.0 * numpy.pi * 
+                              numpy.sqrt(complex(cov[0] * cov[1])))
+            else:
+                ampl = 1.0 / (2.0 * numpy.pi * numpy.sqrt(cov[0] * cov[1]))
+        e = ( (xramp**2) / (-2 * cov[1]) ) + ( (yramp**2) / (-2 * cov[0]) )
+    else:
+        if 'norm' == ampl:
+            detCov = numpy.linalg.det(cov)
+            if (detCov < 0).any():
+                detCovComplex = numpy.empty(detCov.shape, dtype=complex)
+                detCovComplex.real = detCov
+                detCovComplex.imag = numpy.zeros(detCov.shape)
+                ampl = 1.0 / ( 2.0 * numpy.pi * numpy.sqrt( detCovComplex ) )
+            else:
+                ampl = 1.0 / (2.0 * numpy.pi * numpy.sqrt( numpy.linalg.det(cov) ) )
+        cov = - numpy.linalg.inv(cov) / 2.0
+        e = (cov[1,1] * xramp**2) + ( 
+            (cov[0,1]+cov[1,0])*(xramp*yramp) ) + ( cov[0,0] * yramp**2)
+        
+    res = ampl * numpy.exp(e)
+    
+    return res
+
+
+def mkDisc(*args):
+ # IM = mkDisc(SIZE, RADIUS, ORIGIN, TWIDTH, VALS)
+
+ # Make a "disk" image.  SIZE specifies the matrix size, as for
+ # zeros().  RADIUS (default = min(size)/4) specifies the radius of 
+ # the disk.  ORIGIN (default = (size+1)/2) specifies the 
+ # location of the disk center.  TWIDTH (in pixels, default = 2) 
+ # specifies the width over which a soft threshold transition is made.
+ # VALS (default = [0,1]) should be a 2-vector containing the
+ # intensity value inside and outside the disk.  
+
+ # Eero Simoncelli, 6/96. Python port by Rob Young, 7/15.
+
+    if len(args) == 0:
+        print "mkDisc(SIZE, RADIUS, ORIGIN, TWIDTH, VALS)"
+        print "first argument is required"
+        exit(1)
+    else:
+        sz = args[0]
+        if isinstance(sz, (int)):
+            sz = (sz, sz)
+        elif not isinstance(sz, (tuple)):
+            print "first argument must be a two element tuple or an integer"
+            exit(1)
+
+    # OPTIONAL args:
+
+    if len(args) > 1:
+        rad = args[1]
+    else:
+        rad = min(sz) / 4.0
+
+    if len(args) > 2:
+        origin = args[2]
+    else:
+        origin = ( (sz[0]+1.0)/2.0, (sz[1]+1.0)/2.0 )
+
+    if len(args) > 3:
+        twidth = args[3]
+    else:
+        twidth = twidth = 2
+        
+    if len(args) > 4:
+        vals = args[4]
+    else:
+        vals = (1,0)
+
+    #--------------------------------------------------------------
+
+    res = mkR(sz, 1, origin)
+
+    if abs(twidth) < sys.float_info.min:
+        res = vals[1] + (vals[0] - vals[1]) * (res <= rad);
+    else:
+        [Xtbl, Ytbl] = rcosFn(twidth, rad, [vals[0], vals[1]]);
+        res = pointOp(res, Ytbl, Xtbl[0], Xtbl[1]-Xtbl[0], 0);
+
+    return res
+
+def mkSine(*args):
+# IM = mkSine(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN)
+#      or
+# IM = mkSine(SIZE, FREQ, AMPLITUDE, PHASE, ORIGIN)
+# 
+# Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
+# containing samples of a 2D sinusoid, with given PERIOD (in pixels),
+# DIRECTION (radians, CW from X-axis, default = 0), AMPLITUDE (default
+# = 1), and PHASE (radians, relative to ORIGIN, default = 0).  ORIGIN
+# defaults to the center of the image.
+# 
+# In the second form, FREQ is a 2-vector of frequencies (radians/pixel).
+#
+# Eero Simoncelli, 6/96. Python version by Rob Young, 7/15.
+
+    # REQUIRED args:
+
+    if len(args) < 2:
+        print "mkSine(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN)"
+        print "       or"
+        print "mkSine(SIZE, FREQ, AMPLITUDE, PHASE, ORIGIN)"
+        print "first two arguments are required"
+        exit(1)
+    else:
+        sz = args[0]
+        if isinstance(sz, (int)):
+            sz = (sz, sz)
+        elif not isinstance(sz, (tuple)):
+            print "first argument must be a two element tuple or an integer"
+            exit(1)
+
+    if isinstance(args[1], (int, float, long)):
+        frequency = (2.0 * numpy.pi) / args[1]
+        # OPTIONAL args:
+        if len(args) > 2:
+            direction = args[2]
+        else:
+            direction = 0
+        if len(args) > 3:
+            amplitude = args[3]
+        else:
+            amplitude = 1
+        if len(args) > 4:
+            phase = args[4]
+        else:
+            phase = 0
+        if len(args) > 5:
+            origin = args[5]
+        else:
+            origin = 'not set'
+    else:
+        frequency = numpy.linalg.norm(args[1])
+        direction = math.atan2(args[1][0], args[1][1])
+        # OPTIONAL args:
+        if len(args) > 2:
+            amplitude = args[2]
+        else:
+            amplitude = 1
+        if len(args) > 3:
+            phase = args[3]
+        else:
+            phase = 0
+        if len(args) > 4:
+            origin = args[4]
+        else:
+            origin = 'not set'
+
+    #----------------------------------------------------------------
+
+    if origin == 'not set':
+        res = amplitude * numpy.sin(mkRamp(sz, direction, frequency, phase))
+    else:
+        res = amplitude * numpy.sin(mkRamp(sz, direction, frequency, phase, 
+                                           [origin[0]-1, origin[1]-1]))
+
+    return res
+
+def mkZonePlate(*args):
+    # IM = mkZonePlate(SIZE, AMPL, PHASE)
+    #
+    # Make a "zone plate" image:
+    #     AMPL * cos( r^2 + PHASE)
+    # SIZE specifies the matrix size, as for zeros().  
+    # AMPL (default = 1) and PHASE (default = 0) are optional.
+    #
+    # Eero Simoncelli, 6/96.  Python port by Rob Young, 7/15.
+
+    # REQUIRED ARGS:
+
+    if len(args) == 0:
+        print "mkZonePlate(SIZE, AMPL, PHASE)"
+        print "first argument is required"
+        exit(1)
+    else:
+        sz = args[0]
+        if isinstance(sz, (int)):
+            sz = (sz, sz)
+        elif not isinstance(sz, (tuple)):
+            print "first argument must be a two element tuple or an integer"
+            exit(1)
+    
+    #---------------------------------------------------------------------
+    # OPTIONAL ARGS
+    if len(args) > 1:
+        ampl = args[1]
+    else:
+        ampl = 1
+    if len(args) > 2:
+        ph = args[2]
+    else:
+        ph = 0
+
+    #---------------------------------------------------------------------
+
+    res = ampl * numpy.cos( (numpy.pi / max(sz)) * mkR(sz, 2) + ph )
+
+    return res
+
+def mkSquare(*args):
+    # IM = mkSquare(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN, TWIDTH)
+    #      or
+    # IM = mkSquare(SIZE, FREQ, AMPLITUDE, PHASE, ORIGIN, TWIDTH)
+    # 
+    # Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
+    # containing samples of a 2D square wave, with given PERIOD (in
+    # pixels), DIRECTION (radians, CW from X-axis, default = 0), AMPLITUDE
+    # (default = 1), and PHASE (radians, relative to ORIGIN, default = 0).
+    # ORIGIN defaults to the center of the image.  TWIDTH specifies width
+    # of raised-cosine edges on the bars of the grating (default =
+    # min(2,period/3)).
+    # 
+    # In the second form, FREQ is a 2-vector of frequencies (radians/pixel).
+    #
+    # Eero Simoncelli, 6/96. Python port by Rob Young, 7/15.
+    #
+    # TODO: Add duty cycle.  
+
+    # REQUIRED ARGS:
+
+    if len(args) < 2:
+        print "mkSquare(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN, TWIDTH)"
+        print "       or"
+        print "mkSquare(SIZE, FREQ, AMPLITUDE, PHASE, ORIGIN, TWIDTH)"
+        print "first two arguments are required"
+        exit(1)
+    else:
+        sz = args[0]
+        if isinstance(sz, (int)):
+            sz = (sz, sz)
+        elif not isinstance(sz, (tuple)):
+            print "first argument must be a two element tuple or an integer"
+            exit(1)
+    
+    if isinstance(args[1], (int, float, long)):
+        frequency = (2.0 * numpy.pi) / args[1]
+        # OPTIONAL args:
+        if len(args) > 2:
+            direction = args[2]
+        else:
+            direction = 0
+        if len(args) > 3:
+            amplitude = args[3]
+        else:
+            amplitude = 1
+        if len(args) > 4:
+            phase = args[4]
+        else:
+            phase = 0
+        if len(args) > 5:
+            origin = args[5]
+        else:
+            origin = 'not set'
+        if len(args) > 6:
+            transition = args[6]
+        else:
+            transition = min(2, 2.0 * numpy.pi / (3.0*frequency))
+    else:
+        frequency = numpy.linalg.norm(args[1])
+        direction = math.atan2(args[1][0], args[1][1])
+        # OPTIONAL args:
+        if len(args) > 2:
+            amplitude = args[2]
+        else:
+            amplitude = 1
+        if len(args) > 3:
+            phase = args[3]
+        else:
+            phase = 0
+        if len(args) > 4:
+            origin = args[4]
+        else:
+            origin = 'not set'
+        if len(args) > 5:
+            transition = args[5]
+        else:
+            transition = min(2, 2.0 * numpy.pi / (3.0*frequency))
+
+    #------------------------------------------------------------
+
+    if origin != 'not set':
+        res = mkRamp(sz, direction, frequency, phase, 
+                     (origin[0]-1, origin[1]-1)) - numpy.pi/2.0
+    else:
+        res = mkRamp(sz, direction, frequency, phase) - numpy.pi/2.0
+
+    [Xtbl, Ytbl] = rcosFn(transition * frequency, numpy.pi/2.0, 
+                          [-amplitude, amplitude])
+
+    res = pointOp(abs(((res+numpy.pi) % (2.0*numpy.pi))-numpy.pi), Ytbl, 
+                  Xtbl[0], Xtbl[1]-Xtbl[0], 0)
+
+    return res
 
 def mkRamp(*args):
     # mkRamp(SIZE, DIRECTION, SLOPE, INTERCEPT, ORIGIN)
@@ -1486,7 +1906,12 @@ def blurDn(*args):
             filt = namedFilter(filt)
     else:
         filt = namedFilter('binom5')
-    filt = [x/sum(filt) for x in filt]
+
+    if filt.shape[0] == 1 or filt.shape[1] == 1:
+        filt = [x/sum(filt) for x in filt]
+    else:
+        filt = [x/sum(sum(filt)) for x in filt]
+
     filt = numpy.array(filt)
     
     if nlevs > 1:
@@ -1519,25 +1944,97 @@ def blurDn(*args):
 
         else:  # 2D image and 2D filter
             # FIX: still not using new wrapper
-            res = pyPyrCcode.corrDn(im.shape[0],im.shape[1], im, filt.shape[0],
-                                    filt.shape[1], filt, 'reflect1', 2, 2)
-            #res = corrDn(im = im, filt = filt, step = (2, 2))
+            #res = pyPyrCcode.corrDn(im.shape[0],im.shape[1], im, filt.shape[0],
+            #                        filt.shape[1], filt, 'reflect1', 2, 2)
+            res = corrDn(image = im, filt = filt, step = (2,2))
     else:
         res = im
             
     return res
 
-# Convolution of two matrices, with boundaries handled via reflection
-# about the edge pixels.  Result will be of size of LARGER matrix.
-# 
-# The origin of the smaller matrix is assumed to be its center.
-# For even dimensions, the origin is determined by the CTR (optional) 
-# argument:
-#      CTR   origin
-#       0     DIM/2      (default)
-#       1   (DIM/2)+1  
-def rconv2(*args):
+def blur(*args):
+    # RES = blur(IM, LEVELS, FILT)
+    #
+    # Blur an image, by filtering and downsampling LEVELS times
+    # (default=1), followed by upsampling and filtering LEVELS times.  The
+    # blurring is done with filter kernel specified by FILT (default =
+    # 'binom5'), which can be a string (to be passed to namedFilter), a
+    # vector (applied separably as a 1D convolution kernel in X and Y), or
+    # a matrix (applied as a 2D convolution kernel).  The downsampling is
+    # always by 2 in each direction.
+    #
+    # Eero Simoncelli, 3/04.
 
+    # REQUIRED ARG:
+    if len(args) == 0:
+        print "blur(IM, LEVELS, FILT)"
+        print "first argument is required"
+        exit(1)
+    else:
+        im = numpy.array(args[0])
+
+    # OPTIONAL ARGS:
+    if len(args) > 1:
+        nlevs = args[1]
+    else:
+        nlevs = 1
+
+    if len(args) > 2:
+        if isinstance(args[2], basestring):
+            filt = namedFilter(args[2])
+        else:
+            filt = numpy.array(args[2])
+    else:
+        filt = namedFilter('binom5')
+
+    #--------------------------------------------------------------------
+    
+    if len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
+        filt = filt / sum(filt)
+    else:
+        filt = filt / sum(sum(filt))
+
+    if nlevs > 0:
+        if len(im.shape) == 1 or im.shape[0] == 1 or im.shape[1] == 1: 
+            # 1D image
+            if len(filt) == 2 and (numpy.asarray(filt.shape) != 1).any():
+                print 'Error: can not apply 2D filter to 1D signal'
+                return
+            
+            imIn = corrDn(im, filt, 'reflect1', len(im))
+            out = blur(imIn, nlevs-1, filt)
+            res = upconv(out, filt, 'reflect1', len(im), [0,0], len(im))
+            return res
+        elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
+            # 2D image 1D filter
+            imIn = corrDn(im, filt, 'reflect1', [2,1])
+            imIn = corrDn(imIn, filt.T, 'reflect1', [1,2])
+            out = blur(imIn, nlevs-1, filt)
+            res = upConv(out, filt.T, 'reflect1', [1,2], [0,0], [out.shape[0],
+                                                                 im.shape[1]])
+            res = upConv(res, filt, 'reflect1', [2,1], [0,0], im.shape)
+            return res
+        else:
+            # 2D image 2D filter
+            imIn = corrDn(im, filt, 'reflect1', [2,2])
+            out = blur(imIn, nlevs-1, filt)
+            res = upConv(out, filt, 'reflect1', [2,2], [0,0], im.shape)
+            return res
+    else:
+        return im
+            
+
+def rconv2(*args):
+    # Convolution of two matrices, with boundaries handled via reflection
+    # about the edge pixels.  Result will be of size of LARGER matrix.
+    # 
+    # The origin of the smaller matrix is assumed to be its center.
+    # For even dimensions, the origin is determined by the CTR (optional) 
+    # argument:
+    #      CTR   origin
+    #       0     DIM/2      (default)
+    #       1   (DIM/2)+1  
+    
     if len(args) < 2:
         print "Error: two matrices required as input parameters"
         return
@@ -1607,6 +2104,8 @@ def range2(*args):
 def var2(*args):
     if len(args) == 1:
         mn = args[0].mean()
+    elif len(args) == 2:
+        mn = args[1]
     
     if(numpy.isreal(args[0]).all()):
         res = sum(sum((args[0]-mn)**2)) / max(numpy.prod(args[0].shape)-1, 1)
@@ -1711,23 +2210,6 @@ def shift(mtx, offset):
 
     return ret
 
-# round equivalent to matlab function
-def round(arr):
-    if len(arr) == 1:
-        outVal = roundVal(arr)
-    else:
-        outVal = numpy.zeros(len(arr))
-        for i in range(len(arr)):
-            outVal[i] = roundVal(arr[i])
-    return outVal
-
-def roundVal(val):
-    (fracPart, intPart) = math.modf(val)
-    if fracPart >= 0.5:
-        intPart += 1
-
-    return intPart
-
 # Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
 # containing samples of a radial ramp function, raised to power EXPT
 # (default = 1), with given ORIGIN (default = (size+1)/2, [1 1] =
@@ -1761,7 +2243,7 @@ def mkR(*args):
     (xramp2, yramp2) = numpy.meshgrid(numpy.array(range(1,sz[1]+1))-origin[1], 
                                    numpy.array(range(1,sz[0]+1))-origin[0])
 
-    res = (xramp2**2 + yramp2**2)**(expt/2)
+    res = (xramp2**2 + yramp2**2)**(expt/2.0)
     
     return res
 
@@ -1922,8 +2404,7 @@ def showIm(*args):
 
     if len(args) > 0:   # matrix entered
         matrix = numpy.array(args[0])
-    print matrix
-    print 'showIm range %f %f' % (matrix.min(), matrix.max())
+    #print 'showIm range %f %f' % (matrix.min(), matrix.max())
 
     if len(args) > 1:   # range entered
         if isinstance(args[1], basestring):
@@ -2191,7 +2672,6 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
     if len(filt.shape) == 1:
         filt = numpy.reshape(filt, (1,len(filt)))
 
-    # FIX: this condition can't be correct, but this is what's in C code
     if ( (edges != "reflect1" or edges != "extend" or edges != "repeat") and
          (filt.shape[0] % 2 == 0 or filt.shape[1] % 2 == 0) ):
         if filt.shape[1] == 1:
@@ -2339,4 +2819,512 @@ def pointOp(image, lut, origin, increment, warnings):
                          ctypes.c_double(increment), warnings)
 
     return result
+
+def cconv2(*args):
+    # RES = CCONV2(MTX1, MTX2, CTR)
+    #
+    # Circular convolution of two matrices.  Result will be of size of
+    # LARGER vector.
+    # 
+    # The origin of the smaller matrix is assumed to be its center.
+    # For even dimensions, the origin is determined by the CTR (optional) 
+    # argument:
+    #      CTR   origin
+    #       0     DIM/2      (default)
+    #       1     (DIM/2)+1  
+    #
+    # Eero Simoncelli, 6/96.  Modified 2/97.  Python port by Rob Young, 8/15
     
+    if len(args) < 2:
+        print 'Error: cconv2 requires two input matrices!'
+        print 'Usage: cconv2(matrix1, matrix2, center)'
+        print 'where center parameter is optional'
+        return
+    else:
+        a = numpy.array(args[0])
+        b = numpy.array(args[1])
+
+    if len(args) == 3:
+        ctr = args[2]
+    else:
+        ctr = 0
+
+    if a.shape[0] >= b.shape[0] and a.shape[1] >= b.shape[1]:
+        large = a
+        small = b
+    elif a.shape[0] <= b.shape[0] and a.shape[1] <= b.shape[1]:
+        large = b
+        small = a
+    else:
+        print 'Error: one matrix must be larger than the other in both dimensions!'
+        return
+    
+    ly = large.shape[0]
+    lx = large.shape[1]
+    sy = small.shape[0]
+    sx = small.shape[1]
+
+    ## These values are the index of the small mtx that falls on the
+    ## border pixel of the large matrix when computing the first
+    ## convolution response sample:
+    sy2 = numpy.floor((sy+ctr+1)/2.0)
+    sx2 = numpy.floor((sx+ctr+1)/2.0)
+
+    # pad
+    nw = large[ly-sy+sy2:ly, lx-sx+sx2:lx]
+    n = large[ly-sy+sy2:ly, :]
+    ne = large[ly-sy+sy2:ly, :sx2-1]
+    w = large[:, lx-sx+sx2:lx]
+    c = large
+    e = large[:, :sx2-1]
+    sw = large[:sy2-1, lx-sx+sx2:lx]
+    s = large[:sy2-1, :]
+    se = large[:sy2-1, :sx2-1]
+
+    n = numpy.column_stack((nw, n, ne))
+    c = numpy.column_stack((w,large,e))
+    s = numpy.column_stack((sw, s, se))
+
+    clarge = numpy.concatenate((n, c), axis=0)
+    clarge = numpy.concatenate((clarge, s), axis=0)
+
+    c = scipy.signal.convolve(clarge, small, 'valid')
+
+    return c
+
+def clip(*args):
+    # [RES] = clip(IM, MINVALorRANGE, MAXVAL)
+    #
+    # Clip values of matrix IM to lie between minVal and maxVal:
+    #      RES = max(min(IM,MAXVAL),MINVAL)
+    # The first argument can also specify both min and max, as a 2-vector.
+    # If only one argument is passed, the range defaults to [0,1].
+    # ported to Python by Rob Young, 8/15
+    
+    if len(args) == 0 or len(args) > 3:
+        print 'Usage: clip(im, minVal or Range, maxVal)'
+        print 'first input parameter is required'
+        return
+        
+    im = numpy.array(args[0])
+
+    if len(args) == 1:
+        minVal = 0;
+        maxVal = 1;
+    elif len(args) == 2:
+        if isinstance(args[1], (int, long, float)):
+            minVal = args[1]
+            maxVal = args[1]+1
+        else:
+            minVal = args[1][0]
+            maxVal = args[1][1]
+    elif len(args) == 3:
+        minVal = args[1]
+        maxVal = args[2]
+        
+    if maxVal < minVal:
+        print 'Error: maxVal cannot be less than minVal!'
+        return
+
+    im[numpy.where(im < minVal)] = minVal
+    im[numpy.where(im > maxVal)] = maxVal
+
+    return im
+
+# round equivalent to matlab function
+# used in histo so we can unit test against matlab code
+# numpy version rounds to closest even number to remove bias
+def round(arr):
+    if isinstance(arr, (int, float, long)):
+        arr = roundVal(arr)
+    else:
+        for i in range(len(arr)):
+            arr[i] = roundVal(arr[i])
+    return arr
+
+def roundVal(val):
+    (fracPart, intPart) = math.modf(val)
+    if numpy.abs(fracPart) >= 0.5:
+        if intPart >= 0:
+            intPart += 1
+        else:
+            intPart -= 1
+    return intPart
+
+def histo(*args):
+    # [N,X] = histo(MTX, nbinsOrBinsize, binCenter);
+    #
+    # Compute a histogram of (all) elements of MTX.  N contains the histogram
+    # counts, X is a vector containg the centers of the histogram bins.
+    #
+    # nbinsOrBinsize (optional, default = 101) specifies either
+    # the number of histogram bins, or the negative of the binsize.
+    #
+    # binCenter (optional, default = mean2(MTX)) specifies a center position
+    # for (any one of) the histogram bins.
+    #
+    # How does this differ from MatLab's HIST function?  This function:
+    #   - allows uniformly spaced bins only.
+    #   +/- operates on all elements of MTX, instead of columnwise.
+    #   + is much faster (approximately a factor of 80 on my machine).
+    #   + allows specification of number of bins OR binsize.  Default=101 bins.
+    #   + allows (optional) specification of binCenter.
+    #
+    # Eero Simoncelli, 3/97.  ported to Python by Rob Young, 8/15.
+    #
+    # NOTE: a C version of this code in available in this directory 
+    #       called histo.c
+
+    if len(args) == 0 or len(args) > 3:
+        print 'Usage: histo(mtx, nbins, binCtr)'
+        print 'first argument is required'
+        return
+    else:
+        mtx = args[0]
+    mtx = numpy.array(mtx)
+
+    (mn, mx) = range2(mtx)
+
+    if len(args) > 2:
+        binCtr = args[2]
+    else:
+        binCtr = mtx.mean()
+
+    if len(args) > 1:
+        if args[1] < 0:
+            binSize = -args[1]
+        else:
+            binSize = ( float(mx-mn) / float(args[1]) )
+            tmpNbins = ( round(float(mx-binCtr) / float(binSize)) - 
+                         round(float(mn-binCtr) / float(binSize)) )
+            if tmpNbins != args[1]:
+                print 'Warning: Using %d bins instead of requested number (%d)' % (tmpNbins, args[1])
+    else:
+        binSize = float(mx-mn) / 101.0
+
+    firstBin = binCtr + binSize * round( (mn-binCtr)/float(binSize) )
+    firstEdge = firstBin - (binSize / 2.0)
+
+    tmpNbins = int( round( (mx-binCtr) / binSize ) -
+                    round( (mn-binCtr) / binSize ) )
+    
+    # numpy.histogram uses bin edges, not centers like Matlab's hist
+    #bins = firstBin + binSize * numpy.array(range(tmpNbins+1))
+    # compute bin edges
+    binsE = firstEdge + binSize * numpy.array(range(tmpNbins+2))
+
+    [N, X] = numpy.histogram(mtx, binsE)
+
+    # matlab version return column vectors, so we will too.
+    N = N.reshape(1, N.shape[0])
+    X = X.reshape(1, X.shape[0])
+
+    return (N, X)
+
+def entropy2(*args):
+    # E = ENTROPY2(MTX,BINSIZE) 
+    # 
+    # Compute the first-order sample entropy of MTX.  Samples of VEC are
+    # first discretized.  Optional argument BINSIZE controls the
+    # discretization, and defaults to 256/(max(VEC)-min(VEC)).
+    #
+    # NOTE: This is a heavily  biased estimate of entropy when you
+    # don't have much data.
+    #
+    # Eero Simoncelli, 6/96. Ported to Python by Rob Young, 10/15.
+    
+    vec = numpy.array(args[0])
+    # if 2D flatten to a vector
+    if len(vec.shape) != 1 and (vec.shape[0] != 1 or vec.shape[1] != 1):
+        vec = vec.flatten()
+
+    (mn, mx) = range2(vec)
+
+    if len(args) > 1:
+        binsize = args[1]
+        # why is this max in the Matlab code; it's just a float?
+        # we insure that vec isn't 2D above, so this shouldn't be needed
+        #nbins = max( float(mx-mn)/float(binsize) )
+        nbins = float(mx-mn) / float(binsize)
+    else:
+        nbins = 256
+
+    [bincount, bins] = histo(vec, nbins)
+
+    ## Collect non-zero bins:
+    H = bincount[ numpy.where(bincount > 0) ]
+    H = H / float(sum(H))
+
+    return -sum(H * numpy.log2(H))
+    
+def factorial(*args):
+    # RES = factorial(NUM)
+    #
+    # Factorial function that works on matrices (matlab's does not).
+    #
+    # EPS, 11/02, Python port by Rob Young, 10/15
+
+    # if scalar input make it a single element array
+    if isinstance(args[0], (int, long, float)):
+        num = numpy.array([args[0]])
+    else:
+        num = numpy.array(args[0])
+
+    res = numpy.ones(num.shape)
+
+    ind = numpy.where(num > 0)
+        
+    if num.shape[0] != 0:
+        subNum = num[ numpy.where(num > 0) ]
+        res[ind] = subNum * factorial(subNum-1)
+
+    # if scalar input, return scalar
+    if len(res.shape) == 1 and res.shape[0] == 1:
+        return res[0]
+    else:
+        return res
+
+def histoMatch(*args):
+    # RES = histoMatch(MTX, N, X, mode)
+    #
+    # Modify elements of MTX so that normalized histogram matches that
+    # specified by vectors X and N, where N contains the histogram counts
+    # and X the histogram bin positions (see histo).
+    #
+    # new input parameter 'mode' can be either 'centers' or 'edges' that tells
+    # the function if the input X values are bin centers or edges.
+    #
+    # Eero Simoncelli, 7/96. Ported to Python by Rob Young, 10/15.
+    
+    mode = str(args[3])
+    mtx = numpy.array(args[0])
+    N = numpy.array(args[1])
+    X = numpy.array(args[2])
+    if mode == 'edges':         # convert to centers
+        correction = (X[0][1] - X[0][0]) / 2.0
+        X = (X[0][:-1] + correction).reshape(1, X.shape[1]-1)
+        
+    [oN, oX] = histo(mtx.flatten(), X.flatten().shape[0])
+    if mode == 'edges':        # convert to centers
+        correction = (oX[0][1] - oX[0][0]) / 2.0
+        oX = (oX[0][:-1] + correction).reshape(1, oX.shape[1]-1)
+
+    # remember: histo returns a column vector, so the indexing is thus
+    oStep = oX[0][1] - oX[0][0]
+    oC = numpy.concatenate((numpy.array([0]), 
+                            numpy.array(numpy.cumsum(oN) / 
+                                        float(sum(sum(oN))))))
+    oX = numpy.concatenate((numpy.array([oX[0][0]-oStep/2.0]), 
+                            numpy.array(oX[0]+oStep/2.0)))
+    
+    N = N.flatten()
+    X = X.flatten()
+    N = N + N.mean() / 1e8  # HACK: no empty bins ensures nC strictly monotonic
+    
+    nStep = X[1] - X[0]
+    nC = numpy.concatenate((numpy.array([0]), 
+                            numpy.array(numpy.cumsum(N) / sum(N))))
+    nX = numpy.concatenate((numpy.array([X[0] - nStep / 2.0]),
+                            numpy.array(X+nStep / 2.0)))
+    
+    # unlike in matlab, interp1d returns a function
+    func = interpolate.interp1d(nC, nX, 'linear')
+    nnX = func(oC)
+
+    return pointOp(mtx, nnX, oX[0], oStep, 0)
+
+def imGradient(*args):
+    # [dx, dy] = imGradient(im, edges) 
+    #
+    # Compute the gradient of the image using smooth derivative filters
+    # optimized for accurate direction estimation.  Coordinate system
+    # corresponds to standard pixel indexing: X axis points rightward.  Y
+    # axis points downward.  EDGES specify boundary handling (see corrDn
+    # for options).
+    #
+    # EPS, 1997.
+    # original filters from Int'l Conf Image Processing, 1994.
+    # updated filters 10/2003: see Farid & Simoncelli, IEEE Trans Image Processing, 13(4):496-508, April 2004.
+    # Incorporated into matlabPyrTools 10/2004.
+    # Python port by Rob Young, 10/15
+    
+    if len(args) == 0 or len(args) > 2:
+        print 'Usage: imGradient(image, edges)'
+        print "'edges' argument is optional"
+    elif len(args) == 1:
+        edges = "dont-compute"
+    elif len(args) == 2:
+        edges = str(args[1])
+        
+    im = numpy.array(args[0])
+
+    # kernels from Farid & Simoncelli, IEEE Trans Image Processing, 
+    #   13(4):496-508, April 2004.
+    gp = numpy.array([0.037659, 0.249153, 0.426375, 0.249153, 0.037659]).reshape(5,1)
+    gd = numpy.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5,1)
+
+    dx = corrDn(corrDn(im, gp, edges), gd.T, edges)
+    dy = corrDn(corrDn(im, gd, edges), gp.T, edges)
+
+    return (dx,dy)
+
+def skew2(*args):
+    # Sample skew (third moment divided by variance^3/2) of a matrix.
+    #  MEAN (optional) and VAR (optional) make the computation faster.
+
+    if len(args) == 0:
+        print 'Usage: skew2(matrix, mean, variance)'
+        print 'mean and variance arguments are optional'
+    else:
+        mtx = numpy.array(args[0])
+
+    if len(args) > 1:
+        mn = args[1]
+    else:
+        mn = mtx.mean()
+
+    if len(args) > 2:
+        v = args[2]
+    else:
+        v = var2(mtx, mn)
+
+    if isinstance(mtx, complex):
+        res = ( ( ((mtx.real - mn.real)**3).mean() / (v.real**(3.0/2.0)) ) +
+                ( (1j * (mtx.imag-mn.image)**3) / (v.imag**(3.0/2.0))))
+    else:
+        res = ((mtx.real - mn.real)**3).mean() / (v.real**(3.0/2.0))
+
+    return res
+    
+def upBlur(*args):
+    # RES = upBlur(IM, LEVELS, FILT)
+    #
+    # Upsample and blur an image.  The blurring is done with filter
+    # kernel specified by FILT (default = 'binom5'), which can be a string
+    # (to be passed to namedFilter), a vector (applied separably as a 1D
+    # convolution kernel in X and Y), or a matrix (applied as a 2D
+    # convolution kernel).  The downsampling is always by 2 in each
+    # direction.
+    #
+    # The procedure is applied recursively LEVELS times (default=1).
+    #
+    # Eero Simoncelli, 4/97. Python port by Rob Young, 10/15.
+    
+    #---------------------------------------------------------------
+    # REQUIRED ARGS
+    
+    if len(args) == 0:
+        print 'Usage: upBlur(image, levels, filter)'
+        print 'first argument is required'
+    else:
+        im = numpy.array(args[0])
+
+    #---------------------------------------------------------------
+    # OPTIONAL ARGS
+    
+    if len(args) > 1:
+        nlevs = args[1]
+    else:
+        nlevs = 1
+
+    if len(args) > 2:
+        filt = args[2]
+    else:
+        filt = 'binom5'
+
+    #------------------------------------------------------------------
+
+    if isinstance(filt, basestring):
+        filt = namedFilter(filt)
+
+    if nlevs > 1:
+        im = upBlur(im, nlevs-1, filt)
+
+    if nlevs >= 1:
+        if im.shape[0] == 1 or im.shape[1] == 1:
+            if im.shape[0] == 1:
+                filt = filt.reshape(filt.shape[1], filt.shape[0])
+                start = (1,2)
+            else:
+                start = (2,1)
+            res = upConv(im, filt, 'reflect1', start)
+        elif filt.shape[0] == 1 or filt.shape[1] == 1:
+            if filt.shape[0] == 1:
+                filt = filt.reshape(filt.shape[1], 1)
+            res = upConv(im, filt, 'reflect1', [2,1])
+            res = upConv(res, filt.T, 'reflect1', [1,2])
+        else:
+            res = upConv(im, filt, 'reflect1', [2,2])
+    else:
+        res = im
+
+    return res
+
+def zconv2(*args):
+    # RES = ZCONV2(MTX1, MTX2, CTR)
+    #
+    # Convolution of two matrices, with boundaries handled as if the larger mtx
+    # lies in a sea of zeros. Result will be of size of LARGER vector.
+    # 
+    # The origin of the smaller matrix is assumed to be its center.
+    # For even dimensions, the origin is determined by the CTR (optional) 
+    # argument:
+    #      CTR   origin
+    #       0     DIM/2      (default)
+    #       1     (DIM/2)+1  (behaves like conv2(mtx1,mtx2,'same'))
+    #
+    # Eero Simoncelli, 2/97.  Python port by Rob Young, 10/15.
+
+    # REQUIRED ARGUMENTS
+    #----------------------------------------------------------------
+    
+    if len(args) < 2 or len(args) > 3:
+        print 'Usage: zconv2(matrix1, matrix2, center)'
+        print 'first two input parameters are required'
+    else:
+        a = numpy.array(args[0])
+        b = numpy.array(args[1])
+
+    # OPTIONAL ARGUMENT
+    #----------------------------------------------------------------
+
+    if len(args) == 3:
+        ctr = args[2]
+    else:
+        ctr = 0
+
+    #----------------------------------------------------------------
+
+    if (a.shape[0] >= b.shape[0]) and (a.shape[1] >= b.shape[1]):
+        large = a
+        small = b
+    elif (a.shape[0] <= b.shape[0]) and (a.shape[1] <= b.shape[1]):
+        large = b
+        small = a
+    else:
+        print 'Error: one arg must be larger than the other in both dimensions!'
+        return
+        
+    ly = large.shape[0]
+    lx = large.shape[1]
+    sy = small.shape[0]
+    sx = small.shape[1]
+    #print '%d %d %d %d' % (ly, lx, sy, sx)
+
+    ## These values are the index of the small matrix that falls on the 
+    ## border pixel of the large matrix when computing the first
+    ## convolution response sample:
+    sy2 = numpy.floor((sy+ctr+1)/2.0)-1
+    sx2 = numpy.floor((sx+ctr+1)/2.0)-1
+    #print sy2
+    #print sx2
+
+    #clarge = numpy.convolve(small, large)
+    clarge = scipy.signal.convolve(large, small, 'full')
+    #print clarge
+    
+    #print ly+sy2-1
+    #print lx+sx2-1
+    c = clarge[sy2:ly+sy2, sx2:lx+sx2]
+
+    return c

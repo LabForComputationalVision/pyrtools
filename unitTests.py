@@ -2,6 +2,7 @@
 import unittest
 import pyPyrUtils as ppu
 import pyPyrTools as ppt
+import math
 import numpy as np
 import scipy.io
 import Image
@@ -648,6 +649,493 @@ class blurDnTests(unittest.TestCase):
     #    pyRamp = ppu.mkRamp((256, 256))
     #    res = ppu.blurDn(pyRamp, 2dfilt)
     #    self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class mkAngularSineTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/mkAngularSine0.mat')
+        res = ppu.mkAngularSine(20)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/mkAngularSine1.mat')
+        res = ppu.mkAngularSine(20, 5)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/mkAngularSine2.mat')
+        res = ppu.mkAngularSine(20, 5, 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/mkAngularSine3.mat')
+        res = ppu.mkAngularSine(20, 5, 3, 2)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/mkAngularSine4.mat')
+        res = ppu.mkAngularSine(20, 5, 3, 2, (2,2))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class mkGaussianTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/mkGaussian0.mat')
+        res = ppu.mkGaussian(20)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/mkGaussian1.mat')
+        res = ppu.mkGaussian(20, (2,3))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/mkGaussian2.mat')
+        res = ppu.mkGaussian(20, [[-1, 0], [0, 1]])
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/mkGaussian3.mat')
+        res = ppu.mkGaussian(10, [[-1, 0], [0, 1]])
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/mkGaussian4.mat')
+        res = ppu.mkGaussian(20, [[2, 0], [0, 1]])
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class mkDiscTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/mkDisc0.mat')
+        res = ppu.mkDisc(20)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/mkDisc1.mat')
+        res = ppu.mkDisc(20, 8)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/mkDisc2.mat')
+        res = ppu.mkDisc(20, 8, (0,0))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/mkDisc3.mat')
+        res = ppu.mkDisc(20, 8, (0,0), 5)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/mkDisc4.mat')
+        res = ppu.mkDisc(20, 8, (0,0), 5, (0.75, 0.25))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class mkSineTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine0.mat')
+        res = ppu.mkSine(20, 5.5)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine1.mat')
+        res = ppu.mkSine(20, 5.5, 2)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine2.mat')
+        res = ppu.mkSine(20, 5.5, 2, 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine3.mat')
+        res = ppu.mkSine(20, 5.5, 2, 3, 5)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine4.mat')
+        res = ppu.mkSine(20, 5.5, 2, 3, 5, [4,5])
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test5(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine5.mat')
+        res = ppu.mkSine(20, [1,2])
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test6(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine6.mat')
+        res = ppu.mkSine(20, [1,2], 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test7(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine7.mat')
+        res = ppu.mkSine(20, [1,2], 3, 2)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test8(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSine8.mat')
+        res = ppu.mkSine(20, [1,2], 3, 2, [5,4])
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class mkZonePlateTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/mkZonePlate0.mat')
+        res = ppu.mkZonePlate(20)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/mkZonePlate1.mat')
+        res = ppu.mkZonePlate(20, 4)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/mkZonePlate2.mat')
+        res = ppu.mkZonePlate(20, 4, 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class mkSquareTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare0.mat')
+        res = ppu.mkSquare(20, 5.5)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare1.mat')
+        res = ppu.mkSquare(20, 5.5, 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare2.mat')
+        res = ppu.mkSquare(20, 5.5, 3, 5.1)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare3.mat')
+        res = ppu.mkSquare(20, 5.5, 3, 5.1, -1)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare4.mat')
+        res = ppu.mkSquare(20, 5.5, 3, 5.1, -1, (2,3))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test5(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare5.mat')
+        res = ppu.mkSquare(20, 5.5, 3, 5.1, -1, (2,3), 0.25)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test6(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare6.mat')
+        res = ppu.mkSquare(20, (1,2))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test7(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare7.mat')
+        res = ppu.mkSquare(20, (1,2), 3.2)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test8(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare8.mat')
+        res = ppu.mkSquare(20, (1,2), 3.2, -2)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test9(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare9.mat')
+        res = ppu.mkSquare(20, (1,2), 3.2, -2, (2,3))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test10(self):
+        matPyr = scipy.io.loadmat('matFiles/mkSquare10.mat')
+        res = ppu.mkSquare(20, (1,2), 3.2, -2, (2,3), 0.55)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class blurTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/blur0.mat')
+        res = ppu.blur(ppu.mkRamp(20))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/blur1.mat')
+        res = ppu.blur(ppu.mkRamp(20), 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/blur2.mat')
+        res = ppu.blur(ppu.mkRamp(20), 3, ppu.namedFilter('qmf5'))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/blur3.mat')
+        res = ppu.blur(ppu.mkRamp((20,30)))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/blur4.mat')
+        res = ppu.blur(ppu.mkRamp((20,30)), 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test5(self):
+        matPyr = scipy.io.loadmat('matFiles/blur5.mat')
+        res = ppu.blur(ppu.mkRamp((20,30)), 3, ppu.namedFilter('qmf5'))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class cconv2Tests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_0.mat')
+        res = ppu.cconv2(ppu.mkRamp(20), ppu.mkRamp(10))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_1.mat')
+        res = ppu.cconv2(ppu.mkRamp(10), ppu.mkRamp(20))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_2.mat')
+        res = ppu.cconv2(ppu.mkRamp(20), ppu.mkRamp(10), 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_3.mat')
+        res = ppu.cconv2(ppu.mkRamp(10), ppu.mkRamp(20), 3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_4.mat')
+        res = ppu.cconv2(ppu.mkRamp((20,30)), ppu.mkRamp((10,20)))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test5(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_5.mat')
+        res = ppu.cconv2(ppu.mkRamp((10,20)), ppu.mkRamp((20,30)))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test6(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_6.mat')
+        res = ppu.cconv2(ppu.mkRamp((20,30)), ppu.mkRamp((10,20)), 5)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test7(self):
+        matPyr = scipy.io.loadmat('matFiles/cconv2_7.mat')
+        res = ppu.cconv2(ppu.mkRamp((10,20)), ppu.mkRamp((20,30)), 5)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class clipTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/clip0.mat')
+        res = ppu.clip(ppu.mkRamp(20) / ppu.mkRamp(20).max())
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/clip1.mat')
+        res = ppu.clip(ppu.mkRamp(20) / ppu.mkRamp(20).max(), 0.3)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/clip2.mat')
+        res = ppu.clip(ppu.mkRamp(20) / ppu.mkRamp(20).max(), (0.3,0.7))
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/clip3.mat')
+        res = ppu.clip(ppu.mkRamp(20) / ppu.mkRamp(20).max(), 0.3, 0.7)
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+# python version of histo
+# adding 0.7 to ramp to nullify rounding differences between Python and Matlab
+class histoTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/histo0.mat')
+        (N,X) = ppu.histo(ppu.mkRamp(10) + 0.7)
+        # X will not be the same because matlab returns centers and 
+        #   python return edges
+        #self.failUnless(ppu.compareRecon(matPyr['X'], X))
+        print matPyr['N'].shape
+        print N.shape
+        self.failUnless(ppu.compareRecon(matPyr['N'], N))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/histo1.mat')
+        (N,X) = ppu.histo(ppu.mkRamp(10) + 0.7, 26)
+        # X will not be the same because matlab returns centers and 
+        #   python return edges
+        #self.failUnless(ppu.compareRecon(matPyr['X'], X))
+        self.failUnless(ppu.compareRecon(matPyr['N'], N))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/histo2.mat')
+        (N,X) = ppu.histo(ppu.mkRamp(10) + 0.7, -1.15)
+        # X will not be the same because matlab returns centers and 
+        #   python return edges
+        #self.failUnless(ppu.compareRecon(matPyr['X'], X))
+        self.failUnless(ppu.compareRecon(matPyr['N'], N))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/histo3.mat')
+        (N,X) = ppu.histo(ppu.mkRamp(10) + 0.7, 26, 3)
+        # X will not be the same because matlab returns centers and 
+        #   python return edges
+        #self.failUnless(ppu.compareRecon(matPyr['X'], X))
+        self.failUnless(ppu.compareRecon(matPyr['N'], N))
+
+class entropy2Tests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/entropy2_0.mat')
+        H = ppu.entropy2(ppu.mkRamp(10))
+        self.failUnless(matPyr['H'] == H)
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/entropy2_1.mat')
+        H = ppu.entropy2(ppu.mkRamp(10), 1)
+        self.failUnless(matPyr['H'] == H)
+
+class factorialTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/factorial0.mat')
+        res = ppu.factorial([[1,2],[3,4]])
+        self.failUnless((matPyr['res'] == res).all())
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/factorial1.mat')
+        res = ppu.factorial(4)
+        self.failUnless(matPyr['res'] == res)
+
+class histoMatchTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/histoMatch0.mat')
+        # adding 0.7 to get the bins to line up between matlab and python
+        # answers between matlab and python may be different, 
+        #   but not necessarily incorrect.
+        # similar to histo above
+        ramp = ppu.mkRamp(10) + 0.7
+        disc = ppu.mkDisc(10) + 0.7
+        (rN,rX) = ppu.histo(ramp)
+        res = ppu.histoMatch(disc, rN, rX, 'edges')
+        self.failUnless(ppu.compareRecon(matPyr['res'], res))
+
+class imGradientTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/imGradient0.mat')
+        ramp = ppu.mkRamp(10)
+        [dx,dy] = ppu.imGradient(ramp)
+        dx = np.array(dx)
+        dy = np.array(dy)
+        self.failUnless(ppu.compareRecon(matPyr['res'][:,:,0], dx))
+        self.failUnless(ppu.compareRecon(matPyr['res'][:,:,1], dy))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/imGradient1.mat')
+        ramp = ppu.mkRamp(10)
+        [dx,dy] = ppu.imGradient(ramp, 'reflect1')
+        dx = np.array(dx)
+        dy = np.array(dy)
+        self.failUnless(ppu.compareRecon(matPyr['res'][:,:,0], dx))
+        self.failUnless(ppu.compareRecon(matPyr['res'][:,:,1], dy))
+ 
+class skew2Tests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/skew2_0.mat')
+        # not sure why matPyr is [[ans]]???
+        mres = matPyr['res'][0][0]
+        disc = ppu.mkDisc(10)
+        res = ppu.skew2(disc)
+        self.failUnless(np.absolute(res - mres) <= math.pow(10,-11))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/skew2_1.mat')
+        # not sure why matPyr is [[ans]]???
+        mres = matPyr['res'][0][0]
+        disc = ppu.mkDisc(10)
+        # using incorrect mean for better test
+        mn = disc.mean() + 0.1
+        res = ppu.skew2(disc, mn)
+        self.failUnless(np.absolute(res - mres) <= math.pow(10,-11))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/skew2_2.mat')
+        # not sure why matPyr is [[ans]]???
+        mres = matPyr['res'][0][0]
+        disc = ppu.mkDisc(10)
+        # using incorrect mean for better test
+        mn = disc.mean() + 0.1
+        v = ppu.var2(disc) + 0.1
+        res = ppu.skew2(disc, mn, v)
+        self.failUnless(np.absolute(res - mres) <= math.pow(10,-11))
+       
+class upBlurTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur0.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((1,20))
+        res = ppu.upBlur(im)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur1.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((1,20))
+        res = ppu.upBlur(im.T)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur2.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp(20)
+        res = ppu.upBlur(im)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur3.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((1,20))
+        res = ppu.upBlur(im, 3)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur4.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((1,20))
+        res = ppu.upBlur(im.T, 3)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test5(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur5.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp(20)
+        res = ppu.upBlur(im, 3)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test6(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur6.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((1,20))
+        filt = ppu.namedFilter('qmf9')
+        res = ppu.upBlur(im, 3, filt)
+        self.failUnless(ppu.compareRecon(mres, res))
+    #def test7(self):   # fails in matlab and python because of dim mismatch
+    #    matPyr = scipy.io.loadmat('matFiles/upBlur7.mat')
+    #    mres = matPyr['res']
+    #    im = ppu.mkRamp((1,20))
+    #    filt = ppu.namedFilter('qmf9')
+    #    res = ppu.upBlur(im, 3, filt.T)
+    #    self.failUnless(ppu.compareRecon(mres, res))
+    def test8(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur8.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((1,20))
+        filt = ppu.namedFilter('qmf9')
+        res = ppu.upBlur(im.T, 3, filt)
+        self.failUnless(ppu.compareRecon(mres, res))
+    #def test9(self):  # fails in matlab and python because of dim mismatch
+    #    matPyr = scipy.io.loadmat('matFiles/upBlur6.mat')
+    #    mres = matPyr['res']
+    #    im = ppu.mkRamp((1,20))
+    #    filt = ppu.namedFilter('qmf9')
+    #    res = ppu.upBlur(im.T, 3, filt.T)
+    #    self.failUnless(ppu.compareRecon(mres, res))
+    def test10(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur10.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp(20)
+        filt = ppu.mkDisc(3)
+        res = ppu.upBlur(im, 3, filt)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test11(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur11.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((20,10))
+        filt = ppu.mkDisc((5,3))
+        res = ppu.upBlur(im, 3, filt)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test12(self):
+        matPyr = scipy.io.loadmat('matFiles/upBlur12.mat')
+        mres = matPyr['res']
+        im = ppu.mkRamp((10,20))
+        filt = ppu.mkDisc((3,5))
+        res = ppu.upBlur(im, 3, filt)
+        self.failUnless(ppu.compareRecon(mres, res))
+    
+class zconv2Tests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat('matFiles/zconv2_0.mat')
+        mres = matPyr['res']
+        ramp = ppu.mkRamp(10)
+        disc = ppu.mkDisc(5)
+        res = ppu.zconv2(ramp, disc)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test1(self):
+        matPyr = scipy.io.loadmat('matFiles/zconv2_1.mat')
+        mres = matPyr['res']
+        ramp = ppu.mkRamp((10,20))
+        disc = ppu.mkDisc((5,10))
+        res = ppu.zconv2(ramp, disc)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test2(self):
+        matPyr = scipy.io.loadmat('matFiles/zconv2_2.mat')
+        mres = matPyr['res']
+        ramp = ppu.mkRamp((20,10))
+        disc = ppu.mkDisc((10,5))
+        res = ppu.zconv2(ramp, disc)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test3(self):
+        matPyr = scipy.io.loadmat('matFiles/zconv2_3.mat')
+        mres = matPyr['res']
+        ramp = ppu.mkRamp(10)
+        disc = ppu.mkDisc(5)
+        res = ppu.zconv2(ramp, disc, 3)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test4(self):
+        matPyr = scipy.io.loadmat('matFiles/zconv2_4.mat')
+        mres = matPyr['res']
+        ramp = ppu.mkRamp((10,20))
+        disc = ppu.mkDisc((5,10))
+        res = ppu.zconv2(ramp, disc, 3)
+        self.failUnless(ppu.compareRecon(mres, res))
+    def test5(self):
+        matPyr = scipy.io.loadmat('matFiles/zconv2_5.mat')
+        mres = matPyr['res']
+        ramp = ppu.mkRamp((20,10))
+        disc = ppu.mkDisc((10,5))
+        res = ppu.zconv2(ramp, disc, 3)
+        self.failUnless(ppu.compareRecon(mres, res))
+    
 
 def main():
     unittest.main()
