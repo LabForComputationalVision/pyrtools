@@ -21,7 +21,8 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 #import JBhelpers as jbh
 import JBhelpers
-import Image
+#import Image
+import PIL
 import ImageTk
 import Tkinter
 import ctypes
@@ -30,7 +31,7 @@ lib = ctypes.cdll.LoadLibrary('./wrapConv.so')
 
 ##############
 #  This code uses C code from wrapConv.so.  To compile type:
-#  gcc -shared -L/users-local/ryoung/anaconda/lib -I/users-local/ryoung/anaconda/lib/python2.7/site-packages/numpy/core/include/ -I/users-local/ryoung/anaconda/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c histo.c
+#  gcc -shared -L/users-local/ryoung/anaconda2/lib -I/users-local/ryoung/anaconda2/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c
 
 
 # Compute maximum pyramid height for given image and filter sizes.
@@ -2602,8 +2603,16 @@ def showIm(*args):
     # create canvas
     canvas = Tkinter.Canvas(master, width=canvas_width, height=canvas_height)
     canvas.pack()
+    #img = Image.fromarray(matrix)
+    ## FIX: this doesn't work with floats!!
     # create image
-    img = Image.fromarray(matrix)
+    if isinstance(matrix[0][0], numpy.float64):
+        print 'float'
+    elif isinstance(matrix[0][0], numpy.int64):
+        print 'int'
+    else:
+        print 'error %s' % (type(matrix[0][0]))
+    img = Image.fromarray(matrix.astype('uint8'))
 
     # make colormap - works without range
     #colorTable = [0] * 256
@@ -2682,6 +2691,7 @@ def showIm(*args):
 # new version calls C functions directly using cytpes
 def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1), 
            start = (0,0), stop = None, result = None):
+
     if image == None or filt == None:
         print 'Error: image and filter are required input parameters!'
         return
@@ -2690,6 +2700,9 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
         filt = numpy.reshape(filt, (1,len(filt)))
 
     if stop == None:
+        print stop
+        print image
+        print image.shape
         #stop = (image.shape[0]-1, image.shape[1]-1)
         stop = (image.shape[0], image.shape[1])
 
@@ -2715,8 +2728,7 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                  stop[0], 
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
     else:
-        #print 'filt.shape'
-        #print filt.shape
+        print 'filt shape = %d x %d' % (filt.shape[0], filt.shape[1])
         tmp = numpy.zeros((filt.shape[0], filt.shape[1]))
         #image = numpy.reshape(image,(image.shape[1],image.shape[0]), order='F')
         lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
@@ -3078,6 +3090,8 @@ def round(arr):
 
 def roundVal(val):
     (fracPart, intPart) = math.modf(val)
+    print fracPart
+    print intPart
     if numpy.abs(fracPart) >= 0.5:
         if intPart >= 0:
             intPart += 1
@@ -3137,16 +3151,21 @@ def histo(*args):
         binSize = float(mx-mn) / 101.0
 
     firstBin = binCtr + binSize * round( (mn-binCtr)/float(binSize) )
-    firstEdge = firstBin - (binSize / 2.0)
+    firstEdge = firstBin - (binSize / 2.0) + (binSize * 0.01)
+    #firstEdge = firstBin
 
+    #tmpNbins = int( round( (mx-binCtr) / binSize ) -
+    #                round( (mn-binCtr) / binSize ) )
+    # mod with new version of anaconda
     tmpNbins = int( round( (mx-binCtr) / binSize ) -
                     round( (mn-binCtr) / binSize ) )
     
     # numpy.histogram uses bin edges, not centers like Matlab's hist
     #bins = firstBin + binSize * numpy.array(range(tmpNbins+1))
     # compute bin edges
-    binsE = firstEdge + binSize * numpy.array(range(tmpNbins+2))
-
+    #binsE = firstEdge + binSize * numpy.array(range(tmpNbins+2))
+    binsE = firstEdge + binSize * numpy.array(range(tmpNbins+1))
+    
     [N, X] = numpy.histogram(mtx, binsE)
 
     # matlab version return column vectors, so we will too.
