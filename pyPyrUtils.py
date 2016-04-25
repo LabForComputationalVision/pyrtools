@@ -1555,6 +1555,7 @@ def LB2idx(lev,band,nlevs,nbands):
     band += (nbands-1)
     if band > nbands-1:
         band = band - nbands
+
     if lev == 0:
         idx = 0
     elif lev == nlevs-1:
@@ -1564,7 +1565,9 @@ def LB2idx(lev,band,nlevs,nbands):
         # (level-first level) * nbands + first level + current band 
         #idx = (nbands*(lev-1))+1+band
         #idx = (nbands*(lev-1))+1-band + 1
-        idx = (nbands*lev)-band
+        #idx = (nbands*lev)-band
+        idx = (nbands*lev)-band - 1
+
     return idx
 
 # given and index into dictionary return level and band
@@ -2612,7 +2615,7 @@ def showIm(*args):
         print 'int'
     else:
         print 'error %s' % (type(matrix[0][0]))
-    img = Image.fromarray(matrix.astype('uint8'))
+    img = PIL.Image.fromarray(matrix.astype('uint8'))
 
     # make colormap - works without range
     #colorTable = [0] * 256
@@ -2632,7 +2635,10 @@ def showIm(*args):
     # make colormap
     colorTable = [0] * 256
     incr = int(numpy.ceil(float(imRange[1]-imRange[0]+1) / float(nshades)))
-    colors = range(imRange[0], imRange[1]+1, incr)
+    print imRange[0]
+    print imRange[1]+1
+    print incr
+    colors = range(int(imRange[0]), int(imRange[1])+1, incr)
     colors[0] = 0
     colors[-1] = 255
     colctr = -1
@@ -2700,9 +2706,9 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
         filt = numpy.reshape(filt, (1,len(filt)))
 
     if stop == None:
-        print stop
-        print image
-        print image.shape
+        #print stop
+        #print image
+        #print image.shape
         #stop = (image.shape[0]-1, image.shape[1]-1)
         stop = (image.shape[0], image.shape[1])
 
@@ -2728,7 +2734,7 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
                                  stop[0], 
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
     else:
-        print 'filt shape = %d x %d' % (filt.shape[0], filt.shape[1])
+        #print 'filt shape = %d x %d' % (filt.shape[0], filt.shape[1])
         tmp = numpy.zeros((filt.shape[0], filt.shape[1]))
         #image = numpy.reshape(image,(image.shape[1],image.shape[0]), order='F')
         lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
