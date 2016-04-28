@@ -760,690 +760,9 @@ class Spyr(pyramid):
     def pyrHigh(self):
         return numpy.array(self.band(0))
 
-    #def reconSpyr(self, *args):
-    def reconPyrOrig(self, *args):
-        # defaults
-
-        print 'entering reconPyr Orig'
-
-        if len(args) > 0:
-            if args[0] == 'sp0Filters':
-                filters = pyPyrUtils.sp0Filters()
-            elif args[0] == 'sp1Filters':
-                filters = pyPyrUtils.sp1Filters()
-            elif args[0] == 'sp3Filters':
-                filters = pyPyrUtils.sp3Filters()
-            elif args[0] == 'sp5Filters':
-                filters = pyPyrUtils.sp5Filters()
-            elif os.path.isfile(args[0]):
-                print "Filter files not supported yet"
-                return
-            else:
-                print "supported filter parameters are 'sp0Filters' and 'sp1Filters'"
-                return
-        else:
-            filters = pyPyrUtils.sp1Filters()
-
-        #harmonics = filters['harmonics']
-        lo0filt = filters['lo0filt']
-        hi0filt = filters['hi0filt']
-        lofilt = filters['lofilt']
-        bfilts = filters['bfilts']
-        steermtx = filters['mtx']
-        #print harmonics.shape
-        # assume square filters  -- start of buildSpyrLevs
-        bfiltsz = int(math.floor(math.sqrt(bfilts.shape[0])))
-
-        if len(args) > 1:
-            edges = args[1]
-        else:
-            edges = 'reflect1'
-            
-        if len(args) > 2:
-            levs = args[2]
-        else:
-            levs = 'all'
-
-        if len(args) > 3:
-            bands = args[3]
-        else:
-            bands = 'all'
-
-        #---------------------------------------------------------
-        
-        maxLev = 2 + self.spyrHt()
-        if levs == 'all':
-            levs = numpy.array(range(maxLev))
-        else:
-            levs = numpy.array(levs)
-            if (levs < 0).any() or (levs >= maxLev-1).any():
-                print "Error: level numbers must be in the range [0, %d]." % (maxLev-1)
-            else:
-                levs = numpy.array(levs)
-                if len(levs) > 1 and levs[0] < levs[1]:
-                    levs = levs[::-1]  # we want smallest first
-        if bands == 'all':
-            bands = numpy.array(range(self.numBands()))
-        else:
-            bands = numpy.array(bands)
-            #if (bands < 0).any() or (bands > self.numBands).any():
-            if (bands < 0).any() or (bands > bfilts.shape[1]).any():
-                print "Error: band numbers must be in the range [0, %d]." % (self.numBands())
-            else:
-                bands = numpy.array(bands)
-
-        # make a list of all pyramid layers to be used in reconstruction
-        # FIX: if not supplied by user
-        Nlevs = self.spyrHt()+2
-        Nbands = self.numBands()
-
-        print 'levs'
-        print levs
-        reconList = []  # pyr indices used in reconstruction
-        for lev in levs:
-            print 'lev = %d' % (lev)
-            if lev == 0 or lev == Nlevs-1 :
-                reconList.append( pyPyrUtils.LB2idx(lev, -1, Nlevs, Nbands) )
-            else:
-                for band in bands:
-                    reconList.append( pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)+1 )
-            print reconList
-        print 'reconList'
-        print reconList
-        
-        # reconstruct
-        band = -1
-        for lev in range(Nlevs-1,-1,-1):
-            if lev == Nlevs-1 and pyPyrUtils.LB2idx(lev,-1,Nlevs,Nbands) in reconList:
-                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                print 'flag 1'
-                recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
-                print 'recon'
-                print recon
-            elif lev == Nlevs-1:
-                print 'flag 2'
-                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
-                print 'recon'
-                print recon
-            elif lev == 0 and 0 in reconList:
-                print 'flag 3'
-                ### orig working code
-                #idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                #sz = recon.shape
-                ##recon = upConv(sz[0], sz[1], recon, hi0filt.shape[0], 
-                ##               hi0filt.shape[1], lo0filt, edges, 1, 1, 0, 0, 
-                ##               sz[1], sz[0])
-                #recon = pyPyrCcode.upConv(sz[0],sz[1], recon, lo0filt.shape[0],
-                #                          lo0filt.shape[1], lo0filt, edges, 
-                #                          1, 1, 0, 0, sz[1], sz[0])
-                #print 'recon1'
-                #print recon
-                ##recon = numpy.array(recon).reshape(sz[0], sz[1])
-                #recon = pyPyrCcode.upConv(self.pyrSize[idx][0], 
-                #                          self.pyrSize[idx][1], self.pyr[idx], 
-                #                          hi0filt.shape[0], hi0filt.shape[1], 
-                #                          hi0filt, edges, 1, 1, 0, 0, 
-                #                          self.pyrSize[idx][1], 
-                #                          self.pyrSize[idx][0], recon)
-                #print 'recon1'
-                #print recon
-                ##recon = numpy.array(recon).reshape(self.pyrSize[idx][0], self.pyrSize[idx][1], order='C')
-                ### old code for testing
-                #recon2 = recon.copy()
-                #idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                #sz = recon.shape
-                #print 'recon1_1_start'
-                #recon = pyPyrCcode.upConv(sz[0],sz[1], recon, lo0filt.shape[0],
-                #                          lo0filt.shape[1], lo0filt, edges, 
-                #                          1, 1, 0, 0, sz[1], sz[0])
-                #print 'recon1_1_end'
-                #print recon
-                #print 'recon1_2_start'
-                #recon = pyPyrCcode.upConv(self.pyrSize[idx][0], 
-                #                          self.pyrSize[idx][1], self.pyr[idx], 
-                #                          hi0filt.shape[0], hi0filt.shape[1], 
-                #                          hi0filt, edges, 1, 1, 0, 0, 
-                #                          self.pyrSize[idx][1], 
-                #                          self.pyrSize[idx][0], recon)
-                #print 'recon1_2_end'
-                #print recon
-                #### new code -- output from individual functions looks the
-                #                same, but fails unit test 12. WHY?!
-                sz = recon.shape
-                print 'recon2_1_start'
-                recon = pyPyrUtils.upConv(image = recon.copy(),
-                                          filt = lo0filt.copy(), 
-                                          edges = edges, step = (1,1), 
-                                          #start = (0,0), stop = (sz[0], sz[1]))
-                                          start = (0,0), stop = sz)
-                print 'recon2_1_end'
-                print recon
-                idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                print 'recon2_2_start'
-                pyPyrUtils.upConv(image = self.pyr[idx].copy(),
-                                  filt = hi0filt.copy(), edges = edges,
-                                  #stop = (self.pyrSize[idx][0], 
-                                  #        self.pyrSize[idx][1]), 
-                                  stop = self.pyrSize[idx], 
-                                  result = recon.copy())
-                print 'recon2_2_end'
-                print recon
-            elif lev == 0:
-                print 'flag 4'
-                sz = recon.shape
-                #recon = pyPyrCcode.upConv(sz[0],sz[1], recon, lo0filt.shape[0],
-                #                          lo0filt.shape[1], lo0filt, edges, 
-                #                          1, 1, 0, 0, sz[0], sz[1])
-                recon = pyPyrUtils.upConv(image = recon.copy(),
-                                          filt = lo0filt.copy, 
-                                          edges = edges, stop = sz)
-                print 'recon'
-                print recon
-            else:
-                print 'flag 5'
-                for band in range(Nbands-1,-1,-1):
-                    print 'band = %d' % (band)
-                    idx = pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)
-                    print 'idx = %d' % (idx)
-                    print 'filter index = %d' % ((Nbands-1)-band)
-                    print 'reconList'
-                    print reconList
-                    if idx in reconList:
-                        filt = bfilts[:,(Nbands-1)-band].reshape(bfiltsz, 
-                                                                 bfiltsz,
-                                                                 order='F')
-                        print 'bfilt'
-                        print filt
-
-                        # new C interface
-                        print 'image'
-                        print self.pyr[idx]
-                        print 'filt'
-                        print filt
-                        print 'old recon'
-                        print recon
-                        recon = pyPyrUtils.upConv(image = self.pyr[idx].copy(), 
-                                                  filt = filt.copy(), 
-                                                  edges = edges,
-                                                  stop = (self.pyrSize[idx][0],
-                                                          self.pyrSize[idx][1]),
-                                                  result = recon.copy())
-                        print 'recon'
-                        print recon
-
-            # upsample
-            #newSz = ppu.nextSz(recon.shape, self.pyrSize.values())
-            newSz = pyPyrUtils.nextSz(recon.shape, self.pyrSize)
-            mult = (newSz[0] / recon.shape[0])
-            # above worked with 2D but 1D needed this?!
-            #mult = (newSz[0] / recon.shape[0]) - 1
-            if newSz[0] % recon.shape[0] > 0:
-                mult += 1
-            if mult > 1:
-                print 'flag 6'
-                # old working code
-                #recon = pyPyrCcode.upConv(recon.shape[1], recon.shape[0], 
-                #                          recon.T, lofilt.shape[0], 
-                #                          lofilt.shape[1], lofilt, edges, mult,
-                #                          mult, 0, 0, newSz[0], newSz[1]).T
-                # working copy of old code
-                #recon2 = recon.copy()
-                #recon = pyPyrCcode.upConv(recon.shape[1], recon.shape[0], 
-                #                          recon.T, lofilt.shape[0], 
-                #                          lofilt.shape[1], lofilt, edges, mult,
-                #                          mult, 0, 0, newSz[0], newSz[1]).T
-                #print 'upsample - recon'
-                #print recon.shape
-                #print recon
-                #  works!!
-                recon = pyPyrUtils.upConv(image = recon.copy(),
-                                          filt = lofilt.copy(), 
-                                          edges = edges, step = (mult, mult),
-                                          #stop = (newSz[1], newSz[0]))
-                                          #stop = (newSz[0], newSz[1]))
-                                          stop = newSz)
-                print 'upsample - recon'
-                print recon
-        return recon
-
-    # works for single level pyramids, but breaks on more
-    def reconPyrNew(self, *args):
-        # defaults
-
-        print 'entering reconPyr New'
-
-        if len(args) > 0:
-            if args[0] == 'sp0Filters':
-                filters = pyPyrUtils.sp0Filters()
-            elif args[0] == 'sp1Filters':
-                filters = pyPyrUtils.sp1Filters()
-            elif args[0] == 'sp3Filters':
-                filters = pyPyrUtils.sp3Filters()
-            elif args[0] == 'sp5Filters':
-                filters = pyPyrUtils.sp5Filters()
-            elif os.path.isfile(args[0]):
-                print "Filter files not supported yet"
-                return
-            else:
-                print "filter %s not supported" % (args[0])
-                return
-        else:
-            filters = pyPyrUtils.sp1Filters()
-
-        #harmonics = filters['harmonics']
-        lo0filt = filters['lo0filt']
-        hi0filt = filters['hi0filt']
-        lofilt = filters['lofilt']
-        bfilts = filters['bfilts']
-        steermtx = filters['mtx']
-        #print harmonics.shape
-        # assume square filters  -- start of buildSpyrLevs
-        bfiltsz = int(math.floor(math.sqrt(bfilts.shape[0])))
-
-        if len(args) > 1:
-            edges = args[1]
-        else:
-            edges = 'reflect1'
-            
-        if len(args) > 2:
-            levs = args[2]
-        else:
-            levs = 'all'
-
-        if len(args) > 3:
-            bands = args[3]
-        else:
-            bands = 'all'
-
-        #---------------------------------------------------------
-        
-        maxLev = 2 + self.spyrHt()
-        if levs == 'all':
-            levs = numpy.array(range(maxLev))
-        else:
-            levs = numpy.array(levs)
-            if (levs < 0).any() or (levs >= maxLev).any():
-                print "Error: level numbers must be in the range [0, %d]." % (maxLev-1)
-                return
-            else:
-                levs = numpy.array(levs)
-                if len(levs) > 1 and levs[0] < levs[1]:
-                    levs = levs[::-1]  # we want smallest first
-        if bands == 'all':
-            bands = numpy.array(range(self.numBands()))
-        else:
-            bands = numpy.array(bands)
-            #if (bands < 0).any() or (bands > self.numBands).any():
-            if (bands < 0).any() or (bands > bfilts.shape[1]).any():
-                print "Error: band numbers must be in the range [0, %d]." % (self.numBands()-1)
-                return
-            else:
-                bands = numpy.array(bands)
-
-        # make a list of all pyramid layers to be used in reconstruction
-        Nlevs = self.spyrHt()+2
-        Nbands = self.numBands()
-
-        print 'levs'
-        print levs
-        reconList = []  # pyr indices used in reconstruction
-        for lev in levs:
-            print 'lev = %d' % (lev)
-            if lev == 0 or lev == Nlevs-1 :
-                reconList.append( pyPyrUtils.LB2idx(lev, -1, Nlevs, Nbands) )
-            else:
-                for band in bands:
-                    reconList.append( pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)+1 )
-            print reconList
-
-        reconList = numpy.sort(reconList)[::-1]  # deepest level first
-        print 'reconList'
-        print reconList
-
-        # initialize reconstruction
-        if len(self.pyr)-1 in reconList:
-            print 'flag 1'
-            recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
-            print 'initialize recon'
-            print recon
-        else:
-            print 'flag 2'
-            recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
-            print 'initialize recon'
-            print recon
-        print 'initialize - done'
-
-        # recursive subsystem
-        print 'levs'
-        print levs
-        print 'bands'
-        print bands
-        print 'Nlevs = %d  Nbands = %d' % (Nlevs, Nbands)
-        # we need to loop over recursive subsystem pairs
-        # we start at the deepest level and count down by 2 until we get to 0
-        for level in range(Nlevs-1,0,-2):
-            print 'flag 3 level = %d' % (level)
-            print 'upsample'
-            newSz = pyPyrUtils.nextSz(recon.shape, self.pyrSize)
-            mult = (newSz[0] / recon.shape[0])
-            recon = pyPyrUtils.upConv(image = recon.copy(),
-                                      filt = lofilt.copy(), 
-                                      edges = edges, step = (mult,mult),
-                                      stop = newSz)
-            print 'upsample - recon'
-            print recon
-            print 'loop over bands'
-            idx = 1
-            for band in range(Nbands-1,-1,-1):
-                print 'band = %d' % (band)
-                #idx = pyPyrUtils.LB2idx(level-1, band, Nlevs, Nbands)
-                print 'idx = %d' % (idx)
-                print 'filter index = %d' % ((Nbands-1)-band)
-                print 'reconList'
-                print reconList
-                if idx in reconList:
-                    print 'flag 4'
-                    filt = bfilts[:,(Nbands-1)-band].reshape(bfiltsz, 
-                                                             bfiltsz,
-                                                             order='F')
-
-                    # new C interface
-                    print 'image'
-                    print self.pyr[idx]
-                    print 'filt'
-                    print filt
-                    print 'old recon'
-                    print recon
-                    recon = pyPyrUtils.upConv(image = self.pyr[idx].copy(), 
-                                              filt = filt.copy(), 
-                                              edges = edges,
-                                              stop = (self.pyrSize[idx][0],
-                                                      self.pyrSize[idx][1]),
-                                              result = recon.copy())
-                    idx += 1
-                    print 'recon'
-                    print recon
-             
-
-        # apply lo0filt
-        print 'flag 5 - lo0filt'
-        sz = recon.shape
-        recon = pyPyrUtils.upConv(image = recon.copy(),
-                                  filt = lo0filt.copy(), 
-                                  edges = edges, stop = sz)
-        print 'recon'
-        print recon
-
-        # apply hi0filt if needed
-        if 0 in reconList:
-            print 'flag 7 - residual highpass'
-            print 'image'
-            print self.pyr[0]
-            print 'hi0filt'
-            print hi0filt
-            pyPyrUtils.upConv(image = self.pyr[0].copy(),
-                              filt = hi0filt.copy(),
-                              edges = edges, start = (0,0), step = (1,1),
-                              stop = recon.shape, result = recon)
-            #stop = self.pyrSize[idx], 
-            #result = recon.copy())
-            print 'hi0filt recon'
-            print recon
-                
-        return recon
-
-    def reconPyrAlmostThere(self, *args):
-        # defaults
-
-        if len(args) > 0:
-            if args[0] == 'sp0Filters':
-                filters = pyPyrUtils.sp0Filters()
-            elif args[0] == 'sp1Filters':
-                filters = pyPyrUtils.sp1Filters()
-            elif args[0] == 'sp3Filters':
-                filters = pyPyrUtils.sp3Filters()
-            elif args[0] == 'sp5Filters':
-                filters = pyPyrUtils.sp5Filters()
-            elif os.path.isfile(args[0]):
-                print "Filter files not supported yet"
-                return
-            else:
-                print "filter %s not supported" % (args[0])
-                return
-        else:
-            filters = pyPyrUtils.sp1Filters()
-
-        #harmonics = filters['harmonics']
-        lo0filt = filters['lo0filt']
-        hi0filt = filters['hi0filt']
-        lofilt = filters['lofilt']
-        bfilts = filters['bfilts']
-        steermtx = filters['mtx']
-        #print harmonics.shape
-        # assume square filters  -- start of buildSpyrLevs
-        bfiltsz = int(math.floor(math.sqrt(bfilts.shape[0])))
-
-        if len(args) > 1:
-            edges = args[1]
-        else:
-            edges = 'reflect1'
-            
-        if len(args) > 2:
-            levs = args[2]
-        else:
-            levs = 'all'
-
-        if len(args) > 3:
-            bands = args[3]
-        else:
-            bands = 'all'
-
-        #---------------------------------------------------------
-        
-        maxLev = 2 + self.spyrHt()
-        if levs == 'all':
-            levs = numpy.array(range(maxLev))
-        else:
-            levs = numpy.array(levs)
-            if (levs < 0).any() or (levs >= maxLev).any():
-                print "Error: level numbers must be in the range [0, %d]." % (maxLev-1)
-                return
-            else:
-                levs = numpy.array(levs)
-                if len(levs) > 1 and levs[0] < levs[1]:
-                    levs = levs[::-1]  # we want smallest first
-        if bands == 'all':
-            bands = numpy.array(range(self.numBands()))
-        else:
-            bands = numpy.array(bands)
-            #if (bands < 0).any() or (bands > self.numBands).any():
-            if (bands < 0).any() or (bands > bfilts.shape[1]).any():
-                print "Error: band numbers must be in the range [0, %d]." % (self.numBands()-1)
-                return
-            else:
-                bands = numpy.array(bands)
-
-        # make a list of all pyramid layers to be used in reconstruction
-        #Nlevs = self.spyrHt()+2
-        Nlevs = self.spyrHt()
-        Nbands = self.numBands()
-
-        reconList = []  # pyr indices used in reconstruction
-        for lev in levs:
-            print 'lev = %d' % (lev)
-            if lev == 0 or lev == Nlevs-1 :
-                reconList.append( pyPyrUtils.LB2idx(lev, -1, Nlevs, Nbands) )
-            else:
-                for band in bands:
-                    reconList.append( pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)+1 )
-        
-        #print 'levs'
-        #print levs
-        #print 'bands'
-        #print bands
-        #print 'Nlevs = %d  Nbands = %d' % (Nlevs, Nbands)
-        #for lev in levs:
-        #    if lev == 0:
-        #        print 'flag 1 adding band 0'
-        #        reconList.append(0)
-        #    elif lev == Nlevs-1:
-        #        print 'flag 2 adding band %d' % ((Nlevs*Nbands) + 2 - 1)
-        #        # number of levels times number of bands + top and bottom
-        #        #   minus 1 for 0 starting index
-        #        reconList.append( (Nlevs*Nbands) + 2 - 1)
-        #    else:
-        #        print 'flag 3'
-        #        for band in bands:
-        #            # FIX: is this backwards?
-        #            print 'adding band %d' % (((lev-1) * Nbands) + band - 1)
-        #            reconList.append( ((lev-1) * Nbands) + band - 1)
-        print reconList
-
-        reconList = numpy.sort(reconList)[::-1]  # deepest level first
-        print 'reconList'
-        print reconList
-
-        # initialize reconstruction
-        if len(self.pyr)-1 in reconList:
-            print 'flag 1'
-            recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
-            print 'initialize recon'
-            print recon
-        else:
-            print 'flag 2'
-            recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
-            print 'initialize recon'
-            print recon
-        print recon.shape
-        print 'initialize - done'
-
-        # recursive subsystem
-        print 'levs'
-        print levs
-        print 'bands'
-        print bands
-        print 'Nlevs = %d  Nbands = %d' % (Nlevs, Nbands)
-        # we need to loop over recursive subsystem pairs
-        # we start at the deepest level and count down by 2 until we get to 0
-        szCtr = 2
-        #for level in range(Nlevs-1,0,-2):
-        #for level in range(Nlevs-1,-1,-1):
-        for level in range(Nlevs):
-            print 'flag 3 level = %d' % (level)
-            print 'upsample'
-            #newSz = pyPyrUtils.nextSz(recon.shape, self.pyrSize)
-            #print 'newSz'
-            #print newSz
-            #mult = (newSz[0] / recon.shape[0])
-            #print 'mult'
-            #print mult
-            print 'recon - input'
-            print recon
-            print 'lofilt'
-            print lofilt
-            print 'old res size = %d x %d' % (recon.shape[0]*2,
-                                              recon.shape[1]*2)
-            # FIX: this resSzIdx works for sp3Filters, but not sp1Filters?!!
-            #resSzIdx = Nlevs-(szCtr*Nbands)
-            # maxLevIdx is the largest index into the pyramid array
-            maxLevIdx = ((maxLev-2) * Nbands) + 1
-            resSzIdx = maxLevIdx - (level * Nbands) - 1
-            print 'maxLevIdx = %d  Nbands = %d  szCtr = %d' % (maxLevIdx,
-                                                               Nbands, szCtr)
-            print 'res size idx = %d' % (resSzIdx)
-            print self.pyrSize[resSzIdx]
-            print self.pyrSize
-            #recon = pyPyrUtils.upConv(image = recon.copy(),
-            #                          filt = lofilt.copy(), 
-            #                          edges = edges, step = (mult,mult),
-            #                          stop = newSz)
-            recon = pyPyrUtils.upConv(image = recon.copy(),
-                                      filt = lofilt.copy(), 
-                                      edges = edges, step = (2,2),
-                                      start = (0,0),
-                                      stop = self.pyrSize[resSzIdx])
-                                      ## FIX: stop is current pyr size not this
-                                      #stop = (recon.shape[0]*2,
-                                      #        recon.shape[1]*2))
-            szCtr += 1
-            print 'upsample - recon'
-            print recon
-            print recon.shape
-            print 'loop over bands'
-            #bandImageIdx = 1  ### FIX: this needs to take level into account!!!
-            # this works with sp1Filters, but no the others??!!
-            #bandImageIdx = maxLev-(level*Nbands) - 1
-            print 'Nlevs = %d  level = %d  Nbands = %d' % (Nlevs, level, Nbands)
-            bandImageIdx = 1 + (((Nlevs-1)-level) * Nbands)
-            print 'bandImageIdx starting at %d' % (bandImageIdx)
-            for band in range(Nbands-1,-1,-1):
-                print 'band = %d' % (band)
-                #bandImageIdx = pyPyrUtils.LB2idx(level-1, band, Nlevs, Nbands)
-                print 'bandImageIdx = %d' % (bandImageIdx)
-                print 'filter index = %d' % ((Nbands-1)-band)
-                print 'reconList'
-                print reconList
-                if bandImageIdx in reconList:
-                    print 'flag 4'
-                    filt = bfilts[:,(Nbands-1)-band].reshape(bfiltsz, 
-                                                             bfiltsz,
-                                                             order='F')
-
-                    # new C interface
-                    print 'image'
-                    print self.pyr[bandImageIdx]
-                    print 'image size'
-                    print self.pyr[bandImageIdx].shape
-                    print 'filt'
-                    print filt
-                    print 'old recon'
-                    print recon
-                    recon = pyPyrUtils.upConv(image = self.pyr[bandImageIdx].copy(), 
-                                              filt = filt.copy(), 
-                                              edges = edges,
-                                              stop = (self.pyrSize[bandImageIdx][0],
-                                                      self.pyrSize[bandImageIdx][1]),
-                                              result = recon.copy())
-                    bandImageIdx += 1
-                    print 'recon'
-                    print recon
-             
-
-        # apply lo0filt
-        print 'flag 5 - lo0filt'
-        sz = recon.shape
-        recon = pyPyrUtils.upConv(image = recon.copy(),
-                                  filt = lo0filt.copy(), 
-                                  edges = edges, stop = sz)
-        print 'recon'
-        print recon
-
-        # apply hi0filt if needed
-        if 0 in reconList:
-            print 'flag 7 - residual highpass'
-            print 'image'
-            print self.pyr[0]
-            print 'hi0filt'
-            print hi0filt
-            print 'input recon'
-            print recon
-            pyPyrUtils.upConv(image = self.pyr[0].copy(),
-                              filt = hi0filt.copy(),
-                              edges = edges, start = (0,0), step = (1,1),
-                              stop = recon.shape, result = recon)
-            #stop = self.pyrSize[idx], 
-            #result = recon.copy())
-            print 'hi0filt recon'
-            print recon
-                
-        return recon
-
     def reconPyr(self, *args):
         # defaults
 
-        #print 'entering reconPyr corrected'
-
         if len(args) > 0:
             if args[0] == 'sp0Filters':
                 filters = pyPyrUtils.sp0Filters()
@@ -1462,13 +781,11 @@ class Spyr(pyramid):
         else:
             filters = pyPyrUtils.sp1Filters()
 
-        #harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
         hi0filt = filters['hi0filt']
         lofilt = filters['lofilt']
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
-        #print harmonics.shape
         # assume square filters  -- start of buildSpyrLevs
         bfiltsz = int(math.floor(math.sqrt(bfilts.shape[0])))
 
@@ -1505,7 +822,6 @@ class Spyr(pyramid):
             bands = numpy.array(range(self.numBands()))
         else:
             bands = numpy.array(bands)
-            #if (bands < 0).any() or (bands > self.numBands).any():
             if (bands < 0).any() or (bands > bfilts.shape[1]).any():
                 print "Error: band numbers must be in the range [0, %d]." % (self.numBands()-1)
                 return
@@ -1513,148 +829,48 @@ class Spyr(pyramid):
                 bands = numpy.array(bands)
 
         # make a list of all pyramid layers to be used in reconstruction
-        #Nlevs = self.spyrHt()+2
         Nlevs = self.spyrHt()
         Nbands = self.numBands()
 
         reconList = []  # pyr indices used in reconstruction
-        #for lev in levs:
-        #    print 'lev = %d' % (lev)
-        #    if lev == 0 or lev == Nlevs-1 :
-        #        reconList.append( pyPyrUtils.LB2idx(lev, -1, Nlevs, Nbands) )
-        #    else:
-        #        for band in bands:
-        #            reconList.append( pyPyrUtils.LB2idx(lev, band, Nlevs, Nbands)+1 )
         
-        #print 'levs'
-        #print levs
-        #print 'bands'
-        #print bands
-        #print 'Nlevs = %d  Nbands = %d' % (Nlevs, Nbands)
         for lev in levs:
             if lev == 0:
-                #print 'flag 1 adding band 0'
                 reconList.append(0)
             elif lev == Nlevs+1:
-                #print 'flag 2 adding band %d' % ((Nlevs*Nbands) + 2 - 1)
                 # number of levels times number of bands + top and bottom
                 #   minus 1 for 0 starting index
                 reconList.append( (Nlevs*Nbands) + 2 - 1)
             else:
-                #print 'flag 3'
                 for band in bands:
-                    # FIX: this is backwards
-                    #print 'adding band %d' % (((lev-1) * Nbands) + band + 1)
                     reconList.append( ((lev-1) * Nbands) + band + 1)
-                    #print 'adding band %d' % (((lev-1) * Nbands) +
-                    #                          ((Nbands-1)-band) + 1)
-                    #reconList.append( ((lev-1) * Nbands) +
-                    #                  ((Nbands-1)-band) + 1)
                     
-        #print reconList
-
         reconList = numpy.sort(reconList)[::-1]  # deepest level first
-        #print 'reconList'
-        #print reconList
 
         # initialize reconstruction
         if len(self.pyr)-1 in reconList:
-            #print 'flag 1'
             recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
-            #print 'initialize recon'
-            #print recon
         else:
-            #print 'flag 2'
             recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
-            #print 'initialize recon'
-            #print recon
-        #print recon.shape
-        #print 'initialize - done'
 
         # recursive subsystem
-        #print 'levs'
-        #print levs
-        #print 'bands'
-        #print bands
-        #print 'Nlevs = %d  Nbands = %d' % (Nlevs, Nbands)
         # we need to loop over recursive subsystem pairs
-        # we start at the deepest level and count down by 2 until we get to 0
-        szCtr = 2
-        #for level in range(Nlevs-1,0,-2):
-        #for level in range(Nlevs-1,-1,-1):
         for level in range(Nlevs):
-            #print 'flag 3 level = %d' % (level)
-            #print 'upsample'
-            #newSz = pyPyrUtils.nextSz(recon.shape, self.pyrSize)
-            #print 'newSz'
-            #print newSz
-            #mult = (newSz[0] / recon.shape[0])
-            #print 'mult'
-            #print mult
-            #print 'recon - input'
-            #print recon
-            #print 'lofilt'
-            #print lofilt
-            #print 'old res size = %d x %d' % (recon.shape[0]*2,
-            #                                  recon.shape[1]*2)
-            # maxLevIdx is the largest index into the pyramid array
             maxLevIdx = ((maxLev-2) * Nbands) + 1
             resSzIdx = maxLevIdx - (level * Nbands) - 1
-            #print 'maxLevIdx = %d  Nbands = %d  szCtr = %d' % (maxLevIdx,
-            #                                                   Nbands, szCtr)
-            #print 'res size idx = %d' % (resSzIdx)
-            #print self.pyrSize[resSzIdx]
-            #print self.pyrSize
-            #recon = pyPyrUtils.upConv(image = recon.copy(),
-            #                          filt = lofilt.copy(), 
-            #                          edges = edges, step = (mult,mult),
-            #                          stop = newSz)
             recon = pyPyrUtils.upConv(image = recon.copy(),
                                       filt = lofilt.copy(), 
                                       edges = edges, step = (2,2),
                                       start = (0,0),
                                       stop = self.pyrSize[resSzIdx])
-                                      ## FIX: stop is current pyr size not this
-                                      #stop = (recon.shape[0]*2,
-                                      #        recon.shape[1]*2))
-            szCtr += 1
-            #print 'upsample - recon'
-            #print recon
-            #print recon.shape
-            #print 'loop over bands'
-            #print 'Nlevs = %d  level = %d  Nbands = %d' % (Nlevs, level, Nbands)
-            bandImageIdx = 1 + (((Nlevs-1)-level) * Nbands)
-            #print 'bandImageIdx starting at %d' % (bandImageIdx)
-            for band in range(Nbands-1,-1,-1):
-                #print 'band = %d' % (band)
-                #bandImageIdx = pyPyrUtils.LB2idx(level-1, band, Nlevs, Nbands)
-                #print 'bandImageIdx = %d' % (bandImageIdx)
-                # FIX: is this backwards?!
-                #print 'filter index = %d' % ((Nbands-1)-band)
-                #print 'filter index = %d' % (band)
-                #print 'reconList'
-                #print reconList
-                if bandImageIdx in reconList:
-                    #print 'flag 4'
-                    #print 'bfilt 0'
-                    #print bfilts[:,0].reshape(bfiltsz, bfiltsz, order='F')
-                    #print 'bfilt 1'
-                    #print bfilts[:,1].reshape(bfiltsz, bfiltsz, order='F')
-  
-                    filt = bfilts[:,(Nbands-1)-band].reshape(bfiltsz, 
-                    #filt = bfilts[:,band].reshape(bfiltsz, 
-                                                  bfiltsz,
-                                                  order='F')
 
-                    # new C interface
-                    #print 'image'
-                    #print self.pyr[bandImageIdx]
-                    #print 'image size'
-                    #print self.pyr[bandImageIdx].shape
-                    #print 'filt'
-                    #print filt
-                    #print 'old recon'
-                    #print recon
+            bandImageIdx = 1 + (((Nlevs-1)-level) * Nbands)
+            for band in range(Nbands-1,-1,-1):
+                if bandImageIdx in reconList:
+                    filt = bfilts[:,(Nbands-1)-band].reshape(bfiltsz, 
+                                                             bfiltsz,
+                                                             order='F')
+
                     recon = pyPyrUtils.upConv(image = self.pyr[bandImageIdx].copy(), 
                                               filt = filt.copy(), 
                                               edges = edges,
@@ -1662,36 +878,20 @@ class Spyr(pyramid):
                                                       self.pyrSize[bandImageIdx][1]),
                                               result = recon.copy())
                     bandImageIdx += 1
-                    #print 'recon'
-                    #print recon
              
 
         # apply lo0filt
-        #print 'flag 5 - lo0filt'
         sz = recon.shape
         recon = pyPyrUtils.upConv(image = recon.copy(),
                                   filt = lo0filt.copy(), 
                                   edges = edges, stop = sz)
-        #print 'recon'
-        #print recon
 
         # apply hi0filt if needed
         if 0 in reconList:
-            #print 'flag 7 - residual highpass'
-            #print 'image'
-            #print self.pyr[0]
-            #print 'hi0filt'
-            #print hi0filt
-            #print 'input recon'
-            #print recon
             pyPyrUtils.upConv(image = self.pyr[0].copy(),
                               filt = hi0filt.copy(),
                               edges = edges, start = (0,0), step = (1,1),
                               stop = recon.shape, result = recon)
-            #stop = self.pyrSize[idx], 
-            #result = recon.copy())
-            #print 'hi0filt recon'
-            #print recon
                 
         return recon
     
