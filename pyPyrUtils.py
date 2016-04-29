@@ -2471,7 +2471,8 @@ def showIm(*args):
         nshades = 256
 
     # create window
-    master = Tkinter.Tk()
+    #master = Tkinter.Tk()
+    master = Tkinter.Toplevel()
     master.title('showIm')
     canvas_width = matrix.shape[0] * zoom
     canvas_height = matrix.shape[1] * zoom
@@ -2484,14 +2485,11 @@ def showIm(*args):
     canvas = Tkinter.Canvas(master, width=canvas_width, height=canvas_height)
     canvas.pack()
     #img = Image.fromarray(matrix)
-    ## FIX: this doesn't work with floats!!
-    # create image
-    if isinstance(matrix[0][0], numpy.float64):
-        print 'float'
-    elif isinstance(matrix[0][0], numpy.int64):
-        print 'int'
-    else:
-        print 'error %s' % (type(matrix[0][0]))
+    # FIX: shift matrix to 0.0-1.0 then to 0-255
+    if (matrix < 0).any():
+        matrix = matrix + math.fabs(matrix.min())
+    matrix = (matrix / matrix.max()) * 255.0
+    print matrix.astype('uint8')[0,:]
     img = PIL.Image.fromarray(matrix.astype('uint8'))
 
     # make colormap - works without range
@@ -2511,17 +2509,17 @@ def showIm(*args):
 
     # make colormap
     colorTable = [0] * 256
-    incr = int(numpy.ceil(float(imRange[1]-imRange[0]+1) / float(nshades)))
-    print imRange[0]
-    print imRange[1]+1
-    print incr
-    colors = range(int(imRange[0]), int(imRange[1])+1, incr)
+    #incr = int(numpy.ceil(float(imRange[1]-imRange[0]+1) / float(nshades)))
+    incr = int(numpy.ceil(float(matrix.max()-matrix.min()+1) / float(nshades)))
+    #colors = range(int(imRange[0]), int(imRange[1])+1, incr)
+    colors = range(int(matrix.min()), int(matrix.max())+1, incr)
     colors[0] = 0
     colors[-1] = 255
     colctr = -1
     # compute color transition indices
-    thresh = round( (imRange[1]-imRange[0]) / len(colors) )
-    for i in range(256):
+    #thresh = round( (imRange[1]-imRange[0]) / len(colors) )
+    thresh = round( (matrix.max() - matrix.min()) / len(colors) )
+    for i in range(len(colorTable)):
         # handle uneven color boundaries
         if thresh == 0 or (i % thresh == 0 and colctr < len(colors)-1):
             colctr += 1
