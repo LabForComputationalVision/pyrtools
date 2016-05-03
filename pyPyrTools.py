@@ -100,13 +100,13 @@ class Spyr(pyramid):
             self.pyr.append([])
             self.pyrSize.append([])
 
-        im = self.image.copy()
+        im = self.image
         im_sz = im.shape
         pyrCtr = 0
 
         hi0 = pyPyrUtils.corrDn(image = im, filt = hi0filt, edges = edges);
 
-        self.pyr[pyrCtr] = hi0.copy()
+        self.pyr[pyrCtr] = hi0
         self.pyrSize[pyrCtr] = hi0.shape
 
         pyrCtr += 1
@@ -119,18 +119,16 @@ class Spyr(pyramid):
 
             for b in range(bfilts.shape[1]):
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz).T
-                band = pyPyrUtils.corrDn(image = lo.copy(),
-                                         filt = filt.copy(), 
-                                         edges = edges)
-                self.pyr[pyrCtr] = numpy.array(band.copy())
+                band = pyPyrUtils.corrDn(image = lo, filt = filt, edges = edges)
+                self.pyr[pyrCtr] = numpy.array(band)
                 self.pyrSize[pyrCtr] = (band.shape[0], band.shape[1])
                 pyrCtr += 1
 
 
-            lo = pyPyrUtils.corrDn(image = lo.copy(), filt = lofilt.copy(), 
-                                   edges = edges, step = (2,2))
+            lo = pyPyrUtils.corrDn(image = lo, filt = lofilt, edges = edges,
+                                   step = (2,2))
 
-        self.pyr[pyrCtr] = numpy.array(lo.copy())
+        self.pyr[pyrCtr] = numpy.array(lo)
         self.pyrSize[pyrCtr] = lo.shape
 
     # methods
@@ -268,7 +266,7 @@ class Spyr(pyramid):
 
         # initialize reconstruction
         if len(self.pyr)-1 in reconList:
-            recon = numpy.array(self.pyr[len(self.pyrSize)-1].copy())
+            recon = numpy.array(self.pyr[len(self.pyrSize)-1])
         else:
             recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
 
@@ -277,8 +275,7 @@ class Spyr(pyramid):
         for level in range(Nlevs):
             maxLevIdx = ((maxLev-2) * Nbands) + 1
             resSzIdx = maxLevIdx - (level * Nbands) - 1
-            recon = pyPyrUtils.upConv(image = recon.copy(),
-                                      filt = lofilt.copy(), 
+            recon = pyPyrUtils.upConv(image = recon, filt = lofilt, 
                                       edges = edges, step = (2,2),
                                       start = (0,0),
                                       stop = self.pyrSize[resSzIdx])
@@ -290,25 +287,22 @@ class Spyr(pyramid):
                                                              bfiltsz,
                                                              order='F')
 
-                    recon = pyPyrUtils.upConv(image = self.pyr[bandImageIdx].copy(), 
-                                              filt = filt.copy(), 
-                                              edges = edges,
+                    recon = pyPyrUtils.upConv(image = self.pyr[bandImageIdx], 
+                                              filt = filt, edges = edges,
                                               stop = (self.pyrSize[bandImageIdx][0],
                                                       self.pyrSize[bandImageIdx][1]),
-                                              result = recon.copy())
+                                              result = recon)
                     bandImageIdx += 1
              
 
         # apply lo0filt
         sz = recon.shape
-        recon = pyPyrUtils.upConv(image = recon.copy(),
-                                  filt = lo0filt.copy(), 
+        recon = pyPyrUtils.upConv(image = recon, filt = lo0filt, 
                                   edges = edges, stop = sz)
 
         # apply hi0filt if needed
         if 0 in reconList:
-            pyPyrUtils.upConv(image = self.pyr[0].copy(),
-                              filt = hi0filt.copy(),
+            pyPyrUtils.upConv(image = self.pyr[0], filt = hi0filt,
                               edges = edges, start = (0,0), step = (1,1),
                               stop = recon.shape, result = recon)
                 
@@ -535,7 +529,7 @@ class SFpyr(Spyr):
         hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
         hi0 = numpy.fft.ifft2(numpy.fft.ifftshift(hi0dft))
 
-        self.pyr.append(numpy.real(hi0.copy()))
+        self.pyr.append(numpy.real(hi0))
         self.pyrSize.append(hi0.shape)
 
         lo0mask = lo0mask.reshape(imdft.shape[0], imdft.shape[1])
@@ -1358,21 +1352,23 @@ class Lpyr(pyramid):
 
         # draw
         if oned == 1:
-            fig = matplotlib.pyplot.figure()
-            ax0 = fig.add_subplot(nind, 1, 0)
-            ax0.set_frame_on(False)
-            ax0.get_xaxis().tick_bottom()
-            ax0.get_xaxis().tick_top()
-            ax0.get_yaxis().tick_right()
-            ax0.get_yaxis().tick_left()
-            ax0.get_yaxis().set_visible(False)
-            for bnum in range(0,nind):
-                pylab.subplot(nind, 1, bnum+1)
-                pylab.plot(numpy.array(range(numpy.amax(self.band(bnum).shape))).T, 
-                           self.band(bnum).T)
-                ylim(pRange[bnum,:])
-                xlim((0,self.band(bnum).shape[1]-1))
-            matplotlib.pyplot.show()
+            #fig = matplotlib.pyplot.figure()
+            pyplot.figure()
+            #pyplot.subplot()...
+            #ax0 = fig.add_subplot(nind, 1, 0)
+            #ax0.set_frame_on(False)
+            #ax0.get_xaxis().tick_bottom()
+            #ax0.get_xaxis().tick_top()
+            #ax0.get_yaxis().tick_right()
+            #ax0.get_yaxis().tick_left()
+            #ax0.get_yaxis().set_visible(False)
+            #for bnum in range(0,nind):
+            #    pylab.subplot(nind, 1, bnum+1)
+            #    pylab.plot(numpy.array(range(numpy.amax(self.band(bnum).shape))).T, 
+            #               self.band(bnum).T)
+            #    ylim(pRange[bnum,:])
+            #    xlim((0,self.band(bnum).shape[1]-1))
+            #matplotlib.pyplot.show()
         else:
             colormap = matplotlib.cm.Greys_r
             # skipping background calculation. needed?
@@ -1967,7 +1963,7 @@ class Wpyr(Lpyr):
 
 
         if nbands == 1:   # 1D signal
-            fig = matplotlib.pyplot.figure()
+            #fig = matplotlib.pyplot.figure()
             ax0 = fig.add_subplot(len(self.pyrSize), 1, 0)
             ax0.set_frame_on(False)
             ax0.get_xaxis().tick_bottom()

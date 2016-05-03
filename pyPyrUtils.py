@@ -704,7 +704,7 @@ def mkRamp(*args):
 
     res = intercept + xramp + yramp
 
-    return res.copy()
+    return res
 
 # Steerable pyramid filters.  Transform described  in:
 #
@@ -1825,18 +1825,18 @@ def blurDn(*args):
                 if filt.shape[0] == 1:
                     filt = filt.T
                 
-            res = corrDn(image = im.copy(), filt = filt.copy(), step = (2, 2))
+            res = corrDn(image = im, filt = filt, step = (2, 2))
             if len(im.shape) == 1 or im.shape[1] == 1:
                 res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0), 1))
             else:
                 res = numpy.reshape(res, (1, numpy.ceil(im.shape[1]/2.0)))
         elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
             # 2D image and 1D filter
-            res = corrDn(image = im.copy(), filt = filt.T.copy(), step = (2, 1))
-            res = corrDn(image = res.copy(), filt = filt.copy(), step = (1, 2))
+            res = corrDn(image = im, filt = filt.T, step = (2, 1))
+            res = corrDn(image = res, filt = filt, step = (1, 2))
 
         else:  # 2D image and 2D filter
-            res = corrDn(image = im.copy(), filt = filt.copy(), step = (2,2))
+            res = corrDn(image = im, filt = filt, step = (2,2))
     else:
         res = im
             
@@ -1891,26 +1891,26 @@ def blur(*args):
                 print 'Error: can not apply 2D filter to 1D signal'
                 return
             
-            imIn = corrDn(im.copy(), filt.copy(), 'reflect1', len(im))
+            imIn = corrDn(im, filt, 'reflect1', len(im))
             out = blur(imIn, nlevs-1, filt)
-            res = upconv(out.copy(), filt.copy(), 'reflect1', len(im), [0,0],
+            res = upconv(out, filt, 'reflect1', len(im), [0,0],
                          len(im))
             return res
         elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
             # 2D image 1D filter
-            imIn = corrDn(im.copy(), filt.copy(), 'reflect1', [2,1])
-            imIn = corrDn(imIn.copy(), filt.T.copy(), 'reflect1', [1,2])
+            imIn = corrDn(im, filt, 'reflect1', [2,1])
+            imIn = corrDn(imIn, filt.T, 'reflect1', [1,2])
             out = blur(imIn, nlevs-1, filt)
-            res = upConv(out.copy(), filt.T.copy(), 'reflect1', [1,2], [0,0],
+            res = upConv(out, filt.T, 'reflect1', [1,2], [0,0],
                          [out.shape[0], im.shape[1]])
-            res = upConv(res.copy(), filt.copy(), 'reflect1', [2,1], [0,0],
+            res = upConv(res, filt, 'reflect1', [2,1], [0,0],
                          im.shape)
             return res
         else:
             # 2D image 2D filter
-            imIn = corrDn(im.copy(), filt.copy(), 'reflect1', [2,2])
+            imIn = corrDn(im, filt, 'reflect1', [2,2])
             out = blur(imIn, nlevs-1, filt)
-            res = upConv(out.copy(), filt.copy(), 'reflect1', [2,2], [0,0],
+            res = upConv(out, filt, 'reflect1', [2,2], [0,0],
                          im.shape)
             return res
     else:
@@ -2548,6 +2548,9 @@ def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
     if image == None or filt == None:
         print 'Error: image and filter are required input parameters!'
         return
+    else:
+        image = image.copy()
+        filt = filt.copy()
 
     if len(filt.shape) == 1:
         filt = numpy.reshape(filt, (1,len(filt)))
@@ -2588,7 +2591,10 @@ def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
     if image == None or filt == None:
         print 'Error: image and filter are required input parameters!'
         return
-
+    else:
+        image = image.copy()
+        filt = filt.copy()
+        
     origShape = filt.shape
     if len(filt.shape) == 1:
         filt = numpy.reshape(filt, (1,len(filt)))
@@ -2994,8 +3000,8 @@ def imGradient(*args):
     gp = numpy.array([0.037659, 0.249153, 0.426375, 0.249153, 0.037659]).reshape(5,1)
     gd = numpy.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5,1)
 
-    dx = corrDn(corrDn(im.copy(), gp.copy(), edges).copy(), gd.T.copy(), edges)
-    dy = corrDn(corrDn(im.copy(), gd.copy(), edges).copy(), gp.T.copy(), edges)
+    dx = corrDn(corrDn(im, gp, edges), gd.T, edges)
+    dy = corrDn(corrDn(im, gd, edges), gp.T, edges)
 
     return (dx,dy)
 
@@ -3078,14 +3084,14 @@ def upBlur(*args):
                 start = (1,2)
             else:
                 start = (2,1)
-            res = upConv(im.copy(), filt.copy(), 'reflect1', start)
+            res = upConv(im, filt, 'reflect1', start)
         elif filt.shape[0] == 1 or filt.shape[1] == 1:
             if filt.shape[0] == 1:
                 filt = filt.reshape(filt.shape[1], 1)
-            res = upConv(im.copy(), filt.copy(), 'reflect1', [2,1])
-            res = upConv(res.copy(), filt.T.copy(), 'reflect1', [1,2])
+            res = upConv(im, filt, 'reflect1', [2,1])
+            res = upConv(res, filt.T, 'reflect1', [1,2])
         else:
-            res = upConv(im.copy(), filt.copy(), 'reflect1', [2,2])
+            res = upConv(im, filt, 'reflect1', [2,2])
     else:
         res = im
 
