@@ -1523,7 +1523,8 @@ class Wpyr(Lpyr):
         if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
             print "Error: filter should be 1D (i.e., a vector)";
             return
-        hfilt = pyPyrUtils.modulateFlip(filt).T
+        hfilt = pyPyrUtils.modulateFlip(filt)
+        #hfilt = pyPyrUtils.modulateFlip(filt).T
 
         if len(args) > 3:
             edges = args[3]
@@ -1687,7 +1688,8 @@ class Wpyr(Lpyr):
         if isinstance(filt, basestring):
             filt = pyPyrUtils.namedFilter(filt)
 
-        hfilt = pyPyrUtils.modulateFlip(filt)
+        hfilt = pyPyrUtils.modulateFlip(filt).T
+        #hfilt = pyPyrUtils.modulateFlip(filt)
 
         # for odd-length filters, stagger the sampling lattices:
         if len(filt) % 2 == 0:
