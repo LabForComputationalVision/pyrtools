@@ -611,11 +611,8 @@ class SFpyr(Spyr):
             spHt = 0
         return spHt
 
-    def reconPyr(self, *args):
-        res = self.reconSFpyr(self, *args)
-        return res
-
     def reconSFpyr(self, *args):
+        
         if len(args) > 0:
             levs = args[0]
         else:
@@ -826,6 +823,9 @@ class SFpyr(Spyr):
         outresdft = numpy.real(numpy.fft.ifft2(numpy.fft.ifftshift(resdft)))
 
         return outresdft
+
+    reconPyr = reconSFpyr
+
 
 class SCFpyr(SFpyr):
     filt = ''
@@ -1965,14 +1965,14 @@ class Wpyr(Lpyr):
 
 
         if nbands == 1:   # 1D signal
-            #fig = matplotlib.pyplot.figure()
-            ax0 = fig.add_subplot(len(self.pyrSize), 1, 0)
-            ax0.set_frame_on(False)
-            ax0.get_xaxis().tick_bottom()
-            ax0.get_xaxis().tick_top()
-            ax0.get_yaxis().tick_right()
-            ax0.get_yaxis().tick_left()
-            ax0.get_yaxis().set_visible(False)
+            fig = matplotlib.pyplot.figure()
+            #ax0 = fig.add_subplot(len(self.pyrSize), 1, 1)
+            #ax0.set_frame_on(False)
+            #ax0.get_xaxis().tick_bottom()
+            #ax0.get_xaxis().tick_top()
+            #ax0.get_yaxis().tick_right()
+            #ax0.get_yaxis().tick_left()
+            #ax0.get_yaxis().set_visible(False)
             for bnum in range(nind):
                 band = self.band(bnum)
                 pylab.subplot(len(self.pyrSize), 1, bnum+1)

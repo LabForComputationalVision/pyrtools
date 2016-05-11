@@ -2793,8 +2793,6 @@ def round(arr):
 
 def roundVal(val):
     (fracPart, intPart) = math.modf(val)
-    print fracPart
-    print intPart
     if numpy.abs(fracPart) >= 0.5:
         if intPart >= 0:
             intPart += 1
