@@ -132,6 +132,19 @@ class Spyr(pyramid):
         self.pyrSize[pyrCtr] = lo.shape
 
     # methods
+    def set(self, *args):
+        if len(args) != 3:
+            print 'Error: three input parameters required:'
+            print '  set(band, location, value)'
+            print '  where band and value are integer and location is a tuple'
+        if isinstance(args[1], (int, long)):
+            self.pyr[args[0]][0][args[1]] = args[2]
+        elif isinstance(args[1], tuple):
+            self.pyr[args[0]][args[1][0]][args[1][1]] = args[2] 
+        else:
+            print 'Error: location parameter must be int or tuple!'
+            return
+
     def spyrLev(self, lev):
         if lev < 0 or lev > self.spyrHt()-1:
             print 'Error: level parameter must be between 0 and %d!' % (self.spyrHt()-1)

@@ -143,8 +143,6 @@ def binomialFilter(size):
 #    Subband Transforms, chapter 4, ed. John W Woods, Kluwer Academic 
 #    Publishers,  Norwell, MA, 1990, pp 143--192.
 #
-# Rob Young, 4/13
-#
 def namedFilter(name):
     if len(name) > 5 and name[:5] == "binom":
         kernel = math.sqrt(2) * binomialFilter(int(name[5:]))
