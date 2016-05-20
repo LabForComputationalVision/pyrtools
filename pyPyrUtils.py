@@ -2243,10 +2243,9 @@ def steer(*args):
         print 'Error: input parameter HARMONICS must be 1D!'
         return
 
-        #if ((2*size(harmonics,1)-any(harmonics == 0)) ~= num)
-        if 2*numpy.nonzero(harmonics).shape[0] != num:
-            print 'harmonics list is incompatible with basis size!'
-            return
+    if 2*harmonics.shape[0] - (harmonics == 0).sum() != num:
+        print 'harmonics list is incompatible with basis size!'
+        return
 
     # If STEERMTX not passed, assume evenly distributed cosine-phase filters:
     if len(args) < 4:
