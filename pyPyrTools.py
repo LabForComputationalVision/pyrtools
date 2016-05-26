@@ -315,9 +315,10 @@ class Spyr(pyramid):
 
         # apply hi0filt if needed
         if 0 in reconList:
-            pyPyrUtils.upConv(image = self.pyr[0], filt = hi0filt,
-                              edges = edges, start = (0,0), step = (1,1),
-                              stop = recon.shape, result = recon)
+            recon = pyPyrUtils.upConv(image = self.pyr[0], filt = hi0filt,
+                                      edges = edges, start = (0,0),
+                                      step = (1,1), stop = recon.shape,
+                                      result = recon)
                 
         return recon
     
