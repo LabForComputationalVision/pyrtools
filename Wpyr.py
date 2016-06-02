@@ -146,12 +146,18 @@ class Wpyr(Lpyr):
             edges = 'reflect1'
 
         if len(args) > 2:
-            levs = args[2]
+            if not isinstance(args[2], str):
+                levs = numpy.array(args[2])
+            else:
+                levs = args[2]
         else:
             levs = 'all'
 
         if len(args) > 3:
-            bands = args[3]
+            if not isinstance(args[3], str):
+                bands = numpy.array(args[3])
+            else:
+                bands = args[3]
         else:
             bands = 'all'
 
@@ -159,7 +165,7 @@ class Wpyr(Lpyr):
 
         maxLev = int(self.wpyrHt() + 1)
 
-        if levs == 'all':
+        if isinstance(levs, str) and levs == 'all':
             levs = numpy.array(range(maxLev))
         else:
             tmpLevs = []
@@ -170,7 +176,7 @@ class Wpyr(Lpyr):
                 print "Error: level numbers must be in the range [0, %d]" % (maxLev)
         allLevs = numpy.array(range(maxLev))
 
-        if bands == "all":
+        if isinstance(bands, str) and bands == "all":
             if ( len(self.band(0)) == 1 or self.band(0).shape[0] == 1 or 
                  self.band(0).shape[1] == 1 ):
                 bands = numpy.array([0]);

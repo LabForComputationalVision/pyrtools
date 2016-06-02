@@ -150,7 +150,10 @@ class Lpyr(pyramid):
 
     def reconPyr(self, *args):
         if len(args) > 0:
-            levs = numpy.array(args[0])
+            if not isinstance(args[0], str):
+                levs = numpy.array(args[0])
+            else:
+                levs = args[0]
         else:
             levs = 'all'
 
@@ -166,7 +169,7 @@ class Lpyr(pyramid):
 
         maxLev = self.height
 
-        if levs == 'all':
+        if isinstance(levs, (str,basestring)) and levs == 'all':
             levs = range(0,maxLev)
         else:
             if (levs > maxLev-1).any():
