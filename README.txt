@@ -6,10 +6,12 @@ pyPyrTools - A port of Eero Simoncelli's matlabPyrTools to Python.  This port
 Rob Young and Eero Simoncelli, 7/13
 
 All code should be considered a beta release.  By that we mean that it is being
-actively developed and tested.  You can find unit tests in TESTING/unitTests.py.
-If you using functions or parameters that do not have associated unit tests you
-should test this yourself to make sure the results are correct.  You could
-then submit your test code, so that we can build more complete unit tests.
+actively developed and tested.  You can find unit tests in
+TESTING/unitTests.py.
+If you're using functions or parameters that do not have associated unit
+tests you should test this yourself to make sure the results are correct.
+You could then submit your test code, so that we can build more complete
+unit tests.
 
 
 Usage:
