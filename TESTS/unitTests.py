@@ -39,11 +39,15 @@ class maxPyrHtTests(unittest.TestCase):
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
-        self.failUnless((ppt.binomialFilter(2) == np.array([[0.5], [0.5]])).all() )
+        self.failUnless((ppt.binomialFilter(2) == np.array([[0.5],
+                                                            [0.5]])).all() )
     def test2(self):
-        self.failUnless((ppt.binomialFilter(3) == np.array([[0.25], [0.5], [0.25]])).all())
+        self.failUnless((ppt.binomialFilter(3) == np.array([[0.25], [0.5],
+                                                            [0.25]])).all())
     def test3(self):
-        self.failUnless((ppt.binomialFilter(5) == np.array([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])).all())
+        self.failUnless((ppt.binomialFilter(5) == np.array([[0.0625], [0.25],
+                                                            [0.3750], [0.25],
+                                                            [0.0625]])).all())
 
 class GpyrTests(unittest.TestCase):
     def test1(self):
@@ -117,42 +121,36 @@ class LpyrTests(unittest.TestCase):
         img = Image.open('../lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Lpyr(img)
-        #recon = pyPyr.reconLpyr()
         recon = pyPyr.reconPyr()
         self.failUnless((matPyr['recon'] == recon).all())
     def test8(self): 
         matPyr = scipy.io.loadmat('../matFiles/buildLpyr8.mat')
         pyRamp = ppt.mkRamp(200)
         pyPyr = ppt.Lpyr(pyRamp)
-        #recon = pyPyr.reconLpyr()
         recon = pyPyr.reconPyr()
         self.failUnless((matPyr['recon'] == recon).all())
     def test9(self): 
         matPyr = scipy.io.loadmat('../matFiles/buildLpyr9.mat')
         pyRamp = ppt.mkRamp((200,100))
         pyPyr = ppt.Lpyr(pyRamp)
-        #recon = pyPyr.reconLpyr()
         recon = pyPyr.reconPyr()
         self.failUnless((matPyr['recon'] == recon).all())
     def test10(self): 
         matPyr = scipy.io.loadmat('../matFiles/buildLpyr10.mat')
         pyRamp = ppt.mkRamp((100,200))
         pyPyr = ppt.Lpyr(pyRamp)
-        #recon = pyPyr.reconLpyr()
         recon = pyPyr.reconPyr()
         self.failUnless((matPyr['recon'] == recon).all())
     def test11(self): 
         matPyr = scipy.io.loadmat('../matFiles/buildLpyr11.mat')
         pyRamp = ppt.mkRamp((200,200))
         pyPyr = ppt.Lpyr(pyRamp)
-        #recon = pyPyr.reconLpyr([1])
         recon = pyPyr.reconPyr([1])
         self.failUnless((matPyr['recon'] == recon).all())
     def test12(self): 
         matPyr = scipy.io.loadmat('../matFiles/buildLpyr12.mat')
         pyRamp = ppt.mkRamp((200,200))
         pyPyr = ppt.Lpyr(pyRamp)
-        #recon = pyPyr.reconLpyr([0,2,4])
         recon = pyPyr.reconPyr([0,2,4])
         self.failUnless((matPyr['recon'] == recon).all())
 
@@ -1211,7 +1209,7 @@ class corrDnTests(unittest.TestCase):
         ramp = ppt.mkRamp(20)
         res = ppt.corrDn(ramp, ppt.namedFilter('qmf16'))
         self.failUnless(ppt.compareRecon(mres, res))
-    
+
 def main():
     unittest.main()
 

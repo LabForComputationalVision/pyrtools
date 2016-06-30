@@ -49,6 +49,7 @@ from sp1Filters import sp1Filters
 from sp3Filters import sp3Filters
 from sp5Filters import sp5Filters
 from Spyr import Spyr
+from SpyrMulti import SpyrMulti
 from steer2HarmMtx import steer2HarmMtx
 from steer import steer
 from strictly_decreasing import strictly_decreasing

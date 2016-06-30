@@ -107,7 +107,6 @@ class Spyr(pyramid):
                 self.pyrSize[pyrCtr] = (band.shape[0], band.shape[1])
                 pyrCtr += 1
 
-
             lo = corrDn(image = lo, filt = lofilt, edges = edges, step = (2,2))
 
         self.pyr[pyrCtr] = numpy.array(lo)
