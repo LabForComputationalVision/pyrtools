@@ -8,6 +8,7 @@ import JBhelpers
 import numpy
 import math
 import matplotlib
+import matplotlib.pyplot as plt
 
 class Lpyr(pyramid):
     """Laplacian pyramid
@@ -313,7 +314,7 @@ class Lpyr(pyramid):
         if oned == 1:
             # FIX: something here broke with Anaconda update!!
             #fig = matplotlib.pyplot.figure()
-            pyplot.figure()
+            plt.figure()
             #pyplot.subplot()...
             #ax0 = fig.add_subplot(nind, 1, 0)
             #ax0.set_frame_on(False)
