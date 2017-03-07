@@ -348,9 +348,11 @@ class Lpyr(pyramid):
                 dirr = numpy.dot(dirr,numpy.array([ [0, -1], [1, 0] ])) # ccw rotation
                 ctr = ( ctr + gap*dirr/2 + dirr * 
                         numpy.floor( (sz+(dirr<0).astype(int)) / 2.0) )
-                llpos[bnum,:] = ctr - numpy.floor(numpy.array(sz))/2.0 
+                llpos[bnum,:] = ctr - numpy.floor(numpy.array(sz))/2.0
             # make position list positive, and allocate appropriate image
             llpos = llpos - numpy.ones((nind,1))*numpy.min(llpos)
+            # we want to cast it as ints, since we'll be using these as indices
+            llpos = numpy.array([(int(i), int(j)) for i, j in llpos])
             pind = range(self.height)
             for i in pind:
                 pind[i] = self.band(i).shape
