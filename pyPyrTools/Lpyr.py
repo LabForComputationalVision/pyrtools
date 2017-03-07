@@ -36,59 +36,40 @@ class Lpyr(pyramid):
     height = ''
 
     # constructor
-    def __init__(self, *args):    # (image, height, filter1, filter2, edges)
+    def __init__(self, image, height='auto', filter1='binom5', filter2=None, edges='reflect1'):
         self.pyrType = 'Laplacian'
-        if len(args) > 0:
-            self.image = args[0]
-        else:
-            print "pyr = Lpyr(image, height, filter1, filter2, edges)"
-            print "First argument (image) is required"
-            return
+        self.image = image
 
-        if len(args) > 2:
-            filt1 = args[2]
-            if isinstance(filt1, basestring):
-                filt1 = namedFilter(filt1)
-            elif len(filt1.shape) != 1 and ( filt1.shape[0] != 1 and
-                                             filt1.shape[1] != 1 ):
-                print "Error: filter1 should be a 1D filter (i.e., a vector)"
-                return
-        else:
-            filt1 = namedFilter('binom5')
-        if len(filt1.shape) == 1:
-            filt1 = filt1.reshape(1,len(filt1))
+        if isinstance(filter1, basestring):
+            filter1 = namedFilter(filter1)
+        elif filter1.ndim != 1 and (filter1.shape[0] != 1 and filter1.shape[1] != 1):
+            raise Exception("Error: filter1 should be a 1D filter (i.e., a vector)")
+
+        if filter1.ndim == 1:
+            filter1 = filter1.reshape(1, len(filter1))
         elif self.image.shape[0] == 1:
-            filt1 = filt1.reshape(filt1.shape[1], filt1.shape[0])
+            filter1 = filter1.reshape(filter1.shape[1], filter1.shape[0])
 
-        if len(args) > 3:
-            filt2 = args[3]
-            if isinstance(filt2, basestring):
-                filt2 = namedFilter(filt2)
-            elif len(filt2.shape) != 1 and ( filt2.shape[0] != 1 and
-                                            filt2.shape[1] != 1 ):
-                print "Error: filter2 should be a 1D filter (i.e., a vector)"
-                return
-        else:
-            filt2 = filt1
+        if isinstance(filter2, basestring):
+            filter2 = namedFilter(filter2)
+        elif filter2 is None:
+            filter2 = filter1
+        elif filter2.ndim != 1 and (filter2.shape[0] != 1 and filter2.shape[1] != 1):
+            raise Exception("Error: filter2 should be a 1D filter (i.e., a vector)")
 
-        maxHeight = 1 + maxPyrHt(self.image.shape, filt1.shape)
+        if filter2.ndim == 1:
+            filter2 = filter2.reshape(1, len(filter2))
+        elif self.image.shape[0] == 1:
+            filter2 = filter2.reshape(filter2.shape[1], filter2.shape[0])
 
-        if len(args) > 1:
-            if args[1] is "auto":
-                self.height = maxHeight
-            else:
-                self.height = args[1]
-                if self.height > maxHeight:
-                    print ( "Error: cannot build pyramid higher than %d levels"
-                            % (maxHeight) )
-                    return
-        else:
+        maxHeight = 1 + maxPyrHt(self.image.shape, filter1.shape)
+
+        if isinstance(height, basestring) and height == "auto":
             self.height = maxHeight
-
-        if len(args) > 4:
-            edges = args[4]
         else:
-            edges = "reflect1"
+            self.height = height
+            if self.height > maxHeight:
+                raise Exception("Error: cannot build pyramid higher than %d levels" % (maxHeight))
 
         # make pyramid
         self.pyr = []
@@ -102,20 +83,20 @@ class Lpyr(pyramid):
         # compute low bands
         for ht in range(self.height-1,0,-1):
             im_sz = im.shape
-            filt1_sz = filt1.shape
+            filter1_sz = filter1.shape
             if im_sz[0] == 1:
-                lo2 = corrDn(image = im, filt = filt1, edges = edges,
+                lo2 = corrDn(image = im, filt = filter1, edges = edges,
                              step = (1,2))
                 #lo2 = numpy.array(lo2)
             elif len(im_sz) == 1 or im_sz[1] == 1:
-                lo2  = corrDn(image = im, filt = filt1, edges = edges,
+                lo2  = corrDn(image = im, filt = filter1, edges = edges,
                               step = (2,1))
                 #lo2 = numpy.array(lo2)
             else:
-                lo = corrDn(image = im, filt = filt1.T, edges = edges,
+                lo = corrDn(image = im, filt = filter1.T, edges = edges,
                             step = (1,2), start = (0,0))
                 #lo = numpy.array(lo)
-                lo2 = corrDn(image = lo, filt = filt1, edges = edges,
+                lo2 = corrDn(image = lo, filt = filter1, edges = edges,
                              step = (2,1), start = (0,0))
                 #lo2 = numpy.array(lo2)
 
@@ -132,19 +113,19 @@ class Lpyr(pyramid):
         for ht in range(self.height, 1, -1):
             im = los[ht-1]
             im_sz = los[ht-1].shape
-            filt2_sz = filt2.shape
+            filter2_sz = filter2.shape
             if len(im_sz) == 1 or im_sz[1] == 1:
-                hi2 = upConv(image = im, filt = filt2.T, edges = edges,
+                hi2 = upConv(image = im, filt = filter2.T, edges = edges,
                              step = (1,2), stop = (los[ht].shape[1],
                                                    los[ht].shape[0])).T
             elif im_sz[0] == 1:
-                hi2 = upConv(image = im, filt = filt2.T, edges = edges,
+                hi2 = upConv(image = im, filt = filter2.T, edges = edges,
                              step = (2,1), stop = (los[ht].shape[1],
                                                    los[ht].shape[0])).T
             else:
-                hi = upConv(image = im, filt = filt2, edges = edges,
+                hi = upConv(image = im, filt = filter2, edges = edges,
                             step = (2,1), stop = (los[ht].shape[0], im_sz[1]))
-                hi2 = upConv(image = hi, filt = filt2.T, edges = edges,
+                hi2 = upConv(image = hi, filt = filter2.T, edges = edges,
                              step = (1,2), stop = (los[ht].shape[0], 
                                                    los[ht].shape[1]))
                                        
@@ -179,9 +160,9 @@ class Lpyr(pyramid):
             levs = 'all'
 
         if len(args) > 1:
-            filt2 = args[1]
+            filter2 = args[1]
         else:
-            filt2 = 'binom5'
+            filter2 = 'binom5'
 
         if len(args) > 2:
             edges = args[2]
@@ -198,11 +179,11 @@ class Lpyr(pyramid):
                         (maxLev-1) )
                 return
 
-        if isinstance(filt2, basestring):
-            filt2 = namedFilter(filt2)
+        if isinstance(filter2, basestring):
+            filter2 = namedFilter(filter2)
         else:
-            if len(filt2.shape) == 1:
-                filt2 = filt2.reshape(1, len(filt2))
+            if len(filter2.shape) == 1:
+                filter2 = filter2.reshape(1, len(filter2))
 
         res = []
         lastLev = -1
@@ -212,17 +193,17 @@ class Lpyr(pyramid):
             elif len(res) != 0:
                 res_sz = res.shape
                 new_sz = self.band(lev).shape
-                filt2_sz = filt2.shape
+                filter2_sz = filter2.shape
                 if res_sz[0] == 1:
-                    hi2 = upConv(image = res, filt = filt2, edges = edges,
+                    hi2 = upConv(image = res, filt = filter2, edges = edges,
                                  step = (2,1), stop = (new_sz[1], new_sz[0])).T
                 elif res_sz[1] == 1:
-                    hi2 = upConv(image = res, filt = filt2.T, edges = edges,
+                    hi2 = upConv(image = res, filt = filter2.T, edges = edges,
                                  step = (1,2), stop = (new_sz[1], new_sz[0])).T
                 else:
-                    hi = upConv(image = res, filt = filt2, edges = edges,
+                    hi = upConv(image = res, filt = filter2, edges = edges,
                                 step = (2,1), stop = (new_sz[0], res_sz[1]))
-                    hi2 = upConv(image = hi, filt = filt2.T, edges = edges,
+                    hi2 = upConv(image = hi, filt = filter2.T, edges = edges,
                                  step = (1,2), stop = (new_sz[0], new_sz[1]))
                 if lev in levs:
                     bandIm = self.band(lev)
