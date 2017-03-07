@@ -20,14 +20,25 @@ Rob Young and Eero Simoncelli, 7/13
 
 # Installation
 
-compiling the associated C code: assuming your path to python
-libraries is `/usr/local/anaconda2`, you would type: 
+
+It's recommended you install from pip: `pip install pyPyrTools`. The
+pip install only been tested on Linux, there is no guarantee that it
+will work on other systems. Installing from source (see below) should
+work on OSX as well, but Windows is NOT supported.
+
+But if you want to install from source or pip doesn't work, you'll
+need to compile the associated C code yourself: assuming your path to
+python libraries is `/usr/local/anaconda2`, you would type:
 
 ```
 gcc -shared -L/usr/local/anaconda2/lib -I/usr/local/anaconda2/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c
 ```
 
-There are no other requirements.
+Other requirements:
+ - numpy
+ - scipy
+ - matplotlib
+ - Pillow
 
 # Usage:
 

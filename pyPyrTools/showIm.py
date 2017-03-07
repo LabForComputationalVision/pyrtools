@@ -1,5 +1,5 @@
 import numpy
-import ImageTk
+from PIL import ImageTk
 import PIL
 import scipy.stats
 import Tkinter

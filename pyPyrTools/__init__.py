@@ -61,6 +61,6 @@ import ctypes
 import os
 import JBhelpers
 
+libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
 # load the C library
-lib = ctypes.cdll.LoadLibrary(os.path.dirname(os.path.realpath(__file__)) +
-                              '/wrapConv.so')
+lib = ctypes.cdll.LoadLibrary(libpath)

@@ -13,10 +13,12 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 import JBhelpers
 import PIL
-import ImageTk
+from PIL import ImageTk
 import Tkinter
 import ctypes
-lib = ctypes.cdll.LoadLibrary('./wrapConv.so')
+libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
+# load the C library
+lib = ctypes.cdll.LoadLibrary(libpath)
 
 
 ##############
