@@ -305,24 +305,29 @@ def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
     s += "</table>"
     display( HTML ( s ) )
 
-def showIm( dlist, v = None, zoom = 1, title = "", nshades = 256, ncols = 1):
-    vsym = False
-    saveas = None
-    '''
-    Display raw data as a notebook inline image.
+def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
+    '''Display raw data as a notebook inline image.
 
     Parameters:
-    data: array-like object, two or three dimensions. If three dimensional,
-          first or last dimension must have length 3 or 4 and will be
-          interpreted as color (RGB or RGBA).
-    vmin, vmax, vsym: refer to rerange()
-    saveas: Save image file to disk (optional). Proper file name extension
-            will be appended to the pathname given. [ None ]
+    
+    data: array or list of arrays, each of which istwo or three dimensions. If three dimensional,
+    first or last dimension must have length 3 or 4 and will be interpreted as color (RGB or
+    RGBA). if a list, will plot each one separately.
+          
+    v: how to set vmin, vmax for plotting. Can be either a (vmin, vmax) tuple, 'auto' (default, use
+    max and min for each image), 'auto2' (vmin/vmax are the mean of each image +/- 2 std devs), or
+    'auto3' (vmin/vmax is p1/9 +/- (p9 - p1)/8, where p1 is the 10th percentile and p9 is the 90th)
+    
     zoom: amount to scale the image
+    
     title: optional figure title
+    
     nshades: number of shades of grey
+    
     ncols: number of columns of display for images (subplotting)
-    '''
+'''
+    vsym = False
+    saveas = None
     from IPython.display import display, Image, HTML
     from PIL.Image import fromarray
     from StringIO import StringIO
@@ -330,6 +335,7 @@ def showIm( dlist, v = None, zoom = 1, title = "", nshades = 256, ncols = 1):
     from PyQt4 import QtGui
     from PyQt4 import QtCore
     import numpy
+    from scipy import stats
 
     if not isinstance(dlist, list):
         dlist = [dlist]
@@ -341,22 +347,22 @@ def showIm( dlist, v = None, zoom = 1, title = "", nshades = 256, ncols = 1):
     for data in dlist:
         imgCtr += 1
 
-        if v == None or v == 'auto':
+        if v == 'auto':
             vmin = data.min()
             vmax = data.max()
+        elif isinstance(v, tuple):
+            vmin, vmax = v
         elif v == 'auto2':
-            vmin = matrix.mean()-2*matrix.std()
-            mmax = matrix.mean()+2*matrix.std()
+            vmin = data.mean()-2*data.std()
+            vmax = data.mean()+2*data.std()
         elif v == "auto3":
-            p1 = sps.scoreatpercentile(np.hstack(matrix), 10)
-            p2 = sps.scoreatpercentile(np.hstack(matrix), 90)
+            p1 = stats.scoreatpercentile(np.hstack(matrix), 10)
+            p2 = stats.scoreatpercentile(np.hstack(matrix), 90)
             vmin = p1-(p2-p1)/8.0
             vmax = p2+(p2-p1)/8.0
         else:
-            print "Error: range of %s is not recognized." % v
-            print "       please use a two element tuple or "
-            print "       'auto', 'auto2' or 'auto3'"
-            return
+            raise Exception("Error: range of %s is not recognized. Please use a two element tuple"
+                            " or 'auto', 'auto2' or 'auto3'" % str(v))
 
         data = rerange( data, vmin, vmax, vsym )
         data = data.squeeze()
