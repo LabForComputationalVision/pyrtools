@@ -6,15 +6,34 @@ libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
 # load the C library
 lib = ctypes.cdll.LoadLibrary(libpath)
 
-def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-           start = (0,0), stop = None, result = None):
 
-    if image is None or filt is None:
-        print 'Error: image and filter are required input parameters!'
-        return
-    else:
-        image = image.copy()
-        filt = filt.copy()
+def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, result=None):
+    """Compute correlation of matrices image with `filt, followed by downsampling.  
+
+    These arguments should be 1D or 2D matrices, and image must be larger (in both dimensions) than
+    filt.  The origin of filt is assumed to be floor(size(filt)/2)+1.
+ 
+    edges is a string determining boundary handling:
+      'circular' - Circular convolution
+      'reflect1' - Reflect about the edge pixels
+      'reflect2' - Reflect, doubling the edge pixels
+      'repeat'   - Repeat the edge pixels
+      'zero'     - Assume values of zero outside image boundary
+      'extend'   - Reflect and invert (continuous values and derivs)
+      'dont-compute' - Zero output when filter overhangs input boundaries
+
+    Downsampling factors are determined by step (optional, default=(1, 1)), which should be a
+    2-tuple (y, x).
+ 
+    The window over which the convolution occurs is specfied by start (optional, default=(0,0), and
+    stop (optional, default=size(image)).
+ 
+    NOTE: this operation corresponds to multiplication of a signal vector by a matrix whose rows
+    contain copies of the filt shifted by multiples of step.  See `upConv` for the operation
+    corresponding to the transpose of this matrix.
+    """
+    image = image.copy()
+    filt = filt.copy()
 
     if len(filt.shape) == 1:
         filt = numpy.reshape(filt, (1,len(filt)))

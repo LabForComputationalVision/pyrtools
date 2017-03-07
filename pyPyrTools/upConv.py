@@ -6,15 +6,38 @@ libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
 # load the C library
 lib = ctypes.cdll.LoadLibrary(libpath)
 
-def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1), 
-           start = (0,0), stop = None, result = None):
 
-    if image is None or filt is None:
-        print 'Error: image and filter are required input parameters!'
-        return
-    else:
-        image = image.copy()
-        filt = filt.copy()
+def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, result=None):
+    """Upsample matrix image, followed by convolution with matrix filt.
+
+    These arguments should be 1D or 2D matrices, and image must be larger (in both dimensions) than
+    filt.  The origin of filt is assumed to be floor(size(filt)/2)+1.
+
+    edges is a string determining boundary handling:
+       'circular' - Circular convolution
+       'reflect1' - Reflect about the edge pixels
+       'reflect2' - Reflect, doubling the edge pixels
+       'repeat'   - Repeat the edge pixels
+       'zero'     - Assume values of zero outside image boundary
+       'extend'   - Reflect and invert
+       'dont-compute' - Zero output when filter overhangs OUTPUT boundaries
+
+    Upsampling factors are determined by step (optional, default=(1, 1)),
+    a 2-tuple (y, x).
+ 
+    The window over which the convolution occurs is specfied by start (optional, default=(0, 0),
+    and stop (optional, default = step .* (size(IM) + floor((start-1)./step))).
+
+    result is an optional result matrix.  The convolution result will be destructively added into
+    this matrix.  If this argument is passed, the result matrix will not be returned. DO NOT USE
+    THIS ARGUMENT IF YOU DO NOT UNDERSTAND WHAT THIS MEANS!!
+ 
+    NOTE: this operation corresponds to multiplication of a signal vector by a matrix whose columns
+    contain copies of the time-reversed (or space-reversed) FILT shifted by multiples of STEP.  See
+    corrDn.m for the operation corresponding to the transpose of this matrix.
+    """
+    image = image.copy()
+    filt = filt.copy()
         
     origShape = filt.shape
     if len(filt.shape) == 1:
