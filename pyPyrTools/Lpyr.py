@@ -10,6 +10,27 @@ import math
 import matplotlib
 
 class Lpyr(pyramid):
+    """Laplacian pyramid
+
+    - `image` - a 2D numpy array
+
+    - `height` - an integer denoting number of pyramid levels desired. Defaults to `maxPyrHt` from
+    pyPyrUtils.
+
+    - `filter1` - can be a string namimg a standard filter (from pyPyrUtils.namedFilter()), or a
+    numpy array which will be used for (separable) convolution. Default is 'binom5'.
+
+    - `filter2` - specifies the "expansion" filter (default = filter1).
+
+    - `edges` - specifies edge-handling.  Options are:
+    * `'circular'` - circular convolution
+    * `'reflect1'` - reflect about the edge pixels
+    * `'reflect2'` - reflect, doubling the edge pixels
+    * `'repeat'` - repeat the edge pixels
+    * `'zero'` - assume values of zero outside image boundary
+    * `'extend'` - reflect and invert
+    * `'dont-compute'` - zero output when filter overhangs imput boundaries.
+    """
     filt = ''
     edges = ''
     height = ''
