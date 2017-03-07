@@ -39,8 +39,8 @@ def rconv2(*args):
     ## These values are one less than the index of the small mtx that falls on 
     ## the border pixel of the large matrix when computing the first 
     ## convolution response sample:
-    sy2 = numpy.floor((sy+ctr-1)/2)
-    sx2 = numpy.floor((sx+ctr-1)/2)
+    sy2 = int(numpy.floor((sy+ctr-1)/2))
+    sx2 = int(numpy.floor((sx+ctr-1)/2))
 
     # pad with reflected copies
     nw = large[sy-sy2-1:0:-1, sx-sx2-1:0:-1]
