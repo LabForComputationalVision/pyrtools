@@ -16,6 +16,7 @@ import PIL
 from PIL import ImageTk
 import Tkinter
 import ctypes
+import os
 libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
 # load the C library
 lib = ctypes.cdll.LoadLibrary(libpath)

@@ -13,6 +13,7 @@ import matplotlib
 from showIm import showIm
 import JBhelpers
 from upConv import upConv
+import pyPyrUtils
 
 class Spyr(pyramid):
     filt = ''
