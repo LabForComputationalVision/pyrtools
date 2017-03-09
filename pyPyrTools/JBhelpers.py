@@ -310,7 +310,7 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
 
     Parameters:
     
-    data: array or list of arrays, each of which istwo or three dimensions. If three dimensional,
+    dlist: array or list of arrays, each of which istwo or three dimensions. If three dimensional,
     first or last dimension must have length 3 or 4 and will be interpreted as color (RGB or
     RGBA). if a list, will plot each one separately.
           
@@ -318,7 +318,8 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
     max and min for each image), 'auto2' (vmin/vmax are the mean of each image +/- 2 std devs), or
     'auto3' (vmin/vmax is p1/9 +/- (p9 - p1)/8, where p1 is the 10th percentile and p9 is the 90th)
     
-    zoom: amount to scale the image
+    zoom: amount to scale the image. can be a list, in which case it's the zoom value for each
+    image in dlist.
     
     title: optional figure title
     
