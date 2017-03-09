@@ -451,6 +451,7 @@ class Wpyr(Lpyr):
     
             # make position list positive, and allocate appropriate image:
             llpos = llpos - ((numpy.ones((nind,1)) * numpy.amin(llpos, axis=0)) + 1) + 1
+            llpos = llpos.astype(int)
             urpos = llpos + self.pyrSize
             d_im = numpy.ones((numpy.amax(urpos), numpy.amax(urpos))) * bg
         

@@ -294,7 +294,6 @@ class Spyr(pyramid):
 
         return recon
     
-    #def showPyr(self, *args):
     def showPyr(self, prange = 'auto2', gap = 1, scale = 2, disp = 'qt'):
         ht = self.spyrHt()
         nind = len(self.pyr)
@@ -407,6 +406,8 @@ class Spyr(pyramid):
         # make position list positive, and allocate appropriate image:
         llpos = llpos - ((numpy.ones((nind,2)) * numpy.amin(llpos, axis=0)) + 1) + 1
         llpos[0,:] = numpy.array([1, 1])
+        # we want to cast it as ints, since we'll be using these as indices
+        llpos = llpos.astype(int)
         urpos = llpos + self.pyrSize
         d_im = numpy.zeros((numpy.amax(urpos), numpy.amax(urpos)))
         

@@ -65,7 +65,7 @@ class SFpyr(Spyr):
         #------------------------------------------------------
         
         dims = numpy.array(self.image.shape)
-        ctr = numpy.ceil((numpy.array(dims)+0.5)/2)
+        ctr = numpy.ceil((numpy.array(dims)+0.5)/2).astype(int)
         
         (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
                                      (dims[1]/2), 
@@ -133,9 +133,9 @@ class SFpyr(Spyr):
                 self.pyrSize.append(band.shape)
 
             dims = numpy.array(lodft.shape)
-            ctr = numpy.ceil((dims+0.5)/2)
-            lodims = numpy.ceil((dims-0.5)/2)
-            loctr = numpy.ceil((lodims+0.5)/2)
+            ctr = numpy.ceil((dims+0.5)/2).astype(int)
+            lodims = numpy.ceil((dims-0.5)/2).astype(int)
+            loctr = numpy.ceil((lodims+0.5)/2).astype(int)
             lostart = ctr - loctr
             loend = lostart + lodims
 
@@ -224,21 +224,21 @@ class SFpyr(Spyr):
             dims = numpy.array(self.pyrSize[dimIdx])
             if (dims[0], dims[1]) not in dimList:
                 dimList.append( (dims[0], dims[1]) )
-            ctr = numpy.ceil((dims+0.5)/2)
-            lodims = numpy.ceil((dims-0.5)/2)
-            loctr = numpy.ceil((lodims+0.5)/2)
+            ctr = numpy.ceil((dims+0.5)/2).astype(int)
+            lodims = numpy.ceil((dims-0.5)/2).astype(int)
+            loctr = numpy.ceil((lodims+0.5)/2).astype(int)
             lostart = ctr - loctr
             loend = lostart + lodims
             bounds = (lostart[0], lostart[1], loend[0], loend[1])
             if bounds not in boundList:
-                boundList.append( bounds )
-        boundList.append((0.0, 0.0, dimList[len(dimList)-1][0], 
+                boundList.append(bounds)
+        boundList.append((0, 0, dimList[len(dimList)-1][0], 
                           dimList[len(dimList)-1][1]))
         dimList.append((dimList[len(dimList)-1][0], dimList[len(dimList)-1][1]))
         
         # matlab code starts here
         dims = numpy.array(self.pyrSize[0])
-        ctr = numpy.ceil((dims+0.5)/2.0)
+        ctr = numpy.ceil((dims+0.5)/2.0).astype(int)
 
         (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
                                      (dims[1]/2), 

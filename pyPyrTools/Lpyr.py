@@ -353,7 +353,7 @@ class Lpyr(pyramid):
             # make position list positive, and allocate appropriate image
             llpos = llpos - numpy.ones((nind,1))*numpy.min(llpos)
             # we want to cast it as ints, since we'll be using these as indices
-            llpos = numpy.array([(int(i), int(j)) for i, j in llpos])
+            llpos = llpos.astype(int)
             pind = range(self.height)
             for i in pind:
                 pind[i] = self.band(i).shape
