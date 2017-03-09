@@ -20,34 +20,41 @@ class Spyr(pyramid):
     edges = ''
     
     #constructor
-    def __init__(self, *args):    # (image height, filter file, edges)
+    def __init__(self, image, height='auto', filter='sp1Filters', edges='reflect1'):
+        """Steerable pyramid. image parameter is required, others are optional
+        
+        - `image` - a 2D numpy array
+  
+        - `height` - an integer denoting number of pyramid levels desired.  'auto' (default) uses
+        maxPyrHt from pyPyrUtils.
+
+        - `filter` - The name of one of the steerable pyramid filters in pyPyrUtils:
+        `'sp0Filters'`, `'sp1Filters'`, `'sp3Filters'`, `'sp5Filters'`.  Default is `'sp1Filters'`.
+    
+        - `edges` - specifies edge-handling.  Options are:
+           * `'circular'` - circular convolution
+           * `'reflect1'` - reflect about the edge pixels
+           * `'reflect2'` - reflect, doubling the edge pixels
+           * `'repeat'` - repeat the edge pixels
+           * `'zero'` - assume values of zero outside image boundary
+           * `'extend'` - reflect and invert
+           * `'dont-compute'` - zero output when filter overhangs input boundaries.
+        """
         self.pyrType = 'steerable'
-        if len(args) > 0:
-            self.image = numpy.array(args[0])
-        else:
-            print "First argument (image) is required."
-            return
+        self.image = numpy.array(image)
 
-        #------------------------------------------------
-        # defaults:
-
-        if len(args) > 2:
-            if args[2] == 'sp0Filters':
-                filters = sp0Filters()
-            elif args[2] == 'sp1Filters':
-                filters = sp1Filters()
-            elif args[2] == 'sp3Filters':
-                filters = sp3Filters()
-            elif args[2] == 'sp5Filters':
-                filters = sp5Filters()
-            elif os.path.isfile(args[2]):
-                print "Filter files not supported yet"
-                return
-            else:
-                print "filter parameters value %s not supported" % (args[2])
-                return
-        else:
+        if filter == 'sp0Filters':
+            filters = sp0Filters()
+        elif filter == 'sp1Filters':
             filters = sp1Filters()
+        elif filter == 'sp3Filters':
+            filters = sp3Filters()
+        elif filter == 'sp5Filters':
+            filters = sp5Filters()
+        elif os.path.isfile(filter):
+            raise Exception("Filter files not supported yet")
+        else:
+            raise Exception("filter parameters value %s not supported" % (filter))
 
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -57,24 +64,12 @@ class Spyr(pyramid):
         steermtx = filters['mtx']
         
         max_ht = maxPyrHt(self.image.shape, lofilt.shape)
-        if len(args) > 1:
-            if args[1] == 'auto':
-                ht = max_ht
-            elif args[1] > max_ht:
-                print "Error: cannot build pyramid higher than %d levels." % (
-                    max_ht)
-                return
-            else:
-                ht = args[1]
-        else:
+        if height == 'auto':
             ht = max_ht
-
-        if len(args) > 3:
-            edges = args[3]
+        elif height > max_ht:
+            raise Exception("Error: cannot build pyramid higher than %d levels." % (max_ht))
         else:
-            edges = 'reflect1'
-
-        #------------------------------------------------------
+            ht = height
 
         nbands = bfilts.shape[1]
 
