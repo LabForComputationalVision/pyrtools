@@ -144,12 +144,12 @@ class Lpyr(pyramid):
             outarray = numpy.concatenate((outarray, tmp), axis=1)
         return outarray
 
-    # set a pyramid value
-    def set(self, *args):
-        if len(args) != 3:
-            print 'Error: three input parameters required:'
-            print '  set(band, element(tuple), value)'
-        self.pyr[args[0]][args[1][0]][args[1][1]] = args[2] 
+    def set(self, band, element, value):
+        """set a pyramid value
+
+        element must be a tuple, others are single numbers
+        """
+        self.pyr[band][element[0]][element[1]] = value
 
     def reconPyr(self, *args):
         if len(args) > 0:
