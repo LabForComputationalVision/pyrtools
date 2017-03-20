@@ -1,6 +1,6 @@
 import numpy
 
-def rcosFn(*args):
+def rcosFn(width=1, position=0, values=(0, 1)):
     ''' [X, Y] = rcosFn(WIDTH, POSITION, VALUES)
 
         Return a lookup table (suitable for use by INTERP1) 
@@ -14,23 +14,6 @@ def rcosFn(*args):
         threshold (default = 0).  VALUES (default = [0,1]) specifies the
         values to the left and right of the transition.  '''
     
-    if len(args) > 0:
-        width = args[0]
-    else:
-        width = 1
-
-    if len(args) > 1:
-        position = args[1]
-    else:
-        position = 0
-
-    if len(args) > 2:
-        values = args[2]
-    else:
-        values = (0,1)
-
-    #---------------------------------------------
-
     sz = 256   # arbitrary!
 
     X = numpy.pi * numpy.array(range(-sz-1,2)) / (2*sz)
