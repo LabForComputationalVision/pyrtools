@@ -42,18 +42,18 @@ class SFpyr(Spyr):
         self.pyrType = 'steerableFrequency'
         self.image = numpy.array(image)
         
-        max_ht = numpy.floor( numpy.log2( min(self.image.shape) ) ) - 2
+        max_ht = numpy.floor(numpy.log2(min(self.image.shape))) - 2
         if height == 'auto':
             ht = max_ht
         elif height > max_ht:
-            raise Exception("Error: cannot build pyramid higher than %d levels." % (max_ht))
+            raise Exception("Cannot build pyramid higher than %d levels." % (max_ht))
         else:
             ht = height
         ht = int(ht)
         
         if order > 15 or order < 0:
             warnings.warn("order must be an integer in the range [0,15]. Truncating.")
-            order = min( max(order, 0), 15 )
+            order = min(max(order, 0), 15)
         order = int(order)
 
         nbands = order+1
@@ -70,9 +70,12 @@ class SFpyr(Spyr):
             harmonics = numpy.array(range(nbands/2)) * 2 + 1
         else:
             harmonics = numpy.array(range((nbands-1)/2)) * 2
+        if harmonics.size == 0:
+            # in this case, harmonics is an empty matrix. This happens when nbands=0 and (based on
+            # how the matlab code acts), in that situation, we actually want harmonics to be 0.
+            harmonics = numpy.array([0])
 
-        steermtx = steer2HarmMtx(harmonics, numpy.pi *
-                                 numpy.array(range(nbands))/nbands, 'even')
+        steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(range(nbands))/nbands, 'even')
 
         #------------------------------------------------------
         
@@ -184,25 +187,10 @@ class SFpyr(Spyr):
             spHt = 0
         return spHt
 
-    def _reconSFpyr(self, *args):
+    def _reconSFpyr(self, levs='all', bands='all', twidth=1):
         
-        if len(args) > 0:
-            levs = args[0]
-        else:
-            levs = 'all'
-
-        if len(args) > 1:
-            bands = args[1]
-        else:
-            bands = 'all'
-
-        if len(args) > 2:
-            if args[2] <= 0:
-                print "Warning: twidth must be positive. Setting to 1."
-                twidth = 1
-            else:
-                twidth = args[2]
-        else:
+        if twidth <= 0:
+            warnings.warn("twidth must be positive. Setting to 1.")
             twidth = 1
 
         #-----------------------------------------------------------------
@@ -213,17 +201,16 @@ class SFpyr(Spyr):
         if isinstance(levs, basestring) and levs == 'all':
             levs = numpy.array(range(maxLev+1))
         elif isinstance(levs, basestring):
-            print "Error: %s not valid for levs parameter." % (levs)
-            print "levs must be either a 1D numpy array or the string 'all'."
-            return
+            raise Exception("%s not valid for levs parameter. levs must be either a 1D numpy array"
+                            " or the string 'all'." % levs)
         else:
             levs = numpy.array(levs)
 
         if isinstance(bands, basestring) and bands == 'all':
             bands = numpy.array(range(nbands))
         elif isinstance(bands, basestring):
-            print "Error: %s not valid for bands parameter." % (bands)
-            print "bands must be either a 1D numpy array or the string 'all'."
+            raise Exception("%s not valid for bands parameter. bands must be either a 1D numpy"
+                            " array or the string 'all'." % bands)
             return
         else:
             bands = numpy.array(bands)
