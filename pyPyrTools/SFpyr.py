@@ -4,52 +4,64 @@ from steer2HarmMtx import steer2HarmMtx
 from rcosFn import rcosFn
 from pointOp import pointOp
 import scipy
+import warnings
 
 class SFpyr(Spyr):
-    filt = ''
-    edges = ''
+    filt = None
+    edges = None
     
     #constructor
-    def __init__(self, *args):    # (image, height, order, twidth)
-        self.pyrType = 'steerableFrequency'
+    def __init__(self, image, height='auto', order=3, twidth=1):
+        """Stterable frequency pyramid. image parameter is required, others are optional.
 
-        if len(args) > 0:
-            self.image = args[0]
-        else:
-            print "First argument (image) is required."
-            return
+        Construct a steerable pyramid on matrix IM, in the Fourier domain.
+        This is similar to buildSpyr, except that:
 
-        #------------------------------------------------
-        # defaults:
+            + Reconstruction is exact (within floating point errors)
+            + It can produce any number of orientation bands.
+            - Typically slower, especially for non-power-of-two sizes.
+            - Boundary-handling is circular.
 
-        max_ht = numpy.floor( numpy.log2( min(self.image.shape) ) ) - 2
-        if len(args) > 1:
-            if(args[1] > max_ht):
-                print "Error: cannot build pyramid higher than %d levels." % (max_ht)
-            ht = args[1]
-        else:
-            ht = max_ht
-        ht = int(ht)
+        The squared radial functions tile the Fourier plane with a raised-cosine falloff. Angular
+        functions are cos(theta- k*pi/`order`+1)^(`order`).
             
-        if len(args) > 2:
-            if args[2] > 15 or args[2] < 0:
-                print "Warning: order must be an integer in the range [0,15]. Truncating."
-                order = min( max(args[2],0), 15 )
-            else:
-                order = args[2]
+        Arguments
+        ================
+        
+        - `image` - a 2D numpy array.
+
+        - `height` (optional) specifies the number of pyramid levels to build. 'auto' (default) is
+        floor(log2(min(image.shape)))-2
+
+        - `order` (optional), int. Default value is 3. The number of orientation bands - 1.
+        
+        - `twidth` (optional), int. Default value is 1. The width of the transition region of the
+        radial lowpass function, in octaves
+        """
+
+        self.pyrType = 'steerableFrequency'
+        self.image = numpy.array(image)
+        
+        max_ht = numpy.floor( numpy.log2( min(self.image.shape) ) ) - 2
+        if height == 'auto':
+            ht = max_ht
+        elif height > max_ht:
+            raise Exception("Error: cannot build pyramid higher than %d levels." % (max_ht))
         else:
-            order = 3
+            ht = height
+        ht = int(ht)
+        
+        if order > 15 or order < 0:
+            warnings.warn("order must be an integer in the range [0,15]. Truncating.")
+            order = min( max(order, 0), 15 )
+        order = int(order)
 
         nbands = order+1
 
-        if len(args) > 3:
-            if args[3] <= 0:
-                print "Warning: twidth must be positive. Setting to 1."
-                twidth = 1
-            else:
-                twidth = args[3]
-        else:
+        if twidth <= 0:
+            warnings.warn("twidth must be positive. Setting to 1.")
             twidth = 1
+        twidth = int(twidth)
 
         #------------------------------------------------------
         # steering stuff:
