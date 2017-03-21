@@ -67,7 +67,7 @@ class Spyr(pyramid):
         if height == 'auto':
             ht = max_ht
         elif height > max_ht:
-            raise Exception("Error: cannot build pyramid higher than %d levels." % (max_ht))
+            raise Exception("cannot build pyramid higher than %d levels." % (max_ht))
         else:
             ht = height
 
@@ -123,8 +123,7 @@ class Spyr(pyramid):
 
     def spyrLev(self, lev):
         if lev < 0 or lev > self.spyrHt()-1:
-            print 'Error: level parameter must be between 0 and %d!' % (self.spyrHt()-1)
-            return
+            raise Exception('level parameter must be between 0 and %d!' % (self.spyrHt()-1))
         
         levArray = []
         for n in range(self.numBands()):
@@ -135,10 +134,9 @@ class Spyr(pyramid):
 
     def spyrBand(self, lev, band):
         if lev < 0 or lev > self.spyrHt()-1:
-            print 'Error: level parameter must be between 0 and %d!' % (self.spyrHt()-1)
-            return
+            raise Exception('level parameter must be between 0 and %d!' % (self.spyrHt()-1))
         if band < 0 or band > self.numBands()-1:
-            print 'Error: band parameter must be between 0 and %d!' % (self.numBands()-1)
+            raise Exception('band parameter must be between 0 and %d!' % (self.numBands()-1))
 
         return self.band( ((lev*self.numBands())+band)+1 )
 
@@ -217,8 +215,7 @@ class Spyr(pyramid):
         else:
             levs = numpy.array(levs)
             if (levs < 0).any() or (levs >= maxLev).any():
-                print "Error: level numbers must be in the range [0, %d]." % (maxLev-1)
-                return
+                raise Exception("level numbers must be in the range [0, %d]." % (maxLev-1))
             else:
                 levs = numpy.array(levs)
                 if len(levs) > 1 and levs[0] < levs[1]:
@@ -228,8 +225,7 @@ class Spyr(pyramid):
         else:
             bands = numpy.array(bands)
             if (bands < 0).any() or (bands > bfilts.shape[1]).any():
-                print "Error: band numbers must be in the range [0, %d]." % (self.numBands()-1)
-                return
+                raise Exception("band numbers must be in the range [0, %d]." % (self.numBands()-1))
             else:
                 bands = numpy.array(bands)
 
@@ -354,7 +350,7 @@ class Spyr(pyramid):
             stdev = numpy.sqrt( numpy.var(band) )
             prange[nind-1,:] = numpy.array([av-2*stdev, av+2*stdev])
         elif isinstance(prange, basestring):
-            print "Error:Bad RANGE argument: %s'" % (prange)
+            raise Exception("Bad RANGE argument: %s'" % (prange))
         elif prange.shape[0] == 1 and prange.shape[1] == 2:
             scales = numpy.power(scale, range(ht))
             scales = numpy.outer( numpy.ones((nbands,1)), scales )
