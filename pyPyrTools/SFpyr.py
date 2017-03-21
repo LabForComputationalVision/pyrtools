@@ -80,9 +80,9 @@ class SFpyr(Spyr):
         ctr = numpy.ceil((numpy.array(dims)+0.5)/2).astype(int)
         
         (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
-                                     (dims[1]/2), 
+                                     (dims[1]/2.), 
                                      (numpy.array(range(1,dims[0]+1))-ctr[0])/
-                                     (dims[0]/2))
+                                     (dims[0]/2.))
         angle = numpy.arctan2(yramp, xramp)
         log_rad = numpy.sqrt(xramp**2 + yramp**2)
         log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
@@ -253,9 +253,9 @@ class SFpyr(Spyr):
         ctr = numpy.ceil((dims+0.5)/2.0).astype(int)
 
         (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
-                                     (dims[1]/2), 
+                                     (dims[1]/2.), 
                                      (numpy.array(range(1,dims[0]+1))-ctr[0])/
-                                     (dims[0]/2))
+                                     (dims[0]/2.))
         angle = numpy.arctan2(yramp, xramp)
         log_rad = numpy.sqrt(xramp**2 + yramp**2)
         log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
