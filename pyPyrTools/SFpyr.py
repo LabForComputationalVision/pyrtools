@@ -184,7 +184,7 @@ class SFpyr(Spyr):
             spHt = 0
         return spHt
 
-    def reconSFpyr(self, *args):
+    def _reconSFpyr(self, *args):
         
         if len(args) > 0:
             levs = args[0]
@@ -387,4 +387,4 @@ class SFpyr(Spyr):
 
         return outresdft
 
-    reconPyr = reconSFpyr
+    reconPyr = _reconSFpyr
