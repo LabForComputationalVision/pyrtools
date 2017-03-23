@@ -74,8 +74,9 @@ class SFpyr(Spyr):
             # in this case, harmonics is an empty matrix. This happens when nbands=0 and (based on
             # how the matlab code acts), in that situation, we actually want harmonics to be 0.
             harmonics = numpy.array([0])
+        self.harmonics = harmonics
 
-        steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(range(nbands))/nbands, 'even')
+        self.steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(range(nbands))/nbands, 'even')
 
         #------------------------------------------------------
         
@@ -97,6 +98,7 @@ class SFpyr(Spyr):
 
         YIrcos = numpy.sqrt(1.0 - Yrcos**2)
         lo0mask = pointOp(log_rad, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+        self._lo0mask = lo0mask
 
         imdft = numpy.fft.fftshift(numpy.fft.fft2(self.image))
 
@@ -104,6 +106,7 @@ class SFpyr(Spyr):
         self.pyrSize = []
 
         hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+        self._hi0mask = hi0mask
 
         hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
         hi0 = numpy.fft.ifft2(numpy.fft.ifftshift(hi0dft))
@@ -114,6 +117,10 @@ class SFpyr(Spyr):
         lo0mask = lo0mask.reshape(imdft.shape[0], imdft.shape[1])
         lodft = imdft * lo0mask
 
+        self._anglemasks = []
+        self._himasks = []
+        self._lomasks = []
+        
         for i in range(ht):
             bands = numpy.zeros((lodft.shape[0]*lodft.shape[1], nbands))
             bind = numpy.zeros((nbands, 2))
@@ -132,7 +139,9 @@ class SFpyr(Spyr):
             himask = pointOp(log_rad_test, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
                              0)
             himask = numpy.reshape(himask, (lodft.shape[0], lodft.shape[1]))
+            self._himasks.append(himask)
 
+            anglemasks = []
             for b in range(nbands):
                 angle_tmp = numpy.reshape(angle, 
                                           (1,angle.shape[0]*angle.shape[1]))
@@ -141,12 +150,14 @@ class SFpyr(Spyr):
                                     Xcosn[1]-Xcosn[0],0)
 
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
+                anglemasks.append(anglemask)
                 banddft = ( ((-numpy.power(-1+0j,0.5))**order) * lodft *
                             anglemask * himask )
                 band = numpy.fft.ifft2(numpy.fft.ifftshift(banddft))
                 self.pyr.append(numpy.real(band.copy()))
                 self.pyrSize.append(band.shape)
 
+            self._anglemasks.append(anglemasks)
             dims = numpy.array(lodft.shape)
             ctr = numpy.ceil((dims+0.5)/2).astype(int)
             lodims = numpy.ceil((dims-0.5)/2).astype(int)
@@ -161,9 +172,10 @@ class SFpyr(Spyr):
             log_rad_tmp = numpy.reshape(log_rad, 
                                         (1,log_rad.shape[0]*log_rad.shape[1]))
             lomask = pointOp(log_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
-                             0)
+                             0).reshape(lodft.shape[0], lodft.shape[1])
+            self._lomasks.append(lomask)
             
-            lodft = lodft * lomask.reshape(lodft.shape[0], lodft.shape[1])
+            lodft = lodft * lomask
 
         lodft = numpy.fft.ifft2(numpy.fft.ifftshift(lodft))
         self.pyr.append(numpy.real(numpy.array(lodft).copy()))
