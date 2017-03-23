@@ -137,8 +137,8 @@ def nbimageLCVbak2( data, vmin = None, vmax = None, vsym = False, saveas = None,
     from PIL.Image import fromarray
     from StringIO import StringIO
     import base64
-    from PyQt4 import QtGui
-    from PyQt4 import QtCore
+    from pyPyrUtils import QtGui
+    from pyPyrUtils import QtCore
     import numpy
 
     data = rerange( data, vmin, vmax, vsym )
@@ -218,8 +218,8 @@ def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
     from PIL.Image import fromarray
     from StringIO import StringIO
     import base64
-    from PyQt4 import QtGui
-    from PyQt4 import QtCore
+    from pyPyrUtils import QtGui
+    from pyPyrUtils import QtCore
     import numpy
 
     if not isinstance(dlist, list):
@@ -333,8 +333,8 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
     from PIL.Image import fromarray
     from StringIO import StringIO
     import base64
-    from PyQt4 import QtGui
-    from PyQt4 import QtCore
+    from pyPyrUtils import QtGui
+    from pyPyrUtils import QtCore
     import numpy
     from scipy import stats
 

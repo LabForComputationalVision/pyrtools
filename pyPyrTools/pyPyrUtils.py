@@ -9,8 +9,6 @@ import math
 import struct
 import re
 import sys
-from PyQt4 import QtGui
-from PyQt4 import QtCore
 import JBhelpers
 import PIL
 from PIL import ImageTk
@@ -21,6 +19,21 @@ libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
 # load the C library
 lib = ctypes.cdll.LoadLibrary(libpath)
 
+# we want to support both PyQt5 and PyQt4. In order to do that, we use this little work around. Any
+# other functions that need to make use of the PyQt functionality will import QtGui or QtCore from
+# this module.
+try:
+    __import__('PyQt5')
+    use_pyqt5 = True
+except ImportError:
+    use_pyqt5 = False
+
+if use_pyqt5:
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+else:
+    from PyQt4 import QtGui
+    from PyQt4 import QtCore
 
 ##############
 #  This code uses C code from wrapConv.so.  To compile type:
