@@ -90,7 +90,7 @@ class SFpyr(Spyr):
         angle = numpy.arctan2(yramp, xramp)
         log_rad = numpy.sqrt(xramp**2 + yramp**2)
         log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
-        log_rad = numpy.log2(log_rad);
+        log_rad = numpy.log2(log_rad)
 
         ## Radial transition function (a raised cosine in log-frequency):
         (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
@@ -258,7 +258,7 @@ class SFpyr(Spyr):
         angle = numpy.arctan2(yramp, xramp)
         log_rad = numpy.sqrt(xramp**2 + yramp**2)
         log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
-        log_rad = numpy.log2(log_rad);
+        log_rad = numpy.log2(log_rad)
 
         ## Radial transition function (a raised cosine in log-frequency):
         (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
