@@ -55,6 +55,9 @@ class Spyr(pyramid):
             raise Exception("Filter files not supported yet")
         else:
             raise Exception("filter parameters value %s not supported" % (filter))
+        self.filt = filters
+
+        self.edges = edges
 
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
