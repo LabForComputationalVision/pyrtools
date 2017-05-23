@@ -55,8 +55,8 @@ def zconv2(*args):
     ## These values are the index of the small matrix that falls on the 
     ## border pixel of the large matrix when computing the first
     ## convolution response sample:
-    sy2 = numpy.floor((sy+ctr+1)/2.0)-1
-    sx2 = numpy.floor((sx+ctr+1)/2.0)-1
+    sy2 = numpy.floor((sy+ctr+1)/2.0).astype(int)-1
+    sx2 = numpy.floor((sx+ctr+1)/2.0).astype(int)-1
 
     clarge = scipy.signal.convolve(large, small, 'full')
     

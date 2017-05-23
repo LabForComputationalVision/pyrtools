@@ -67,7 +67,7 @@ class SCFpyr(SFpyr):
         #------------------------------------------------------
         
         dims = numpy.array(self.image.shape)
-        ctr = numpy.ceil((numpy.array(dims)+0.5)/2)
+        ctr = numpy.ceil((numpy.array(dims)+0.5)/2).astype(int)
         
         (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
                                      (dims[1]/2), 
@@ -134,9 +134,9 @@ class SCFpyr(SFpyr):
                 self.pyrSize.append(band.shape)
 
             dims = numpy.array(lodft.shape)
-            ctr = numpy.ceil((dims+0.5)/2)
-            lodims = numpy.ceil((dims-0.5)/2)
-            loctr = numpy.ceil((lodims+0.5)/2)
+            ctr = numpy.ceil((dims+0.5)/2).astype(int)
+            lodims = numpy.ceil((dims-0.5)/2).astype(int)
+            loctr = numpy.ceil((lodims+0.5)/2).astype(int)
             lostart = ctr - loctr
             loend = lostart + lodims
 
@@ -185,7 +185,7 @@ class SCFpyr(SFpyr):
         for nsc in range(Nsc):
             firstBnum = nsc * Nor+2
             dims = pind[firstBnum][:]
-            ctr = (numpy.ceil((dims[0]+0.5)/2.0), numpy.ceil((dims[1]+0.5)/2.0)) #-1?
+            ctr = (numpy.ceil((dims[0]+0.5)/2.0).astype(int), numpy.ceil((dims[1]+0.5)/2.0).astype(int)) #-1?
             ang = mkAngle(dims, 0, ctr)
             ang[ctr[0]-1, ctr[1]-1] = -numpy.pi/2.0
             for nor in range(Nor):

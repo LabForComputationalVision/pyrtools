@@ -49,8 +49,8 @@ def cconv2(*args):
     ## These values are the index of the small mtx that falls on the
     ## border pixel of the large matrix when computing the first
     ## convolution response sample:
-    sy2 = numpy.floor((sy+ctr+1)/2.0)
-    sx2 = numpy.floor((sx+ctr+1)/2.0)
+    sy2 = numpy.floor((sy+ctr+1)/2.0).astype(int)
+    sx2 = numpy.floor((sx+ctr+1)/2.0).astype(int)
 
     # pad
     nw = large[ly-sy+sy2:ly, lx-sx+sx2:lx]

@@ -60,9 +60,9 @@ def blurDn(*args):
                 
             res = corrDn(image = im, filt = filt, step = (2, 2))
             if len(im.shape) == 1 or im.shape[1] == 1:
-                res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0), 1))
+                res = numpy.reshape(res, (numpy.ceil(im.shape[0]/2.0).astype(int), 1))
             else:
-                res = numpy.reshape(res, (1, numpy.ceil(im.shape[1]/2.0)))
+                res = numpy.reshape(res, (1, numpy.ceil(im.shape[1]/2.0).astype(int)))
         elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
             # 2D image and 1D filter
             res = corrDn(image = im, filt = filt.T, step = (2, 1))
