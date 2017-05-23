@@ -181,6 +181,8 @@ class SFpyr(Spyr):
         self.pyr.append(numpy.real(numpy.array(lodft).copy()))
         self.pyrSize.append(lodft.shape)
 
+        self.height = self.spyrHt()
+        
     # methods
     def numBands(self):      # FIX: why isn't this inherited
         if len(self.pyrSize) == 2:

@@ -206,6 +206,9 @@ class SCFpyr(SFpyr):
                 self.pyr[pyrIdx] = ch
                 pyrIdx += 1
 
-        res = self.reconSFpyr(levs, bands, twidth);
+        # we want to make sure to call SFpyr's special reconstruction method. when someone is using
+        # SFpyr, they should call reconPyr, since that way everyone has the same method name. But
+        # here if we call that we get stuck in an infinite recursion loop
+        res = self._reconSFpyr(levs, bands, twidth)
 
         return res
