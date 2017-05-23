@@ -176,9 +176,7 @@ class Lpyr(pyramid):
             levs = range(0,maxLev)
         else:
             if (levs > maxLev-1).any():
-                print ( "Error: level numbers must be in the range [0, %d]." % 
-                        (maxLev-1) )
-                return
+                raise Exception("level numbers must be in the range [0, %d]." % (maxLev-1))
 
         if isinstance(filter2, basestring):
             filter2 = namedFilter(filter2)

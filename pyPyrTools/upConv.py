@@ -52,8 +52,7 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
             filt = numpy.append(filt,0.0);
             filt = numpy.reshape(filt, (1, len(filt)))
         else:
-            print 'Even sized 2D filters not yet supported by upConv.'
-            return
+            raise Exception('Even sized 2D filters not yet supported by upConv.')
 
     if stop is None and result is None:
         stop = (image.shape[0]*step[0], image.shape[1]*step[1])
