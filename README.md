@@ -18,6 +18,8 @@ unit tests.
 
 Rob Young and Eero Simoncelli, 7/13
 
+William Broderick, 6/17
+
 # Installation
 
 
@@ -46,7 +48,8 @@ method parameters mimic the matlab function parameters except that there's no
 need to pass pyr or pind, since the pyPyrTools version pyr and pyrSize are 
 properties of the class.
 
-- load modules:
+- load modules (note that if you installed via pip, you can skip the
+  first two lines):
 ```
 >> import sys
 >> sys.path.append('path to pyPyrTools parent directory')
@@ -66,6 +69,13 @@ properties of the class.
 Please see `TUTORIALS/pyramids.ipynb` for more examples.  You can
 start this with: `jupyter notebook pyramids.ipynb` if you have iPython
 and Jupyter installed.
+
+# Testing
+
+To use the included test, navigate to `pyPyrTools/TESTS/` and run
+`python unitTests.py`. Note that a large amount of text will appear in
+your terminal window, *even if the tests are succeeding*, so don't
+freak out.
 
 # Function list
 
