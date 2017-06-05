@@ -48,8 +48,11 @@ class Lpyr(pyramid):
 
         if filter1.ndim == 1:
             filter1 = filter1.reshape(1, len(filter1))
+        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
+        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
+        # we need to match the filter to the image dimensions
         elif self.image.shape[0] == 1:
-            filter1 = filter1.reshape(filter1.shape[1], filter1.shape[0])
+            filter1 = filter1.reshape(1, max(filter1.shape))
 
         if isinstance(filter2, basestring):
             filter2 = namedFilter(filter2)
@@ -61,8 +64,11 @@ class Lpyr(pyramid):
         if filter2.ndim == 1:
             filter2 = filter2.reshape(1, len(filter2))
         elif self.image.shape[0] == 1:
-            filter2 = filter2.reshape(filter2.shape[1], filter2.shape[0])
+            filter2 = filter2.reshape(1, max(filter2.shape))
 
+        self.filter1 = filter1
+        self.filter2 = filter2
+        
         maxHeight = 1 + maxPyrHt(self.image.shape, filter1.shape)
 
         if isinstance(height, basestring) and height == "auto":

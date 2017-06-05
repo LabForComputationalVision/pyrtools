@@ -21,11 +21,12 @@ class Gpyr(Lpyr):
         if not (numpy.array(self.filt.shape) == 1).any():
             raise Exception("filt should be a 1D filter (i.e., a vector)")
 
-        # print self.filt.shape
-        # if self.image.shape[0] == 1:
-        #     self.filt = self.filt.reshape(1, max(self.filt.shape))
-        # print self.filt.shape
-        
+        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
+        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
+        # we need to match the filter to the image dimensions
+        if self.image.shape[0] == 1:
+            self.filt = self.filt.reshape(1, max(self.filt.shape))
+
         maxHeight = 1 + maxPyrHt(self.image.shape, self.filt.shape)
 
         if height == "auto":

@@ -104,20 +104,23 @@ class LpyrTests(unittest.TestCase):
         pyRamp = ppt.mkRamp(200,100)
         pyPyr = ppt.Lpyr(pyRamp)
         self.failUnless(ppt.comparePyr(matPyr['pyr'], pyPyr))
-    # these tests are commented out because they occasionally cause a segfault as a result of the
-    # problem discussed in upConv.py and corrDn.py. This only happens when using a 1d input and I
-    # have been unable to resolve this so, for the moment, we skip these tests.
-    
-    # def test5(self):   
-    #     matPyr = scipy.io.loadmat('./matFiles/buildLpyr5.mat')
-    #     pyRamp = np.array(range(200)).reshape(1, 200)
-    #     pyPyr = ppt.Lpyr(pyRamp)
-    #     self.failUnless(ppt.comparePyr(matPyr['pyr'], pyPyr))
-    # def test6(self):
-    #     matPyr = scipy.io.loadmat('./matFiles/buildLpyr6.mat')
-    #     pyRamp = np.array(range(200))
-    #     pyPyr = ppt.Lpyr(pyRamp)
-    #     self.failUnless(ppt.comparePyr(matPyr['pyr'], pyPyr))
+    def test5(self):   
+        matPyr = scipy.io.loadmat('./matFiles/buildLpyr5.mat')
+        pyRamp = np.array(range(200)).reshape(1, 200)
+        pyPyr = ppt.Lpyr(pyRamp)
+        self.failUnless(ppt.comparePyr(matPyr['pyr'], pyPyr))
+    def test_segfault(self):
+        # we used to have a segfault happening in this situation; if the filters have the correct
+        # shape, that won't happen (if they're (5,1) instead, it will)
+        pySig = np.zeros((1, 36))
+        pyr = ppt.Lpyr(sig)
+        self.failUnless(pyr.filter1.shape == (1, 5))
+        self.failUnless(pyr.filter2.shape == (1, 5))        
+    def test6(self):
+        matPyr = scipy.io.loadmat('./matFiles/buildLpyr6.mat')
+        pyRamp = np.array(range(200))
+        pyPyr = ppt.Lpyr(pyRamp)
+        self.failUnless(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test7(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr7.mat')
         img = Image.open('../lenna-256x256.tif')

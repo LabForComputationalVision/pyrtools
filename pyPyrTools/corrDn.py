@@ -37,16 +37,6 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
 
     if len(filt.shape) == 1:
         filt = numpy.reshape(filt, (1, len(filt)))
-        
-    # there's a segfault that occasionally happens when image is 1d and the filt is not properly
-    # shaped. In order to avoid this, I think we need to reshape the filter: the filters are 1d,
-    # but held in 2d arrays and typically we want the first dimension to be the non-trivial one
-    # (ie, the shape is (5,1) instead of (1,5)). But (based on Gpyr, which was not having this
-    # issue), it appears that when the image is 1d the filter should have the trivial dimension
-    # first (ie, shape is (1,5)), so that's what we check here.
-
-    if image.shape[0] == 1:
-        filt = filt.reshape(1, max(filt.shape)).copy()
 
     if stop is None:
         stop = (image.shape[0], image.shape[1])
