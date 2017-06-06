@@ -35,6 +35,11 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     NOTE: this operation corresponds to multiplication of a signal vector by a matrix whose columns
     contain copies of the time-reversed (or space-reversed) FILT shifted by multiples of STEP.  See
     corrDn.m for the operation corresponding to the transpose of this matrix.
+
+    WARNING: if both the image and filter are 1d, they must be 1d in the same dimension. E.g., if
+    image.shape is (1, 36), then filt.shape must be (1, 5) and NOT (5, 1). If they're both 1d and
+    1d in different dimensions, then this may encounter a segfault. I've not been able to find a
+    way to avoid that within this function (simply reshaping it does not work).
     """
     image = image.copy()
     filt = filt.copy()
