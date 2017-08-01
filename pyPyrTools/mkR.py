@@ -14,6 +14,8 @@ def mkR(size, expt=1, origin=None):
 
     if origin is None:
         origin = ((size[0]+1)/2., (size[1]+1)/2.)
+    elif not hasattr(origin, '__iter__'):
+        origin = (origin, origin)
 
     # -----------------------------------------------------------------
 
