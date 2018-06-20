@@ -1,18 +1,25 @@
-import numpy
+#!/usr/bin/python
+"""functions that interact with the C code, for handling convolutions mostly.
+"""
+
 import ctypes
 import os
+import grep
+import numpy as np
 
-libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
-# load the C library
-lib = ctypes.cdll.LoadLibrary(libpath)
+# the wrapConv.so file can have some system information after it from the compiler, so we just find
+# whatever it is called
+libpath = grep.grep(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'c', 'wrapConv*.so'))
+# load the c library
+lib = ctypes.cdll.LoadLibrary(libpath[0])
 
 
 def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, result=None):
-    """Compute correlation of matrices image with `filt, followed by downsampling.  
+    """Compute correlation of matrices image with `filt, followed by downsampling.
 
     These arguments should be 1D or 2D matrices, and image must be larger (in both dimensions) than
     filt.  The origin of filt is assumed to be floor(size(filt)/2)+1.
- 
+
     edges is a string determining boundary handling:
       'circular' - Circular convolution
       'reflect1' - Reflect about the edge pixels
@@ -24,10 +31,10 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
 
     Downsampling factors are determined by step (optional, default=(1, 1)), which should be a
     2-tuple (y, x).
- 
+
     The window over which the convolution occurs is specfied by start (optional, default=(0,0), and
     stop (optional, default=size(image)).
- 
+
     NOTE: this operation corresponds to multiplication of a signal vector by a matrix whose rows
     contain copies of the filt shifted by multiples of step.  See `upConv` for the operation
     corresponding to the transpose of this matrix.
@@ -41,7 +48,7 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     filt = filt.copy()
 
     if len(filt.shape) == 1:
-        filt = numpy.reshape(filt, (1, len(filt)))
+        filt = np.reshape(filt, (1, len(filt)))
 
     if stop is None:
         stop = (image.shape[0], image.shape[1])
@@ -49,28 +56,28 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     if result is None:
         rxsz = len(list(range(start[0], stop[0], step[0])))
         rysz = len(list(range(start[1], stop[1], step[1])))
-        result = numpy.zeros((rxsz, rysz))
+        result = np.zeros((rxsz, rysz))
     else:
-        result = numpy.array(result.copy())
-        
+        result = np.array(result.copy())
+
     if edges == 'circular':
-        lib.internal_wrap_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
-                                 image.shape[1], image.shape[0], 
-                                 filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
-                                 filt.shape[1], filt.shape[0], 
-                                 start[1], step[1], stop[1], start[0], step[0], 
-                                 stop[0], 
+        lib.internal_wrap_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 image.shape[1], image.shape[0],
+                                 filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                                 filt.shape[1], filt.shape[0],
+                                 start[1], step[1], stop[1], start[0], step[0],
+                                 stop[0],
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
     else:
-        tmp = numpy.zeros((filt.shape[0], filt.shape[1]))
-        lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
-                            image.shape[1], image.shape[0], 
-                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
-                            tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
-                            filt.shape[1], filt.shape[0], 
-                            start[1], step[1], stop[1], start[0], step[0], 
-                            stop[0], 
-                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), 
+        tmp = np.zeros((filt.shape[0], filt.shape[1]))
+        lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            image.shape[1], image.shape[0],
+                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            filt.shape[1], filt.shape[0],
+                            start[1], step[1], stop[1], start[0], step[0],
+                            stop[0],
+                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             edges)
 
     return result
