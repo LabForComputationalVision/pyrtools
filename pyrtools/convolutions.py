@@ -78,7 +78,7 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
                             start[1], step[1], stop[1], start[0], step[0],
                             stop[0],
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            edges)
+                            edges.encode('ascii'))
 
     return result
 
@@ -162,7 +162,7 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
                             filt.shape[1], filt.shape[0], start[1], step[1],
                             stop[1], start[0], step[0], stop[0],
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            stop[1], stop[0], edges)
+                            stop[1], stop[0], edges.encode('ascii'))
         result = np.reshape(result, stop)
 
     return result

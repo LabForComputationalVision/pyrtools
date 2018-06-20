@@ -1,12 +1,10 @@
 from .binomialFilter import binomialFilter
-from .blurDn import blurDn
-from .blur import blur
+from .image_tools import blurDn, blur, upBlur
 from .clip import clip
 from .comparePyr import comparePyr
 from .compareRecon import compareRecon
 from .convolutions import corrDn, upConv
 from .entropy2 import entropy2
-from .factorial import factorial
 from .Gpyr import Gpyr
 from .histoMatch import histoMatch
 from .histo import histo
@@ -43,7 +41,6 @@ from .Spyr import Spyr
 from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer
 from .strictly_decreasing import strictly_decreasing
-from .upBlur import upBlur
 from .Wpyr import Wpyr
 import ctypes
 import os
