@@ -1,8 +1,7 @@
 from .pyramid import pyramid
-from .corrDn import corrDn
+from .convolutions import corrDn, upConv
 from .namedFilter import namedFilter
 from .maxPyrHt import maxPyrHt
-from .upConv import upConv
 from .showIm import showIm
 from . import JBhelpers
 import numpy

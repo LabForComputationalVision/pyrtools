@@ -1,7 +1,7 @@
 import numpy
 from .namedFilter import namedFilter
-from .corrDn import corrDn
-from .upConv import upConv
+from .convolutions import corrDn, upConv
+
 
 def blur(*args):
     ''' RES = blur(IM, LEVELS, FILT)

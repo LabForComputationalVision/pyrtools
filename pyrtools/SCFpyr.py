@@ -2,7 +2,7 @@ from .SFpyr import SFpyr
 import numpy
 from .steer2HarmMtx import steer2HarmMtx
 from .rcosFn import rcosFn
-from .pointOp import pointOp
+from .convolutions import pointOp
 import scipy
 from .mkAngle import mkAngle
 import cmath

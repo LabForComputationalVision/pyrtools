@@ -1,6 +1,6 @@
 import numpy
 from .namedFilter import namedFilter
-from .upConv import upConv
+from .convolutions import upConv
 
 def upBlur(*args):
     ''' RES = upBlur(IM, LEVELS, FILT)

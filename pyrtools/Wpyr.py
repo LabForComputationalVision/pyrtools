@@ -3,8 +3,7 @@ from .LB2idx import LB2idx
 from .namedFilter import namedFilter
 from .modulateFlip import modulateFlip
 from .maxPyrHt import maxPyrHt
-from .corrDn import corrDn
-from .upConv import upConv
+from .convolutions import corrDn, upConv
 from . import JBhelpers
 import numpy
 import matplotlib

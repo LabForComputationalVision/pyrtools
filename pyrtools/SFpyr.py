@@ -2,7 +2,7 @@ from .Spyr import Spyr
 import numpy
 from .steer2HarmMtx import steer2HarmMtx
 from .rcosFn import rcosFn
-from .pointOp import pointOp
+from .convolutions import pointOp
 import scipy
 import warnings
 

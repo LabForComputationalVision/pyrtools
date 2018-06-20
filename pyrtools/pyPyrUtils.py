@@ -15,29 +15,23 @@ from PIL import ImageTk
 import tkinter
 import ctypes
 import os
-libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
-# load the C library
-lib = ctypes.cdll.LoadLibrary(libpath)
+from .convolutions import corrDn, upConv, pointOp
 
 # we want to support both PyQt5 and PyQt4. In order to do that, we use this little work around. Any
 # other functions that need to make use of the PyQt functionality will import QtGui or QtCore from
 # this module.
-try:
-    __import__('PyQt5')
-    use_pyqt5 = True
-except ImportError:
-    use_pyqt5 = False
+# try:
+#     __import__('PyQt5')
+#     use_pyqt5 = True
+# except ImportError:
+#     use_pyqt5 = False
 
-if use_pyqt5:
-    from PyQt5 import QtGui
-    from PyQt5 import QtCore
-else:
-    from PyQt4 import QtGui
-    from PyQt4 import QtCore
-
-##############
-#  This code uses C code from wrapConv.so.  To compile type:
-#  gcc -shared -L/users-local/ryoung/anaconda2/lib -I/users-local/ryoung/anaconda2/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c
+# if use_pyqt5:
+#     from PyQt5 import QtGui
+#     from PyQt5 import QtCore
+# else:
+#     from PyQt4 import QtGui
+#     from PyQt4 import QtCore
 
 
 # Compute maximum pyramid height for given image and filter sizes.
@@ -2569,118 +2563,6 @@ def showIm(*args):
 
     tkinter.mainloop()
 
-def corrDn(image = None, filt = None, edges = 'reflect1', step = (1,1),
-           start = (0,0), stop = None, result = None):
-
-    if image == None or filt == None:
-        print('Error: image and filter are required input parameters!')
-        return
-    else:
-        image = image.copy()
-        filt = filt.copy()
-
-    if len(filt.shape) == 1:
-        filt = numpy.reshape(filt, (1,len(filt)))
-
-    if stop == None:
-        stop = (image.shape[0], image.shape[1])
-
-    if result == None:
-        rxsz = len(list(range(start[0], stop[0], step[0])))
-        rysz = len(list(range(start[1], stop[1], step[1])))
-        result = numpy.zeros((rxsz, rysz))
-
-    if edges == 'circular':
-        lib.internal_wrap_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 image.shape[1], image.shape[0],
-                                 filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 filt.shape[1], filt.shape[0],
-                                 start[1], step[1], stop[1], start[0], step[0],
-                                 stop[0],
-                                 result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
-    else:
-        tmp = numpy.zeros((filt.shape[0], filt.shape[1]))
-        lib.internal_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            image.shape[1], image.shape[0],
-                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            filt.shape[1], filt.shape[0],
-                            start[1], step[1], stop[1], start[0], step[0],
-                            stop[0],
-                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            edges)
-
-    return result
-
-def upConv(image = None, filt = None, edges = 'reflect1', step = (1,1),
-           start = (0,0), stop = None, result = None):
-
-    if image == None or filt == None:
-        print('Error: image and filter are required input parameters!')
-        return
-    else:
-        image = image.copy()
-        filt = filt.copy()
-
-    origShape = filt.shape
-    if len(filt.shape) == 1:
-        filt = numpy.reshape(filt, (1,len(filt)))
-
-    if ( (edges != "reflect1" or edges != "extend" or edges != "repeat") and
-         (filt.shape[0] % 2 == 0 or filt.shape[1] % 2 == 0) ):
-        if filt.shape[1] == 1:
-            filt = numpy.append(filt,0.0);
-            filt = numpy.reshape(filt, (len(filt), 1))
-        elif filt.shape[0] == 1:
-            filt = numpy.append(filt,0.0);
-            filt = numpy.reshape(filt, (1, len(filt)))
-        else:
-            print('Even sized 2D filters not yet supported by upConv.')
-            return
-
-    if stop == None and result == None:
-        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
-        stop = (stop[0], stop[1])
-    elif stop == None:
-        stop = (result.shape[0], result.shape[1])
-
-    if result == None:
-        result = numpy.zeros((stop[1], stop[0]))
-
-    temp = numpy.zeros((filt.shape[1], filt.shape[0]))
-
-    if edges == 'circular':
-        lib.internal_wrap_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 filt.shape[1], filt.shape[0], start[1],
-                                 step[1], stop[1], start[0], step[0], stop[0],
-                                 result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                                 stop[1], stop[0])
-        result = result.T
-    else:
-        lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            filt.shape[1], filt.shape[0], start[1], step[1],
-                            stop[1], start[0], step[0], stop[0],
-                            result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                            stop[1], stop[0], edges)
-        result = numpy.reshape(result, stop)
-
-    return result
-
-def pointOp(image, lut, origin, increment, warnings):
-    result = numpy.zeros((image.shape[0], image.shape[1]))
-
-    lib.internal_pointop(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                         result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                         image.shape[0] * image.shape[1],
-                         lut.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                         lut.shape[0],
-                         ctypes.c_double(origin),
-                         ctypes.c_double(increment), warnings)
-
-    return result
 
 def cconv2(*args):
     # RES = CCONV2(MTX1, MTX2, CTR)

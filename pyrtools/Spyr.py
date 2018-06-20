@@ -6,13 +6,12 @@ from .sp3Filters import sp3Filters
 from .sp5Filters import sp5Filters
 import os
 from .maxPyrHt import maxPyrHt
-from .corrDn import corrDn
+from .convolutions import corrDn, upConv
 import math
 from .LB2idx import LB2idx
 import matplotlib
 from .showIm import showIm
 from . import JBhelpers
-from .upConv import upConv
 from . import pyPyrUtils
 
 class Spyr(pyramid):

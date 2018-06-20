@@ -5,7 +5,7 @@ from .cconv2 import cconv2
 from .clip import clip
 from .comparePyr import comparePyr
 from .compareRecon import compareRecon
-from .corrDn import corrDn
+from .convolutions import corrDn, upConv
 from .entropy2 import entropy2
 from .factorial import factorial
 from .Gpyr import Gpyr
@@ -32,7 +32,6 @@ from .mkZonePlate import mkZonePlate
 from .modulateFlip import modulateFlip
 from .namedFilter import namedFilter
 from .nextSz import nextSz
-from .pointOp import pointOp
 from .pyramid import pyramid
 from .range2 import range2
 from .rconv2 import rconv2
@@ -53,7 +52,6 @@ from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer
 from .strictly_decreasing import strictly_decreasing
 from .upBlur import upBlur
-from .upConv import upConv
 from .var2 import var2
 from .Wpyr import Wpyr
 from .zconv2 import zconv2
@@ -61,6 +59,6 @@ import ctypes
 import os
 from . import JBhelpers
 
-libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
-# load the C library
-lib = ctypes.cdll.LoadLibrary(libpath)
+# libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
+# # load the C library
+# lib = ctypes.cdll.LoadLibrary(libpath)

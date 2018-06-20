@@ -2,7 +2,7 @@ from .Lpyr import Lpyr
 from .namedFilter import namedFilter
 from .maxPyrHt import maxPyrHt
 import numpy
-from .corrDn import corrDn
+from .convolutions import corrDn
 
 class Gpyr(Lpyr):
     filt = ''

@@ -1,6 +1,6 @@
 import numpy
 from .namedFilter import namedFilter
-from .corrDn import corrDn
+from .convolutions import corrDn
 
 def blurDn(*args):
     ''' RES = blurDn(IM, LEVELS, FILT)
