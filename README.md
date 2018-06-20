@@ -1,9 +1,12 @@
 # pyPyrTools
 
-A port of Eero Simoncelli's matlabPyrTools to Python.  This port does
-not attept to recreate all of the matlab code from matlabPyrTools.
+A python 3.6 port of Eero Simoncelli's matlabPyrTools.  This port does
+not attempt to recreate all of the matlab code from matlabPyrTools.
 The goal is to create a Python interface for the C code at the heart
 of matlabPyrTools.
+
+NOTE: This code is all under development and will NOT WORK for a while yet.
+We are actively porting it to python 3.6 and (parts of it) to pytorch.
 
 All code should be considered a beta release.  By that we mean that it is being
 actively developed and tested.  You can find unit tests in
@@ -44,8 +47,8 @@ Other requirements:
 
 # Usage:
 
-method parameters mimic the matlab function parameters except that there's no 
-need to pass pyr or pind, since the pyPyrTools version pyr and pyrSize are 
+method parameters mimic the matlab function parameters except that there's no
+need to pass pyr or pind, since the pyPyrTools version pyr and pyrSize are
 properties of the class.
 
 - load modules (note that if you installed via pip, you can skip the
@@ -97,7 +100,7 @@ freak out.
 
 + `maxPyrHt(imsz, filtsz)`
 
-  return the maximum possible pyramid height from the given image and filter 
+  return the maximum possible pyramid height from the given image and filter
   size
   - `imsz` - integer giving the image size
   - `filtsz` - integer giving the filter size
@@ -135,14 +138,14 @@ freak out.
   position `origin` (defaults to `ceil(size/2)`), of value `amplitude`
   (defaults to 1).
 
-+ `Lpyr(image, height, filter1, filter2, edges)` 
++ `Lpyr(image, height, filter1, filter2, edges)`
 
   Laplacian pyramid: image parameter is required, others are optional
   - `image` - a 2D numpy array
   - `height` - an integer denoting number of pyramid levels
     desired. Defaults to `maxPyrHt` from pyPyrUtils.
-  - `filter1` - can be a string namimg a standard filter (from 
-		  	   pyPyrUtils.namedFilter()), or a numpy array which 
+  - `filter1` - can be a string namimg a standard filter (from
+		  	   pyPyrUtils.namedFilter()), or a numpy array which
 			   will be used for (separable) convolution. Default is
 			   'binom5'.
   - `filter2` - specifies the "expansion" filter (default = filt1).
@@ -155,7 +158,7 @@ freak out.
 	* `'extend'` - reflect and invert
 	* `'dont-compute'` - zero output when filter overhangs imput
 	  boundaries.
-	  
+
    Methods:
    - `reconLpyr(levs, filt2, edges)`: Reconstruct image from Laplacian
      pyramid object	 
@@ -186,12 +189,12 @@ freak out.
        taps of the lowpass filter used to construct the pyramid
        (default assumes L2-normalized filters, using a value of 2 for
        2D images, sqrt(2) for 1D images).
-    
+
 + `Gpyr(image, height, filter, edges)`
 
   Gaussian pyramid (subclass of Lpyr). image parameter is required,
   others are optional.
-  
+
   - `image` - a 2D numpy array
   - `height` - an integer denoting number of pyramid levels desired.
     Defaults to `maxPyrHt` from pyPyrUtils.
@@ -210,10 +213,10 @@ freak out.
 + `Spyr(image, height, filter, edges)`
 
   Steerable pyramid. image parameter is required, others are optional
-  
+
   - `image` - a 2D numpy array
   - `height` - an integer denoting number of pyramid levels
-		       	  	   desired.  Defaults to maxPyrHt from 
+		       	  	   desired.  Defaults to maxPyrHt from
 				   pyPyrUtils. You can specify 'auto' to use
 				   this value.
   - `filter` - The name of one of the steerable pyramid filters in
@@ -242,5 +245,3 @@ freak out.
     - `bands` - (optional) should be a list of bands to include, or
       the string `'all'` (default). 0 = vertical, rest proceeding
       anti-clockwise.
-           
-
