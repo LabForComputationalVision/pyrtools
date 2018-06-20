@@ -1183,11 +1183,7 @@ def rconv2(*args):
     return scipy.signal.convolve(clarge, small, 'valid')
 
 # compute minimum and maximum values of input matrix, returning them as tuple
-def range2(*args):
-    if not numpy.isreal(args[0]).all():
-        print('Error: matrix must be real-valued')
-
-    return (args[0].min(), args[0].max())
+from .imStats import range2
 
 # Sample variance of a matrix.
 #  Passing MEAN (optional) makes the calculation faster.

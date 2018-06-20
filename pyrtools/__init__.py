@@ -12,7 +12,7 @@ from .histoMatch import histoMatch
 from .histo import histo
 from .idx2LB import idx2LB
 from .imGradient import imGradient
-from .imStats import imStats
+from .imStats import imStats, range2
 from .kurt2 import kurt2
 from .LB2idx import LB2idx
 from .Lpyr import Lpyr
@@ -32,7 +32,6 @@ from .modulateFlip import modulateFlip
 from .namedFilter import namedFilter
 from .nextSz import nextSz
 from .pyramid import pyramid
-from .range2 import range2
 from .rcosFn import rcosFn
 from .round import round
 from .roundVal import roundVal
