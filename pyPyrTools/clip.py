@@ -10,8 +10,8 @@ def clip(*args):
         ported to Python by Rob Young, 8/15  '''
     
     if len(args) == 0 or len(args) > 3:
-        print 'Usage: clip(im, minVal or Range, maxVal)'
-        print 'first input parameter is required'
+        print('Usage: clip(im, minVal or Range, maxVal)')
+        print('first input parameter is required')
         return
         
     im = numpy.array(args[0])
@@ -20,7 +20,7 @@ def clip(*args):
         minVal = 0;
         maxVal = 1;
     elif len(args) == 2:
-        if isinstance(args[1], (int, long, float)):
+        if isinstance(args[1], (int, float)):
             minVal = args[1]
             maxVal = args[1]+1
         else:
@@ -31,7 +31,7 @@ def clip(*args):
         maxVal = args[2]
         
     if maxVal < minVal:
-        print 'Error: maxVal cannot be less than minVal!'
+        print('Error: maxVal cannot be less than minVal!')
         return
 
     im[numpy.where(im < minVal)] = minVal

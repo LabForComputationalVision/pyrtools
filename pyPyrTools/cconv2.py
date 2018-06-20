@@ -18,9 +18,9 @@ def cconv2(*args):
         Python port by Rob Young, 8/15  '''
     
     if len(args) < 2:
-        print 'Error: cconv2 requires two input matrices!'
-        print 'Usage: cconv2(matrix1, matrix2, center)'
-        print 'where center parameter is optional'
+        print('Error: cconv2 requires two input matrices!')
+        print('Usage: cconv2(matrix1, matrix2, center)')
+        print('where center parameter is optional')
         return
     else:
         a = numpy.array(args[0])
@@ -38,7 +38,7 @@ def cconv2(*args):
         large = b
         small = a
     else:
-        print 'Error: one matrix must be larger than the other in both dimensions!'
+        print('Error: one matrix must be larger than the other in both dimensions!')
         return
     
     ly = large.shape[0]

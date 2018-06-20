@@ -1,5 +1,5 @@
 import numpy
-from mkAngle import mkAngle
+from .mkAngle import mkAngle
 
 def mkAngularSine(*args):
     ''' IM = mkAngularSine(SIZE, HARMONIC, AMPL, PHASE, ORIGIN)
@@ -13,15 +13,15 @@ def mkAngularSine(*args):
         Eero Simoncelli, 2/97.  Python port by Rob Young, 7/15.  '''
 
     if len(args) == 0:
-        print "mkAngularSine(SIZE, HARMONIC, AMPL, PHASE, ORIGIN)"
-        print "first argument is required"
+        print("mkAngularSine(SIZE, HARMONIC, AMPL, PHASE, ORIGIN)")
+        print("first argument is required")
         exit(1)
     else:
         sz = args[0]
         if isinstance(sz, (int)):
             sz = (sz, sz)
         elif not isinstance(sz, (tuple)):
-            print "first argument must be a two element tuple or an integer"
+            print("first argument must be a two element tuple or an integer")
             exit(1)
 
     # OPTIONAL args:

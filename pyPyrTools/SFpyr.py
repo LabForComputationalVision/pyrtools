@@ -1,8 +1,8 @@
-from Spyr import Spyr
+from .Spyr import Spyr
 import numpy
-from steer2HarmMtx import steer2HarmMtx
-from rcosFn import rcosFn
-from pointOp import pointOp
+from .steer2HarmMtx import steer2HarmMtx
+from .rcosFn import rcosFn
+from .pointOp import pointOp
 import scipy
 import warnings
 
@@ -67,25 +67,25 @@ class SFpyr(Spyr):
         # steering stuff:
 
         if nbands % 2 == 0:
-            harmonics = numpy.array(range(nbands/2)) * 2 + 1
+            harmonics = numpy.array(list(range(nbands/2))) * 2 + 1
         else:
-            harmonics = numpy.array(range((nbands-1)/2)) * 2
+            harmonics = numpy.array(list(range((nbands-1)/2))) * 2
         if harmonics.size == 0:
             # in this case, harmonics is an empty matrix. This happens when nbands=0 and (based on
             # how the matlab code acts), in that situation, we actually want harmonics to be 0.
             harmonics = numpy.array([0])
         self.harmonics = harmonics
 
-        self.steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(range(nbands))/nbands, 'even')
+        self.steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(list(range(nbands)))/nbands, 'even')
 
         #------------------------------------------------------
         
         dims = numpy.array(self.image.shape)
         ctr = numpy.ceil((numpy.array(dims)+0.5)/2).astype(int)
         
-        (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
+        (xramp, yramp) = numpy.meshgrid((numpy.array(list(range(1,dims[1]+1)))-ctr[1])/
                                      (dims[1]/2.), 
-                                     (numpy.array(range(1,dims[0]+1))-ctr[0])/
+                                     (numpy.array(list(range(1,dims[0]+1)))-ctr[0])/
                                      (dims[0]/2.))
         angle = numpy.arctan2(yramp, xramp)
         log_rad = numpy.sqrt(xramp**2 + yramp**2)
@@ -128,7 +128,7 @@ class SFpyr(Spyr):
             Xrcos -= numpy.log2(2)
 
             lutsize = 1024
-            Xcosn = numpy.pi * numpy.array(range(-(2*lutsize+1), (lutsize+2))) / lutsize
+            Xcosn = numpy.pi * numpy.array(list(range(-(2*lutsize+1), (lutsize+2)))) / lutsize
 
             order = nbands -1
             const = (2**(2*order))*(scipy.misc.factorial(order, exact=True)**2)/float(nbands*scipy.misc.factorial(2*order, exact=True))
@@ -212,17 +212,17 @@ class SFpyr(Spyr):
         nbands = self.numBands()
         
         maxLev = 1 + self.spyrHt()
-        if isinstance(levs, basestring) and levs == 'all':
-            levs = numpy.array(range(maxLev+1))
-        elif isinstance(levs, basestring):
+        if isinstance(levs, str) and levs == 'all':
+            levs = numpy.array(list(range(maxLev+1)))
+        elif isinstance(levs, str):
             raise Exception("%s not valid for levs parameter. levs must be either a 1D numpy array"
                             " or the string 'all'." % levs)
         else:
             levs = numpy.array(levs)
 
-        if isinstance(bands, basestring) and bands == 'all':
-            bands = numpy.array(range(nbands))
-        elif isinstance(bands, basestring):
+        if isinstance(bands, str) and bands == 'all':
+            bands = numpy.array(list(range(nbands)))
+        elif isinstance(bands, str):
             raise Exception("%s not valid for bands parameter. bands must be either a 1D numpy"
                             " array or the string 'all'." % bands)
             return
@@ -253,9 +253,9 @@ class SFpyr(Spyr):
         dims = numpy.array(self.pyrSize[0])
         ctr = numpy.ceil((dims+0.5)/2.0).astype(int)
 
-        (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
+        (xramp, yramp) = numpy.meshgrid((numpy.array(list(range(1,dims[1]+1)))-ctr[1])/
                                      (dims[1]/2.), 
-                                     (numpy.array(range(1,dims[0]+1))-ctr[0])/
+                                     (numpy.array(list(range(1,dims[0]+1)))-ctr[0])/
                                      (dims[0]/2.))
         angle = numpy.arctan2(yramp, xramp)
         log_rad = numpy.sqrt(xramp**2 + yramp**2)
@@ -269,7 +269,7 @@ class SFpyr(Spyr):
 
         # from reconSFpyrLevs
         lutsize = 1024
-        Xcosn = numpy.pi * numpy.array(range(-(2*lutsize+1), (lutsize+2))) / lutsize
+        Xcosn = numpy.pi * numpy.array(list(range(-(2*lutsize+1), (lutsize+2)))) / lutsize
         
         order = nbands -1
         const = (2**(2*order))*(scipy.misc.factorial(order, exact=True)**2)/float(nbands*scipy.misc.factorial(2*order, exact=True))

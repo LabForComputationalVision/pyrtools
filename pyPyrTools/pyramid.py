@@ -9,7 +9,7 @@ class pyramid:  # pyramid
 
     # constructor
     def __init__(self):
-        print "please specify type of pyramid to create (Gpry, Lpyr, etc.)"
+        print("please specify type of pyramid to create (Gpry, Lpyr, etc.)")
         return
 
     # methods

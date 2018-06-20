@@ -20,8 +20,8 @@ def zconv2(*args):
     #----------------------------------------------------------------
     
     if len(args) < 2 or len(args) > 3:
-        print 'Usage: zconv2(matrix1, matrix2, center)'
-        print 'first two input parameters are required'
+        print('Usage: zconv2(matrix1, matrix2, center)')
+        print('first two input parameters are required')
         return
     else:
         a = numpy.array(args[0])
@@ -44,7 +44,7 @@ def zconv2(*args):
         large = b
         small = a
     else:
-        print 'Error: one arg must be larger than the other in both dimensions!'
+        print('Error: one arg must be larger than the other in both dimensions!')
         return
         
     ly = large.shape[0]

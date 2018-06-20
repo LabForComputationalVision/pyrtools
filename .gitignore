@@ -24,3 +24,5 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.DS_Store
+*-checkpoint.ipynb

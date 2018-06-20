@@ -14,15 +14,15 @@ def mkGaussian(*args):
         Eero Simoncelli, 6/96. Python port by Rob Young, 7/15.  '''
 
     if len(args) == 0:
-        print "mkRamp(SIZE, COVARIANCE, MEAN, AMPLITUDE)"
-        print "first argument is required"
+        print("mkRamp(SIZE, COVARIANCE, MEAN, AMPLITUDE)")
+        print("first argument is required")
         exit(1)
     else:
         sz = args[0]
         if isinstance(sz, (int)):
             sz = (sz, sz)
         elif not isinstance(sz, (tuple)):
-            print "first argument must be a two element tuple or an integer"
+            print("first argument must be a two element tuple or an integer")
             exit(1)
 
     # OPTIONAL args:
@@ -46,14 +46,14 @@ def mkGaussian(*args):
 
     #---------------------------------------------------------------
         
-    (xramp, yramp) = numpy.meshgrid(numpy.array(range(1,sz[1]+1))-mn[1], 
-                                    numpy.array(range(1,sz[0]+1))-mn[0])
+    (xramp, yramp) = numpy.meshgrid(numpy.array(list(range(1,sz[1]+1)))-mn[1], 
+                                    numpy.array(list(range(1,sz[0]+1)))-mn[0])
 
-    if isinstance(cov, (int, long, float)):
+    if isinstance(cov, (int, float)):
         if 'norm' == ampl:
             ampl = 1.0 / (2.0 * numpy.pi * cov)
         e = ( (xramp**2) + (yramp**2) ) / ( -2.0 * cov )
-    elif len(cov) == 2 and isinstance(cov[0], (int, long, float)):
+    elif len(cov) == 2 and isinstance(cov[0], (int, float)):
         if 'norm' == ampl:
             if cov[0]*cov[1] < 0:
                 ampl = 1.0 / (2.0 * numpy.pi * 

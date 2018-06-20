@@ -1,4 +1,4 @@
-from binomialFilter import binomialFilter
+from .binomialFilter import binomialFilter
 import math
 import numpy
 
@@ -54,7 +54,7 @@ def namedFilter(name):
     elif name is "gauss3":  # for backward-compatibility
         kernel = math.sqrt(2) * numpy.array([[0.25], [0.5], [0.25]])
     else:
-        print "Error: Bad filter name: %s" % (name)
+        print("Error: Bad filter name: %s" % (name))
         exit(1)
 
     return numpy.array(kernel)

@@ -17,8 +17,8 @@ def mkAngle(size, phase=0, origin=None):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    xramp, yramp = numpy.meshgrid(numpy.array(range(1, size[1]+1))-origin[1],
-                                  numpy.array(range(1, size[0]+1))-origin[0])
+    xramp, yramp = numpy.meshgrid(numpy.array(list(range(1, size[1]+1)))-origin[1],
+                                  numpy.array(list(range(1, size[0]+1)))-origin[0])
     xramp = numpy.array(xramp)
     yramp = numpy.array(yramp)
 

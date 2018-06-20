@@ -1,36 +1,36 @@
-from pyramid import pyramid
+from .pyramid import pyramid
 import numpy
-from sp0Filters import sp0Filters
-from sp1Filters import sp1Filters
-from sp3Filters import sp3Filters
-from sp5Filters import sp5Filters
+from .sp0Filters import sp0Filters
+from .sp1Filters import sp1Filters
+from .sp3Filters import sp3Filters
+from .sp5Filters import sp5Filters
 import os
-from maxPyrHt import maxPyrHt
-from corrDn import corrDn
+from .maxPyrHt import maxPyrHt
+from .corrDn import corrDn
 import math
-from LB2idx import LB2idx
+from .LB2idx import LB2idx
 import matplotlib
-from showIm import showIm
-import JBhelpers
-from upConv import upConv
-import pyPyrUtils
+from .showIm import showIm
+from . import JBhelpers
+from .upConv import upConv
+from . import pyPyrUtils
 
 class Spyr(pyramid):
     filt = ''
     edges = ''
-    
+
     #constructor
     def __init__(self, image, height='auto', filter='sp1Filters', edges='reflect1'):
         """Steerable pyramid. image parameter is required, others are optional
-        
+
         - `image` - a 2D numpy array
-  
+
         - `height` - an integer denoting number of pyramid levels desired.  'auto' (default) uses
         maxPyrHt from pyPyrUtils.
 
         - `filter` - The name of one of the steerable pyramid filters in pyPyrUtils:
         `'sp0Filters'`, `'sp1Filters'`, `'sp3Filters'`, `'sp5Filters'`.  Default is `'sp1Filters'`.
-    
+
         - `edges` - specifies edge-handling.  Options are:
            * `'circular'` - circular convolution
            * `'reflect1'` - reflect about the edge pixels
@@ -65,7 +65,7 @@ class Spyr(pyramid):
         lofilt = filters['lofilt']
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
-        
+
         max_ht = maxPyrHt(self.image.shape, lofilt.shape)
         if height == 'auto':
             ht = max_ht
@@ -117,7 +117,7 @@ class Spyr(pyramid):
 
         band and value must be integers, location can be an int or a tuple
         """
-        if isinstance(location, (int, long)):
+        if isinstance(location, int):
             self.pyr[band][0][location] = value
         elif isinstance(location, tuple):
             self.pyr[band][location[0]][location[1]] = value
@@ -127,7 +127,7 @@ class Spyr(pyramid):
     def spyrLev(self, lev):
         if lev < 0 or lev > self.spyrHt()-1:
             raise Exception('level parameter must be between 0 and %d!' % (self.spyrHt()-1))
-        
+
         levArray = []
         for n in range(self.numBands()):
             levArray.append(self.spyrBand(lev, n))
@@ -155,7 +155,7 @@ class Spyr(pyramid):
             return 0
         else:
             b = 2
-            while ( b <= len(self.pyrSize) and 
+            while ( b <= len(self.pyrSize) and
                     self.pyrSize[b] == self.pyrSize[1] ):
                 b += 1
             return b-1
@@ -179,10 +179,10 @@ class Spyr(pyramid):
             elif args[0] == 'sp5Filters':
                 filters = sp5Filters()
             elif os.path.isfile(args[0]):
-                print "Filter files not supported yet"
+                print("Filter files not supported yet")
                 return
             else:
-                print "filter %s not supported" % (args[0])
+                print("filter %s not supported" % (args[0]))
                 return
         else:
             filters = sp1Filters()
@@ -199,7 +199,7 @@ class Spyr(pyramid):
             edges = args[1]
         else:
             edges = 'reflect1'
-            
+
         if len(args) > 2:
             levs = args[2]
         else:
@@ -211,10 +211,10 @@ class Spyr(pyramid):
             bands = 'all'
 
         #---------------------------------------------------------
-        
+
         maxLev = 2 + self.spyrHt()
         if levs == 'all':
-            levs = numpy.array(range(maxLev))
+            levs = numpy.array(list(range(maxLev)))
         else:
             levs = numpy.array(levs)
             if (levs < 0).any() or (levs >= maxLev).any():
@@ -224,7 +224,7 @@ class Spyr(pyramid):
                 if len(levs) > 1 and levs[0] < levs[1]:
                     levs = levs[::-1]  # we want smallest first
         if bands == 'all':
-            bands = numpy.array(range(self.numBands()))
+            bands = numpy.array(list(range(self.numBands())))
         else:
             bands = numpy.array(bands)
             if (bands < 0).any() or (bands > bfilts.shape[1]).any():
@@ -237,7 +237,7 @@ class Spyr(pyramid):
         Nbands = self.numBands()
 
         reconList = []  # pyr indices used in reconstruction
-        
+
         for lev in levs:
             if lev == 0:
                 reconList.append(0)
@@ -248,7 +248,7 @@ class Spyr(pyramid):
             else:
                 for band in bands:
                     reconList.append( ((lev-1) * Nbands) + band + 1)
-                    
+
         reconList = numpy.sort(reconList)[::-1]  # deepest level first
 
         # initialize reconstruction
@@ -269,7 +269,7 @@ class Spyr(pyramid):
             bandImageIdx = 1 + (((Nlevs-1)-level) * Nbands)
             for band in range(Nbands-1,-1,-1):
                 if bandImageIdx in reconList:
-                    filt = bfilts[:,(Nbands-1)-band].reshape(bfiltsz, 
+                    filt = bfilts[:,(Nbands-1)-band].reshape(bfiltsz,
                                                              bfiltsz,
                                                              order='F')
 
@@ -291,7 +291,7 @@ class Spyr(pyramid):
                            result = recon)
 
         return recon
-    
+
     def showPyr(self, prange = 'auto2', gap = 1, scale = 2, disp = 'qt'):
         ht = self.spyrHt()
         nind = len(self.pyr)
@@ -352,10 +352,10 @@ class Spyr(pyramid):
             av = numpy.mean(band)
             stdev = numpy.sqrt( numpy.var(band) )
             prange[nind-1,:] = numpy.array([av-2*stdev, av+2*stdev])
-        elif isinstance(prange, basestring):
+        elif isinstance(prange, str):
             raise Exception("Bad RANGE argument: %s'" % (prange))
         elif prange.shape[0] == 1 and prange.shape[1] == 2:
-            scales = numpy.power(scale, range(ht))
+            scales = numpy.power(scale, list(range(ht)))
             scales = numpy.outer( numpy.ones((nbands,1)), scales )
             scales = numpy.array([1, scales, numpy.power(scale, ht)])
             prange = numpy.outer(scales, prange)
@@ -369,19 +369,19 @@ class Spyr(pyramid):
 
         if nbands == 2:
             ncols = 1
-            nrows = 2
+            nrows = 1 # pe: nrows was incorrectely set to 2, changed it to 1 2/18
         else:
             ncols = int(numpy.ceil((nbands+1)/2))
             nrows = int(numpy.ceil(nbands/2))
 
-        a = numpy.array(range(1-nrows, 1))
+        a = numpy.array(list(range(1-nrows, 1)))
         b = numpy.zeros((1,ncols))[0]
         ab = numpy.concatenate((a,b))
         c = numpy.zeros((1,nrows))[0]
-        d = range(-1, -ncols-1, -1)
+        d = list(range(-1, -ncols-1, -1))
         cd = numpy.concatenate((c,d))
         relpos = numpy.vstack((ab,cd)).T
-        
+
         if nbands > 1:
             mvpos = numpy.array([-1, -1]).reshape(1,2)
         else:
@@ -395,7 +395,7 @@ class Spyr(pyramid):
             if nbands < 5:         # to align edges
                 sz += gap * (ht-lnum)
             llpos[ind1:ind1+nbands, :] = numpy.dot(relpos, numpy.diag(sz)) + ( numpy.ones((nbands,1)) * basepos )
-    
+
         # lowpass band
         sz = numpy.array(self.pyrSize[nind-1]) + gap
         basepos += mvpos * sz
@@ -408,13 +408,13 @@ class Spyr(pyramid):
         llpos = llpos.astype(int)
         urpos = llpos + self.pyrSize
         d_im = numpy.zeros((numpy.amax(urpos), numpy.amax(urpos)))
-        
+
         # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
         nshades = 64;
 
         for bnum in range(1,nind):
             mult = (nshades-1) / (prange[bnum,1]-prange[bnum,0])
-            d_im[llpos[bnum,0]:urpos[bnum,0], 
+            d_im[llpos[bnum,0]:urpos[bnum,0],
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
 
         if disp == 'qt':

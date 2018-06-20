@@ -4,8 +4,8 @@ def mkImpulse(*args):
     ''' create an image that is all zeros except for an impulse '''
 
     if(len(args) == 0):
-        print "mkImpulse(size, origin, amplitude)"
-        print "first input parameter is required"
+        print("mkImpulse(size, origin, amplitude)")
+        print("first input parameter is required")
         return
     
     if(isinstance(args[0], int)):
@@ -13,7 +13,7 @@ def mkImpulse(*args):
     elif(isinstance(args[0], tuple)):
         sz = args[0]
     else:
-        print "size parameter must be either an integer or a tuple"
+        print("size parameter must be either an integer or a tuple")
         return
 
     if(len(args) > 1):

@@ -1,6 +1,6 @@
 import numpy
-from namedFilter import namedFilter
-from corrDn import corrDn
+from .namedFilter import namedFilter
+from .corrDn import corrDn
 
 def blurDn(*args):
     ''' RES = blurDn(IM, LEVELS, FILT)
@@ -15,7 +15,7 @@ def blurDn(*args):
         function res = blurDn(im, nlevs, filt)  '''
 
     if len(args) == 0:
-        print "Error: image input parameter required."
+        print("Error: image input parameter required.")
         return
 
     im = numpy.array(args[0])
@@ -28,7 +28,7 @@ def blurDn(*args):
 
     if len(args) > 2:
         filt = args[2]
-        if isinstance(filt, basestring):
+        if isinstance(filt, str):
             filt = namedFilter(filt)
     else:
         filt = namedFilter('binom5')
@@ -48,7 +48,7 @@ def blurDn(*args):
             # 1D image
             if len(filt.shape) > 1 and (filt.shape[1]!=1 and filt.shape[2]!=1):
                 # >1D filter
-                print 'Error: Cannot apply 2D filter to 1D signal'
+                print('Error: Cannot apply 2D filter to 1D signal')
                 return
             # orient filter and image correctly
             if im.shape[0] == 1:

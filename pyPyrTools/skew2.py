@@ -1,13 +1,13 @@
 import numpy
-from var2 import var2
+from .var2 import var2
 
 def skew2(*args):
     ''' Sample skew (third moment divided by variance^3/2) of a matrix.
         MEAN (optional) and VAR (optional) make the computation faster.  '''
 
     if len(args) == 0:
-        print 'Usage: skew2(matrix, mean, variance)'
-        print 'mean and variance arguments are optional'
+        print('Usage: skew2(matrix, mean, variance)')
+        print('mean and variance arguments are optional')
     else:
         mtx = numpy.array(args[0])
 

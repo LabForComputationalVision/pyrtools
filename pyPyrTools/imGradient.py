@@ -1,5 +1,5 @@
 import numpy
-from corrDn import corrDn
+from .corrDn import corrDn
 
 def imGradient(*args):
     ''' [dx, dy] = imGradient(im, edges) 
@@ -18,8 +18,8 @@ def imGradient(*args):
         Python port by Rob Young, 10/15  '''
     
     if len(args) == 0 or len(args) > 2:
-        print 'Usage: imGradient(image, edges)'
-        print "'edges' argument is optional"
+        print('Usage: imGradient(image, edges)')
+        print("'edges' argument is optional")
     elif len(args) == 1:
         edges = "dont-compute"
     elif len(args) == 2:

@@ -8,7 +8,7 @@ def factorial(*args):
         EPS, 11/02, Python port by Rob Young, 10/15  '''
 
     # if scalar input make it a single element array
-    if isinstance(args[0], (int, long, float)):
+    if isinstance(args[0], (int, float)):
         num = numpy.array([args[0]])
     else:
         num = numpy.array(args[0])

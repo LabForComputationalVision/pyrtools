@@ -47,8 +47,8 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
         stop = (image.shape[0], image.shape[1])
 
     if result is None:
-        rxsz = len(range(start[0], stop[0], step[0]))
-        rysz = len(range(start[1], stop[1], step[1]))
+        rxsz = len(list(range(start[0], stop[0], step[0])))
+        rysz = len(list(range(start[1], stop[1], step[1])))
         result = numpy.zeros((rxsz, rysz))
     else:
         result = numpy.array(result.copy())

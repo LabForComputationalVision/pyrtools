@@ -1,8 +1,8 @@
-from Lpyr import Lpyr
-from namedFilter import namedFilter
-from maxPyrHt import maxPyrHt
+from .Lpyr import Lpyr
+from .namedFilter import namedFilter
+from .maxPyrHt import maxPyrHt
 import numpy
-from corrDn import corrDn
+from .corrDn import corrDn
 
 class Gpyr(Lpyr):
     filt = ''
@@ -14,7 +14,7 @@ class Gpyr(Lpyr):
         self.pyrType = 'Gaussian'
         self.image = image
 
-        if isinstance(filt, basestring):
+        if isinstance(filt, str):
             self.filt = namedFilter(filt)
         else:
             self.filt = filt

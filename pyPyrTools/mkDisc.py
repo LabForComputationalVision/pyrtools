@@ -1,8 +1,8 @@
 import numpy
 import sys
-from mkR import mkR
-from rcosFn import rcosFn
-from pointOp import pointOp
+from .mkR import mkR
+from .rcosFn import rcosFn
+from .pointOp import pointOp
 
 def mkDisc(*args):
     ''' IM = mkDisc(SIZE, RADIUS, ORIGIN, TWIDTH, VALS)
@@ -18,15 +18,15 @@ def mkDisc(*args):
         Eero Simoncelli, 6/96. Python port by Rob Young, 7/15.  '''
 
     if len(args) == 0:
-        print "mkDisc(SIZE, RADIUS, ORIGIN, TWIDTH, VALS)"
-        print "first argument is required"
+        print("mkDisc(SIZE, RADIUS, ORIGIN, TWIDTH, VALS)")
+        print("first argument is required")
         exit(1)
     else:
         sz = args[0]
         if isinstance(sz, (int)):
             sz = (sz, sz)
         elif not isinstance(sz, (tuple)):
-            print "first argument must be a two element tuple or an integer"
+            print("first argument must be a two element tuple or an integer")
             exit(1)
 
     # OPTIONAL args:

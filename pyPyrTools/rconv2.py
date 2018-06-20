@@ -13,7 +13,7 @@ def rconv2(*args):
               1   (DIM/2)+1  '''
     
     if len(args) < 2:
-        print "Error: two matrices required as input parameters"
+        print("Error: two matrices required as input parameters")
         return
 
     if len(args) == 2:
@@ -28,7 +28,7 @@ def rconv2(*args):
         large = args[1]
         small = args[0]
     else:
-        print 'one arg must be larger than the other in both dimensions!'
+        print('one arg must be larger than the other in both dimensions!')
         return
 
     ly = large.shape[0]

@@ -1,6 +1,6 @@
 import numpy
-from namedFilter import namedFilter
-from upConv import upConv
+from .namedFilter import namedFilter
+from .upConv import upConv
 
 def upBlur(*args):
     ''' RES = upBlur(IM, LEVELS, FILT)
@@ -20,8 +20,8 @@ def upBlur(*args):
     # REQUIRED ARGS
     
     if len(args) == 0:
-        print 'Usage: upBlur(image, levels, filter)'
-        print 'first argument is required'
+        print('Usage: upBlur(image, levels, filter)')
+        print('first argument is required')
     else:
         im = numpy.array(args[0])
 
@@ -40,7 +40,7 @@ def upBlur(*args):
 
     #------------------------------------------------------------------
 
-    if isinstance(filt, basestring):
+    if isinstance(filt, str):
         filt = namedFilter(filt)
 
     if nlevs > 1:

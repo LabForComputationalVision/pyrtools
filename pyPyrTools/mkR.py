@@ -19,8 +19,8 @@ def mkR(size, expt=1, origin=None):
 
     # -----------------------------------------------------------------
 
-    xramp, yramp = numpy.meshgrid(numpy.array(range(1, size[1]+1))-origin[1],
-                                  numpy.array(range(1, size[0]+1))-origin[0])
+    xramp, yramp = numpy.meshgrid(numpy.array(list(range(1, size[1]+1)))-origin[1],
+                                  numpy.array(list(range(1, size[0]+1)))-origin[0])
 
     res = (xramp**2 + yramp**2)**(expt/2.0)
 

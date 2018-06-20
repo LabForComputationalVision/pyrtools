@@ -1,10 +1,10 @@
-from SFpyr import SFpyr
+from .SFpyr import SFpyr
 import numpy
-from steer2HarmMtx import steer2HarmMtx
-from rcosFn import rcosFn
-from pointOp import pointOp
+from .steer2HarmMtx import steer2HarmMtx
+from .rcosFn import rcosFn
+from .pointOp import pointOp
 import scipy
-from mkAngle import mkAngle
+from .mkAngle import mkAngle
 import cmath
 
 class SCFpyr(SFpyr):
@@ -18,7 +18,7 @@ class SCFpyr(SFpyr):
         if len(args) > 0:
             self.image = args[0]
         else:
-            print "First argument (image) is required."
+            print("First argument (image) is required.")
             return
 
         #------------------------------------------------
@@ -27,7 +27,7 @@ class SCFpyr(SFpyr):
         max_ht = numpy.floor( numpy.log2( min(self.image.shape) ) ) - 2
         if len(args) > 1:
             if(args[1] > max_ht):
-                print "Error: cannot build pyramid higher than %d levels." % (max_ht)
+                print("Error: cannot build pyramid higher than %d levels." % (max_ht))
             ht = args[1]
         else:
             ht = max_ht
@@ -35,7 +35,7 @@ class SCFpyr(SFpyr):
             
         if len(args) > 2:
             if args[2] > 15 or args[2] < 0:
-                print "Warning: order must be an integer in the range [0,15]. Truncating."
+                print("Warning: order must be an integer in the range [0,15]. Truncating.")
                 order = min( max(args[2],0), 15 )
             else:
                 order = args[2]
@@ -46,7 +46,7 @@ class SCFpyr(SFpyr):
 
         if len(args) > 3:
             if args[3] <= 0:
-                print "Warning: twidth must be positive. Setting to 1."
+                print("Warning: twidth must be positive. Setting to 1.")
                 twidth = 1
             else:
                 twidth = args[3]
@@ -57,21 +57,21 @@ class SCFpyr(SFpyr):
         # steering stuff:
 
         if nbands % 2 == 0:
-            harmonics = numpy.array(range(nbands/2)) * 2 + 1
+            harmonics = numpy.array(list(range(nbands/2))) * 2 + 1
         else:
-            harmonics = numpy.array(range((nbands-1)/2)) * 2
+            harmonics = numpy.array(list(range((nbands-1)/2))) * 2
 
         steermtx = steer2HarmMtx(harmonics,
-                                 numpy.pi*numpy.array(range(nbands))/nbands,
+                                 numpy.pi*numpy.array(list(range(nbands)))/nbands,
                                  'even')
         #------------------------------------------------------
         
         dims = numpy.array(self.image.shape)
         ctr = numpy.ceil((numpy.array(dims)+0.5)/2).astype(int)
         
-        (xramp, yramp) = numpy.meshgrid((numpy.array(range(1,dims[1]+1))-ctr[1])/
+        (xramp, yramp) = numpy.meshgrid((numpy.array(list(range(1,dims[1]+1)))-ctr[1])/
                                      (dims[1]/2), 
-                                     (numpy.array(range(1,dims[0]+1))-ctr[0])/
+                                     (numpy.array(list(range(1,dims[0]+1)))-ctr[0])/
                                      (dims[0]/2))
         angle = numpy.arctan2(yramp, xramp)
         log_rad = numpy.sqrt(xramp**2 + yramp**2)
@@ -108,7 +108,7 @@ class SCFpyr(SFpyr):
             Xrcos -= numpy.log2(2)
 
             lutsize = 1024
-            Xcosn = numpy.pi * numpy.array(range(-(2*lutsize+1), (lutsize+2))) / lutsize
+            Xcosn = numpy.pi * numpy.array(list(range(-(2*lutsize+1), (lutsize+2)))) / lutsize
 
             order = nbands -1
             const = (2**(2*order))*(scipy.misc.factorial(order, exact=True)**2)/float(nbands*scipy.misc.factorial(2*order, exact=True))
@@ -168,7 +168,7 @@ class SCFpyr(SFpyr):
 
         if len(args) > 2:
             if args[2] <= 0:
-                print "Warning: twidth must be positive. Setting to 1."
+                print("Warning: twidth must be positive. Setting to 1.")
                 twidth = 1
             else:
                 twidth = args[2]

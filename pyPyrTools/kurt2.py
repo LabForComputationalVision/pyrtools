@@ -6,7 +6,7 @@ def kurt2(*args):
         MEAN (optional) and VAR (optional) make the computation faster.  '''
 
     if len(args) == 0:
-        print 'Error: input matrix is required'
+        print('Error: input matrix is required')
 
     if len(args) < 2:
         mn = args[0].mean()

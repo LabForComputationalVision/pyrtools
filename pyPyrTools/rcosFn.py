@@ -16,7 +16,7 @@ def rcosFn(width=1, position=0, values=(0, 1)):
     
     sz = 256   # arbitrary!
 
-    X = numpy.pi * numpy.array(range(-sz-1,2)) / (2*sz)
+    X = numpy.pi * numpy.array(list(range(-sz-1,2))) / (2*sz)
 
     Y = values[0] + (values[1]-values[0]) * numpy.cos(X)**2;
 

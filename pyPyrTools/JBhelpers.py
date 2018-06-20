@@ -1,6 +1,6 @@
 class struct( object ):
     def __init__( self, **kwargs ):
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             setattr( self, k, v )
 
 
@@ -65,7 +65,7 @@ def nbimage( data, vmin = None, vmax = None, vsym = False, saveas = None ):
     '''
     from IPython.display import display, Image
     from PIL.Image import fromarray
-    from StringIO import StringIO
+    from io import StringIO
     data = rerange( data, vmin, vmax, vsym )
     data = data.squeeze()
     # try to be smart
@@ -77,7 +77,7 @@ def nbimage( data, vmin = None, vmax = None, vsym = False, saveas = None ):
         open( saveas + '.png', 'wb' ).write( s )
     display( Image( s.getvalue() ) )
 
-def nbimageLCVbak( data, vmin = None, vmax = None, vsym = False, saveas = None, 
+def nbimageLCVbak( data, vmin = None, vmax = None, vsym = False, saveas = None,
                 zoom = 1 ):
     '''
     Display raw data as a notebook inline image.
@@ -93,14 +93,14 @@ def nbimageLCVbak( data, vmin = None, vmax = None, vsym = False, saveas = None,
     '''
     from IPython.display import display, Image, HTML
     from PIL.Image import fromarray
-    from StringIO import StringIO
+    from io import StringIO
     css_styling()
     data = rerange( data, vmin, vmax, vsym )
     data = data.squeeze()
 
     # try to be smart
     if 3 <= data.shape[ 0 ] <= 4:
-        print 'transposing'
+        print('transposing')
         data = data.transpose( ( 1, 2, 0 ) )
 
     s = StringIO()
@@ -108,13 +108,13 @@ def nbimageLCVbak( data, vmin = None, vmax = None, vsym = False, saveas = None,
     if saveas is not None:
         open( saveas + '.png', 'wb' ).write( s )
 
-    display( Image( s.getvalue(),width=data.shape[0]*zoom, 
+    display( Image( s.getvalue(),width=data.shape[0]*zoom,
                     height=data.shape[1]*zoom ) )
     if vmin == None:
         vmin = data.min()
     if vmax == None:
         vmax = data.max()
-    html = 'Range: [%.1f, %.1f]  Dims: [%d, %d]*%.2f' % (vmin, vmax, 
+    html = 'Range: [%.1f, %.1f]  Dims: [%d, %d]*%.2f' % (vmin, vmax,
                                                          data.shape[0],
                                                          data.shape[1], zoom)
     display( HTML( html ) )
@@ -135,41 +135,41 @@ def nbimageLCVbak2( data, vmin = None, vmax = None, vsym = False, saveas = None,
     '''
     from IPython.display import display, Image, HTML
     from PIL.Image import fromarray
-    from StringIO import StringIO
+    from io import StringIO
     import base64
-    from pyPyrUtils import QtGui
-    from pyPyrUtils import QtCore
+    from .pyPyrUtils import QtGui
+    from .pyPyrUtils import QtCore
     import numpy
 
     data = rerange( data, vmin, vmax, vsym )
     data = data.squeeze()
     # try to be smart
     if 3 <= data.shape[ 0 ] <= 4:
-        print 'transposing'
+        print('transposing')
         data = data.transpose( ( 1, 2, 0 ) )
     s = StringIO()
     fromarray( data ).save( s, 'png' )
     if saveas is not None:
         open( saveas + '.png', 'wb' ).write( s )
 
-    #display( Image( s.getvalue(),width=data.shape[0]*zoom, 
+    #display( Image( s.getvalue(),width=data.shape[0]*zoom,
     #                height=data.shape[1]*zoom ) )
 
     matrix = numpy.require(data, numpy.uint8, 'C')
     (w, h) = matrix.shape
-    print matrix
+    print(matrix)
     qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
     qim.ndarray = matrix    # do we need this?
-    
+
     # make colormap
-    incr = (256/nshades)+1
-    colors = range(0,255,(256/nshades)+1)
+    incr = (256//nshades)+1
+    colors = list(range(0,255,(256//nshades)+1))
     colors[-1] = 255
     colctr = -1
     for i in range(256):
         if i % incr == 0:
             colctr += 1
-        qim.setColor(i, QtGui.QColor(colors[colctr], colors[colctr], 
+        qim.setColor(i, QtGui.QColor(colors[colctr], colors[colctr],
                                      colors[colctr]).rgb())
 
     # zoom
@@ -190,14 +190,14 @@ def nbimageLCVbak2( data, vmin = None, vmax = None, vsym = False, saveas = None,
         vmin = data.min()
     if vmax == None:
         vmax = data.max()
-    html = 'Range: [%.1f, %.1f]<br>Dims: [%d, %d]*%.2f' % (vmin, vmax, 
+    html = 'Range: [%.1f, %.1f]<br>Dims: [%d, %d]*%.2f' % (vmin, vmax,
                                                            data.shape[0],
                                                            data.shape[1], zoom)
     display( HTML ( head + s + html + foot ) )
 
     #display( HTML( html ) )
 
-def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None, 
+def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
                 zoom = 1, nshades = 256, ncols = 1, title = ""):
     '''
     Display raw data as a notebook inline image.
@@ -216,10 +216,10 @@ def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
     '''
     from IPython.display import display, Image, HTML
     from PIL.Image import fromarray
-    from StringIO import StringIO
+    from io import StringIO
     import base64
-    from pyPyrUtils import QtGui
-    from pyPyrUtils import QtCore
+    from .pyPyrUtils import QtGui
+    from .pyPyrUtils import QtCore
     import numpy
 
     if not isinstance(dlist, list):
@@ -246,22 +246,22 @@ def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
         #if saveas is not None:
         #    open( saveas + '.png', 'wb' ).write( s )
         # Thank you Johannes for the following two line fix!!!
-        matrix = numpy.empty( ( data.shape[ 0 ], 
-                                ( data.shape[ 1 ] + 3 ) // 4 * 4 ), 
+        matrix = numpy.empty( ( data.shape[ 0 ],
+                                ( data.shape[ 1 ] + 3 ) // 4 * 4 ),
                               numpy.uint8 )
         matrix[ :, :data.shape[ 1 ] ] = data
         (h, w) = data.shape
         qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
-    
+
         # make colormap
-        incr = (256/nshades)+1
-        colors = range(0,255,(256/nshades)+1)
+        incr = (256//nshades)+1
+        colors = list(range(0,255,(256//nshades)+1))
         colors[-1] = 255
         colctr = -1
         for i in range(256):
             if i % incr == 0:
                 colctr += 1
-            qim.setColor(i, QtGui.QColor(colors[colctr], colors[colctr], 
+            qim.setColor(i, QtGui.QColor(colors[colctr], colors[colctr],
                                          colors[colctr]).rgb())
 
         # zoom
@@ -269,7 +269,7 @@ def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
             currZoom = zoom[imgCtr]
         else:
             currZoom = zoom
-        
+
         #dims = (matrix.shape[0]*zoom, matrix.shape[1]*zoom)
         #dims = (matrix.shape[0]*currZoom, matrix.shape[1]*currZoom)
         dims = (matrix.shape[1]*currZoom, matrix.shape[0]*currZoom)
@@ -309,32 +309,32 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
     '''Display raw data as a notebook inline image.
 
     Parameters:
-    
+
     dlist: array or list of arrays, each of which istwo or three dimensions. If three dimensional,
     first or last dimension must have length 3 or 4 and will be interpreted as color (RGB or
     RGBA). if a list, will plot each one separately.
-          
+
     v: how to set vmin, vmax for plotting. Can be either a (vmin, vmax) tuple, 'auto' (default, use
     max and min for each image), 'auto2' (vmin/vmax are the mean of each image +/- 2 std devs), or
     'auto3' (vmin/vmax is p1/9 +/- (p9 - p1)/8, where p1 is the 10th percentile and p9 is the 90th)
-    
+
     zoom: amount to scale the image. can be a list, in which case it's the zoom value for each
     image in dlist.
-    
+
     title: optional figure title
-    
+
     nshades: number of shades of grey
-    
+
     ncols: number of columns of display for images (subplotting)
 '''
     vsym = False
     saveas = None
     from IPython.display import display, Image, HTML
     from PIL.Image import fromarray
-    from StringIO import StringIO
+    from io import StringIO
     import base64
-    from pyPyrUtils import QtGui
-    from pyPyrUtils import QtCore
+    from .pyPyrUtils import QtGui
+    from .pyPyrUtils import QtCore
     import numpy
     from scipy import stats
 
@@ -375,22 +375,22 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
         #if saveas is not None:
         #    open( saveas + '.png', 'wb' ).write( s )
         # Thank you Johannes for the following two line fix!!!
-        matrix = numpy.empty( ( data.shape[ 0 ], 
-                                ( data.shape[ 1 ] + 3 ) // 4 * 4 ), 
+        matrix = numpy.empty( ( data.shape[ 0 ],
+                                ( data.shape[ 1 ] + 3 ) // 4 * 4 ),
                               numpy.uint8 )
         matrix[ :, :data.shape[ 1 ] ] = data
         (h, w) = data.shape
         qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
-    
+
         # make colormap
-        incr = (256/nshades)+1
-        colors = range(0,255,(256/nshades)+1)
+        incr = (256//nshades)+1
+        colors = list(range(0,255,(256//nshades)+1))
         colors[-1] = 255
         colctr = -1
         for i in range(256):
             if i % incr == 0:
                 colctr += 1
-            qim.setColor(i, QtGui.QColor(colors[colctr], colors[colctr], 
+            qim.setColor(i, QtGui.QColor(colors[colctr], colors[colctr],
                                          colors[colctr]).rgb())
 
         # zoom
@@ -398,7 +398,7 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
             currZoom = zoom[imgCtr]
         else:
             currZoom = zoom
-        
+
         #dims = (matrix.shape[0]*zoom, matrix.shape[1]*zoom)
         #dims = (matrix.shape[0]*currZoom, matrix.shape[1]*currZoom)
         dims = (matrix.shape[1]*currZoom, matrix.shape[0]*currZoom)

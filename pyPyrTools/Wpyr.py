@@ -1,11 +1,11 @@
-from Lpyr import Lpyr
-from LB2idx import LB2idx
-from namedFilter import namedFilter
-from modulateFlip import modulateFlip
-from maxPyrHt import maxPyrHt
-from corrDn import corrDn
-from upConv import upConv
-import JBhelpers
+from .Lpyr import Lpyr
+from .LB2idx import LB2idx
+from .namedFilter import namedFilter
+from .modulateFlip import modulateFlip
+from .maxPyrHt import maxPyrHt
+from .corrDn import corrDn
+from .upConv import upConv
+from . import JBhelpers
 import numpy
 import matplotlib
 import pylab
@@ -24,7 +24,7 @@ class Wpyr(Lpyr):
         if len(args) > 0:
             im = args[0]
         else:
-            print "First argument (image) is required."
+            print("First argument (image) is required.")
             return
 
         #------------------------------------------------
@@ -34,11 +34,11 @@ class Wpyr(Lpyr):
             filt = args[2]
         else:
             filt = "qmf9"
-        if isinstance(filt, basestring):
+        if isinstance(filt, str):
             filt = namedFilter(filt)
 
         if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
-            print "Error: filter should be 1D (i.e., a vector)";
+            print("Error: filter should be 1D (i.e., a vector)");
             return
         hfilt = modulateFlip(filt)
 
@@ -67,7 +67,7 @@ class Wpyr(Lpyr):
             if ht == 'auto':
                 ht = max_ht
             elif(ht > max_ht):
-                print "Error: cannot build pyramid higher than %d levels." % (max_ht)
+                print("Error: cannot build pyramid higher than %d levels." % (max_ht))
         else:
             ht = max_ht
         ht = int(ht)
@@ -166,28 +166,28 @@ class Wpyr(Lpyr):
         maxLev = int(self.wpyrHt() + 1)
 
         if isinstance(levs, str) and levs == 'all':
-            levs = numpy.array(range(maxLev))
+            levs = numpy.array(list(range(maxLev)))
         else:
             tmpLevs = []
             for l in levs:
                 tmpLevs.append((maxLev-1)-l)
             levs = numpy.array(tmpLevs)
             if (levs > maxLev).any():
-                print "Error: level numbers must be in the range [0, %d]" % (maxLev)
-        allLevs = numpy.array(range(maxLev))
+                print("Error: level numbers must be in the range [0, %d]" % (maxLev))
+        allLevs = numpy.array(list(range(maxLev)))
 
         if isinstance(bands, str) and bands == "all":
             if ( len(self.band(0)) == 1 or self.band(0).shape[0] == 1 or 
                  self.band(0).shape[1] == 1 ):
                 bands = numpy.array([0]);
             else:
-                bands = numpy.array(range(3))
+                bands = numpy.array(list(range(3)))
         else:
             bands = numpy.array(bands)
             if (bands < 0).any() or (bands > 2).any():
-                print "Error: band numbers must be in the range [0,2]."
+                print("Error: band numbers must be in the range [0,2].")
         
-        if isinstance(filt, basestring):
+        if isinstance(filt, str):
             filt = namedFilter(filt)
 
         hfilt = modulateFlip(filt).T
@@ -302,25 +302,25 @@ class Wpyr(Lpyr):
 
     def set(self, *args):
         if len(args) != 3:
-            print 'Error: three input parameters required:'
-            print '  set(band, location, value)'
-            print '  where band and value are integer and location is a tuple'
-        if isinstance(args[1], (int, long)):
+            print('Error: three input parameters required:')
+            print('  set(band, location, value)')
+            print('  where band and value are integer and location is a tuple')
+        if isinstance(args[1], int):
             self.pyr[args[0]][0][args[1]] = args[2]
         elif isinstance(args[1], tuple):
             self.pyr[args[0]][args[1][0]][args[1][1]] = args[2] 
         else:
-            print 'Error: location parameter must be int or tuple!'
+            print('Error: location parameter must be int or tuple!')
             return
             
 
     def set1D(self, *args):
         if len(args) != 3:
-            print 'Error: three input parameters required:'
-            print '  set(band, location, value)'
-            print '  where band and value are integer and location is a tuple'
-        print '%d %d %d' % (args[0], args[1], args[2])
-        print self.pyr[args[0]][0][1]
+            print('Error: three input parameters required:')
+            print('  set(band, location, value)')
+            print('  where band and value are integer and location is a tuple')
+        print('%d %d %d' % (args[0], args[1], args[2]))
+        print(self.pyr[args[0]][0][1])
 
     def pyrLow(self):
         return numpy.array(self.band(len(self.pyrSize)-1))
@@ -410,10 +410,10 @@ class Wpyr(Lpyr):
             av = numpy.mean(band)
             stdev = numpy.sqrt( numpy.var(band) )
             prange[nind-1,:] = numpy.array([av-2*stdev, av+2*stdev])
-        elif isinstance(prange, basestring):
-            print "Error:Bad RANGE argument: %s'" % (prange)
+        elif isinstance(prange, str):
+            print("Error:Bad RANGE argument: %s'" % (prange))
         elif prange.shape[0] == 1 and prange.shape[1] == 2:
-            scales = numpy.power(scale, range(ht))
+            scales = numpy.power(scale, list(range(ht)))
             scales = numpy.outer( numpy.ones((nbands,1)), scales )
             scales = numpy.array([1, scales, numpy.power(scale, ht)])
             prange = numpy.outer(scales, prange)

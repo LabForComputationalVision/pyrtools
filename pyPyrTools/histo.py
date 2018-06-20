@@ -1,6 +1,6 @@
 import numpy
-from range2 import range2
-from round import round
+from .range2 import range2
+from .round import round
 
 def histo(*args):
     ''' [N,X] = histo(MTX, nbinsOrBinsize, binCenter);
@@ -25,8 +25,8 @@ def histo(*args):
         Eero Simoncelli, 3/97.  ported to Python by Rob Young, 8/15.  '''
 
     if len(args) == 0 or len(args) > 3:
-        print 'Usage: histo(mtx, nbins, binCtr)'
-        print 'first argument is required'
+        print('Usage: histo(mtx, nbins, binCtr)')
+        print('first argument is required')
         return
     else:
         mtx = args[0]
@@ -47,7 +47,7 @@ def histo(*args):
             tmpNbins = ( round(float(mx-binCtr) / float(binSize)) - 
                          round(float(mn-binCtr) / float(binSize)) )
             if tmpNbins != args[1]:
-                print 'Warning: Using %d bins instead of requested number (%d)' % (tmpNbins, args[1])
+                print('Warning: Using %d bins instead of requested number (%d)' % (tmpNbins, args[1]))
     else:
         binSize = float(mx-mn) / 101.0
 
@@ -60,7 +60,7 @@ def histo(*args):
     # numpy.histogram uses bin edges, not centers like Matlab's hist
     #bins = firstBin + binSize * numpy.array(range(tmpNbins+1))
     # compute bin edges
-    binsE = firstEdge + binSize * numpy.array(range(tmpNbins+1))
+    binsE = firstEdge + binSize * numpy.array(list(range(tmpNbins+1)))
     
     [N, X] = numpy.histogram(mtx, binsE)
 

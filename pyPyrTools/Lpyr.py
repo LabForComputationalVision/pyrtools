@@ -1,10 +1,10 @@
-from pyramid import pyramid
-from corrDn import corrDn
-from namedFilter import namedFilter
-from maxPyrHt import maxPyrHt
-from upConv import upConv
-from showIm import showIm
-import JBhelpers
+from .pyramid import pyramid
+from .corrDn import corrDn
+from .namedFilter import namedFilter
+from .maxPyrHt import maxPyrHt
+from .upConv import upConv
+from .showIm import showIm
+from . import JBhelpers
 import numpy
 import math
 import matplotlib
@@ -41,7 +41,7 @@ class Lpyr(pyramid):
         self.pyrType = 'Laplacian'
         self.image = image
 
-        if isinstance(filter1, basestring):
+        if isinstance(filter1, str):
             filter1 = namedFilter(filter1)
         elif filter1.ndim != 1 and (filter1.shape[0] != 1 and filter1.shape[1] != 1):
             raise Exception("Error: filter1 should be a 1D filter (i.e., a vector)")
@@ -54,7 +54,7 @@ class Lpyr(pyramid):
         elif self.image.shape[0] == 1:
             filter1 = filter1.reshape(1, max(filter1.shape))
 
-        if isinstance(filter2, basestring):
+        if isinstance(filter2, str):
             filter2 = namedFilter(filter2)
         elif filter2 is None:
             filter2 = filter1
@@ -71,7 +71,7 @@ class Lpyr(pyramid):
         
         maxHeight = 1 + maxPyrHt(self.image.shape, filter1.shape)
 
-        if isinstance(height, basestring) and height == "auto":
+        if isinstance(height, str) and height == "auto":
             self.height = maxHeight
         else:
             self.height = height
@@ -178,13 +178,13 @@ class Lpyr(pyramid):
 
         maxLev = self.height
 
-        if isinstance(levs, (str,basestring)) and levs == 'all':
-            levs = range(0,maxLev)
+        if isinstance(levs, str) and levs == 'all':
+            levs = list(range(0,maxLev))
         else:
             if (levs > maxLev-1).any():
                 raise Exception("level numbers must be in the range [0, %d]." % (maxLev-1))
 
-        if isinstance(filter2, basestring):
+        if isinstance(filter2, str):
             filter2 = namedFilter(filter2)
         else:
             if len(filter2.shape) == 1:
@@ -304,11 +304,11 @@ class Lpyr(pyramid):
             av = numpy.mean(band)
             stdev = numpy.std(band)
             pRange[nind,:] = numpy.array([av-2*stdev, av+2*stdev])
-        elif isinstance(pRange, basestring):
-            print "Error: band range argument: %s" % (pRange)
+        elif isinstance(pRange, str):
+            print("Error: band range argument: %s" % (pRange))
             return
         elif pRange.shape[0] == 1 and pRange.shape[1] == 2:
-            scales = numpy.power( numpy.array( range(0,nind) ), scale)
+            scales = numpy.power( numpy.array( list(range(0,nind)) ), scale)
             pRange = numpy.outer( scales, pRange )
             band = self.pyrLow()
             pRange[nind,:] = ( pRange[nind,:] + numpy.mean(band) - 
@@ -358,7 +358,7 @@ class Lpyr(pyramid):
             llpos = llpos - numpy.ones((nind,1))*numpy.min(llpos)
             # we want to cast it as ints, since we'll be using these as indices
             llpos = llpos.astype(int)
-            pind = range(self.height)
+            pind = list(range(self.height))
             for i in pind:
                 pind[i] = self.band(i).shape
             urpos = llpos + pind

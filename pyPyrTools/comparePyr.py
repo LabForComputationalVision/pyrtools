@@ -19,7 +19,7 @@ def comparePyr(matPyr, pyPyr):
             pySz += sz[0] * sz[1]
 
     if(matSz != pySz):
-        print "size difference: %d != %d, returning 0" % (matSz, pySz)
+        print("size difference: %d != %d, returning 0" % (matSz, pySz))
         return 0
 
     # values are the same?
@@ -34,14 +34,14 @@ def comparePyr(matPyr, pyPyr):
         matTmp = numpy.reshape(matTmp, bandSz, order='F')
         matStart = matStart+matLen
         if (matTmp != pyPyr.pyr[idx]).any():
-            print "some pyramid elements not identical: checking..."
+            print("some pyramid elements not identical: checking...")
             for i in range(bandSz[0]):
                 for j in range(bandSz[1]):
                     if matTmp[i,j] != pyPyr.pyr[idx][i,j]:
                         if ( math.fabs(matTmp[i,j] - pyPyr.pyr[idx][i,j]) > 
                              prec ):
-                            print "failed level:%d element:%d %d value:%.15f %.15f" % (idx, i, j, matTmp[i,j], pyPyr.pyr[idx][i,j])
+                            print("failed level:%d element:%d %d value:%.15f %.15f" % (idx, i, j, matTmp[i,j], pyPyr.pyr[idx][i,j]))
                             return 0
-            print "same to at least %f" % prec
+            print("same to at least %f" % prec)
 
     return 1
