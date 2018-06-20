@@ -83,10 +83,7 @@ def imStats(im_array):
     (mini, maxi) = range2(im_array)
     mean = im_array.mean()
     var = var2(im_array, mean)
-    stdev = np.sqrt(var.real) + np.sqrt(var.imag)
-
-    # why is the kurtosis computed this way for complex matrices? (-Jimmy)
-    kurt = kurt2(im_array, mean, stdev**2)
+    kurt = kurt2(im_array, mean, var)
     print('Image statistics:')
     print('  Range: [%f, %f]' % (mini, maxi))
-    print('  Mean: %f,  Stdev: %f,  Kurtosis: %f' % (mean, stdev, kurt))
+    print('  Mean: %f,  Stdev: %f,  Kurtosis: %f' % (mean, np.sqrt(var), kurt))
