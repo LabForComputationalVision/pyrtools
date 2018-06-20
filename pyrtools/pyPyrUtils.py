@@ -1183,7 +1183,7 @@ def rconv2(*args):
     return scipy.signal.convolve(clarge, small, 'valid')
 
 # compute minimum and maximum values of input matrix, returning them as tuple
-from .imStats import imStats, range2, kurt2
+from .imStats import imStats, range2, skew2, kurt2
 
 # Sample variance of a matrix.
 #  Passing MEAN (optional) makes the calculation faster.
@@ -2024,33 +2024,6 @@ def imGradient(*args):
 
     return (dx,dy)
 
-def skew2(*args):
-    # Sample skew (third moment divided by variance^3/2) of a matrix.
-    #  MEAN (optional) and VAR (optional) make the computation faster.
-
-    if len(args) == 0:
-        print('Usage: skew2(matrix, mean, variance)')
-        print('mean and variance arguments are optional')
-    else:
-        mtx = numpy.array(args[0])
-
-    if len(args) > 1:
-        mn = args[1]
-    else:
-        mn = mtx.mean()
-
-    if len(args) > 2:
-        v = args[2]
-    else:
-        v = var2(mtx, mn)
-
-    if isinstance(mtx, complex):
-        res = ( ( ((mtx.real - mn.real)**3).mean() / (v.real**(3.0/2.0)) ) +
-                ( (1j * (mtx.imag-mn.image)**3) / (v.imag**(3.0/2.0))))
-    else:
-        res = ((mtx.real - mn.real)**3).mean() / (v.real**(3.0/2.0))
-
-    return res
 
 def upBlur(*args):
     # RES = upBlur(IM, LEVELS, FILT)

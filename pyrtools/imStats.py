@@ -10,6 +10,21 @@ def range2(np_array):
 
     return (np_array.min(), np_array.max())
 
+def skew2(np_array, mean=None, var=None):
+    ''' Sample skew (third moment divided by variance^3/2) of a matrix.
+        MEAN (optional) and VAR (optional) make the computation faster.  '''
+
+    if mean is None:
+        mean = np_array.mean()
+    if var is None:
+        var = var2(np_array, mean)
+
+    if np.isreal(np_array).all():
+        return ((np_array - mean)**3).mean() / np.sqrt(var) ** 3
+    else:
+        return skew2(np_array.real, mean.real, var.real) + 1j * skew2(np_array.imag, mean.imag, var.imag)
+
+
 def kurt2(np_array, mean=None, var=None):
     ''' Sample kurtosis (fourth moment divided by squared variance)
         of a matrix.  Kurtosis of a Gaussian distribution is 3.
