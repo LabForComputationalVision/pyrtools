@@ -1,13 +1,10 @@
 from .binomialFilter import binomialFilter
-from .blurDn import blurDn
-from .blur import blur
-from .cconv2 import cconv2
+from .image_tools import blurDn, blur, upBlur
 from .clip import clip
 from .comparePyr import comparePyr
 from .compareRecon import compareRecon
 from .convolutions import corrDn, upConv
 from .entropy2 import entropy2
-from .factorial import factorial
 from .Gpyr import Gpyr
 from .histoMatch import histoMatch
 from .histo import histo
@@ -34,7 +31,6 @@ from .namedFilter import namedFilter
 from .nextSz import nextSz
 from .pyramid import pyramid
 from .range2 import range2
-from .rconv2 import rconv2
 from .rcosFn import rcosFn
 from .round import round
 from .roundVal import roundVal
@@ -48,10 +44,8 @@ from .Spyr import Spyr
 from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer
 from .strictly_decreasing import strictly_decreasing
-from .upBlur import upBlur
 from .var2 import var2
 from .Wpyr import Wpyr
-from .zconv2 import zconv2
 import ctypes
 import os
 from . import JBhelpers
