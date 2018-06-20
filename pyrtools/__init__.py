@@ -43,10 +43,7 @@ from .SFpyr import SFpyr
 from .shift import shift
 from .showIm import showIm
 from .skew2 import skew2
-from .sp0Filters import sp0Filters
-from .sp1Filters import sp1Filters
-from .sp3Filters import sp3Filters
-from .sp5Filters import sp5Filters
+from .get_filter import get_filter
 from .Spyr import Spyr
 from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer

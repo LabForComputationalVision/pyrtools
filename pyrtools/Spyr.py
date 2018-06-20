@@ -1,9 +1,6 @@
 from .pyramid import pyramid
 import numpy
-from .sp0Filters import sp0Filters
-from .sp1Filters import sp1Filters
-from .sp3Filters import sp3Filters
-from .sp5Filters import sp5Filters
+from .get_filter import get_filter
 import os
 from .maxPyrHt import maxPyrHt
 from .convolutions import corrDn, upConv
@@ -41,20 +38,7 @@ class Spyr(pyramid):
         """
         self.pyrType = 'steerable'
         self.image = numpy.array(image)
-
-        if filter == 'sp0Filters':
-            filters = sp0Filters()
-        elif filter == 'sp1Filters':
-            filters = sp1Filters()
-        elif filter == 'sp3Filters':
-            filters = sp3Filters()
-        elif filter == 'sp5Filters':
-            filters = sp5Filters()
-        elif os.path.isfile(filter):
-            raise Exception("Filter files not supported yet")
-        else:
-            raise Exception("filter parameters value %s not supported" % (filter))
-        self.filt = filters
+        self.filt = get_filter(filter)
 
         self.edges = edges
 
@@ -169,22 +153,9 @@ class Spyr(pyramid):
         # defaults
 
         if len(args) > 0:
-            if args[0] == 'sp0Filters':
-                filters = sp0Filters()
-            elif args[0] == 'sp1Filters':
-                filters = sp1Filters()
-            elif args[0] == 'sp3Filters':
-                filters = sp3Filters()
-            elif args[0] == 'sp5Filters':
-                filters = sp5Filters()
-            elif os.path.isfile(args[0]):
-                print("Filter files not supported yet")
-                return
-            else:
-                print("filter %s not supported" % (args[0]))
-                return
+            filters = get_filter(args[0])
         else:
-            filters = sp1Filters()
+            filters = get_filter('sp1Filters')
 
         lo0filt = filters['lo0filt']
         hi0filt = filters['hi0filt']

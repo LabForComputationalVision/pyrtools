@@ -89,7 +89,7 @@ class LpyrTests(unittest.TestCase):
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Lpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
-    def test2(self): 
+    def test2(self):
         matPyr2 = scipy.io.loadmat('./matFiles/buildLpyr2.mat')
         pyRamp = ppt.mkRamp((200,200))
         pyPyr = ppt.Lpyr(pyRamp)
@@ -104,7 +104,7 @@ class LpyrTests(unittest.TestCase):
         pyRamp = ppt.mkRamp(200,100)
         pyPyr = ppt.Lpyr(pyRamp)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
-    def test5(self):   
+    def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr5.mat')
         pyRamp = np.array(list(range(200))).reshape(1, 200)
         pyPyr = ppt.Lpyr(pyRamp)
@@ -115,7 +115,7 @@ class LpyrTests(unittest.TestCase):
         pySig = np.zeros((1, 36))
         pyr = ppt.Lpyr(sig)
         self.assertTrue(pyr.filter1.shape == (1, 5))
-        self.assertTrue(pyr.filter2.shape == (1, 5))        
+        self.assertTrue(pyr.filter2.shape == (1, 5))
     def test6(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr6.mat')
         pyRamp = np.array(list(range(200)))
@@ -128,31 +128,31 @@ class LpyrTests(unittest.TestCase):
         pyPyr = ppt.Lpyr(img)
         recon = pyPyr.reconPyr()
         self.assertTrue((matPyr['recon'] == recon).all())
-    def test8(self): 
+    def test8(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr8.mat')
         pyRamp = ppt.mkRamp(200)
         pyPyr = ppt.Lpyr(pyRamp)
         recon = pyPyr.reconPyr()
         self.assertTrue((matPyr['recon'] == recon).all())
-    def test9(self): 
+    def test9(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr9.mat')
         pyRamp = ppt.mkRamp((200,100))
         pyPyr = ppt.Lpyr(pyRamp)
         recon = pyPyr.reconPyr()
         self.assertTrue((matPyr['recon'] == recon).all())
-    def test10(self): 
+    def test10(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr10.mat')
         pyRamp = ppt.mkRamp((100,200))
         pyPyr = ppt.Lpyr(pyRamp)
         recon = pyPyr.reconPyr()
         self.assertTrue((matPyr['recon'] == recon).all())
-    def test11(self): 
+    def test11(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr11.mat')
         pyRamp = ppt.mkRamp((200,200))
         pyPyr = ppt.Lpyr(pyRamp)
         recon = pyPyr.reconPyr([1])
         self.assertTrue((matPyr['recon'] == recon).all())
-    def test12(self): 
+    def test12(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr12.mat')
         pyRamp = ppt.mkRamp((200,200))
         pyPyr = ppt.Lpyr(pyRamp)
@@ -162,7 +162,7 @@ class LpyrTests(unittest.TestCase):
 class spFilterTests(unittest.TestCase):
     def test1(self):
         matFilt0 = scipy.io.loadmat('./matFiles/sp0Filters.mat')
-        pySP0filt = ppt.sp0Filters()
+        pySP0filt = ppt.get_filter('sp0Filters')
         tmpKeys = []
         for key in list(matFilt0.keys()):
             if "_" not in key:
@@ -173,7 +173,7 @@ class spFilterTests(unittest.TestCase):
 
     def test2(self):
         matFilt1 = scipy.io.loadmat('./matFiles/sp1Filters.mat')
-        pySP1filt = ppt.sp1Filters()
+        pySP1filt = ppt.sp1Filters('sp1Filters')
         tmpKeys = []
         for key in list(matFilt1.keys()):
             if "_" not in key:
@@ -184,7 +184,7 @@ class spFilterTests(unittest.TestCase):
 
     def test3(self):
         matFilt3 = scipy.io.loadmat('./matFiles/sp3Filters.mat')
-        pySP3filt = ppt.sp3Filters()
+        pySP3filt = ppt.sp3Filters('sp3Filters')
         tmpKeys = []
         for key in list(matFilt3.keys()):
             if "_" not in key:
@@ -195,7 +195,7 @@ class spFilterTests(unittest.TestCase):
 
     def test4(self):
         matFilt5 = scipy.io.loadmat('./matFiles/sp5Filters.mat')
-        pySP5filt = ppt.sp5Filters()
+        pySP5filt = ppt.sp5Filters('sp5Filters')
         tmpKeys = []
         for key in list(matFilt5.keys()):
             if "_" not in key:
@@ -378,9 +378,9 @@ class SpyrTests(unittest.TestCase):
         pyPyr = ppt.Spyr(texture, 3, 'sp5Filters')
         recon = pyPyr.reconPyr('sp5Filters','reflect1',[0,1,2], [0]);
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
-        
-        
-        
+
+
+
 
 class pointOpTests(unittest.TestCase):
     def test1(self):
@@ -956,7 +956,7 @@ class histoTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat('./matFiles/histo0.mat')
         (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7)
-        # X will not be the same because matlab returns centers and 
+        # X will not be the same because matlab returns centers and
         #   python return edges
         #self.failUnless(ppt.compareRecon(matPyr['X'], X))
         #self.failUnless(ppt.compareRecon(matPyr['N'], N))
@@ -965,7 +965,7 @@ class histoTests(unittest.TestCase):
 #    def test1(self):
 #        matPyr = scipy.io.loadmat('./matFiles/histo1.mat')
 #        (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7, 26)
-#        # X will not be the same because matlab returns centers and 
+#        # X will not be the same because matlab returns centers and
 #        #   python return edges
 #        #self.failUnless(ppt.compareRecon(matPyr['X'], X))
 #        #self.failUnless(ppt.compareRecon(matPyr['N'], N))
@@ -973,14 +973,14 @@ class histoTests(unittest.TestCase):
 #    def test2(self):
 #        matPyr = scipy.io.loadmat('./matFiles/histo2.mat')
 #        (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7, -1.15)
-#        # X will not be the same because matlab returns centers and 
+#        # X will not be the same because matlab returns centers and
 #        #   python return edges
 #        #self.failUnless(ppt.compareRecon(matPyr['X'], X))
 #        self.failUnless(ppt.compareRecon(matPyr['N'], N))
 #    def test3(self):
 #        matPyr = scipy.io.loadmat('./matFiles/histo3.mat')
 #        (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7, 26, 3)
-#        # X will not be the same because matlab returns centers and 
+#        # X will not be the same because matlab returns centers and
 #        #   python return edges
 #        #self.failUnless(ppt.compareRecon(matPyr['X'], X))
 #        self.failUnless(ppt.compareRecon(matPyr['N'], N))
@@ -1009,7 +1009,7 @@ class factorialTests(unittest.TestCase):
 #    def test0(self):
 #        matPyr = scipy.io.loadmat('./matFiles/histoMatch0.mat')
 #        # adding 0.7 to get the bins to line up between matlab and python
-#        # answers between matlab and python may be different, 
+#        # answers between matlab and python may be different,
 #        #   but not necessarily incorrect.
 #        # similar to histo above
 #        ramp = ppt.mkRamp(10) + 0.7
@@ -1035,7 +1035,7 @@ class imGradientTests(unittest.TestCase):
         dy = np.array(dy)
         self.assertTrue(ppt.compareRecon(matPyr['res'][:,:,0], dx))
         self.assertTrue(ppt.compareRecon(matPyr['res'][:,:,1], dy))
- 
+
 class skew2Tests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat('./matFiles/skew2_0.mat')
@@ -1063,7 +1063,7 @@ class skew2Tests(unittest.TestCase):
         v = ppt.var2(disc) + 0.1
         res = ppt.skew2(disc, mn, v)
         self.assertTrue(np.absolute(res - mres) <= math.pow(10,-11))
-       
+
 class upBlurTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat('./matFiles/upBlur0.mat')
@@ -1150,7 +1150,7 @@ class upBlurTests(unittest.TestCase):
         filt = ppt.mkDisc((3,5))
         res = ppt.upBlur(im, 3, filt)
         self.assertTrue(ppt.compareRecon(mres, res))
-    
+
 class zconv2Tests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat('./matFiles/zconv2_0.mat')
@@ -1220,5 +1220,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
