@@ -154,22 +154,9 @@ class Spyr(pyramid):
         # defaults
 
         if len(args) > 0:
-            if args[0] == 'sp0Filters':
-                filters = sp0Filters()
-            elif args[0] == 'sp1Filters':
-                filters = sp1Filters()
-            elif args[0] == 'sp3Filters':
-                filters = sp3Filters()
-            elif args[0] == 'sp5Filters':
-                filters = sp5Filters()
-            elif os.path.isfile(args[0]):
-                print("Filter files not supported yet")
-                return
-            else:
-                print("filter %s not supported" % (args[0]))
-                return
+            filters = get_filter(args[0])
         else:
-            filters = sp1Filters()
+            filters = get_filter('sp1Filters')
 
         lo0filt = filters['lo0filt']
         hi0filt = filters['hi0filt']

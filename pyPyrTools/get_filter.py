@@ -1,21 +1,6 @@
-import np as np
+import numpy as np
 
 def get_filter(filter_name):
-
-    if filter_name == 'sp0Filters':
-        return sp0Filters()
-    elif filter_name == 'sp1Filters':
-        return sp1Filters()
-    elif filter_name == 'sp3Filters':
-        return sp3Filters()
-    elif filter_name == 'sp5Filters':
-        return sp5Filters()
-    elif os.path.isfile(filter):
-        raise Exception("Filter files not supported yet")
-    else:
-        raise Exception("filter parameters value %s not supported" % (filter))
-
-def sp0Filters():
     ''' Steerable pyramid filters.  Transform described  in:
 
         @INPROCEEDINGS{Simoncelli95b,
@@ -33,6 +18,21 @@ def sp0Filters():
             AUTHOR = "A Karasaridis and E P Simoncelli",
             BOOKTITLE = "ICASSP",	ADDRESS = "Atlanta, GA",
             MONTH = "May",	YEAR = 1996 }  '''
+
+    if filter_name == 'sp0Filters':
+        return sp0Filters()
+    elif filter_name == 'sp1Filters':
+        return sp1Filters()
+    elif filter_name == 'sp3Filters':
+        return sp3Filters()
+    elif filter_name == 'sp5Filters':
+        return sp5Filters()
+    elif os.path.isfile(filter):
+        raise Exception("Filter files not supported yet")
+    else:
+        raise Exception("filter parameters value %s not supported" % (filter))
+
+def sp0Filters():
     filters = {}
     filters['harmonics'] = np.array([0])
     filters['lo0filt'] =  (
@@ -158,26 +158,8 @@ def sp0Filters():
 
     return filters
 
-import np
-
 def sp1Filters():
-    ''' Steerable pyramid filters.  Transform described  in:
 
-        @INPROCEEDINGS{Simoncelli95b,
-            TITLE = "The Steerable Pyramid: A Flexible Architecture for
-                     Multi-Scale Derivative Computation",
-            AUTHOR = "E P Simoncelli and W T Freeman",
-            BOOKTITLE = "Second Int'l Conf on Image Processing",
-            ADDRESS = "Washington, DC", MONTH = "October", YEAR = 1995 }
-
-        Filter kernel design described in:
-
-        @INPROCEEDINGS{Karasaridis96,
-            TITLE = "A Filter Design Technique for
-                     Steerable Pyramid Image Transforms",
-            AUTHOR = "A Karasaridis and E P Simoncelli",
-            BOOKTITLE = "ICASSP",	ADDRESS = "Atlanta, GA",
-            MONTH = "May",	YEAR = 1996 }  '''
     filters = {}
     filters['harmonics'] = np.array([ 1 ])
     filters['mtx'] = np.eye(2)
@@ -370,26 +352,7 @@ def sp1Filters():
 
     return filters
 
-import np
-
 def sp3Filters():
-    ''' Steerable pyramid filters.  Transform described  in:
-
-        @INPROCEEDINGS{Simoncelli95b,
-            TITLE = "The Steerable Pyramid: A Flexible Architecture for
-                     Multi-Scale Derivative Computation",
-            AUTHOR = "E P Simoncelli and W T Freeman",
-            BOOKTITLE = "Second Int'l Conf on Image Processing",
-            ADDRESS = "Washington, DC", MONTH = "October", YEAR = 1995 }
-
-        Filter kernel design described in:
-
-        @INPROCEEDINGS{Karasaridis96,
-            TITLE = "A Filter Design Technique for
-                     Steerable Pyramid Image Transforms",
-            AUTHOR = "A Karasaridis and E P Simoncelli",
-            BOOKTITLE = "ICASSP",	ADDRESS = "Atlanta, GA",
-            MONTH = "May",	YEAR = 1996 }  '''
 
     filters = {}
     filters['harmonics'] = np.array([1, 3])
@@ -717,27 +680,7 @@ def sp3Filters():
 
     return filters
 
-
-import np
-
 def sp5Filters():
-    ''' Steerable pyramid filters.  Transform described  in:
-
-        @INPROCEEDINGS{Simoncelli95b,
-            TITLE = "The Steerable Pyramid: A Flexible Architecture for
-                     Multi-Scale Derivative Computation",
-            AUTHOR = "E P Simoncelli and W T Freeman",
-            BOOKTITLE = "Second Int'l Conf on Image Processing",
-            ADDRESS = "Washington, DC", MONTH = "October", YEAR = 1995 }
-
-        Filter kernel design described in:
-
-        @INPROCEEDINGS{Karasaridis96,
-            TITLE = "A Filter Design Technique for
-                     Steerable Pyramid Image Transforms",
-            AUTHOR = "A Karasaridis and E P Simoncelli",
-            BOOKTITLE = "ICASSP",	ADDRESS = "Atlanta, GA",
-            MONTH = "May",	YEAR = 1996 }  '''
 
     filters = {}
     filters['harmonics'] = np.array([1, 3, 5])
