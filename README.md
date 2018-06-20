@@ -1,4 +1,4 @@
-# pyPyrTools
+# pyrtools
 
 A python 3.6 port of Eero Simoncelli's matlabPyrTools.  This port does
 not attempt to recreate all of the matlab code from matlabPyrTools.
