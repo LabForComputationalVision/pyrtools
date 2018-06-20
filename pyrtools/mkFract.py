@@ -1,6 +1,6 @@
 import numpy
 from .mkR import mkR
-from .var2 import var2
+from .imStats import var2
 
 def mkFract(*args):
     ''' Make a matrix of dimensions SIZE (a [Y X] 2-vector, or a scalar)

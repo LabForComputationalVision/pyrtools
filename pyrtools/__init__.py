@@ -10,8 +10,7 @@ from .histoMatch import histoMatch
 from .histo import histo
 from .idx2LB import idx2LB
 from .imGradient import imGradient
-from .imStats import imStats
-from .kurt2 import kurt2
+from .imStats import imStats, range2, var2, skew2, kurt2
 from .LB2idx import LB2idx
 from .Lpyr import Lpyr
 from .maxPyrHt import maxPyrHt
@@ -30,7 +29,6 @@ from .modulateFlip import modulateFlip
 from .namedFilter import namedFilter
 from .nextSz import nextSz
 from .pyramid import pyramid
-from .range2 import range2
 from .rcosFn import rcosFn
 from .round import round
 from .roundVal import roundVal
@@ -38,13 +36,11 @@ from .SCFpyr import SCFpyr
 from .SFpyr import SFpyr
 from .shift import shift
 from .showIm import showIm
-from .skew2 import skew2
 from .get_filter import get_filter
 from .Spyr import Spyr
 from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer
 from .strictly_decreasing import strictly_decreasing
-from .var2 import var2
 from .Wpyr import Wpyr
 import ctypes
 import os

@@ -977,94 +977,7 @@ def modulateFlip(*args):
 
 
 # compute minimum and maximum values of input matrix, returning them as tuple
-def range2(*args):
-    if not numpy.isreal(args[0]).all():
-        print('Error: matrix must be real-valued')
-
-    return (args[0].min(), args[0].max())
-
-# Sample variance of a matrix.
-#  Passing MEAN (optional) makes the calculation faster.
-def var2(*args):
-    if len(args) == 1:
-        mn = args[0].mean()
-    elif len(args) == 2:
-        mn = args[1]
-
-    if(numpy.isreal(args[0]).all()):
-        res = sum(sum((args[0]-mn)**2)) / max(numpy.prod(args[0].shape)-1, 1)
-    else:
-        res = sum((args[0]-mn).real**2) + 1j*sum((args[0]-mn).imag)**2
-        res = res /  max(numpy.prod(args[0].shape)-1, 1)
-
-    return res
-
-# Sample kurtosis (fourth moment divided by squared variance)
-# of a matrix.  Kurtosis of a Gaussian distribution is 3.
-#  MEAN (optional) and VAR (optional) make the computation faster.
-def kurt2(*args):
-    if len(args) == 0:
-        print('Error: input matrix is required')
-
-    if len(args) < 2:
-        mn = args[0].mean()
-    else:
-        mn = args[1]
-
-    if len(args) < 3:
-        v = var2(args[0])
-    else:
-        v = args[2]
-
-    if numpy.isreal(args[0]).all():
-        res = (numpy.abs(args[0]-mn)**4).mean() / v**2
-    else:
-        res = ( (((args[0]-mn).real**4).mean() / v.real**2) +
-                ((numpy.i * (args[0]-mn).imag**4).mean() / v.imag**2) )
-
-    return res
-
-# Report image (matrix) statistics.
-# When called on a single image IM1, report min, max, mean, stdev,
-# and kurtosis.
-# When called on two images (IM1 and IM2), report min, max, mean,
-# stdev of the difference, and also SNR (relative to IM1).
-def imStats(*args):
-
-    if len(args) == 0:
-        print('Error: at least one input image is required')
-        return
-    elif len(args) == 1 and not numpy.isreal(args[0]).all():
-        print('Error: input images must be real-valued matrices')
-        return
-    elif len(args) == 2 and ( not numpy.isreal(args[0]).all() or not numpy.isreal(args[1]).all()):
-        print('Error: input images must be real-valued matrices')
-        return
-    elif len(args) > 2:
-        print('Error: maximum of two input images allowed')
-        return
-
-    if len(args) == 2:
-        difference = args[0] - args[1]
-        (mn, mx) = range2(difference)
-        mean = difference.mean()
-        v = var2(difference)
-        if v < numpy.finfo(numpy.double).tiny:
-            snr = numpy.inf
-        else:
-            snr = 10 * numpy.log10(var2(args[0])/v)
-        print('Difference statistics:')
-        print('  Range: [%d, %d]' % (mn, mx))
-        print('  Mean: %f,  Stdev (rmse): %f,  SNR (dB): %f' % (mean, numpy.sqrt(v), snr))
-    else:
-        (mn, mx) = range2(args[0])
-        mean = args[0].mean()
-        var = var2(args[0])
-        stdev = numpy.sqrt(var.real) + numpy.sqrt(var.imag)
-        kurt = kurt2(args[0], mean, stdev**2)
-        print('Image statistics:')
-        print('  Range: [%f, %f]' % (mn, mx))
-        print('  Mean: %f,  Stdev: %f,  Kurtosis: %f' % (mean, stdev, kurt))
+from .imStats import imStats, range2, var2, skew2, kurt2
 
 # makes image the same as read in by matlab
 def correctImage(img):
@@ -1791,31 +1704,4 @@ def imGradient(*args):
 
     return (dx,dy)
 
-def skew2(*args):
-    # Sample skew (third moment divided by variance^3/2) of a matrix.
-    #  MEAN (optional) and VAR (optional) make the computation faster.
-
-    if len(args) == 0:
-        print('Usage: skew2(matrix, mean, variance)')
-        print('mean and variance arguments are optional')
-    else:
-        mtx = numpy.array(args[0])
-
-    if len(args) > 1:
-        mn = args[1]
-    else:
-        mn = mtx.mean()
-
-    if len(args) > 2:
-        v = args[2]
-    else:
-        v = var2(mtx, mn)
-
-    if isinstance(mtx, complex):
-        res = ( ( ((mtx.real - mn.real)**3).mean() / (v.real**(3.0/2.0)) ) +
-                ( (1j * (mtx.imag-mn.image)**3) / (v.imag**(3.0/2.0))))
-    else:
-        res = ((mtx.real - mn.real)**3).mean() / (v.real**(3.0/2.0))
-
-    return res
 

@@ -39,9 +39,8 @@ class Spyr(pyramid):
         self.pyrType = 'steerable'
         self.image = numpy.array(image)
         self.filt = get_filter(filter)
-
         self.edges = edges
-
+        filters = self.filt # temporary hack...
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
         hi0filt = filters['hi0filt']
