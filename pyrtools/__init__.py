@@ -12,8 +12,7 @@ from .histoMatch import histoMatch
 from .histo import histo
 from .idx2LB import idx2LB
 from .imGradient import imGradient
-from .imStats import imStats, range2
-from .kurt2 import kurt2
+from .imStats import imStats, range2, kurt2
 from .LB2idx import LB2idx
 from .Lpyr import Lpyr
 from .maxPyrHt import maxPyrHt

@@ -1183,7 +1183,7 @@ def rconv2(*args):
     return scipy.signal.convolve(clarge, small, 'valid')
 
 # compute minimum and maximum values of input matrix, returning them as tuple
-from .imStats import range2
+from .imStats import imStats, range2, kurt2
 
 # Sample variance of a matrix.
 #  Passing MEAN (optional) makes the calculation faster.
@@ -1200,73 +1200,6 @@ def var2(*args):
         res = res /  max(numpy.prod(args[0].shape)-1, 1)
 
     return res
-
-# Sample kurtosis (fourth moment divided by squared variance)
-# of a matrix.  Kurtosis of a Gaussian distribution is 3.
-#  MEAN (optional) and VAR (optional) make the computation faster.
-def kurt2(*args):
-    if len(args) == 0:
-        print('Error: input matrix is required')
-
-    if len(args) < 2:
-        mn = args[0].mean()
-    else:
-        mn = args[1]
-
-    if len(args) < 3:
-        v = var2(args[0])
-    else:
-        v = args[2]
-
-    if numpy.isreal(args[0]).all():
-        res = (numpy.abs(args[0]-mn)**4).mean() / v**2
-    else:
-        res = ( (((args[0]-mn).real**4).mean() / v.real**2) +
-                ((numpy.i * (args[0]-mn).imag**4).mean() / v.imag**2) )
-
-    return res
-
-# Report image (matrix) statistics.
-# When called on a single image IM1, report min, max, mean, stdev,
-# and kurtosis.
-# When called on two images (IM1 and IM2), report min, max, mean,
-# stdev of the difference, and also SNR (relative to IM1).
-def imStats(*args):
-
-    if len(args) == 0:
-        print('Error: at least one input image is required')
-        return
-    elif len(args) == 1 and not numpy.isreal(args[0]).all():
-        print('Error: input images must be real-valued matrices')
-        return
-    elif len(args) == 2 and ( not numpy.isreal(args[0]).all() or not numpy.isreal(args[1]).all()):
-        print('Error: input images must be real-valued matrices')
-        return
-    elif len(args) > 2:
-        print('Error: maximum of two input images allowed')
-        return
-
-    if len(args) == 2:
-        difference = args[0] - args[1]
-        (mn, mx) = range2(difference)
-        mean = difference.mean()
-        v = var2(difference)
-        if v < numpy.finfo(numpy.double).tiny:
-            snr = numpy.inf
-        else:
-            snr = 10 * numpy.log10(var2(args[0])/v)
-        print('Difference statistics:')
-        print('  Range: [%d, %d]' % (mn, mx))
-        print('  Mean: %f,  Stdev (rmse): %f,  SNR (dB): %f' % (mean, numpy.sqrt(v), snr))
-    else:
-        (mn, mx) = range2(args[0])
-        mean = args[0].mean()
-        var = var2(args[0])
-        stdev = numpy.sqrt(var.real) + numpy.sqrt(var.imag)
-        kurt = kurt2(args[0], mean, stdev**2)
-        print('Image statistics:')
-        print('  Range: [%f, %f]' % (mn, mx))
-        print('  Mean: %f,  Stdev: %f,  Kurtosis: %f' % (mean, stdev, kurt))
 
 # makes image the same as read in by matlab
 def correctImage(img):

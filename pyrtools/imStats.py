@@ -1,17 +1,29 @@
 import numpy as np
 from .var2 import var2
-from .kurt2 import kurt2
 
 def range2(np_array):
     ''' compute minimum and maximum values of input numpy array,
         returning them as tuple
         '''
-
     if not np.isreal(np_array.all():
         print('Error: matrix must be real-valued')
 
     return (np_array.min(), np_array.max())
 
+def kurt2(np_array, mean=None, var=None):
+    ''' Sample kurtosis (fourth moment divided by squared variance)
+        of a matrix.  Kurtosis of a Gaussian distribution is 3.
+        MEAN (optional) and VAR (optional) make the computation faster.  '''
+
+    if mean is None:
+        mean = np_array.mean()
+    if var is None:
+        var = var2(np_array, mean)
+
+    if np.isreal(np_array).all():
+        return ((np_array - mean) ** 4).mean() / var ** 2
+    else:
+        return kurt2(np_array.real, mean.real, var.real) + 1j * kurt2(np_array.imag, mean.imag, var.imag)
 
 def imStats(*args):
     ''' Report image (matrix) statistics.
