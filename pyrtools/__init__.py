@@ -12,7 +12,7 @@ from .histoMatch import histoMatch
 from .histo import histo
 from .idx2LB import idx2LB
 from .imGradient import imGradient
-from .imStats import imStats, range2, skew2, kurt2
+from .imStats import imStats, range2, var2, skew2, kurt2
 from .LB2idx import LB2idx
 from .Lpyr import Lpyr
 from .maxPyrHt import maxPyrHt
@@ -44,7 +44,6 @@ from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer
 from .strictly_decreasing import strictly_decreasing
 from .upBlur import upBlur
-from .var2 import var2
 from .Wpyr import Wpyr
 import ctypes
 import os

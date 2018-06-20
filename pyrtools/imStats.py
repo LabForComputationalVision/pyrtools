@@ -1,8 +1,7 @@
 import numpy as np
-from .var2 import var2
 
 def range2(np_array):
-    ''' compute minimum and maximum values of input numpy array,
+    ''' compute minimum and maximum values of the input numpy array,
         returning them as tuple
         '''
     if not np.isreal(np_array.all():
@@ -10,8 +9,20 @@ def range2(np_array):
 
     return (np_array.min(), np_array.max())
 
+def var2(np_array, mean=None):
+    ''' Sample variance of the input numpy array.
+        Passing MEAN (optional) makes the calculation faster.  '''
+
+    if mean is None:
+        mean = np_array.mean()
+
+    if np.isreal(np_array).all():
+        return ((np_array - mean)**2).sum() / max(np_array.size - 1, 1)
+    else:
+        return var2(np_array.real, mean.real) + 1j * var2(np_array.imag, mean.image)
+
 def skew2(np_array, mean=None, var=None):
-    ''' Sample skew (third moment divided by variance^3/2) of a matrix.
+    ''' Sample skew (third moment divided by variance^3/2) of the input numpy array.
         MEAN (optional) and VAR (optional) make the computation faster.  '''
 
     if mean is None:
@@ -24,10 +35,9 @@ def skew2(np_array, mean=None, var=None):
     else:
         return skew2(np_array.real, mean.real, var.real) + 1j * skew2(np_array.imag, mean.imag, var.imag)
 
-
 def kurt2(np_array, mean=None, var=None):
     ''' Sample kurtosis (fourth moment divided by squared variance)
-        of a matrix.  Kurtosis of a Gaussian distribution is 3.
+        of the input numpy array.  Kurtosis of a Gaussian distribution is 3.
         MEAN (optional) and VAR (optional) make the computation faster.  '''
 
     if mean is None:
