@@ -4,11 +4,10 @@ from .clip import clip
 from .comparePyr import comparePyr
 from .compareRecon import compareRecon
 from .convolutions import corrDn, upConv
-from .entropy2 import entropy2
 from .Gpyr import Gpyr
 from .histoMatch import histoMatch
 from .idx2LB import idx2LB
-from .imStats import imStats, range2, var2, skew2, kurt2, matlab_histo
+from .imStats import imStats, range2, var2, skew2, kurt2, matlab_histo, entropy2
 from .LB2idx import LB2idx
 from .Lpyr import Lpyr
 from .maxPyrHt import maxPyrHt

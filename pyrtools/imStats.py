@@ -55,7 +55,7 @@ def kurt2(np_array, mean=None, var=None):
 def matlab_histo(np_array, nbins = 101, binsize = None, center = None):
     ''' [N,edges] = matlab_histo(np_array, nbins = 101, binsize = None, center = None)
         Compute a histogram of np_array.
-        N contains the histogram counts, 
+        N contains the histogram counts,
         edges is a vector containg the centers of the histogram bins.
 
         nbins (optional, default = 101) specifies the number of histogram bins.
@@ -97,6 +97,27 @@ def matlab_histo(np_array, nbins = 101, binsize = None, center = None):
     # matlab version returns column vectors, so we will too.
     # to check: return edges or centers? edit comments.
     return (N.reshape(1,-1), edges.reshape(1,-1))
+
+
+def entropy2(np_array, binsize=None):
+    ''' E = entropy2(np_array, binsize=None):
+
+        Compute the first-order sample entropy of MTX.  Samples of VEC are
+        first discretized.  Optional argument BINSIZE controls the
+        discretization, and defaults to 256/(max(VEC)-min(VEC)).
+
+        NOTE: This is a heavily  biased estimate of entropy when you
+        don't have much data.
+
+        Eero Simoncelli, 6/96. Ported to Python by Rob Young, 10/15.  '''
+
+    [bincount, _] = matlab_histo(vec, nbins=256, binsize=binsize)
+
+    ## Collect non-zero bins:
+    H = bincount[ np.where(bincount > 0) ]
+    H = H / H.sum()
+
+    return -(H * np.log2(H)).sum()
 
 
 def imCompare(im_array0, im_array1):

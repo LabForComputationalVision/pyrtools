@@ -1,8 +1,9 @@
+'''
 import numpy
 from .imStats import range2, matlab_histo
 
 def entropy2(*args):
-    ''' E = ENTROPY2(MTX,BINSIZE)
+        E = ENTROPY2(MTX,BINSIZE)
 
         Compute the first-order sample entropy of MTX.  Samples of VEC are
         first discretized.  Optional argument BINSIZE controls the
@@ -11,7 +12,7 @@ def entropy2(*args):
         NOTE: This is a heavily  biased estimate of entropy when you
         don't have much data.
 
-        Eero Simoncelli, 6/96. Ported to Python by Rob Young, 10/15.  '''
+        Eero Simoncelli, 6/96. Ported to Python by Rob Young, 10/15. 
 
     vec = numpy.array(args[0])
     # if 2D flatten to a vector
@@ -36,3 +37,4 @@ def entropy2(*args):
     H = H / float(sum(H))
 
     return -sum(H * numpy.log2(H))
+'''
