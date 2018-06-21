@@ -3,7 +3,7 @@ import numpy as np
 # not really necessary as a new function
 def strictly_decreasing(np_array):
     ''' are all elements of list strictly decreasing '''
-    return np.all(np.diff() < 0)
+    return np.all(np.diff(np_array) < 0)
 
 # not really necessary as a new function
 def shift(np_array, offset):
@@ -19,5 +19,4 @@ def matlab_round(np_array):
         e.g. numpy.round(2.5) = 2, matlab_round(2.5) = 3
         '''
     (fracPart, intPart) = np.modf(np_array)
-    intPart += (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
-    return intPart
+    return intPart + (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
