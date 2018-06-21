@@ -19,5 +19,4 @@ def matlab_round(np_array):
         e.g. numpy.round(2.5) = 2, matlab_round(2.5) = 3
         '''
     (fracPart, intPart) = np.modf(np_array)
-    intPart += (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
-    return intPart
+    return intPart + (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
