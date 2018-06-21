@@ -1,5 +1,5 @@
 from .binomialFilter import binomialFilter
-from .image_tools import blurDn, blur, upBlur
+from .image_tools import blurDn, blur, upBlur, imGradient
 from .clip import clip
 from .comparePyr import comparePyr
 from .compareRecon import compareRecon
@@ -9,7 +9,6 @@ from .Gpyr import Gpyr
 from .histoMatch import histoMatch
 from .histo import histo
 from .idx2LB import idx2LB
-from .imGradient import imGradient
 from .imStats import imStats, range2, var2, skew2, kurt2
 from .LB2idx import LB2idx
 from .Lpyr import Lpyr

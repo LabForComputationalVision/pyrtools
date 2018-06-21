@@ -36,7 +36,7 @@ def blur(image, n_levels=1, filt='binom5'):
     Eero Simoncelli, 3/04.  Python port by Rob Young, 10/15  '''
 
     filt = _init_filt(filt)
-    
+
     if n_levels > 0:
         if len(image.shape) == 1 or image.shape[0] == 1 or image.shape[1] == 1:
             # 1D image
@@ -163,3 +163,30 @@ def upBlur(image, n_levels=1, filt='binom5'):
         res = image
 
     return res
+
+
+def imGradient(im_array, edges="dont-compute"):
+    ''' [dx, dy] = imGradient(im, edges)
+
+        Compute the gradient of the image using smooth derivative filters
+        optimized for accurate direction estimation.  Coordinate system
+        corresponds to standard pixel indexing: X axis points rightward.  Y
+        axis points downward.  EDGES specify boundary handling (see corrDn
+        for options).
+
+        EPS, 1997.
+        original filters from Int'l Conf Image Processing, 1994.
+        updated filters 10/2003: see Farid & Simoncelli, IEEE Trans Image
+                                 Processing, 13(4):496-508, April 2004.
+        Incorporated into matlabPyrTools 10/2004.
+        Python port by Rob Young, 10/15  '''
+
+    # kernels from Farid & Simoncelli, IEEE Trans Image Processing,
+    #   13(4):496-508, April 2004.
+    gp = np.array([0.037659, 0.249153, 0.426375, 0.249153, 0.037659]).reshape(5,1)
+    gd = np.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5,1)
+
+    dx = corrDn(corrDn(im_array, gp, edges), gd.T, edges)
+    dy = corrDn(corrDn(im_array, gd, edges), gp.T, edges)
+
+    return (dx,dy)
