@@ -1,9 +1,10 @@
+'''
 import numpy
 from .imStats import range2
 from .utils import matlab_round
 
 def histo(*args):
-    ''' [N,X] = histo(MTX, nbinsOrBinsize, binCenter);
+        [N,X] = histo(MTX, nbinsOrBinsize, binCenter);
 
         Compute a histogram of (all) elements of MTX.  N contains the histogram
         counts, X is a vector containg the centers of the histogram bins.
@@ -22,7 +23,7 @@ def histo(*args):
             Default=101 bins.
           + allows (optional) specification of binCenter.
 
-        Eero Simoncelli, 3/97.  ported to Python by Rob Young, 8/15.  '''
+        Eero Simoncelli, 3/97.  ported to Python by Rob Young, 8/15.
 
     if len(args) == 0 or len(args) > 3:
         print('Usage: histo(mtx, nbins, binCtr)')
@@ -69,3 +70,4 @@ def histo(*args):
     X = X.reshape(1, X.shape[0])
 
     return (N, X)
+'''
