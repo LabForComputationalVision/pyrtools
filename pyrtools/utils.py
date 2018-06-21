@@ -3,7 +3,7 @@ import numpy as np
 # not really necessary as a new function
 def strictly_decreasing(np_array):
     ''' are all elements of list strictly decreasing '''
-    return np.all(np.diff() < 0)
+    return np.all(np.diff(np_array) < 0)
 
 # not really necessary as a new function
 def shift(np_array, offset):
