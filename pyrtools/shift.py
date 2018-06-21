@@ -1,3 +1,6 @@
+'''
+moved to utils.py, should be deprecated
+
 import numpy
 
 def shift(mtx, offset):
@@ -19,3 +22,4 @@ def shift(mtx, offset):
     ret = numpy.concatenate((top, bottom), axis=0)
 
     return ret
+'''

@@ -1,6 +1,6 @@
 import numpy
 from .imStats import range2
-from .round import round
+from .utils import matlab_round
 
 def histo(*args):
     ''' [N,X] = histo(MTX, nbinsOrBinsize, binCenter);
@@ -44,8 +44,8 @@ def histo(*args):
             binSize = -args[1]
         else:
             binSize = ( float(mx-mn) / float(args[1]) )
-            tmpNbins = ( round(float(mx-binCtr) / float(binSize)) -
-                         round(float(mn-binCtr) / float(binSize)) )
+            tmpNbins = int( matlab_round(float(mx-binCtr) / float(binSize)) -
+                            matlab_round(float(mn-binCtr) / float(binSize)) )
             if tmpNbins != args[1]:
                 print('Warning: Using %d bins instead of requested number (%d)' % (tmpNbins, args[1]))
     else:
@@ -54,8 +54,8 @@ def histo(*args):
     firstBin = binCtr + binSize * round( (mn-binCtr)/float(binSize) )
     firstEdge = firstBin - (binSize / 2.0) + (binSize * 0.01)
 
-    tmpNbins = int( round( (mx-binCtr) / binSize ) -
-                    round( (mn-binCtr) / binSize ) )
+    tmpNbins = int( matlab_round( (mx-binCtr) / binSize ) -
+                    matlab_round( (mn-binCtr) / binSize ) )
 
     # numpy.histogram uses bin edges, not centers like Matlab's hist
     #bins = firstBin + binSize * numpy.array(range(tmpNbins+1))

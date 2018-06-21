@@ -1,3 +1,7 @@
+'''
+# moved to utils.py
+# deprecated and consolidated with round() into the new matlab_round() function
+
 import math
 import numpy
 
@@ -11,3 +15,4 @@ def roundVal(val):
         else:
             intPart -= 1
     return intPart
+'''

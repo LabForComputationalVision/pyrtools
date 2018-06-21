@@ -30,17 +30,14 @@ from .namedFilter import namedFilter
 from .nextSz import nextSz
 from .pyramid import pyramid
 from .rcosFn import rcosFn
-from .round import round
-from .roundVal import roundVal
 from .SCFpyr import SCFpyr
 from .SFpyr import SFpyr
-from .shift import shift
 from .showIm import showIm
 from .get_filter import get_filter
 from .Spyr import Spyr
 from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer
-from .strictly_decreasing import strictly_decreasing
+from .utils import matlab_round, strictly_decreasing, shift
 from .Wpyr import Wpyr
 import ctypes
 import os

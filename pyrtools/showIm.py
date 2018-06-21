@@ -4,7 +4,7 @@ import PIL
 import scipy.stats
 import tkinter
 import math
-from .round import round
+from .utils import matlab_round
 
 def showIm(*args):
     # check and set input parameters
@@ -38,7 +38,7 @@ def showIm(*args):
             if args[1] is "auto":
                 imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
             elif args[1] is "auto2":
-                imRange = ( matrix.mean()-2*matrix.std(), 
+                imRange = ( matrix.mean()-2*matrix.std(),
                             matrix.mean()+2*matrix.std() )
             elif args[1] is "auto3":
                 #p1 = numpy.percentile(matrix, 10)  not in python 2.6.6?!
@@ -56,7 +56,7 @@ def showIm(*args):
             imRange = args[1][0], args[1][1]
     else:
         imRange = ( numpy.amin(matrix), numpy.amax(matrix) )
-    
+
     if len(args) > 2:   # zoom entered
         zoom = args[2]
     else:
@@ -82,7 +82,7 @@ def showIm(*args):
                     "+200+200")
     # put in top spacer
     spacer = tkinter.Label(master, text='').pack()
-    
+
     # create canvas
     canvas = tkinter.Canvas(master, width=canvas_width, height=canvas_height)
     canvas.pack()
@@ -101,7 +101,7 @@ def showIm(*args):
     colors[-1] = 255
     colctr = -1
     # compute color transition indices
-    thresh = round( (matrix.max() - matrix.min()) / len(colors) )
+    thresh = matlab_round( (matrix.max() - matrix.min()) / len(colors) )
     for i in range(len(colorTable)):
         # handle uneven color boundaries
         if thresh == 0 or (i % thresh == 0 and colctr < len(colors)-1):
@@ -114,7 +114,7 @@ def showIm(*args):
         img = img.resize((canvas_width, canvas_height), Image.NEAREST)
 
     # apply image to canvas
-    imgPI = ImageTk.PhotoImage(img)    
+    imgPI = ImageTk.PhotoImage(img)
     canvas.create_image(0,0, anchor=tkinter.NW, image=imgPI)
 
     # add labels
@@ -122,5 +122,5 @@ def showIm(*args):
     rangeLabel = tkinter.Label(master, text=rangeStr).pack()
     dimsStr = 'Dims: [%d, %d] / %d' % (matrix.shape[0], matrix.shape[1], zoom)
     dimsLabel = tkinter.Label(master, text=dimsStr).pack()
-    
+
     tkinter.mainloop()

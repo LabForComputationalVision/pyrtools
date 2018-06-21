@@ -1,4 +1,6 @@
-import numpy
+'''
+# moved to utils.py
+
 from .roundVal import roundVal
 
 def round(arr):
@@ -13,3 +15,4 @@ def round(arr):
             arr[i] = roundVal(arr[i])
 
     return arr
+'''
