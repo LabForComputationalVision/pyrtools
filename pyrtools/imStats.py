@@ -5,7 +5,7 @@ def range2(np_array):
     ''' compute minimum and maximum values of the input numpy array,
         returning them as tuple
         '''
-    if not np.isreal(np_array.all():
+    if not np.isreal(np_array.all()):
         print('Error: matrix must be real-valued')
 
     return (np_array.min(), np_array.max())
@@ -123,7 +123,7 @@ def entropy2(np_array, binsize=None):
 def imCompare(im_array0, im_array1):
     ''' Report min, max, mean, stdev of the difference,
         and SNR (relative to IM1).  '''
-    if not np.isreal(im_array0).all() or not np.isreal(im_array1).all()):
+    if not np.isreal(im_array0).all() or not np.isreal(im_array1).all():
         print('Error: input images must be real-valued matrices')
         return
 
