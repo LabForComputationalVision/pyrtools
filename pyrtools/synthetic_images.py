@@ -270,7 +270,7 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase
             direction = 0
 
     # second form
-    elif frequency not None:
+    elif frequency is not None:
         frequency = np.linalg.norm(frequency)
         direction = np.atan2(frequency[0], frequency[1])
 
@@ -320,7 +320,7 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
             direction = 0
 
     # second form
-    elif frequency not None:
+    elif frequency is not None:
         frequency = np.linalg.norm(frequency)
         direction = np.atan2(frequency[0], frequency[1])
 

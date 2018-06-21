@@ -11,17 +11,8 @@ from .imStats import imStats, range2, var2, skew2, kurt2, matlab_histo, entropy2
 from .LB2idx import LB2idx
 from .Lpyr import Lpyr
 from .maxPyrHt import maxPyrHt
-from .mkAngle import mkAngle
-from .mkAngularSine import mkAngularSine
-from .mkDisc import mkDisc
-from .mkFract import mkFract
-from .mkGaussian import mkGaussian
-from .mkImpulse import mkImpulse
-from .mkRamp import mkRamp
-from .mkR import mkR
-from .mkSine import mkSine
-from .mkSquare import mkSquare
-from .mkZonePlate import mkZonePlate
+from .synthetic_images import *
+# from .synthetic_images import mkAngle, mkAngularSine, mkDisc, mkFract, mkGaussian, mkImpulse, mkRamp, mkR, mkSine, mkSquare, mkZonePlate
 from .modulateFlip import modulateFlip
 from .namedFilter import namedFilter
 from .nextSz import nextSz
