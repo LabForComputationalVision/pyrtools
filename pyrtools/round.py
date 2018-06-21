@@ -4,9 +4,9 @@
 from .roundVal import roundVal
 
 def round(arr):
-    ''' round equivalent to matlab function
-        used in histo so we can unit test against matlab code
-        numpy version rounds to closest even number to remove bias  '''
+        round equivalent to matlab function
+        used in matlab_histo so we can unit test against matlab code
+        numpy version rounds to closest even number to remove bias
 
     if isinstance(arr, (int, float)):
         arr = roundVal(arr)

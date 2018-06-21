@@ -1,5 +1,5 @@
 import numpy
-from .imStats import range2
+from .imStats import range2, matlab_histo
 
 def entropy2(*args):
     ''' E = ENTROPY2(MTX,BINSIZE)
@@ -29,7 +29,7 @@ def entropy2(*args):
     else:
         nbins = 256
 
-    [bincount, bins] = histo(vec, nbins)
+    [bincount, bins] = matlab_histo(vec, nbins)
 
     ## Collect non-zero bins:
     H = bincount[ numpy.where(bincount > 0) ]

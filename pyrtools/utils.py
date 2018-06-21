@@ -13,7 +13,7 @@ def shift(np_array, offset):
 
 def matlab_round(np_array):
     ''' round equivalent to matlab function, which rounds .5 away from zero
-        used in histo so we can unit test against matlab code.
+        used in matlab_histo so we can unit test against matlab code.
         But numpy.round() would rounds .5 to nearest even number
         e.g. numpy.round(0.5) = 0, matlab_round(0.5) = 1
         e.g. numpy.round(2.5) = 2, matlab_round(2.5) = 3
