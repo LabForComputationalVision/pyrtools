@@ -4,8 +4,8 @@ from .compareRecon import compareRecon
 from .convolutions import corrDn, upConv
 from .Gpyr import Gpyr
 from .histoMatch import histoMatch
-from .idx2LB import idx2LB
 from .imStats import imStats, range2, var2, skew2, kurt2, matlab_histo, entropy2
+from .pyramid.pyramid import Pyramid
 from .pyramid.pyr_utils import LB2idx, idx2LB
 from .pyramid.steerable_filters import steerable_filters
 from .Lpyr import Lpyr
@@ -14,7 +14,6 @@ from .synthetic_images import *
 # from .synthetic_images import mkAngle, mkAngularSine, mkDisc, mkFract, mkGaussian, mkImpulse, mkRamp, mkR, mkSine, mkSquare, mkZonePlate
 from .modulateFlip import modulateFlip
 from .namedFilter import namedFilter
-from .pyramid import pyramid
 from .rcosFn import rcosFn
 from .SCFpyr import SCFpyr
 from .SFpyr import SFpyr

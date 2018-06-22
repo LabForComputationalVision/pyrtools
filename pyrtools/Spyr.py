@@ -1,4 +1,4 @@
-from .pyramid import pyramid
+from .pyramid.pyramid import Pyramid
 import numpy
 import os
 from .maxPyrHt import maxPyrHt
@@ -11,7 +11,7 @@ from .showIm import showIm
 from . import JBhelpers
 from . import pyPyrUtils
 
-class Spyr(pyramid):
+class Spyr(Pyramid):
     filt = ''
     edges = ''
 

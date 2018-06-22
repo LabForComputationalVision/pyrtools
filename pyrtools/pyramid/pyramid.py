@@ -1,6 +1,6 @@
 import numpy
 
-class pyramid:  # pyramid
+class Pyramid:  # Pyramid base class
     # properties
     pyr = []
     pyrSize = []

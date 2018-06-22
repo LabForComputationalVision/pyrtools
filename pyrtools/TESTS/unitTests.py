@@ -162,7 +162,7 @@ class LpyrTests(unittest.TestCase):
 class spFilterTests(unittest.TestCase):
     def test1(self):
         matFilt0 = scipy.io.loadmat('./matFiles/sp0Filters.mat')
-        pySP0filt = ppt.get_filter('sp0Filters')
+        pySP0filt = ppt.steerable_filters('sp0Filters')
         tmpKeys = []
         for key in list(matFilt0.keys()):
             if "_" not in key:
@@ -173,7 +173,7 @@ class spFilterTests(unittest.TestCase):
 
     def test2(self):
         matFilt1 = scipy.io.loadmat('./matFiles/sp1Filters.mat')
-        pySP1filt = ppt.sp1Filters('sp1Filters')
+        pySP1filt = ppt.steerable_filters('sp1Filters')
         tmpKeys = []
         for key in list(matFilt1.keys()):
             if "_" not in key:
@@ -184,7 +184,7 @@ class spFilterTests(unittest.TestCase):
 
     def test3(self):
         matFilt3 = scipy.io.loadmat('./matFiles/sp3Filters.mat')
-        pySP3filt = ppt.sp3Filters('sp3Filters')
+        pySP3filt = ppt.steerable_filters('sp3Filters')
         tmpKeys = []
         for key in list(matFilt3.keys()):
             if "_" not in key:
@@ -195,7 +195,7 @@ class spFilterTests(unittest.TestCase):
 
     def test4(self):
         matFilt5 = scipy.io.loadmat('./matFiles/sp5Filters.mat')
-        pySP5filt = ppt.sp5Filters('sp5Filters')
+        pySP5filt = ppt.steerable_filters('sp5Filters')
         tmpKeys = []
         for key in list(matFilt5.keys()):
             if "_" not in key:
@@ -898,39 +898,39 @@ class blurTests(unittest.TestCase):
         res = ppt.blur(ppt.mkRamp((20,30)), 3, ppt.namedFilter('qmf5'))
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
 
-class cconv2Tests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_0.mat')
-        res = ppt.cconv2(ppt.mkRamp(20), ppt.mkRamp(10))
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
-    def test1(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_1.mat')
-        res = ppt.cconv2(ppt.mkRamp(10), ppt.mkRamp(20))
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
-    def test2(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_2.mat')
-        res = ppt.cconv2(ppt.mkRamp(20), ppt.mkRamp(10), 3)
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
-    def test3(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_3.mat')
-        res = ppt.cconv2(ppt.mkRamp(10), ppt.mkRamp(20), 3)
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
-    def test4(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_4.mat')
-        res = ppt.cconv2(ppt.mkRamp((20,30)), ppt.mkRamp((10,20)))
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
-    def test5(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_5.mat')
-        res = ppt.cconv2(ppt.mkRamp((10,20)), ppt.mkRamp((20,30)))
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
-    def test6(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_6.mat')
-        res = ppt.cconv2(ppt.mkRamp((20,30)), ppt.mkRamp((10,20)), 5)
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
-    def test7(self):
-        matPyr = scipy.io.loadmat('./matFiles/cconv2_7.mat')
-        res = ppt.cconv2(ppt.mkRamp((10,20)), ppt.mkRamp((20,30)), 5)
-        self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+# class cconv2Tests(unittest.TestCase):
+#     def test0(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_0.mat')
+#         res = ppt.cconv2(ppt.mkRamp(20), ppt.mkRamp(10))
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+#     def test1(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_1.mat')
+#         res = ppt.cconv2(ppt.mkRamp(10), ppt.mkRamp(20))
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+#     def test2(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_2.mat')
+#         res = ppt.cconv2(ppt.mkRamp(20), ppt.mkRamp(10), 3)
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+#     def test3(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_3.mat')
+#         res = ppt.cconv2(ppt.mkRamp(10), ppt.mkRamp(20), 3)
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+#     def test4(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_4.mat')
+#         res = ppt.cconv2(ppt.mkRamp((20,30)), ppt.mkRamp((10,20)))
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+#     def test5(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_5.mat')
+#         res = ppt.cconv2(ppt.mkRamp((10,20)), ppt.mkRamp((20,30)))
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+#     def test6(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_6.mat')
+#         res = ppt.cconv2(ppt.mkRamp((20,30)), ppt.mkRamp((10,20)), 5)
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
+#     def test7(self):
+#         matPyr = scipy.io.loadmat('./matFiles/cconv2_7.mat')
+#         res = ppt.cconv2(ppt.mkRamp((10,20)), ppt.mkRamp((20,30)), 5)
+#         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
 
 class clipTests(unittest.TestCase):
     def test0(self):

@@ -1,8 +1,9 @@
 import numpy as np
+import sys
 
 # TODO - update these modules to new names / locations
 from .rcosFn import rcosFn
-from .pointOp import pointOp
+from .convolutions import pointOp
 
 def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
     ''' make a ramp matrix
