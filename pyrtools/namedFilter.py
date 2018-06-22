@@ -42,9 +42,10 @@ def namedFilter(name):
         # TODO: not sure why the normalization constant is independent of order?
         # this may affect LaplacianPyramid method
         # original code:
-        # kernel = np.sqrt(2) * binomialFilter(int(name[5:]))
-        kernel = binomialFilter(int(name[5:]))
-        kernel = kernel / np.sqrt(np.sum((kernel ** 2)))
+        kernel = np.sqrt(2) * binomialFilter(int(name[5:]))
+        # proposed code:
+        # kernel = binomialFilter(int(name[5:]))
+        # kernel = kernel / np.sqrt(np.sum((kernel ** 2)))
 
     elif name is "qmf5":
         kernel = np.array([[-0.076103], [0.3535534], [0.8593118], [0.3535534], [-0.076103]])

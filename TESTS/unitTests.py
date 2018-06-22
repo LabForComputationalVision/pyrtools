@@ -39,16 +39,16 @@ class maxPyrHtTests(unittest.TestCase):
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
         target = np.array([[0.5],[0.5]])
-        target = target / np.sqrt(np.sum(target ** 2))
-        self.assertTrue((ppt.namedFilter('binom2') == target).all() )
+        #target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.binomialFilter(2) == target).all() )
     def test2(self):
         target = np.array([[0.25], [0.5], [0.25]])
-        target = target / np.sqrt(np.sum(target ** 2))
-        self.assertTrue((ppt.namedFilter('binom3') == target).all())
+        #target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.binomialFilter(3) == target).all())
     def test3(self):
         target = np.array([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])
-        target = target / np.sqrt(np.sum(target ** 2))
-        self.assertTrue((ppt.namedFilter('binom5') == target).all())
+        #target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.binomialFilter(5) == target).all())
 
 class GpyrTests(unittest.TestCase):
     def test1(self):

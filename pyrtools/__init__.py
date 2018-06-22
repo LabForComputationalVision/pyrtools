@@ -13,7 +13,7 @@ from .maxPyrHt import maxPyrHt
 from .synthetic_images import *
 # from .synthetic_images import mkAngle, mkAngularSine, mkDisc, mkFract, mkGaussian, mkImpulse, mkRamp, mkR, mkSine, mkSquare, mkZonePlate
 from .modulateFlip import modulateFlip
-from .namedFilter import namedFilter
+from .namedFilter import namedFilter, binomialFilter
 from .rcosFn import rcosFn
 from .SCFpyr import SCFpyr
 from .SFpyr import SFpyr
