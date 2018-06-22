@@ -995,15 +995,15 @@ class histoTests(unittest.TestCase):
 #        H = ppt.entropy2(ppt.mkRamp(10), 1)
 #        self.failUnless(matPyr['H'] == H)
 
-class factorialTests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/factorial0.mat')
-        res = ppt.factorial([[1,2],[3,4]])
-        self.assertTrue((matPyr['res'] == res).all())
-    def test1(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/factorial1.mat')
-        res = ppt.factorial(4)
-        self.assertTrue(matPyr['res'] == res)
+# class factorialTests(unittest.TestCase):
+#     def test0(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/factorial0.mat')
+#         res = ppt.factorial([[1,2],[3,4]])
+#         self.assertTrue((matPyr['res'] == res).all())
+#     def test1(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/factorial1.mat')
+#         res = ppt.factorial(4)
+#         self.assertTrue(matPyr['res'] == res)
 
 #class histoMatchTests(unittest.TestCase):
 #    def test0(self):
