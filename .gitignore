@@ -26,3 +26,4 @@ wheels/
 *.egg
 .DS_Store
 *-checkpoint.ipynb
+test_jimmy.py
