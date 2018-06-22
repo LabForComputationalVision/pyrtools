@@ -9,7 +9,7 @@ import warnings
 class SFpyr(Spyr):
     filt = None
     edges = None
-    
+
     #constructor
     def __init__(self, image, height='auto', order=3, twidth=1):
         """Stterable frequency pyramid. image parameter is required, others are optional.
@@ -24,24 +24,24 @@ class SFpyr(Spyr):
 
         The squared radial functions tile the Fourier plane with a raised-cosine falloff. Angular
         functions are cos(theta- k*pi/`order`+1)^(`order`).
-            
+
         Arguments
         ================
-        
+
         - `image` - a 2D numpy array.
 
         - `height` (optional) specifies the number of pyramid levels to build. 'auto' (default) is
         floor(log2(min(image.shape)))-2
 
         - `order` (optional), int. Default value is 3. The number of orientation bands - 1.
-        
+
         - `twidth` (optional), int. Default value is 1. The width of the transition region of the
         radial lowpass function, in octaves
         """
 
         self.pyrType = 'steerableFrequency'
         self.image = numpy.array(image)
-        
+
         max_ht = numpy.floor(numpy.log2(min(self.image.shape))) - 2
         if height == 'auto':
             ht = max_ht
@@ -50,7 +50,7 @@ class SFpyr(Spyr):
         else:
             ht = height
         ht = int(ht)
-        
+
         if order > 15 or order < 0:
             warnings.warn("order must be an integer in the range [0,15]. Truncating.")
             order = min(max(order, 0), 15)
@@ -67,9 +67,9 @@ class SFpyr(Spyr):
         # steering stuff:
 
         if nbands % 2 == 0:
-            harmonics = numpy.array(list(range(nbands/2))) * 2 + 1
+            harmonics = numpy.arange(nbands // 2) * 2 + 1
         else:
-            harmonics = numpy.array(list(range((nbands-1)/2))) * 2
+            harmonics = numpy.arange((nbands-1) // 2) * 2
         if harmonics.size == 0:
             # in this case, harmonics is an empty matrix. This happens when nbands=0 and (based on
             # how the matlab code acts), in that situation, we actually want harmonics to be 0.
@@ -79,12 +79,12 @@ class SFpyr(Spyr):
         self.steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(list(range(nbands)))/nbands, 'even')
 
         #------------------------------------------------------
-        
+
         dims = numpy.array(self.image.shape)
         ctr = numpy.ceil((numpy.array(dims)+0.5)/2).astype(int)
-        
+
         (xramp, yramp) = numpy.meshgrid((numpy.array(list(range(1,dims[1]+1)))-ctr[1])/
-                                     (dims[1]/2.), 
+                                     (dims[1]/2.),
                                      (numpy.array(list(range(1,dims[0]+1)))-ctr[0])/
                                      (dims[0]/2.))
         angle = numpy.arctan2(yramp, xramp)
@@ -120,11 +120,11 @@ class SFpyr(Spyr):
         self._anglemasks = []
         self._himasks = []
         self._lomasks = []
-        
+
         for i in range(ht):
             bands = numpy.zeros((lodft.shape[0]*lodft.shape[1], nbands))
             bind = numpy.zeros((nbands, 2))
-        
+
             Xrcos -= numpy.log2(2)
 
             lutsize = 1024
@@ -143,7 +143,7 @@ class SFpyr(Spyr):
 
             anglemasks = []
             for b in range(nbands):
-                angle_tmp = numpy.reshape(angle, 
+                angle_tmp = numpy.reshape(angle,
                                           (1,angle.shape[0]*angle.shape[1]))
                 anglemask = pointOp(angle_tmp, Ycosn,
                                     Xcosn[0]+numpy.pi*b/nbands,
@@ -169,12 +169,12 @@ class SFpyr(Spyr):
             angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
             YIrcos = numpy.abs(numpy.sqrt(1.0 - Yrcos**2))
-            log_rad_tmp = numpy.reshape(log_rad, 
+            log_rad_tmp = numpy.reshape(log_rad,
                                         (1,log_rad.shape[0]*log_rad.shape[1]))
             lomask = pointOp(log_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
                              0).reshape(lodft.shape[0], lodft.shape[1])
             self._lomasks.append(lomask)
-            
+
             lodft = lodft * lomask
 
         lodft = numpy.fft.ifft2(numpy.fft.ifftshift(lodft))
@@ -182,14 +182,14 @@ class SFpyr(Spyr):
         self.pyrSize.append(lodft.shape)
 
         self.height = self.spyrHt()
-        
+
     # methods
     def numBands(self):      # FIX: why isn't this inherited
         if len(self.pyrSize) == 2:
             return 0
         else:
             b = 2
-            while ( b <= len(self.pyrSize) and 
+            while ( b <= len(self.pyrSize) and
                     self.pyrSize[b] == self.pyrSize[1] ):
                 b += 1
             return b-1
@@ -202,7 +202,7 @@ class SFpyr(Spyr):
         return spHt
 
     def _reconSFpyr(self, levs='all', bands='all', twidth=1):
-        
+
         if twidth <= 0:
             warnings.warn("twidth must be positive. Setting to 1.")
             twidth = 1
@@ -210,10 +210,10 @@ class SFpyr(Spyr):
         #-----------------------------------------------------------------
 
         nbands = self.numBands()
-        
+
         maxLev = 1 + self.spyrHt()
         if isinstance(levs, str) and levs == 'all':
-            levs = numpy.array(list(range(maxLev+1)))
+            levs = numpy.arange(maxLev + 1)
         elif isinstance(levs, str):
             raise Exception("%s not valid for levs parameter. levs must be either a 1D numpy array"
                             " or the string 'all'." % levs)
@@ -221,7 +221,7 @@ class SFpyr(Spyr):
             levs = numpy.array(levs)
 
         if isinstance(bands, str) and bands == 'all':
-            bands = numpy.array(list(range(nbands)))
+            bands = numpy.arange(nbands)
         elif isinstance(bands, str):
             raise Exception("%s not valid for bands parameter. bands must be either a 1D numpy"
                             " array or the string 'all'." % bands)
@@ -245,16 +245,16 @@ class SFpyr(Spyr):
             bounds = (lostart[0], lostart[1], loend[0], loend[1])
             if bounds not in boundList:
                 boundList.append(bounds)
-        boundList.append((0, 0, dimList[len(dimList)-1][0], 
+        boundList.append((0, 0, dimList[len(dimList)-1][0],
                           dimList[len(dimList)-1][1]))
         dimList.append((dimList[len(dimList)-1][0], dimList[len(dimList)-1][1]))
-        
+
         # matlab code starts here
         dims = numpy.array(self.pyrSize[0])
         ctr = numpy.ceil((dims+0.5)/2.0).astype(int)
 
         (xramp, yramp) = numpy.meshgrid((numpy.array(list(range(1,dims[1]+1)))-ctr[1])/
-                                     (dims[1]/2.), 
+                                     (dims[1]/2.),
                                      (numpy.array(list(range(1,dims[0]+1)))-ctr[0])/
                                      (dims[0]/2.))
         angle = numpy.arctan2(yramp, xramp)
@@ -270,7 +270,7 @@ class SFpyr(Spyr):
         # from reconSFpyrLevs
         lutsize = 1024
         Xcosn = numpy.pi * numpy.array(list(range(-(2*lutsize+1), (lutsize+2)))) / lutsize
-        
+
         order = nbands -1
         const = (2**(2*order))*(scipy.misc.factorial(order, exact=True)**2)/float(nbands*scipy.misc.factorial(2*order, exact=True))
         Ycosn = numpy.sqrt(const) * (numpy.cos(Xcosn))**order
@@ -285,20 +285,20 @@ class SFpyr(Spyr):
 
         bounds = (0, 0, 0, 0)
         for idx in range(len(boundList)-2, 0, -1):
-            diff = (boundList[idx][2]-boundList[idx][0], 
+            diff = (boundList[idx][2]-boundList[idx][0],
                     boundList[idx][3]-boundList[idx][1])
-            bounds = (bounds[0]+boundList[idx][0], bounds[1]+boundList[idx][1], 
-                      bounds[0]+boundList[idx][0] + diff[0], 
+            bounds = (bounds[0]+boundList[idx][0], bounds[1]+boundList[idx][1],
+                      bounds[0]+boundList[idx][0] + diff[0],
                       bounds[1]+boundList[idx][1] + diff[1])
             Xrcos -= numpy.log2(2.0)
         nlog_rad = log_rad[bounds[0]:bounds[2], bounds[1]:bounds[3]]
 
-        nlog_rad_tmp = numpy.reshape(nlog_rad, 
+        nlog_rad_tmp = numpy.reshape(nlog_rad,
                                      (1,nlog_rad.shape[0]*nlog_rad.shape[1]))
         lomask = pointOp(nlog_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
         lomask = lomask.reshape(nres.shape[0], nres.shape[1])
         lomask = lomask + 0j
-        resdft[boundList[1][0]:boundList[1][2], 
+        resdft[boundList[1][0]:boundList[1][2],
                boundList[1][1]:boundList[1][3]] = nresdft * lomask
 
         # middle bands
@@ -307,12 +307,12 @@ class SFpyr(Spyr):
             bounds1 = (0, 0, 0, 0)
             bounds2 = (0, 0, 0, 0)
             for boundIdx in range(len(boundList)-1,idx-1,-1):
-                diff = (boundList[boundIdx][2]-boundList[boundIdx][0], 
+                diff = (boundList[boundIdx][2]-boundList[boundIdx][0],
                         boundList[boundIdx][3]-boundList[boundIdx][1])
                 bound2tmp = bounds2
-                bounds2 = (bounds2[0]+boundList[boundIdx][0], 
+                bounds2 = (bounds2[0]+boundList[boundIdx][0],
                            bounds2[1]+boundList[boundIdx][1],
-                           bounds2[0]+boundList[boundIdx][0] + diff[0], 
+                           bounds2[0]+boundList[boundIdx][0] + diff[0],
                            bounds2[1]+boundList[boundIdx][1] + diff[1])
                 bounds1 = bound2tmp
             nlog_rad1 = log_rad[bounds1[0]:bounds1[2], bounds1[1]:bounds1[3]]
@@ -322,7 +322,7 @@ class SFpyr(Spyr):
             YIrcos = numpy.abs(numpy.sqrt(1.0 - Yrcos**2))
             if idx > 1:
                 Xrcos += numpy.log2(2.0)
-                nlog_rad2_tmp = numpy.reshape(nlog_rad2, 
+                nlog_rad2_tmp = numpy.reshape(nlog_rad2,
                                               (1,nlog_rad2.shape[0]*
                                                nlog_rad2.shape[1]))
                 lomask = pointOp(nlog_rad2_tmp, YIrcos, Xrcos[0],
@@ -332,7 +332,7 @@ class SFpyr(Spyr):
                                         bounds2[3]-bounds2[1])
                 lomask = lomask + 0j
                 nresdft = numpy.zeros(dimList[idx]) + 0j
-                nresdft[boundList[idx][0]:boundList[idx][2], 
+                nresdft[boundList[idx][0]:boundList[idx][2],
                         boundList[idx][1]:boundList[idx][3]] = resdft * lomask
                 resdft = nresdft.copy()
 
@@ -342,7 +342,7 @@ class SFpyr(Spyr):
             if idx != 0 and idx != len(boundList)-1:
                 for b in range(nbands):
                     if (bands == b).any():
-                        nlog_rad1_tmp = numpy.reshape(nlog_rad1, 
+                        nlog_rad1_tmp = numpy.reshape(nlog_rad1,
                                                       (1,nlog_rad1.shape[0]*
                                                        nlog_rad1.shape[1]))
                         himask = pointOp(nlog_rad1_tmp, Yrcos, Xrcos[0],
@@ -363,7 +363,7 @@ class SFpyr(Spyr):
                             banddft = numpy.fft.fftshift(numpy.fft.fft2(band))
                         else:
                             banddft = numpy.zeros(band.shape)
-                        resdft += ( (numpy.power(-1+0j,0.5))**(nbands-1) * 
+                        resdft += ( (numpy.power(-1+0j,0.5))**(nbands-1) *
                                     banddft * anglemask * himask )
                     bandIdx += 1
 
@@ -373,7 +373,7 @@ class SFpyr(Spyr):
 
         lo0mask = lo0mask.reshape(dims[0], dims[1])
         resdft = resdft * lo0mask
-        
+
         # residual highpass subband
         hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
 

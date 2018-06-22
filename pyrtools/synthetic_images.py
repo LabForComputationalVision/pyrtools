@@ -318,11 +318,12 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
     if isinstance(period, (int, float)):
         frequency = (2.0 * np.pi) / period
         if direction is None:
-            direction = 0
+            direction = 0.0
 
     # second form
     elif frequency is not None:
         frequency = np.linalg.norm(frequency)
+        # frequency becomes a single number and [0/1] would cause an error
         direction = np.arctan2(frequency[0], frequency[1])
 
     if twidth is None:
@@ -337,6 +338,7 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
     #
     res = mkRamp(size, direction, frequency, phase) - np.pi/2.0
 
+    # transition is not defined...
     [Xtbl, Ytbl] = rcosFn(transition * frequency, np.pi/2.0,
                           [-amplitude, amplitude])
 
