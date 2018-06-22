@@ -29,11 +29,10 @@ def clip(np_array, mini_or_range = 0.0, maxi = 1.0):
 
     if isinstance(mini_or_range, (int, float)):
         mini = mini_or_range
-    else: # a range is provided
+    elif len(mini_or_range) == 2: # a range is provided
         mini = mini_or_range[0]
         maxi = mini_or_range[1]
-
-    if maxi < mini:
-        raise Exception('Error: maxVal cannot be less than minVal!')
+    else:
+        raise Exception('Error: mini_or_range must be an integer/float or a list/tuple of length 2!')
 
     return np.clip(np_array, mini, maxi)
