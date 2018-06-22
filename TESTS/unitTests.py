@@ -2,10 +2,11 @@ import unittest
 import math
 import numpy as np
 import scipy.io
-import Image
+from PIL import Image
 from operator import mul
 import sys
-import pyPyrTools as ppt
+sys.path.insert(0, '../')
+import pyrtools as ppt
 
 class maxPyrHtTests(unittest.TestCase):
     def test1(self):
@@ -37,20 +38,22 @@ class maxPyrHtTests(unittest.TestCase):
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
-        self.assertTrue((ppt.namedFilter('binom2') == np.array([[0.5],
-                                                            [0.5]])).all() )
+        target = np.array([[0.5],[0.5]])
+        target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.namedFilter('binom2') == target).all() )
     def test2(self):
-        self.assertTrue((ppt.namedFilter('binom3') == np.array([[0.25], [0.5],
-                                                            [0.25]])).all())
+        target = np.array([[0.25], [0.5], [0.25]])
+        target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.namedFilter('binom3') == target).all())
     def test3(self):
-        self.assertTrue((ppt.namedFilter('binom5') == np.array([[0.0625], [0.25],
-                                                            [0.3750], [0.25],
-                                                            [0.0625]])).all())
+        target = np.array([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])
+        target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.namedFilter('binom5') == target).all())
 
 class GpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr1.mat')
-        img = Image.open('../lenna-256x256.tif')
+        img = Image.open('./pyrtools/data/lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Gpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
@@ -85,7 +88,7 @@ class GpyrTests(unittest.TestCase):
 class LpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr1.mat')
-        img = Image.open('../lenna-256x256.tif')
+        img = Image.open('./pyrtools/data/lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Lpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
@@ -123,7 +126,7 @@ class LpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test7(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr7.mat')
-        img = Image.open('../lenna-256x256.tif')
+        img = Image.open('./pyrtools/data/lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.Lpyr(img)
         recon = pyPyr.reconPyr()
@@ -167,7 +170,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt0.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP0filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP0filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt0[key] == pySP0filt[key]).all())
 
@@ -178,7 +181,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt1.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP1filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP1filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt1[key] == pySP1filt[key]).all())
 
@@ -189,7 +192,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt3.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP3filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP3filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt3[key] == pySP3filt[key]).all())
 
@@ -200,7 +203,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt5.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP5filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP5filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt5[key] == pySP5filt[key]).all())
 
@@ -212,7 +215,7 @@ class SpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSpyr1.mat')
-        img = np.array(Image.open('../lenna-256x256.tif')).astype(float)
+        img = np.array(Image.open('./pyrtools/data/lenna-256x256.tif')).astype(float)
         pyPyr = ppt.Spyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -238,7 +241,7 @@ class SpyrTests(unittest.TestCase):
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSpyr5.mat')
-        img = np.array(Image.open('../lenna-256x256.tif')).astype(float)
+        img = np.array(Image.open('./pyrtools/data/lenna-256x256.tif')).astype(float)
         pyPyr = ppt.Spyr(img)
         recon = pyPyr.reconPyr()
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
@@ -400,7 +403,7 @@ class SFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSFpyr1.mat')
-        img = Image.open('../lenna-256x256.tif')
+        img = Image.open('./pyrtools/data/lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.SFpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
@@ -427,7 +430,7 @@ class SFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test6(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSFpyr6.mat')
-        img = Image.open('../lenna-256x256.tif')
+        img = Image.open('./pyrtools/data/lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.SFpyr(img)
         recon = pyPyr.reconPyr()
@@ -483,7 +486,7 @@ class SCFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSCFpyr1.mat')
-        img = Image.open('../lenna-256x256.tif')
+        img = Image.open('./pyrtools/data/lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.SCFpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
@@ -504,7 +507,7 @@ class SCFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSCFpyr5.mat')
-        img = Image.open('../lenna-256x256.tif')
+        img = Image.open('./pyrtools/data/lenna-256x256.tif')
         img = np.array(img.getdata()).reshape(256,256)
         pyPyr = ppt.SCFpyr(img)
         recon = pyPyr.reconPyr()
@@ -560,7 +563,7 @@ class WpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildWpyr1.mat')
-        img = np.array(Image.open('../lenna-256x256.tif')).astype(float)
+        img = np.array(Image.open('./pyrtools/data/lenna-256x256.tif')).astype(float)
         pyPyr = ppt.Wpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -580,7 +583,7 @@ class WpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildWpyr5.mat')
-        img = np.array(Image.open('../lenna-256x256.tif')).astype(float)
+        img = np.array(Image.open('./pyrtools/data/lenna-256x256.tif')).astype(float)
         pyPyr = ppt.Wpyr(img)
         recon = pyPyr.reconPyr()
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
@@ -955,7 +958,7 @@ class clipTests(unittest.TestCase):
 class histoTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat('./matFiles/histo0.mat')
-        (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7)
+        (N,X) = ppt.matlab_histo(ppt.mkRamp(10) + 0.7)
         # X will not be the same because matlab returns centers and
         #   python return edges
         #self.failUnless(ppt.compareRecon(matPyr['X'], X))
