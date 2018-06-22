@@ -6,7 +6,7 @@ from .Gpyr import Gpyr
 from .histoMatch import histoMatch
 from .idx2LB import idx2LB
 from .imStats import imStats, range2, var2, skew2, kurt2, matlab_histo, entropy2
-from .LB2idx import LB2idx
+from .pyramid.pyr_utils import LB2idx, idx2LB
 from .Lpyr import Lpyr
 from .maxPyrHt import maxPyrHt
 from .synthetic_images import *

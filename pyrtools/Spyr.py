@@ -5,7 +5,7 @@ import os
 from .maxPyrHt import maxPyrHt
 from .convolutions import corrDn, upConv
 import math
-from .LB2idx import LB2idx
+from .pyramid.pyr_utils import LB2idx
 import matplotlib
 from .showIm import showIm
 from . import JBhelpers

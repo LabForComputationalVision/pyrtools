@@ -1,5 +1,5 @@
 from .Lpyr import Lpyr
-from .LB2idx import LB2idx
+from .pyramid.pyr_utils import LB2idx
 from .namedFilter import namedFilter
 from .modulateFlip import modulateFlip
 from .maxPyrHt import maxPyrHt
@@ -113,8 +113,8 @@ class Wpyr(Lpyr):
     # methods
 
     def wpyrHt(self):
-        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or 
-             self.pyrSize[0][1] == 1 ): 
+        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+             self.pyrSize[0][1] == 1 ):
             nbands = 1
         else:
             nbands = 3
@@ -124,8 +124,8 @@ class Wpyr(Lpyr):
         return ht
 
     def numBands(self):
-        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or 
-             self.pyrSize[0][1] == 1 ): 
+        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
+             self.pyrSize[0][1] == 1 ):
             nbands = 1
         else:
             nbands = 3
@@ -138,7 +138,7 @@ class Wpyr(Lpyr):
             filt = args[0]
         else:
             filt = 'qmf9'
-            
+
         if len(args) > 1:
             edges = args[1]
         else:
@@ -176,7 +176,7 @@ class Wpyr(Lpyr):
         allLevs = numpy.array(list(range(maxLev)))
 
         if isinstance(bands, str) and bands == "all":
-            if ( len(self.band(0)) == 1 or self.band(0).shape[0] == 1 or 
+            if ( len(self.band(0)) == 1 or self.band(0).shape[0] == 1 or
                  self.band(0).shape[1] == 1 ):
                 bands = numpy.array([0]);
             else:
@@ -185,7 +185,7 @@ class Wpyr(Lpyr):
             bands = numpy.array(bands)
             if (bands < 0).any() or (bands > 2).any():
                 print("Error: band numbers must be in the range [0,2].")
-        
+
         if isinstance(filt, str):
             filt = namedFilter(filt)
 
@@ -263,8 +263,8 @@ class Wpyr(Lpyr):
                 elif res_sz[0] != 1 and res_sz[1] != 1 and lev in levs:
                     res_test = res
                     if 0 in bands and lev in levs:
-                        ires = upConv(image = self.band(idx), filt = filt.T, 
-                                      edges = edges, step = (1,2), 
+                        ires = upConv(image = self.band(idx), filt = filt.T,
+                                      edges = edges, step = (1,2),
                                       start = (0, stag-1), stop = hres_sz)
                         res = upConv(image = ires, filt = hfilt.T,
                                      edges = edges, step = (2,1),
@@ -273,15 +273,15 @@ class Wpyr(Lpyr):
                                      result = res)
                     idx += 1
                     if 1 in bands and lev in levs:
-                        ires = upConv(image = self.band(idx), filt = hfilt, 
+                        ires = upConv(image = self.band(idx), filt = hfilt,
                                       edges = edges, step = (1,2),
                                       start = (0,1), stop = lres_sz)
-                        res = upConv(image = ires, filt = filt, edges = edges, 
+                        res = upConv(image = ires, filt = filt, edges = edges,
                                      step = (2,1), start = (stag-1,0),
                                      stop = (res_sz[0],res_sz[1]), result = res)
                     idx += 1
                     if 2 in bands and lev in levs:
-                        ires = upConv(image = self.band(idx), filt = hfilt, 
+                        ires = upConv(image = self.band(idx), filt = hfilt,
                                       edges = edges, step = (1,2),
                                       start = (0,1), stop = (hres_sz[0],
                                                              hres_sz[1]))
@@ -307,11 +307,11 @@ class Wpyr(Lpyr):
         if isinstance(args[1], int):
             self.pyr[args[0]][0][args[1]] = args[2]
         elif isinstance(args[1], tuple):
-            self.pyr[args[0]][args[1][0]][args[1][1]] = args[2] 
+            self.pyr[args[0]][args[1][0]][args[1][1]] = args[2]
         else:
             print('Error: location parameter must be int or tuple!')
             return
-            
+
 
     def set1D(self, *args):
         if len(args) != 3:
@@ -340,7 +340,7 @@ class Wpyr(Lpyr):
             scale = numpy.sqrt(2)
         elif scale is None and nbands == 3:
             scale = 2
-        
+
         ht = int(self.wpyrHt())
         nind = len(self.pyr)
 
@@ -447,20 +447,20 @@ class Wpyr(Lpyr):
                 ypos = self.pyrSize[ind1+1][0] + 1 + gap*(ht-lnum+1);
                 llpos[ind1:ind1+3, :] = [[ypos, 1], [1, xpos], [ypos, xpos]]
             llpos[nind-1,:] = [1, 1]   # lowpass
-    
+
             # make position list positive, and allocate appropriate image:
             llpos = llpos - ((numpy.ones((nind,1)) * numpy.amin(llpos, axis=0)) + 1) + 1
             llpos = llpos.astype(int)
             urpos = llpos + self.pyrSize
             d_im = numpy.ones((numpy.amax(urpos), numpy.amax(urpos))) * bg
-        
+
             # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
             nshades = 64;
             for bnum in range(nind):
                 mult = (nshades-1) / (prange[bnum,1]-prange[bnum,0])
-                d_im[llpos[bnum,0]:urpos[bnum,0], 
+                d_im[llpos[bnum,0]:urpos[bnum,0],
                      llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
-            
+
             if disp == 'qt':
                 showIm(d_im, 'auto', 2)
             elif disp == 'nb':

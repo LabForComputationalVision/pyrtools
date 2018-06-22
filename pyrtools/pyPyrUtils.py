@@ -644,36 +644,7 @@ def mkRamp(*args):
 
     return res
 
-# convert level and band to dictionary index
-def LB2idx(lev,band,nlevs,nbands):
-    # reset band to match matlab version
-    band += (nbands-1)
-    if band > nbands-1:
-        band = band - nbands
-
-    if lev == 0:
-        idx = 0
-    elif lev == nlevs-1:
-        # (Nlevels - ends)*Nbands + ends -1 (because zero indexed)
-        idx = (((nlevs-2)*nbands)+2)-1
-    else:
-        # (level-first level) * nbands + first level + current band
-        idx = (nbands*lev)-band - 1
-
-    return idx
-
-# given and index into dictionary return level and band
-def idx2LB(idx, nlevs, nbands):
-    if idx == 0:
-        return ('hi', -1)
-    elif idx == ((nlevs-2)*nbands)+1:
-        return ('lo', -1)
-    else:
-        lev = math.ceil(idx/nbands)
-        band = (idx % nbands) + 1
-        if band == nbands:
-            band = 0
-        return (lev, band)
+from .pyramid.pyr_utils import idx2LB, LB2idx
 
 def mkImpulse(*args):
     # create an image that is all zeros except for an impulse
