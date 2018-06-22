@@ -1,5 +1,4 @@
 from .image_tools import blurDn, blur, upBlur, imGradient
-from .clip import clip
 from .comparePyr import comparePyr
 from .compareRecon import compareRecon
 from .convolutions import corrDn, upConv
@@ -24,7 +23,7 @@ from .get_filter import get_filter
 from .Spyr import Spyr
 from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer
-from .utils import matlab_round, strictly_decreasing, shift
+from .utils import matlab_round, strictly_decreasing, shift, clip
 from .Wpyr import Wpyr
 import ctypes
 import os

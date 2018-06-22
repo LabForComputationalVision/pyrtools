@@ -20,3 +20,20 @@ def matlab_round(np_array):
         '''
     (fracPart, intPart) = np.modf(np_array)
     return intPart + (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
+
+def clip(np_array, mini_or_range = 0.0, maxi = 1.0):
+    ''' [RES] = clip(np_array, mini_or_range = 0.0, maxi = 1.0):
+
+        A wrapper of numpy.np that handles multiple ways to pass parameters
+        and default values [mini=0.0, maxi=1.0]'''
+
+    if isinstance(mini_or_range, (int, float)):
+        mini = mini_or_range
+    else: # a range is provided
+        mini = mini_or_range[0]
+        maxi = mini_or_range[1]
+
+    if maxi < mini:
+        raise Exception('Error: maxVal cannot be less than minVal!')
+
+    return np.clip(np_array, mini, maxi)
