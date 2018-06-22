@@ -1,6 +1,6 @@
 import numpy as np
 
-def get_filter(filter_name):
+def steerable_filters(filter_name):
     ''' Steerable pyramid filters.  Transform described  in:
 
         @INPROCEEDINGS{Simoncelli95b,
@@ -27,10 +27,10 @@ def get_filter(filter_name):
         return sp3Filters()
     elif filter_name == 'sp5Filters':
         return sp5Filters()
-    elif os.path.isfile(filter):
+    elif os.path.isfile(filter_name):
         raise Exception("Filter files not supported yet")
     else:
-        raise Exception("filter parameters value %s not supported" % (filter))
+        raise Exception("filter parameters value %s not supported" % (filter_name))
 
 def sp0Filters():
     filters = {}

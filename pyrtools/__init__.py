@@ -7,6 +7,7 @@ from .histoMatch import histoMatch
 from .idx2LB import idx2LB
 from .imStats import imStats, range2, var2, skew2, kurt2, matlab_histo, entropy2
 from .pyramid.pyr_utils import LB2idx, idx2LB
+from .pyramid.steerable_filters import steerable_filters
 from .Lpyr import Lpyr
 from .maxPyrHt import maxPyrHt
 from .synthetic_images import *
@@ -18,7 +19,6 @@ from .rcosFn import rcosFn
 from .SCFpyr import SCFpyr
 from .SFpyr import SFpyr
 from .showIm import showIm
-from .get_filter import get_filter
 from .Spyr import Spyr
 from .steer2HarmMtx import steer2HarmMtx
 from .steer import steer

@@ -1,11 +1,11 @@
 from .pyramid import pyramid
 import numpy
-from .get_filter import get_filter
 import os
 from .maxPyrHt import maxPyrHt
 from .convolutions import corrDn, upConv
 import math
 from .pyramid.pyr_utils import LB2idx
+from .pyramid.steerable_filters import steerable_filters
 import matplotlib
 from .showIm import showIm
 from . import JBhelpers

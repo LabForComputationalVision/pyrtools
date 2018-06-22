@@ -1,6 +1,6 @@
 import numpy
 #import pyPyrUtils as ppu
-from .get_filter import get_filter
+from .pyramid.steerable_filters get steerable_filters
 from . import pyPyrUtils
 #import pyPyrCcode
 import math
