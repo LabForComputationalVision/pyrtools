@@ -90,7 +90,7 @@ def matlab_histo(np_array, nbins = 101, binsize = None, center = None):
 
     # numpy.histogram uses bin edges, not centers like Matlab's hist
     # compute bin edges (nbins + 1 of them)
-    edge_left = center + binsize * (-0.5 + matlab_round( (mini - center) / binsize ))
+    edge_left = center + binsize * (-0.499 + matlab_round( (mini - center) / binsize ))
     edges = edge_left + binsize * np.arange(nbins+1)
     N, _ = np.histogram(np_array, edges)
 

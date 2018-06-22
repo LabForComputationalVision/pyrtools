@@ -75,8 +75,8 @@ def mkR(size, exponent=1, origin=None):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    xramp, yramp = np.meshgrid(np.array(list(range(1, size[1]+1)))-origin[1],
-                               np.array(list(range(1, size[0]+1)))-origin[0])
+    xramp, yramp = np.meshgrid(np.arange(1, size[1]+1)-origin[1],
+                               np.arange(1, size[0]+1)-origin[0])
 
     res = (xramp**2 + yramp**2)**(exponent/2.0)
 
@@ -100,8 +100,8 @@ def mkAngle(size, phase=0, origin=None):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    xramp, yramp = np.meshgrid(np.array(list(range(1, size[1]+1)))-origin[1],
-                                  np.array(list(range(1, size[0]+1)))-origin[0])
+    xramp, yramp = np.meshgrid(np.arange(1, size[1]+1)-origin[1],
+                               np.arange(1, size[0]+1)-origin[0])
     xramp = np.array(xramp)
     yramp = np.array(yramp)
 
@@ -160,6 +160,7 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
 
     if covariance is None:
         covariance = (min([size[0], size[1]]) / 6.0) ** 2
+    covariance = np.array(covariance)
 
     if origin is None:
         origin = ((size[0]+1)/2., (size[1]+1)/2.)
@@ -168,24 +169,25 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
 
     #---------------------------------------------------------------
 
-    (xramp, yramp) = np.meshgrid(np.array(list(range(1,size[1]+1)))-origin[1],
-                                 np.array(list(range(1,size[0]+1)))-origin[0])
+    (xramp, yramp) = np.meshgrid(np.arange(1,size[1]+1)-origin[1],
+                                 np.arange(1,size[0]+1)-origin[0])
 
-    if isinstance(covariance, (int, float)):
+    if len(covariance.shape) == 0:
         if amplitude == 'norm':
             amplitude = 1.0 / (2.0 * np.pi * covariance)
         e = ( (xramp ** 2) + (yramp ** 2) ) / ( -2.0 * covariance )
 
-    elif len(covariance) == 2 and isinstance(covariance[0], (int, float)):
+    elif len(covariance.shape) == 1:
         if amplitude == 'norm':
             if covariance[0] * covariance[1] < 0:
                 amplitude = 1.0 / (2.0 * np.pi *
                               np.sqrt(complex(cov[0] * covariance[1])))
             else:
                 amplitude = 1.0 / (2.0 * np.pi * np.sqrt(covariance[0] * covariance[1]))
-        e = ( (xramp ** 2) / (-2 * cov[1]) ) + ( (yramp ** 2) / (-2 * covariance[0]) )
+        e = ( (xramp ** 2) / (-2 * covariance[1]) ) + ( (yramp ** 2) / (-2 * covariance[0]) )
 
     elif covariance.shape == (2,2):
+        # square matrix
         if amplitude == 'norm':
             detCov = np.linalg.det(covariance)
             if (detCov < 0).any():
@@ -198,6 +200,8 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
         covariance = - np.linalg.inv(covariance) / 2.0
         e = (covariance[1,1] * xramp**2) + (
             (covariance[0,1] + covariance[1,0])*(xramp * yramp) ) + ( covariance[0,0] * yramp**2)
+    else:
+        raise Exception("ERROR: invalid covariance shape")
 
     res = amplitude * np.exp(e)
 

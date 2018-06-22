@@ -179,11 +179,11 @@ class SCFpyr(SFpyr):
 
         pind = self.pyrSize
         Nsc = int(numpy.log2(pind[0][0] / pind[-1][0]))
-        Nor = (len(pind)-2) / Nsc
+        Nor = (len(pind)-2) // Nsc
 
         pyrIdx = 1
         for nsc in range(Nsc):
-            firstBnum = nsc * Nor+2
+            firstBnum = nsc * Nor + 2
             dims = pind[firstBnum][:]
             ctr = (numpy.ceil((dims[0]+0.5)/2.0).astype(int), numpy.ceil((dims[1]+0.5)/2.0).astype(int)) #-1?
             ang = mkAngle(dims, 0, ctr)
