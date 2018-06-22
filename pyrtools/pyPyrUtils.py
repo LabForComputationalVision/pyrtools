@@ -675,19 +675,6 @@ def idx2LB(idx, nlevs, nbands):
             band = 0
         return (lev, band)
 
-# find next largest size in list
-def nextSz(size, sizeList):
-    ## make sure sizeList is strictly increasing
-    if sizeList[0] > sizeList[len(sizeList)-1]:
-        sizeList = sizeList[::-1]
-    outSize = (0,0)
-    idx = 0;
-    while outSize == (0,0) and idx < len(sizeList):
-        if sizeList[idx] > size:
-            outSize = sizeList[idx]
-        idx += 1
-    return outSize
-
 def mkImpulse(*args):
     # create an image that is all zeros except for an impulse
     if(len(args) == 0):

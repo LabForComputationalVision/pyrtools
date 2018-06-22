@@ -13,7 +13,6 @@ from .synthetic_images import *
 # from .synthetic_images import mkAngle, mkAngularSine, mkDisc, mkFract, mkGaussian, mkImpulse, mkRamp, mkR, mkSine, mkSquare, mkZonePlate
 from .modulateFlip import modulateFlip
 from .namedFilter import namedFilter
-from .nextSz import nextSz
 from .pyramid import pyramid
 from .rcosFn import rcosFn
 from .SCFpyr import SCFpyr

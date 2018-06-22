@@ -1,3 +1,6 @@
+# not used in any part of the code?
+# to be removed from the package
+
 def nextSz(size, sizeList):
     ''' find next largest size in pyramid list '''
 
