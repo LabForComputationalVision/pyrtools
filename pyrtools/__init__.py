@@ -1,4 +1,3 @@
-from .binomialFilter import binomialFilter
 from .image_tools import blurDn, blur, upBlur, imGradient
 from .clip import clip
 from .comparePyr import comparePyr

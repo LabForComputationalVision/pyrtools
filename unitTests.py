@@ -37,13 +37,13 @@ class maxPyrHtTests(unittest.TestCase):
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
-        self.assertTrue((ppt.binomialFilter(2) == np.array([[0.5],
+        self.assertTrue((ppt.namedFilter('binom2') == np.array([[0.5],
                                                             [0.5]])).all() )
     def test2(self):
-        self.assertTrue((ppt.binomialFilter(3) == np.array([[0.25], [0.5],
+        self.assertTrue((ppt.namedFilter('binom3') == np.array([[0.25], [0.5],
                                                             [0.25]])).all())
     def test3(self):
-        self.assertTrue((ppt.binomialFilter(5) == np.array([[0.0625], [0.25],
+        self.assertTrue((ppt.namedFilter('binom5') == np.array([[0.0625], [0.25],
                                                             [0.3750], [0.25],
                                                             [0.0625]])).all())
 

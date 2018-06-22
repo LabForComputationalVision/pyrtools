@@ -105,11 +105,6 @@ freak out.
   - `imsz` - integer giving the image size
   - `filtsz` - integer giving the filter size
 
-+ `binomialFilter(size)`
-
-  returns a numpy array of binomial coefficients of order (size-1)
-  - `size` - integer giving size of filter
-
 + `namedFilter(name)`
 
   returns numpy array of named filter.  Supported names are:
