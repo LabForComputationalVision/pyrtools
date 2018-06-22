@@ -137,9 +137,9 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
     res = mkR(size, 1, origin)
 
     if abs(twidth) < sys.float_info.min:
-        res = vals[1] + (vals[0] - vals[1]) * (res <= rad)
+        res = vals[1] + (vals[0] - vals[1]) * (res <= radius)
     else:
-        [Xtbl, Ytbl] = rcosFn(twidth, rad, [vals[0], vals[1]])
+        [Xtbl, Ytbl] = rcosFn(twidth, radius, [vals[0], vals[1]])
         res = pointOp(res, Ytbl, Xtbl[0], Xtbl[1]-Xtbl[0], 0)
 
     return np.array(res)
@@ -171,33 +171,33 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
     (xramp, yramp) = np.meshgrid(np.array(list(range(1,size[1]+1)))-origin[1],
                                  np.array(list(range(1,size[0]+1)))-origin[0])
 
-    if isinstance(cov, (int, float)):
+    if isinstance(covariance, (int, float)):
         if amplitude == 'norm':
-            amplitude = 1.0 / (2.0 * np.pi * cov)
-        e = ( (xramp ** 2) + (yramp ** 2) ) / ( -2.0 * cov )
+            amplitude = 1.0 / (2.0 * np.pi * covariance)
+        e = ( (xramp ** 2) + (yramp ** 2) ) / ( -2.0 * covariance )
 
-    elif len(cov) == 2 and isinstance(cov[0], (int, float)):
+    elif len(covariance) == 2 and isinstance(covariance[0], (int, float)):
         if amplitude == 'norm':
-            if cov[0] * cov[1] < 0:
+            if covariance[0] * covariance[1] < 0:
                 amplitude = 1.0 / (2.0 * np.pi *
-                              np.sqrt(complex(cov[0] * cov[1])))
+                              np.sqrt(complex(cov[0] * covariance[1])))
             else:
-                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(cov[0] * cov[1]))
-        e = ( (xramp ** 2) / (-2 * cov[1]) ) + ( (yramp ** 2) / (-2 * cov[0]) )
+                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(covariance[0] * covariance[1]))
+        e = ( (xramp ** 2) / (-2 * cov[1]) ) + ( (yramp ** 2) / (-2 * covariance[0]) )
 
-    elif cov.shape == (2,2):
+    elif covariance.shape == (2,2):
         if amplitude == 'norm':
-            detCov = np.linalg.det(cov)
+            detCov = np.linalg.det(covariance)
             if (detCov < 0).any():
                 detCovComplex = np.empty(detCov.shape, dtype=complex)
                 detCovComplex.real = detCov
                 detCovComplex.imag = np.zeros(detCov.shape)
                 amplitude = 1.0 / ( 2.0 * np.pi * np.sqrt( detCovComplex ) )
             else:
-                amplitude = 1.0 / (2.0 * np.pi * np.sqrt( np.linalg.det(cov) ) )
-        cov = - np.linalg.inv(cov) / 2.0
-        e = (cov[1,1] * xramp**2) + (
-            (cov[0,1]+cov[1,0])*(xramp*yramp) ) + ( cov[0,0] * yramp**2)
+                amplitude = 1.0 / (2.0 * np.pi * np.sqrt( np.linalg.det(covariance) ) )
+        covariance = - np.linalg.inv(covariance) / 2.0
+        e = (covariance[1,1] * xramp**2) + (
+            (covariance[0,1] + covariance[1,0])*(xramp * yramp) ) + ( covariance[0,0] * yramp**2)
 
     res = amplitude * np.exp(e)
 
@@ -273,7 +273,7 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase
     # second form
     elif frequency is not None:
         frequency = np.linalg.norm(frequency)
-        direction = np.atan2(frequency[0], frequency[1])
+        direction = np.arctan2(frequency[0], frequency[1])
 
     #----------------------------------------------------------------
 
@@ -323,7 +323,7 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
     # second form
     elif frequency is not None:
         frequency = np.linalg.norm(frequency)
-        direction = np.atan2(frequency[0], frequency[1])
+        direction = np.arctan2(frequency[0], frequency[1])
 
     if twidth is None:
         twidth = min(2, 2.0 * np.pi / (3.0*frequency))

@@ -1151,49 +1151,49 @@ class upBlurTests(unittest.TestCase):
         res = ppt.upBlur(im, 3, filt)
         self.assertTrue(ppt.compareRecon(mres, res))
 
-class zconv2Tests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat('./matFiles/zconv2_0.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp(10)
-        disc = ppt.mkDisc(5)
-        res = ppt.zconv2(ramp, disc)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test1(self):
-        matPyr = scipy.io.loadmat('./matFiles/zconv2_1.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((10,20))
-        disc = ppt.mkDisc((5,10))
-        res = ppt.zconv2(ramp, disc)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test2(self):
-        matPyr = scipy.io.loadmat('./matFiles/zconv2_2.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((20,10))
-        disc = ppt.mkDisc((10,5))
-        res = ppt.zconv2(ramp, disc)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test3(self):
-        matPyr = scipy.io.loadmat('./matFiles/zconv2_3.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp(10)
-        disc = ppt.mkDisc(5)
-        res = ppt.zconv2(ramp, disc, 3)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test4(self):
-        matPyr = scipy.io.loadmat('./matFiles/zconv2_4.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((10,20))
-        disc = ppt.mkDisc((5,10))
-        res = ppt.zconv2(ramp, disc, 3)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test5(self):
-        matPyr = scipy.io.loadmat('./matFiles/zconv2_5.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((20,10))
-        disc = ppt.mkDisc((10,5))
-        res = ppt.zconv2(ramp, disc, 3)
-        self.assertTrue(ppt.compareRecon(mres, res))
+# class zconv2Tests(unittest.TestCase):
+#     def test0(self):
+#         matPyr = scipy.io.loadmat('./matFiles/zconv2_0.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp(10)
+#         disc = ppt.mkDisc(5)
+#         res = ppt.zconv2(ramp, disc)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test1(self):
+#         matPyr = scipy.io.loadmat('./matFiles/zconv2_1.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((10,20))
+#         disc = ppt.mkDisc((5,10))
+#         res = ppt.zconv2(ramp, disc)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test2(self):
+#         matPyr = scipy.io.loadmat('./matFiles/zconv2_2.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((20,10))
+#         disc = ppt.mkDisc((10,5))
+#         res = ppt.zconv2(ramp, disc)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test3(self):
+#         matPyr = scipy.io.loadmat('./matFiles/zconv2_3.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp(10)
+#         disc = ppt.mkDisc(5)
+#         res = ppt.zconv2(ramp, disc, 3)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test4(self):
+#         matPyr = scipy.io.loadmat('./matFiles/zconv2_4.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((10,20))
+#         disc = ppt.mkDisc((5,10))
+#         res = ppt.zconv2(ramp, disc, 3)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test5(self):
+#         matPyr = scipy.io.loadmat('./matFiles/zconv2_5.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((20,10))
+#         disc = ppt.mkDisc((10,5))
+#         res = ppt.zconv2(ramp, disc, 3)
+#         self.assertTrue(ppt.compareRecon(mres, res))
 
 class corrDnTests(unittest.TestCase):
     def test1(self):

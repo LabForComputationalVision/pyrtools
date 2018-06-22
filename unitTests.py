@@ -37,15 +37,17 @@ class maxPyrHtTests(unittest.TestCase):
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
-        self.assertTrue((ppt.namedFilter('binom2') == np.array([[0.5],
-                                                            [0.5]])).all() )
+        target = np.array([[0.5],[0.5]])
+        target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.namedFilter('binom2') == target).all() )
     def test2(self):
-        self.assertTrue((ppt.namedFilter('binom3') == np.array([[0.25], [0.5],
-                                                            [0.25]])).all())
+        target = np.array([[0.25], [0.5], [0.25]])
+        target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.namedFilter('binom3') == target).all())
     def test3(self):
-        self.assertTrue((ppt.namedFilter('binom5') == np.array([[0.0625], [0.25],
-                                                            [0.3750], [0.25],
-                                                            [0.0625]])).all())
+        target = np.array([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])
+        target = target / np.sqrt(np.sum(target ** 2))
+        self.assertTrue((ppt.namedFilter('binom5') == target).all())
 
 class GpyrTests(unittest.TestCase):
     def test1(self):
@@ -167,7 +169,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt0.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP0filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP0filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt0[key] == pySP0filt[key]).all())
 
@@ -178,7 +180,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt1.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP1filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP1filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt1[key] == pySP1filt[key]).all())
 
@@ -189,7 +191,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt3.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP3filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP3filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt3[key] == pySP3filt[key]).all())
 
@@ -200,7 +202,7 @@ class spFilterTests(unittest.TestCase):
         for key in list(matFilt5.keys()):
             if "_" not in key:
                 tmpKeys.append(key)
-        self.assertTrue(tmpKeys == list(pySP5filt.keys()))
+        self.assertTrue(set(tmpKeys) == set(pySP5filt.keys()))
         for key in tmpKeys:
             self.assertTrue((matFilt5[key] == pySP5filt[key]).all())
 
@@ -1151,49 +1153,49 @@ class upBlurTests(unittest.TestCase):
         res = ppt.upBlur(im, 3, filt)
         self.assertTrue(ppt.compareRecon(mres, res))
 
-class zconv2Tests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_0.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp(10)
-        disc = ppt.mkDisc(5)
-        res = ppt.zconv2(ramp, disc)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test1(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_1.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((10,20))
-        disc = ppt.mkDisc((5,10))
-        res = ppt.zconv2(ramp, disc)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test2(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_2.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((20,10))
-        disc = ppt.mkDisc((10,5))
-        res = ppt.zconv2(ramp, disc)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test3(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_3.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp(10)
-        disc = ppt.mkDisc(5)
-        res = ppt.zconv2(ramp, disc, 3)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test4(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_4.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((10,20))
-        disc = ppt.mkDisc((5,10))
-        res = ppt.zconv2(ramp, disc, 3)
-        self.assertTrue(ppt.compareRecon(mres, res))
-    def test5(self):
-        matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_5.mat')
-        mres = matPyr['res']
-        ramp = ppt.mkRamp((20,10))
-        disc = ppt.mkDisc((10,5))
-        res = ppt.zconv2(ramp, disc, 3)
-        self.assertTrue(ppt.compareRecon(mres, res))
+# class zconv2Tests(unittest.TestCase):
+#     def test0(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_0.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp(10)
+#         disc = ppt.mkDisc(5)
+#         res = ppt.zconv2(ramp, disc)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test1(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_1.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((10,20))
+#         disc = ppt.mkDisc((5,10))
+#         res = ppt.zconv2(ramp, disc)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test2(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_2.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((20,10))
+#         disc = ppt.mkDisc((10,5))
+#         res = ppt.zconv2(ramp, disc)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test3(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_3.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp(10)
+#         disc = ppt.mkDisc(5)
+#         res = ppt.zconv2(ramp, disc, 3)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test4(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_4.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((10,20))
+#         disc = ppt.mkDisc((5,10))
+#         res = ppt.zconv2(ramp, disc, 3)
+#         self.assertTrue(ppt.compareRecon(mres, res))
+#     def test5(self):
+#         matPyr = scipy.io.loadmat('./pyrtools/TESTS/matFiles/zconv2_5.mat')
+#         mres = matPyr['res']
+#         ramp = ppt.mkRamp((20,10))
+#         disc = ppt.mkDisc((10,5))
+#         res = ppt.zconv2(ramp, disc, 3)
+#         self.assertTrue(ppt.compareRecon(mres, res))
 
 class corrDnTests(unittest.TestCase):
     def test1(self):
