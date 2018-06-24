@@ -1,5 +1,7 @@
 import numpy
 import scipy
+from .imStats import matlab_histo
+from .convolutions import pointOp
 
 def histoMatch(*args):
     ''' RES = histoMatch(MTX, N, X, mode)

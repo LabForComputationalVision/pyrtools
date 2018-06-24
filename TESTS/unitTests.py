@@ -1008,18 +1008,18 @@ class histoTests(unittest.TestCase):
 #         res = ppt.factorial(4)
 #         self.assertTrue(matPyr['res'] == res)
 
-#class histoMatchTests(unittest.TestCase):
-#    def test0(self):
-#        matPyr = scipy.io.loadmat('./matFiles/histoMatch0.mat')
-#        # adding 0.7 to get the bins to line up between matlab and python
-#        # answers between matlab and python may be different,
-#        #   but not necessarily incorrect.
-#        # similar to histo above
-#        ramp = ppt.mkRamp(10) + 0.7
-#        disc = ppt.mkDisc(10) + 0.7
-#        (rN,rX) = ppt.histo(ramp)
-#        res = ppt.histoMatch(disc, rN, rX, 'edges')
-#        self.failUnless(ppt.compareRecon(matPyr['res'], res))
+class histoMatchTests(unittest.TestCase):
+   def test0(self):
+       matPyr = scipy.io.loadmat('./matFiles/histoMatch0.mat')
+       # adding 0.7 to get the bins to line up between matlab and python
+       # answers between matlab and python may be different,
+       #   but not necessarily incorrect.
+       # similar to histo above
+       ramp = ppt.mkRamp(10) + 0.7
+       disc = ppt.mkDisc(10) + 0.7
+       (rN,rX) = ppt.matlab_histo(ramp)
+       res = ppt.histoMatch(disc, rN, rX, 'edges')
+       self.failUnless(ppt.compareRecon(matPyr['res'], res))
 
 class imGradientTests(unittest.TestCase):
     def test0(self):
