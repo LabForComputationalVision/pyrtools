@@ -15,11 +15,9 @@ def histoMatch(mtx, N, X, mode='edges'):
 
         Eero Simoncelli, 7/96. Ported to Python by Rob Young, 10/15.  '''
 
-    [oN, oX] = matlab_histo(mtx, X.size)
+    [oN, oX] = matlab_histo(mtx, N.size)
     oStep = oX[0,1] - oX[0,0]
-    oC = np.concatenate((np.array([0]),
-                            np.cumsum(oN / oN.sum())
-                            ))
+    oC = np.concatenate(( np.array([0]), np.cumsum(oN / oN.sum()) ))
 
     if mode == 'centers':         # convert to edges
         nStep = X[0,1] - X[0,0]
@@ -29,9 +27,7 @@ def histoMatch(mtx, N, X, mode='edges'):
         nX = X.flatten()
 
     N = N + N.mean() / 1e8  # HACK: no empty bins ensures nC strictly monotonic
-    nC = np.concatenate((np.array([0]),
-                            np.cumsum(N / N.sum())
-                            ))
+    nC = np.concatenate((np.array([0]), np.cumsum(N / N.sum()) ))
 
     # unlike in matlab, interp1d returns a function
     func = interp1d(nC, nX, 'linear')

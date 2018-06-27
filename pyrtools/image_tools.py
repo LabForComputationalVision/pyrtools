@@ -12,12 +12,7 @@ def _init_filt(filt):
         filt = namedFilter(filt)
     else:
         filt = np.array(filt)
-
-    if len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
-        filt = filt / sum(filt)
-    else:
-        filt = filt / sum(sum(filt))
-    return np.array(filt)
+    return filt / filt.sum()
 
 
 def blur(image, n_levels=1, filt='binom5'):
