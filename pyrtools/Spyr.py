@@ -9,7 +9,9 @@ from .pyramid.steerable_filters import steerable_filters
 import matplotlib
 from .showIm import showIm
 from . import JBhelpers
-from . import pyPyrUtils
+
+# from . import pyPyrUtils
+from .convolutions import *
 
 class Spyr(Pyramid):
     filt = ''

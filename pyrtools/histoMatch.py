@@ -26,7 +26,8 @@ def histoMatch(mtx, N, X, mode='edges'):
     else:
         nX = X.flatten()
 
-    N = N + N.mean() / 1e8  # HACK: no empty bins ensures nC strictly monotonic
+    # HACK: no empty bins ensures nC strictly monotonic
+    N = N + N.mean() / 1e8
     nC = np.concatenate((np.array([0]), np.cumsum(N / N.sum()) ))
 
     # unlike in matlab, interp1d returns a function

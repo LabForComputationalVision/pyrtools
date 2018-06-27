@@ -173,12 +173,12 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
                                  np.arange(1,size[0]+1)-origin[0])
 
     if len(covariance.shape) == 0:
-        if amplitude == 'norm':
+        if isinstance(amplitude, str) and amplitude == 'norm':
             amplitude = 1.0 / (2.0 * np.pi * covariance)
         e = ( (xramp ** 2) + (yramp ** 2) ) / ( -2.0 * covariance )
 
     elif len(covariance.shape) == 1:
-        if amplitude == 'norm':
+        if isinstance(amplitude, str) and amplitude == 'norm':
             if covariance[0] * covariance[1] < 0:
                 amplitude = 1.0 / (2.0 * np.pi *
                               np.sqrt(complex(cov[0] * covariance[1])))
@@ -188,7 +188,7 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
 
     elif covariance.shape == (2,2):
         # square matrix
-        if amplitude == 'norm':
+        if isinstance(amplitude, str) and amplitude == 'norm':
             detCov = np.linalg.det(covariance)
             if (detCov < 0).any():
                 detCovComplex = np.empty(detCov.shape, dtype=complex)
@@ -276,8 +276,8 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase
 
     # second form
     elif frequency is not None:
-        frequency = np.linalg.norm(frequency)
         direction = np.arctan2(frequency[0], frequency[1])
+        frequency = np.linalg.norm(frequency)
 
     #----------------------------------------------------------------
 
@@ -285,8 +285,8 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase
     #     res = amplitude * np.sin(mkRamp(size, direction, frequency, phase))
     # else:
 
-    res = amplitude * np.sin(mkRamp(size, direction, frequency, phase,
-                                           [origin[0]-1, origin[1]-1]))
+    res = amplitude * np.sin(mkRamp(size=size, direction=direction,
+    slope=frequency, intercept=phase,origin=[origin[0]-1, origin[1]-1]))
 
     return res
 
@@ -326,9 +326,8 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
 
     # second form
     elif frequency is not None:
-        frequency = np.linalg.norm(frequency)
-        # frequency becomes a single number and [0/1] would cause an error
         direction = np.arctan2(frequency[0], frequency[1])
+        frequency = np.linalg.norm(frequency)
 
     if twidth is None:
         twidth = min(2, 2.0 * np.pi / (3.0*frequency))
@@ -340,10 +339,9 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
     #                  (origin[0]-1, origin[1]-1)) - np.pi/2.0
     # else:
     #
-    res = mkRamp(size, direction, frequency, phase) - np.pi/2.0
+    res = mkRamp(size, direction=direction, slope=frequency, intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
 
-    # transition is not defined...
-    [Xtbl, Ytbl] = rcosFn(transition * frequency, np.pi/2.0,
+    [Xtbl, Ytbl] = rcosFn(twidth * frequency, np.pi/2.0,
                           [-amplitude, amplitude])
 
     res = pointOp(abs(((res+np.pi) % (2.0*np.pi))-np.pi), Ytbl,
@@ -393,14 +391,14 @@ def mkFract(size, fract_dim=1):
 if __name__ == "__main__":
 
     # TODO - update this module to new names / locations
-    from display import showIm
+    from .showIm import showIm
 
     # pick some parameters
     size      = 256
     direction = 2 * np.pi * np.random.rand(1)
     slope     = 10 * np.random.rand(1) - 5
     intercept = 10 * np.random.rand(1) - 5
-    origin    = round(1 + (size - 1) * np.random.rand(2,1))
+    origin    = np.round(size * np.random.rand(2,1)).astype(int)
     exponent  = 0.8 + np.random.rand(1)
     amplitude = 1 + 5 * np.random.rand(1)
     phase     = 2 * np.pi * np.random.rand(1)
@@ -412,7 +410,7 @@ if __name__ == "__main__":
     showIm(mkR(size, exponent, origin))
     showIm(mkAngle(size, direction))
     showIm(mkDisc(size, size/4, origin, twidth))
-    showIm(mkGaussian(size, (size/6)^2, origin, amplitude)) # try various covariances
+    showIm(mkGaussian(size, (size/6)**2, origin, amplitude))
     showIm(mkZonePlate(size, amplitude, phase))
     showIm(mkAngularSine(size, 3, amplitude, phase, origin))
     showIm(mkSine(size, period, direction, amplitude, phase, origin))

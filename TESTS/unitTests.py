@@ -780,39 +780,39 @@ class mkDiscTests(unittest.TestCase):
 class mkSineTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine0.mat')
-        res = ppt.mkSine(20, 5.5)
+        res = ppt.mkSine(20, period=5.5)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine1.mat')
-        res = ppt.mkSine(20, 5.5, 2)
+        res = ppt.mkSine(20, period=5.5, direction=2)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test2(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine2.mat')
-        res = ppt.mkSine(20, 5.5, 2, 3)
+        res = ppt.mkSine(20, period=5.5, direction=2, amplitude=3)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test3(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine3.mat')
-        res = ppt.mkSine(20, 5.5, 2, 3, 5)
+        res = ppt.mkSine(20, period=5.5, direction=2, amplitude=3, phase=5)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test4(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine4.mat')
-        res = ppt.mkSine(20, 5.5, 2, 3, 5, [4,5])
+        res = ppt.mkSine(20, period=5.5, direction=2, amplitude=3, phase=5, origin=[4,5])
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine5.mat')
-        res = ppt.mkSine(20, [1,2])
+        res = ppt.mkSine(20, frequency=[1,2])
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test6(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine6.mat')
-        res = ppt.mkSine(20, [1,2], 3)
+        res = ppt.mkSine(20, frequency=[1,2], amplitude=3)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test7(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine7.mat')
-        res = ppt.mkSine(20, [1,2], 3, 2)
+        res = ppt.mkSine(20, frequency=[1,2], amplitude=3, phase=2)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test8(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSine8.mat')
-        res = ppt.mkSine(20, [1,2], 3, 2, [5,4])
+        res = ppt.mkSine(20, frequency=[1,2], amplitude=3, phase=2, origin=[5,4])
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
 
 class mkZonePlateTests(unittest.TestCase):
@@ -832,47 +832,47 @@ class mkZonePlateTests(unittest.TestCase):
 class mkSquareTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare0.mat')
-        res = ppt.mkSquare(20, 5.5)
+        res = ppt.mkSquare(20, period=5.5)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare1.mat')
-        res = ppt.mkSquare(20, 5.5, 3)
+        res = ppt.mkSquare(20, period=5.5, direction=3)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test2(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare2.mat')
-        res = ppt.mkSquare(20, 5.5, 3, 5.1)
+        res = ppt.mkSquare(20, period=5.5, direction=3, amplitude=5.1)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test3(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare3.mat')
-        res = ppt.mkSquare(20, 5.5, 3, 5.1, -1)
+        res = ppt.mkSquare(20, period=5.5, direction=3, amplitude=5.1, phase=-1)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test4(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare4.mat')
-        res = ppt.mkSquare(20, 5.5, 3, 5.1, -1, (2,3))
+        res = ppt.mkSquare(20, period=5.5, direction=3, amplitude=5.1, phase=-1, origin=(2,3))
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare5.mat')
-        res = ppt.mkSquare(20, 5.5, 3, 5.1, -1, (2,3), 0.25)
+        res = ppt.mkSquare(20, period=5.5, direction=3, amplitude=5.1, phase=-1, origin=(2,3), twidth=.25)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test6(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare6.mat')
-        res = ppt.mkSquare(20, (1,2))
+        res = ppt.mkSquare(20, frequency=(1,2))
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test7(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare7.mat')
-        res = ppt.mkSquare(20, (1,2), 3.2)
+        res = ppt.mkSquare(20, frequency=(1,2), amplitude=3.2)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test8(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare8.mat')
-        res = ppt.mkSquare(20, (1,2), 3.2, -2)
+        res = ppt.mkSquare(20, frequency=(1,2), amplitude=3.2, phase=-2)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test9(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare9.mat')
-        res = ppt.mkSquare(20, (1,2), 3.2, -2, (2,3))
+        res = ppt.mkSquare(20, frequency=(1,2), amplitude=3.2, phase=-2, origin=(2,3))
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
     def test10(self):
         matPyr = scipy.io.loadmat('./matFiles/mkSquare10.mat')
-        res = ppt.mkSquare(20, (1,2), 3.2, -2, (2,3), 0.55)
+        res = ppt.mkSquare(20, frequency=(1,2), amplitude=3.2, phase=-2, origin=(2,3), twidth=.55)
         self.assertTrue(ppt.compareRecon(matPyr['res'], res))
 
 class blurTests(unittest.TestCase):
