@@ -4,16 +4,17 @@ from .imStats import matlab_histo
 from .convolutions import pointOp
 
 def histoMatch(mtx, N, X, mode='edges'):
-    ''' RES = histoMatch(MTX, N, X, mode)
+    '''Modify elements of MTX so that normalized histogram matches that
+    specified by vectors X and N, where N contains the histogram counts
+    and X the histogram bin positions (see matlab_histo).
 
-        Modify elements of MTX so that normalized histogram matches that
-        specified by vectors X and N, where N contains the histogram counts
-        and X the histogram bin positions (see matlab_histo).
+    RES = histoMatch(MTX, N, X, mode)
 
-        new input parameter 'mode' can be either 'centers' or 'edges' that tells
-        the function if the input X values are bin centers or edges.
+    new input parameter 'mode' can be either 'centers' or 'edges' that tells
+    the function if the input X values are bin centers or edges.
 
-        Eero Simoncelli, 7/96. Ported to Python by Rob Young, 10/15.  '''
+    Eero Simoncelli, 7/96. Ported to Python by Rob Young, 10/15.
+    '''
 
     [oN, oX] = matlab_histo(mtx, N.size)
     oStep = oX[0,1] - oX[0,0]
@@ -30,8 +31,11 @@ def histoMatch(mtx, N, X, mode='edges'):
     N = N + N.mean() / 1e8
     nC = np.concatenate((np.array([0]), np.cumsum(N / N.sum()) ))
 
+    # TODO - scipy error
+    # ValueError: A value in x_new is above the interpolation range.
+
     # unlike in matlab, interp1d returns a function
     func = interp1d(nC, nX, 'linear')
     nnX = func(oC)
 
-    return pointOp(mtx, nnX, oX[0,0], oStep, 0)
+    return pointOp(image=mtx, lut=nnX, origin=oX[0,0], increment=oStep, warnings=0)

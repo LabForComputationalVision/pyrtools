@@ -262,12 +262,6 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
-    if origin is None:
-        # TODO make sure this is handled correctly
-        origin = ((size[0]-1)/2., (size[1]-1)/2.)
-    elif not hasattr(origin, '__iter__'):
-        origin = (origin, origin)
-
     # first form
     if isinstance(period, (int, float)):
         frequency = (2.0 * np.pi) / period
@@ -281,12 +275,13 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase
 
     #----------------------------------------------------------------
 
-    # if origin == None:
-    #     res = amplitude * np.sin(mkRamp(size, direction, frequency, phase))
-    # else:
+    if origin is None:
+        res = amplitude * np.sin(mkRamp(size=size, direction=direction, slope=frequency, intercept=phase))
 
-    res = amplitude * np.sin(mkRamp(size=size, direction=direction,
-    slope=frequency, intercept=phase,origin=[origin[0]-1, origin[1]-1]))
+    else:
+        if not hasattr(origin, '__iter__'):
+            origin = (origin, origin)
+        res = amplitude * np.sin(mkRamp(size=size, direction=direction, slope=frequency, intercept=phase,origin=[origin[0]-1, origin[1]-1]))
 
     return res
 
@@ -312,12 +307,6 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
-    if origin is None:
-        # TODO make sure this is handled correctly
-        origin = ((size[0]-1)/2., (size[1]-1)/2.)
-    elif not hasattr(origin, '__iter__'):
-        origin = (origin, origin)
-
     # first form
     if isinstance(period, (int, float)):
         frequency = (2.0 * np.pi) / period
@@ -334,12 +323,13 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
 
     #------------------------------------------------------------
 
-    # if origin != 'not set':
-    #     res = mkRamp(size, direction, frequency, phase,
-    #                  (origin[0]-1, origin[1]-1)) - np.pi/2.0
-    # else:
-    #
-    res = mkRamp(size, direction=direction, slope=frequency, intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
+    if origin is None:
+        res = mkRamp(size, direction=direction, slope=frequency, intercept=phase) - np.pi/2.0
+
+    else:
+        if not hasattr(origin, '__iter__'):
+            origin = (origin, origin)
+        res = mkRamp(size, direction=direction, slope=frequency, intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
 
     [Xtbl, Ytbl] = rcosFn(twidth * frequency, np.pi/2.0,
                           [-amplitude, amplitude])
