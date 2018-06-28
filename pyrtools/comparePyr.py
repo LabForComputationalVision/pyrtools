@@ -1,7 +1,4 @@
 import numpy as np
-import math
-from operator import mul
-from functools import reduce
 
 def comparePyr(matPyr, pyPyr, rtol=1e-5, atol=1e-8):
     ''' compare two pyramids and return 1 if they are the same with in
@@ -10,7 +7,7 @@ def comparePyr(matPyr, pyPyr, rtol=1e-5, atol=1e-8):
     # compare two pyramids - return 0 for !=, 1 for ==
     # correct number of elements?
     matSz = sum(matPyr.shape)
-    pySz = 1 + sum([reduce(mul, size) for size in pyPyr.pyrSize])
+    pySz = 1 + sum([np.array(size).prod() for size in pyPyr.pyrSize])
 
     if(matSz != pySz):
         print("size difference: %d != %d, returning 0" % (matSz, pySz))

@@ -135,10 +135,10 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
             raise Exception('Even sized 2D filters not yet supported by upConv.')
 
     if stop is None and result is None:
-        stop = (image.shape[0]*step[0], image.shape[1]*step[1])
-        stop = (stop[0], stop[1])
+        stop = [imshape_d * step_d for imshape_d, step_d in zip(image.shape, step)]
     elif stop is None:
-        stop = (result.shape[0], result.shape[1])
+        stop = result.shape
+    stop = [int(ele) for ele in stop]
 
     if result is None:
         result = np.zeros((stop[1], stop[0]))
