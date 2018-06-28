@@ -47,15 +47,15 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     image = image.copy()
     filt = filt.copy()
 
-    if len(filt.shape) == 1:
-        filt = np.reshape(filt, (1, len(filt)))
+    if filt.ndim == 1:
+        filt = filt.reshape(1,-1)
 
     if stop is None:
         stop = (image.shape[0], image.shape[1])
 
     if result is None:
-        rxsz = len(list(range(start[0], stop[0], step[0])))
-        rysz = len(list(range(start[1], stop[1], step[1])))
+        rxsz = len(range(start[0], stop[0], step[0]))
+        rysz = len(range(start[1], stop[1], step[1]))
         result = np.zeros((rxsz, rysz))
     else:
         result = np.array(result.copy())
@@ -120,9 +120,10 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     image = image.copy()
     filt = filt.copy()
 
-    if len(filt.shape) == 1:
-        filt = np.reshape(filt, (1, len(filt)))
+    if filt.ndim == 1:
+        filt = filt.reshape(1,-1)
 
+    # TODO: first condition is always TRUE?
     if ((edges != "reflect1" or edges != "extend" or edges != "repeat") and
             (filt.shape[0] % 2 == 0 or filt.shape[1] % 2 == 0)):
         if filt.shape[1] == 1:
@@ -138,7 +139,6 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
         stop = [imshape_d * step_d for imshape_d, step_d in zip(image.shape, step)]
     elif stop is None:
         stop = result.shape
-    stop = [int(ele) for ele in stop]
 
     if result is None:
         result = np.zeros((stop[1], stop[0]))
@@ -180,7 +180,7 @@ def pointOp(image, lut, origin, increment, warnings):
     This function is very fast and allows extrapolation beyond the lookup table domain.  The
     drawbacks are that the lookup table must be equi-spaced, and the interpolation is linear.
     """
-    result = np.zeros((image.shape[0], image.shape[1]))
+    result = np.empty_like(image)
 
     lib.internal_pointop(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                          result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),

@@ -225,8 +225,8 @@ class Wpyr(Lpyr):
                     resIdx = len(self.pyrSize)-(3*(lev-1))-3
                     res_sz = (self.pyrSize[resIdx][0]+self.pyrSize[resIdx-1][0],
                               self.pyrSize[resIdx][1]+self.pyrSize[resIdx-1][1])
-                    lres_sz = numpy.array([self.pyrSize[resIdx][0], res_sz[1]])
-                    hres_sz = numpy.array([self.pyrSize[resIdx-1][0], res_sz[1]])
+                    lres_sz = ([self.pyrSize[resIdx][0], res_sz[1]])
+                    hres_sz = ([self.pyrSize[resIdx-1][0], res_sz[1]])
                 imageIn = res.copy()
                 if res_sz[0] == 1:
                     res = upConv(image = imageIn, filt = filt.T, edges = edges,
@@ -268,8 +268,7 @@ class Wpyr(Lpyr):
                                       start = (0, stag-1), stop = hres_sz)
                         res = upConv(image = ires, filt = hfilt.T,
                                      edges = edges, step = (2,1),
-                                     start = (1,0), stop = (res_sz[0],
-                                                            res_sz[1]),
+                                     start = (1,0), stop = res_sz,
                                      result = res)
                     idx += 1
                     if 1 in bands and lev in levs:
@@ -278,17 +277,15 @@ class Wpyr(Lpyr):
                                       start = (0,1), stop = lres_sz)
                         res = upConv(image = ires, filt = filt, edges = edges,
                                      step = (2,1), start = (stag-1,0),
-                                     stop = (res_sz[0],res_sz[1]), result = res)
+                                     stop = res_sz, result = res)
                     idx += 1
                     if 2 in bands and lev in levs:
                         ires = upConv(image = self.band(idx), filt = hfilt,
                                       edges = edges, step = (1,2),
-                                      start = (0,1), stop = (hres_sz[0],
-                                                             hres_sz[1]))
+                                      start = (0,1), stop = hres_sz)
                         res = upConv(image = ires, filt = hfilt.T,
                                      edges = edges, step = (2,1),
-                                     start = (1,0), stop = (res_sz[0],
-                                                            res_sz[1]),
+                                     start = (1,0), stop = res_sz,
                                      result = res)
                     idx += 1
                 # need to jump back n bands in the idx each loop
