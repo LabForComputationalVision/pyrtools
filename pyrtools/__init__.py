@@ -22,7 +22,7 @@ from .pyramids.steer import steer
 from .tools.showIm import showIm
 from .tools.synthetic_images import *
 from .tools.imStats import imCompare, imStats, range2, skew2, var2
-from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2
+from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2, matlab_round
 from .tools.convolutions import rconv2
 from .tools.comparePyr import comparePyr
 from .tools.compareRecon import compareRecon
