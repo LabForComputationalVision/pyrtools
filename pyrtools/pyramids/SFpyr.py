@@ -1,10 +1,11 @@
-from .Spyr import Spyr
 import numpy
-from .steer2HarmMtx import steer2HarmMtx
-from .rcosFn import rcosFn
-from .convolutions import pointOp
 import scipy
 import warnings
+from .Spyr import Spyr
+from .steer2HarmMtx import steer2HarmMtx
+from .c.wrapper import pointOp
+from ..tools.utils import rcosFn
+
 
 class SFpyr(Spyr):
     filt = None

@@ -1,9 +1,7 @@
 import numpy as np
-import sys
 
-# TODO - update these modules to new names / locations
-from .rcosFn import rcosFn
-from .convolutions import pointOp
+from ..pyramids.c.wrapper import pointOp
+from .utils import rcosFn
 
 def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
     ''' make a ramp matrix
@@ -134,9 +132,10 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
 
     #--------------------------------------------------------------
 
-    res = mkR(size, 1, origin)
+    res = mkR(size, exponent=1, origin=origin)
 
-    if abs(twidth) < sys.float_info.min:
+    # is it stringent enough?
+    if abs(twidth) < 1e-10: #sys.float_info.min:
         res = vals[1] + (vals[0] - vals[1]) * (res <= radius)
     else:
         [Xtbl, Ytbl] = rcosFn(twidth, radius, [vals[0], vals[1]])
@@ -380,7 +379,6 @@ def mkFract(size, fract_dim=1):
 
 if __name__ == "__main__":
 
-    # TODO - update this module to new names / locations
     from .showIm import showIm
 
     # pick some parameters

@@ -2,10 +2,9 @@
 """variety of (non-display) image utilities
 """
 
-from .namedFilter import namedFilter
-from .convolutions import corrDn, upConv
 import numpy as np
-
+from ..pyramids.namedFilter import namedFilter
+from ..pyramids.c.wrapper import corrDn, upConv
 
 def _init_filt(filt):
     if isinstance(filt, str):
@@ -13,7 +12,6 @@ def _init_filt(filt):
     else:
         filt = np.array(filt)
     return filt / filt.sum()
-
 
 def blur(image, n_levels=1, filt='binom5'):
     '''blur an image by filtering and downsampling then by upsampling and filtering
@@ -61,7 +59,6 @@ def blur(image, n_levels=1, filt='binom5'):
             return res
     else:
         return image
-
 
 def blurDn(image, n_levels=1, filt='binom5'):
     '''blur and downsample an image
@@ -116,7 +113,6 @@ def blurDn(image, n_levels=1, filt='binom5'):
 
     return res
 
-
 def upBlur(image, n_levels=1, filt='binom5'):
     '''upsample and blur an image.
 
@@ -159,7 +155,6 @@ def upBlur(image, n_levels=1, filt='binom5'):
 
     return res
 
-
 def imGradient(im_array, edges="dont-compute"):
     ''' [dx, dy] = imGradient(im, edges)
 
@@ -185,3 +180,30 @@ def imGradient(im_array, edges="dont-compute"):
     dy = corrDn(corrDn(im_array, gd, edges), gp.T, edges)
 
     return (dx,dy)
+
+# not really necessary as a new function
+def strictly_decreasing(np_array):
+    ''' are all elements of list strictly decreasing '''
+    return np.all(np.diff(np_array) < 0)
+
+# not really necessary as a new function
+def shift(np_array, offset):
+    ''' Circular shift 2D matrix samples by OFFSET (a [Y,X] 2-tuple),
+        such that  RES(POS) = MTX(POS-OFFSET).  '''
+    return np.roll(np_array, offset)
+
+def clip(np_array, mini_or_range = 0.0, maxi = 1.0):
+    ''' [RES] = clip(np_array, mini_or_range = 0.0, maxi = 1.0):
+
+        A wrapper of numpy.np that handles multiple ways to pass parameters
+        and default values [mini=0.0, maxi=1.0]'''
+
+    if isinstance(mini_or_range, (int, float)):
+        mini = mini_or_range
+    elif len(mini_or_range) == 2: # a range is provided
+        mini = mini_or_range[0]
+        maxi = mini_or_range[1]
+    else:
+        raise Exception('Error: mini_or_range must be an integer/float or a list/tuple of length 2!')
+
+    return np.clip(np_array, mini, maxi)

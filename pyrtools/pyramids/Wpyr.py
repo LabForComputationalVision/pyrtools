@@ -1,10 +1,10 @@
 from .Lpyr import Lpyr
-from .pyramid.pyr_utils import LB2idx
+from .pyr_utils import LB2idx
 from .namedFilter import namedFilter
 from .modulateFlip import modulateFlip
 from .maxPyrHt import maxPyrHt
-from .convolutions import corrDn, upConv
-from . import JBhelpers
+from .c.wrapper import corrDn, upConv
+from ..tools import JBhelpers
 import numpy
 import matplotlib
 import pylab

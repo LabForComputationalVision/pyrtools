@@ -30,9 +30,9 @@ def steer(basis, angle, harmonics=None, steermtx=None):
     # If HARMONICS is not specified, assume derivatives.
     if harmonics is None:
         if num % 2 == 0:
-            harmonics = numpy.array(list(range(num/2)))*2+1
+            harmonics = numpy.array(list(range(num//2)))*2+1
         else:
-            harmonics = numpy.array(list(range((15+1)/2)))*2
+            harmonics = numpy.array(list(range((15+1)//2)))*2
 
     if len(harmonics.shape) == 1 or harmonics.shape[0] == 1:
         # reshape to column matrix

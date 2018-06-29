@@ -92,9 +92,51 @@ def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gra
     return fig
 
 
-# from .synthetic_images import *
-# img = mkRamp(256, direction=0, slope=1, intercept=0, origin=None)
-# showIm(img, range=None, zoom=1, label='', nshades=256)
+# def showIm( img=[], range=None, zoom=[1], label='', colormap=plt.cm.gray, ncols=None):
+#     '''under development
+#
+#     TODO:
+#     range, zoom, label, nshades, ncols
+#
+#     return axes, not fig
+#
+#     '''
+#
+#     if range is None:
+#         range = [np.min(img), np.max(img)]
+#     elif range == 'percentile':
+#         # TODO
+#         range = [np.min(img), np.max(img)]
+#
+#     # TODO
+#     ncols = len(img)
+#
+#     fig, axes = plt.subplots(ncols=ncols)
+#
+#     for i, im in enumerate(img):
+# #         row,col = reversed(divmod(i,n_row)) if bycol else divmod(i,n_col)
+# #         cax = axes[row,col]
+#         ax = axes[i]
+#         im = np.array(im).astype(float)
+#         ax.imshow(im, cmap=colormap, interpolation='none', vmin=range[0], vmax=range[1])
+#         ax.axis('off')
+#     # plt.imshow(X, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, shape=None, filternorm=1, filterrad=4.0, imlim=None, resample=None, url=None, hold=None, data=None)
+#     # TODO
+#     fig.suptitle(label + '\n range: [{:0.1f},{:0.1f}] \n dims: [{},{}]'.format(
+#               np.min(img), np.max(img), im.shape[0], im.shape[1])
+#               )
+#     fig.tight_layout()
+# #     plt.subplots_adjust(top=0.9)
+#     plt.show()
+
+
+# from PIL import ImageTk
+# import PIL
+# import scipy.stats
+# import tkinter
+# import math
+# from .utils import matlab_round
+
 
 # def showIm(*args):
 #     # check and set input parameters
