@@ -1,9 +1,9 @@
-from .pyramid.pyramid import Pyramid
-from .convolutions import corrDn, upConv
-from .namedFilter import namedFilter
+from .pyramid import Pyramid
 from .maxPyrHt import maxPyrHt
-from .showIm import showIm
-from . import JBhelpers
+from .c.wrapper import corrDn, upConv
+from .namedFilter import namedFilter
+from ..tools.showIm import showIm
+from ..tools import JBhelpers
 import numpy
 import math
 import matplotlib

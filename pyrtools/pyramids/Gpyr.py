@@ -1,8 +1,8 @@
+import numpy
 from .Lpyr import Lpyr
 from .namedFilter import namedFilter
 from .maxPyrHt import maxPyrHt
-import numpy
-from .convolutions import corrDn
+from .c.wrapper import corrDn
 
 class Gpyr(Lpyr):
     filt = ''
@@ -66,7 +66,7 @@ class Gpyr(Lpyr):
                 #lo = numpy.array(lo)
                 lo2 = corrDn(image=lo, filt=self.filt, step=(2, 1),
                              start=(0, 0))
-                #lo2 = numpy.array(lo2)                
+                #lo2 = numpy.array(lo2)
 
             self.pyr.append(lo2.copy())
             self.pyrSize.append(lo2.shape)

@@ -1,17 +1,17 @@
-from .pyramid.pyramid import Pyramid
 import numpy
 import os
-from .maxPyrHt import maxPyrHt
-from .convolutions import corrDn, upConv
 import math
-from .pyramid.pyr_utils import LB2idx
-from .pyramid.steerable_filters import steerable_filters
 import matplotlib
-from .showIm import showIm
-from . import JBhelpers
+from .pyramid import Pyramid
+from .pyr_utils import LB2idx
+from .steerable_filters import steerable_filters
+from .maxPyrHt import maxPyrHt
+from .c.wrapper import corrDn, upConv
+from ..tools.showIm import showIm
+from ..tools import JBhelpers
 
 # from . import pyPyrUtils
-from .convolutions import *
+# from .convolutions import *
 
 class Spyr(Pyramid):
     filt = ''

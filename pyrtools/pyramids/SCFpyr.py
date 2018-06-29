@@ -1,11 +1,11 @@
-from .SFpyr import SFpyr
 import numpy
-from .steer2HarmMtx import steer2HarmMtx
-from .rcosFn import rcosFn
-from .convolutions import pointOp
-import scipy
-from .synthetic_images import mkAngle
 import cmath
+import scipy
+from .SFpyr import SFpyr
+from .steer2HarmMtx import steer2HarmMtx
+from .c.wrapper import pointOp
+from ..tools.utils import rcosFn
+from ..tools.synthetic_images import mkAngle
 
 class SCFpyr(SFpyr):
     filt = ''

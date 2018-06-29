@@ -1,31 +1,37 @@
-from .image_tools import blurDn, blur, upBlur, imGradient
-from .comparePyr import comparePyr
-from .compareRecon import compareRecon
-from .convolutions import corrDn, upConv
-from .Gpyr import Gpyr
-from .histoMatch import histoMatch
-from .imStats import imStats, range2, var2, skew2, kurt2, matlab_histo, entropy2
-from .pyramid.pyramid import Pyramid
-from .pyramid.pyr_utils import LB2idx, idx2LB
-from .pyramid.steerable_filters import steerable_filters
-from .Lpyr import Lpyr
-from .maxPyrHt import maxPyrHt
-from .synthetic_images import *
-# from .synthetic_images import mkAngle, mkAngularSine, mkDisc, mkFract, mkGaussian, mkImpulse, mkRamp, mkR, mkSine, mkSquare, mkZonePlate
-from .modulateFlip import modulateFlip
-from .namedFilter import namedFilter, binomialFilter
-from .rcosFn import rcosFn
-from .SCFpyr import SCFpyr
-from .SFpyr import SFpyr
-from .showIm import showIm
-from .Spyr import Spyr
-from .steer2HarmMtx import steer2HarmMtx
-from .steer import steer
-from .utils import matlab_round, strictly_decreasing, shift, clip
-from .Wpyr import Wpyr
-import ctypes
-import os
-from . import JBhelpers
+from .pyramids.c.wrapper import corrDn, upConv, pointOp
+
+from .pyramids.pyramid import Pyramid
+
+from .pyramids.maxPyrHt import maxPyrHt
+from .pyramids.pyr_utils import LB2idx, idx2LB
+from .pyramids.modulateFlip import modulateFlip
+
+from .pyramids.namedFilter import namedFilter, binomialFilter
+from .pyramids.steerable_filters import steerable_filters
+
+from .pyramids.Lpyr import Lpyr
+from .pyramids.Gpyr import Gpyr
+from .pyramids.Wpyr import Wpyr
+from .pyramids.Spyr import Spyr
+from .pyramids.SFpyr import SFpyr
+from .pyramids.SCFpyr import SCFpyr
+
+from .pyramids.steer2HarmMtx import steer2HarmMtx
+from .pyramids.steer import steer
+
+from .tools.showIm import showIm
+from .tools.synthetic_images import *
+from .tools.imStats import imCompare, imStats, range2, skew2, var2
+from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2
+from .tools.convolutions import rconv2
+from .tools.comparePyr import comparePyr
+from .tools.compareRecon import compareRecon
+# these are only used in unit test:
+from .tools.extra_tools import blurDn, blur, upBlur, imGradient, strictly_decreasing, shift, clip
+
+# import ctypes
+# import os
+# from . import JBhelpers
 
 # libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
 # # load the C library

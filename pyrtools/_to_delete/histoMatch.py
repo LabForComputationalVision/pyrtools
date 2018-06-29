@@ -33,9 +33,11 @@ def histoMatch(mtx, N, X, mode='edges'):
 
     # TODO - scipy error
     # ValueError: A value in x_new is above the interpolation range.
+    # print(oC.min(), oC.max())
+    # print(nC.min(), nC.max())
 
     # unlike in matlab, interp1d returns a function
-    func = interp1d(nC, nX, 'linear')
+    func = interp1d(nC, nX, 'linear', fill_value='extrapolate')
     nnX = func(oC)
 
     return pointOp(image=mtx, lut=nnX, origin=oX[0,0], increment=oStep, warnings=0)

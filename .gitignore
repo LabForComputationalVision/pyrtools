@@ -27,4 +27,4 @@ wheels/
 .DS_Store
 *-checkpoint.ipynb
 test_jimmy.py
-test_pe.py
+00_tests_pe.ipynb

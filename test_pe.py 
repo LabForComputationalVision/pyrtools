@@ -1,5 +1,0 @@
-import numpy as np
-import matplotlib.pyplot as plt
-
-%cd /Users/pe/Drive/_Code/3_SignalProcessing/Steerable Pyramid Tools/pyrtools/
-pwd
