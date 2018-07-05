@@ -111,7 +111,7 @@ class SCFpyr(SFpyr):
             Xcosn = numpy.pi * numpy.array(list(range(-(2*lutsize+1), (lutsize+2)))) / lutsize
 
             order = nbands -1
-            const = (2**(2*order))*(scipy.misc.factorial(order, exact=True)**2)/float(nbands*scipy.misc.factorial(2*order, exact=True))
+            const = (2**(2*order))*(scipy.special.factorial(order, exact=True)**2)/float(nbands*scipy.special.factorial(2*order, exact=True))
 
             alfa = ( (numpy.pi+Xcosn) % (2.0*numpy.pi) ) - numpy.pi
             Ycosn = ( 2.0*numpy.sqrt(const) * (numpy.cos(Xcosn)**order) *

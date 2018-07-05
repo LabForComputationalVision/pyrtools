@@ -35,7 +35,7 @@ def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
     # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
     ax.set_title(title + '\n range: [{:0.1f},{:0.1f}] \n dims: [{},{}] * {}'.format(
                  vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
-    
+
 
 
 def reshape_axis(ax, axis_size_pix):
@@ -56,12 +56,12 @@ def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gra
 
     title: string or list of strings. if string, will put the same title on every plot. if list of strings, must be the same length as img, and will
            assume that titles go with the corresponding image
-           
+
     col_wrap:
-    
+
     ax: matplotlib axis or None. If None, make the appropriate figure. If not None, we reshape it (which we only do by shrinking the bbox, so if the bbox is already too small, this will throw an Exception!)
         so that it's the appropriate number of pixels.
-        
+
     TODO:
     range, nshades
     '''
