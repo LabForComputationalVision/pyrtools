@@ -1,23 +1,21 @@
+import numpy as np
 from .pyramid import Pyramid
 from .maxPyrHt import maxPyrHt
 from .c.wrapper import corrDn, upConv
 from .namedFilter import namedFilter
 from ..tools.showIm import showIm
-from ..tools import JBhelpers
-import numpy
-import math
-import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib import cm
+# from ..tools import JBhelpers
 
 class Lpyr(Pyramid):
     """Laplacian pyramid
 
     - `image` - a 2D numpy array
 
-    - `height` - an integer denoting number of pyramid levels desired. Defaults to `maxPyrHt` from
-    pyPyrUtils.
+    - `height` - an integer denoting number of pyramid levels desired. Defaults to `maxPyrHt`
 
-    - `filter1` - can be a string namimg a standard filter (from pyPyrUtils.namedFilter()), or a
+    - `filter1` - can be a string namimg a standard filter (from namedFilter()), or a
     numpy array which will be used for (separable) convolution. Default is 'binom5'.
 
     - `filter2` - specifies the "expansion" filter (default = filter1).
@@ -81,7 +79,7 @@ class Lpyr(Pyramid):
         self.pyr = []
         self.pyrSize = []
         pyrCtr = 0
-        im = numpy.array(self.image).astype(float)
+        im = np.array(self.image).astype(float)
         if len(im.shape) == 1:
             im = im.reshape(im.shape[0], 1)
         los = {}
@@ -93,18 +91,18 @@ class Lpyr(Pyramid):
             if im_sz[0] == 1:
                 lo2 = corrDn(image = im, filt = filter1, edges = edges,
                              step = (1,2))
-                #lo2 = numpy.array(lo2)
+                #lo2 = np.array(lo2)
             elif len(im_sz) == 1 or im_sz[1] == 1:
                 lo2  = corrDn(image = im, filt = filter1, edges = edges,
                               step = (2,1))
-                #lo2 = numpy.array(lo2)
+                #lo2 = np.array(lo2)
             else:
                 lo = corrDn(image = im, filt = filter1.T, edges = edges,
                             step = (1,2), start = (0,0))
-                #lo = numpy.array(lo)
+                #lo = np.array(lo)
                 lo2 = corrDn(image = lo, filt = filter1, edges = edges,
                              step = (2,1), start = (0,0))
-                #lo2 = numpy.array(lo2)
+                #lo2 = np.array(lo2)
 
             los[ht] = lo2
 
@@ -143,10 +141,10 @@ class Lpyr(Pyramid):
     # methods
     # return concatenation of all levels of 1d pyramid
     def catBands(self, *args):
-        outarray = numpy.array([]).reshape((1,0))
+        outarray = np.array([]).reshape((1,0))
         for i in range(self.height):
             tmp = self.band(i).T
-            outarray = numpy.concatenate((outarray, tmp), axis=1)
+            outarray = np.concatenate((outarray, tmp), axis=1)
         return outarray
 
     def set(self, band, element, value):
@@ -159,7 +157,7 @@ class Lpyr(Pyramid):
     def reconPyr(self, *args):
         if len(args) > 0:
             if not isinstance(args[0], str):
-                levs = numpy.array(args[0])
+                levs = np.array(args[0])
             else:
                 levs = args[0]
         else:
@@ -218,7 +216,7 @@ class Lpyr(Pyramid):
         return res
 
     def pyrLow(self):
-        return numpy.array(self.band(self.height-1))
+        return np.array(self.band(self.height-1))
 
     # options for disp are 'qt' and 'nb'
     def showPyr(self, pRange = None, gap = 1, scale = None, disp = 'qt'):
@@ -234,7 +232,7 @@ class Lpyr(Pyramid):
             pRange = 'auto2'
 
         if scale is None and oned == 1:
-            scale = math.sqrt(2)
+            scale = np.sqrt(2)
         elif scale is None and oned == 0:
             scale = 2
 
@@ -242,126 +240,116 @@ class Lpyr(Pyramid):
 
         # auto range calculations
         if pRange == 'auto1':
-            pRange = numpy.zeros((nind,1))
+            pRange = np.zeros((nind,1))
             mn = 0.0
             mx = 0.0
             for bnum in range(nind):
                 band = self.band(bnum)
-                band /= numpy.power(scale, bnum-1)
-                pRange[bnum] = numpy.power(scale, bnum-1)
-                bmn = numpy.amin(band)
-                bmx = numpy.amax(band)
-                mn = numpy.amin([mn, bmn])
-                mx = numpy.amax([mx, bmx])
+                band /= np.power(scale, bnum-1)
+                pRange[bnum] = np.power(scale, bnum-1)
+                bmn = np.amin(band)
+                bmx = np.amax(band)
+                mn = np.amin([mn, bmn])
+                mx = np.amax([mx, bmx])
             if oned == 1:
                 pad = (mx-mn)/12       # magic number
                 mn -= pad
                 mx += pad
-            pRange = numpy.outer(pRange, numpy.array([mn, mx]))
+            pRange = np.outer(pRange, np.array([mn, mx]))
             band = self.pyrLow()
-            mn = numpy.amin(band)
-            mx = numpy.amax(band)
+            mn = np.amin(band)
+            mx = np.amax(band)
             if oned == 1:
                 pad = (mx-mn)/12
                 mn -= pad
                 mx += pad
             pRange[nind-1,:] = [mn, mx];
         elif pRange == 'indep1':
-            pRange = numpy.zeros((nind,1))
+            pRange = np.zeros((nind,1))
             for bnum in range(nind):
                 band = self.band(bnum)
-                mn = numpy.amin(band)
-                mx = numpy.amax(band)
+                mn = np.amin(band)
+                mx = np.amax(band)
                 if oned == 1:
                     pad = (mx-mn)/12;
                     mn -= pad
                     mx += pad
-                pRange[bnum,:] = numpy.array([mn, mx])
+                pRange[bnum,:] = np.array([mn, mx])
         elif pRange == 'auto2':
-            pRange = numpy.zeros((nind,1))
+            pRange = np.zeros((nind,1))
             sqsum = 0
             numpixels = 0
             for bnum in range(0, nind-1):
                 band = self.band(bnum)
-                band /= numpy.power(scale, bnum)
-                sqsum += numpy.sum( numpy.power(band, 2) )
-                numpixels += numpy.prod(band.shape)
-                pRange[bnum,:] = numpy.power(scale, bnum)
-            stdev = math.sqrt( sqsum / (numpixels-1) )
-            pRange = numpy.outer( pRange, numpy.array([-3*stdev, 3*stdev]) )
+                band /= np.power(scale, bnum)
+                sqsum += np.sum( np.power(band, 2) )
+                numpixels += np.prod(band.shape)
+                pRange[bnum,:] = np.power(scale, bnum)
+            stdev = np.sqrt( sqsum / (numpixels-1) )
+            pRange = np.outer( pRange, np.array([-3*stdev, 3*stdev]) )
             band = self.pyrLow()
-            av = numpy.mean(band)
-            stdev = numpy.std(band)
-            pRange[nind-1,:] = numpy.array([av-2*stdev, av+2*stdev]);
+            av = np.mean(band)
+            stdev = np.std(band)
+            pRange[nind-1,:] = np.array([av-2*stdev, av+2*stdev]);
         elif pRange == 'indep2':
-            pRange = numpy.zeros(nind,2)
+            pRange = np.zeros(nind,2)
             for bnum in range(0,nind-1):
                 band = self.band(bnum)
-                stdev = numpy.std(band)
-                pRange[bnum,:] = numpy.array([-3*stdev, 3*stdev])
+                stdev = np.std(band)
+                pRange[bnum,:] = np.array([-3*stdev, 3*stdev])
             band = self.pyrLow()
-            av = numpy.mean(band)
-            stdev = numpy.std(band)
-            pRange[nind,:] = numpy.array([av-2*stdev, av+2*stdev])
+            av = np.mean(band)
+            stdev = np.std(band)
+            pRange[nind,:] = np.array([av-2*stdev, av+2*stdev])
         elif isinstance(pRange, str):
             print("Error: band range argument: %s" % (pRange))
             return
         elif pRange.shape[0] == 1 and pRange.shape[1] == 2:
-            scales = numpy.power( numpy.array( list(range(0,nind)) ), scale)
-            pRange = numpy.outer( scales, pRange )
+            scales = np.power( np.array( list(range(0,nind)) ), scale)
+            pRange = np.outer( scales, pRange )
             band = self.pyrLow()
-            pRange[nind,:] = ( pRange[nind,:] + numpy.mean(band) -
-                               numpy.mean(pRange[nind,:]) )
+            pRange[nind,:] = ( pRange[nind,:] + np.mean(band) -
+                               np.mean(pRange[nind,:]) )
 
         # draw
-        if oned == 1:
-            # FIX: something here broke with Anaconda update!!
-            #fig = matplotlib.pyplot.figure()
-            plt.figure()
-            #pyplot.subplot()...
-            #ax0 = fig.add_subplot(nind, 1, 0)
-            #ax0.set_frame_on(False)
-            #ax0.get_xaxis().tick_bottom()
-            #ax0.get_xaxis().tick_top()
-            #ax0.get_yaxis().tick_right()
-            #ax0.get_yaxis().tick_left()
-            #ax0.get_yaxis().set_visible(False)
-            #for bnum in range(0,nind):
-            #    pylab.subplot(nind, 1, bnum+1)
-            #    pylab.plot(numpy.array(range(numpy.amax(self.band(bnum).shape))).T,
-            #               self.band(bnum).T)
-            #    ylim(pRange[bnum,:])
-            #    xlim((0,self.band(bnum).shape[1]-1))
-            #matplotlib.pyplot.show()
+        if oned == 1:   # 1D signal
+            fig = plt.figure()
+            for bnum in range(nind):
+                band = self.band(bnum)
+                plt.subplot(len(self.pyrSize), 1, bnum+1)
+                plt.plot(band.T)
+            plt.tight_layout()
+            plt.show()
+
         else:
-            colormap = matplotlib.cm.Greys_r
+            colormap = cm.Greys_r
             # skipping background calculation. needed?
 
             # compute positions of subbands:
-            llpos = numpy.ones((nind, 2)).astype(float)
-            dirr = numpy.array([-1.0, -1.0])
-            ctr = numpy.array([self.band(0).shape[0]+1+gap, 1]).astype(float)
-            sz = numpy.array([0.0, 0.0])
+            llpos = np.ones((nind, 2)).astype(float)
+            dirr = np.array([-1.0, -1.0])
+            ctr = np.array([self.band(0).shape[0]+1+gap, 1]).astype(float)
+            sz = np.array([0.0, 0.0])
             for bnum in range(nind):
                 prevsz = sz
                 sz = self.band(bnum).shape
 
                 # determine center position of new band:
                 ctr = ( ctr + gap*dirr/2.0 + dirr *
-                        numpy.floor( (prevsz+(dirr<0).astype(int))/2.0 ) )
-                dirr = numpy.dot(dirr,numpy.array([ [0, -1], [1, 0] ])) # ccw rotation
+                        np.floor( (prevsz+(dirr<0).astype(int))/2.0 ) )
+                dirr = np.dot(dirr,np.array([ [0, -1], [1, 0] ])) # ccw rotation
                 ctr = ( ctr + gap*dirr/2 + dirr *
-                        numpy.floor( (sz+(dirr<0).astype(int)) / 2.0) )
-                llpos[bnum,:] = ctr - numpy.floor(numpy.array(sz))/2.0
+                        np.floor( (sz+(dirr<0).astype(int)) / 2.0) )
+                llpos[bnum,:] = ctr - np.floor(np.array(sz))/2.0
             # make position list positive, and allocate appropriate image
-            llpos = llpos - numpy.ones((nind,1))*numpy.min(llpos)
+            llpos = llpos - np.ones((nind,1))*np.min(llpos)
             # we want to cast it as ints, since we'll be using these as indices
             llpos = llpos.astype(int)
             pind = list(range(self.height))
             for i in pind:
                 pind[i] = self.band(i).shape
             urpos = llpos + pind
-            d_im = numpy.ones((numpy.max(urpos), numpy.max(urpos))) * 255
+            d_im = np.ones((np.max(urpos), np.max(urpos))) * 255
 
             # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
             nshades = 256
@@ -371,7 +359,7 @@ class Lpyr(Pyramid):
                     mult*self.band(bnum) + (1.5-mult*pRange[bnum,0]) )
 
             # FIX: need a mode to switch between above and below display
-            if disp == 'nb':
-                JBhelpers.showIm(d_im[:self.band(0).shape[0]][:])
-            elif disp == 'qt':
+            if disp == 'qt':
                 showIm(d_im[:self.band(0).shape[0]][:])
+            # elif disp == 'nb':
+            #     JBhelpers.showIm(d_im[:self.band(0).shape[0]][:])

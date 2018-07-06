@@ -26,13 +26,5 @@ from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2, matlab_roun
 from .tools.convolutions import rconv2
 from .tools.comparePyr import comparePyr
 from .tools.compareRecon import compareRecon
-# these are only used in unit test:
+
 from .tools.extra_tools import blurDn, blur, upBlur, imGradient, strictly_decreasing, shift, clip
-
-# import ctypes
-# import os
-# from . import JBhelpers
-
-# libpath = os.path.dirname(os.path.realpath(__file__))+'/../wrapConv.so'
-# # load the C library
-# lib = ctypes.cdll.LoadLibrary(libpath)

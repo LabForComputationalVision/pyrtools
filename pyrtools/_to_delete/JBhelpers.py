@@ -1,3 +1,19 @@
+try:
+    __import__('PyQt5')
+    use_pyqt5 = True
+except ImportError:
+    use_pyqt5 = False
+
+if use_pyqt5:
+    # print('using Qt5')
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+else:
+    # print('using Qt4')
+    from PyQt4 import QtGui
+    from PyQt4 import QtCore
+
+
 class struct( object ):
     def __init__( self, **kwargs ):
         for k, v in kwargs.items():
@@ -137,9 +153,9 @@ def nbimageLCVbak2( data, vmin = None, vmax = None, vsym = False, saveas = None,
     from PIL.Image import fromarray
     from io import StringIO
     import base64
-    from .pyPyrUtils import QtGui
-    from .pyPyrUtils import QtCore
-    import numpy
+    # from .pyPyrUtils import QtGui
+    # from .pyPyrUtils import QtCore
+    import numpy as np
 
     data = rerange( data, vmin, vmax, vsym )
     data = data.squeeze()
@@ -155,7 +171,7 @@ def nbimageLCVbak2( data, vmin = None, vmax = None, vsym = False, saveas = None,
     #display( Image( s.getvalue(),width=data.shape[0]*zoom,
     #                height=data.shape[1]*zoom ) )
 
-    matrix = numpy.require(data, numpy.uint8, 'C')
+    matrix = np.require(data, np.uint8, 'C')
     (w, h) = matrix.shape
     print(matrix)
     qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
@@ -218,9 +234,9 @@ def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
     from PIL.Image import fromarray
     from io import StringIO
     import base64
-    from .pyPyrUtils import QtGui
-    from .pyPyrUtils import QtCore
-    import numpy
+    # from .pyPyrUtils import QtGui
+    # from .pyPyrUtils import QtCore
+    import numpy as np
 
     if not isinstance(dlist, list):
         dlist = [dlist]
@@ -246,9 +262,9 @@ def nbimageLCV( dlist, vmin = None, vmax = None, vsym = False, saveas = None,
         #if saveas is not None:
         #    open( saveas + '.png', 'wb' ).write( s )
         # Thank you Johannes for the following two line fix!!!
-        matrix = numpy.empty( ( data.shape[ 0 ],
+        matrix = np.empty( ( data.shape[ 0 ],
                                 ( data.shape[ 1 ] + 3 ) // 4 * 4 ),
-                              numpy.uint8 )
+                              np.uint8 )
         matrix[ :, :data.shape[ 1 ] ] = data
         (h, w) = data.shape
         qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
@@ -333,10 +349,10 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
     from PIL.Image import fromarray
     from io import StringIO
     import base64
-    from .pyPyrUtils import QtGui
-    from .pyPyrUtils import QtCore
-    import numpy
-    from scipy import stats
+    # from .pyPyrUtils import QtGui
+    # from .pyPyrUtils import QtCore
+    import numpy as np
+    # from scipy import stats
 
     if not isinstance(dlist, list):
         dlist = [dlist]
@@ -357,8 +373,8 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
             vmin = data.mean()-2*data.std()
             vmax = data.mean()+2*data.std()
         elif v == "auto3":
-            p1 = stats.scoreatpercentile(np.hstack(matrix), 10)
-            p2 = stats.scoreatpercentile(np.hstack(matrix), 90)
+            p1 = np.percentile(np.hstack(matrix), 10)
+            p2 = np.percentile(np.hstack(matrix), 90)
             vmin = p1-(p2-p1)/8.0
             vmax = p2+(p2-p1)/8.0
         else:
@@ -375,9 +391,9 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
         #if saveas is not None:
         #    open( saveas + '.png', 'wb' ).write( s )
         # Thank you Johannes for the following two line fix!!!
-        matrix = numpy.empty( ( data.shape[ 0 ],
+        matrix = np.empty( ( data.shape[ 0 ],
                                 ( data.shape[ 1 ] + 3 ) // 4 * 4 ),
-                              numpy.uint8 )
+                              np.uint8 )
         matrix[ :, :data.shape[ 1 ] ] = data
         (h, w) = data.shape
         qim = QtGui.QImage(matrix.data, w, h, QtGui.QImage.Format_Indexed8)
@@ -414,7 +430,7 @@ def showIm(dlist, v='auto', zoom=1, title="", nshades=256, ncols=1):
         if displayColCtr == 0:
             s += "<tr>"
 
-        im = 'data:image/png;base64,' + base64_data
+        im = b'data:image/png;base64,' + base64_data
 
         if vmin == None:
             vmin = data.min()

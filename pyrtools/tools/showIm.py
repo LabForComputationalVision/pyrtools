@@ -2,20 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-# from PIL import ImageTk
-# import PIL
-# import scipy.stats
-# import tkinter
-# import math
-# from .utils import matlab_round
-
-
-import wx
 def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix=10):
-    app = wx.App(False)
-    ppi_x, ppi_y = wx.ScreenDC().GetPPI()
-    assert ppi_x == ppi_y, "ppi must be same in both directions!"
-    ppi = ppi_x
+    try:
+        import wx
+        app = wx.App(False)
+        ppi_x, ppi_y = wx.ScreenDC().GetPPI()
+        assert ppi_x == ppi_y, "ppi must be same in both directions!"
+        ppi = ppi_x
+    except:
+        ppi = np.sqrt(2880 ** 2 + 1800 ** 2) / 15.4
     # add extra 20% to the y direction for extra info
     fig = plt.figure(figsize=(((n_cols-1)*col_margin_pix+n_cols*axis_size_pix[1]) / ppi, ((n_rows-1)*row_margin_pix+n_rows*(axis_size_pix[0]/.8)) / ppi), dpi=ppi)
     bbox = fig.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
@@ -33,9 +28,9 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
 def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
     ax.imshow(img, cmap=cmap, vmin=vrange[0], vmax=vrange[1], interpolation='none', **kwargs)
     # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
-    ax.set_title(title + '\n range: [{:0.1f},{:0.1f}] \n dims: [{},{}] * {}'.format(
-                 vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
-
+    # TODO too big on my machine
+    ax.set_title(title + '\n range: [{:0.1f}, {:0.1f}] \n dims: [{}, {}] * {}'.format(
+                 vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': 5.}) # ax.bbox.height*(12./256)
 
 
 def reshape_axis(ax, axis_size_pix):
@@ -50,25 +45,42 @@ def reshape_axis(ax, axis_size_pix):
 
 
 def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gray, col_wrap=None, **kwargs):
-    '''temporary fix
+    '''under construction
 
     img: 2d array (one image to display), 3d array (multiple images to display, images are indexed along the first dimension), or list of 2d arrays.
 
     title: string or list of strings. if string, will put the same title on every plot. if list of strings, must be the same length as img, and will
            assume that titles go with the corresponding image
 
-    col_wrap:
-
     ax: matplotlib axis or None. If None, make the appropriate figure. If not None, we reshape it (which we only do by shrinking the bbox, so if the bbox is already too small, this will throw an Exception!)
         so that it's the appropriate number of pixels.
 
+    col_wrap:
+
     TODO:
-    range, nshades
+    independent vrrange for subimages
+
+    osx compatibility of wx in virtual env
+
+    display figure only once in nb with %matplotlib inline
+    by default include plt.show()
+
+    diff zoom values
+
+    fontsize
+
+    auto vrange
+    nshades
     '''
 
     img = np.array(img)
+
     if img.ndim == 2:
         img = img.reshape((1, img.shape[0], img.shape[1]))
+    # if not isinstance(zoom, list):
+    #     zoom = len(img) * [zoom]
+    # else:
+    #     assert len(img) == len(zoom), "Must have same number of zooms and images!"
     if ax is None:
         if col_wrap is None:
             n_cols = img.shape[0]
@@ -76,7 +88,8 @@ def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gra
         else:
             n_cols = col_wrap
             n_rows = int(np.ceil(img.shape[0] / n_cols))
-        fig = make_figure(n_rows, n_cols, zoom*np.array(img.shape[1:]))
+        # TODO zoom list
+        fig = make_figure(n_rows, n_cols, zoom * np.array(img.shape[1:]))
         axes = fig.axes
     else:
         fig = ax.figure
@@ -85,58 +98,36 @@ def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gra
         title = len(img) * [title]
     else:
         assert len(img) == len(title), "Must have same number of titles and images!"
-    if vrange is None:
+    if vrange is None or vrange == 'auto':
         vrange = [np.min(img), np.max(img)]
-    for ax, im, t in zip(axes, img, title):
-        _showIm(im, ax, vrange, zoom, t, cmap, **kwargs)
-    return fig
+    # TODO add option to keep vrange independent accross sub images
+    elif vrange == 'auto2':
+        vrange = [img.mean() - 2 * img.std(),
+                  img.mean() + 2 * img.std()]
+    elif vrange == 'auto3':
+        p1 = np.percentile(img, 10)
+        p2 = np.percentile(img, 90)
+        vrange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
+    for a, im, t in zip(axes, img, title): # add zoom
+        _showIm(im, a, vrange, zoom, t, cmap, **kwargs)
+    if ax is None:
+        plt.show()
+    else:
+        return fig
 
+if __name__ == "__main__":
+    from .synthetic_images import mkRamp
+    showIm(np.random.randn(256,256), vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gray, col_wrap=None)
 
-# def showIm( img=[], range=None, zoom=[1], label='', colormap=plt.cm.gray, ncols=None):
-#     '''under development
-#
-#     TODO:
-#     range, zoom, label, nshades, ncols
-#
-#     return axes, not fig
-#
-#     '''
-#
-#     if range is None:
-#         range = [np.min(img), np.max(img)]
-#     elif range == 'percentile':
-#         # TODO
-#         range = [np.min(img), np.max(img)]
-#
-#     # TODO
-#     ncols = len(img)
-#
-#     fig, axes = plt.subplots(ncols=ncols)
-#
-#     for i, im in enumerate(img):
-# #         row,col = reversed(divmod(i,n_row)) if bycol else divmod(i,n_col)
-# #         cax = axes[row,col]
-#         ax = axes[i]
-#         im = np.array(im).astype(float)
-#         ax.imshow(im, cmap=colormap, interpolation='none', vmin=range[0], vmax=range[1])
-#         ax.axis('off')
-#     # plt.imshow(X, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, shape=None, filternorm=1, filterrad=4.0, imlim=None, resample=None, url=None, hold=None, data=None)
-#     # TODO
-#     fig.suptitle(label + '\n range: [{:0.1f},{:0.1f}] \n dims: [{},{}]'.format(
-#               np.min(img), np.max(img), im.shape[0], im.shape[1])
-#               )
-#     fig.tight_layout()
-# #     plt.subplots_adjust(top=0.9)
-#     plt.show()
-
-
+#########################
+# OLD
+#########################
 # from PIL import ImageTk
 # import PIL
 # import scipy.stats
 # import tkinter
 # import math
 # from .utils import matlab_round
-
 
 # def showIm(*args):
 #     # check and set input parameters

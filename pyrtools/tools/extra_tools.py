@@ -37,24 +37,24 @@ def blur(image, n_levels=1, filt='binom5'):
                 raise Exception('Error: can not apply 2D filterer to 1D signal')
 
             imIn = corrDn(image, filt, 'reflect1', len(image))
-            out = blur(imIn, n_levels-1, filt)
-            res = upConv(out, filt, 'reflect1', len(image), [0, 0], len(image))
+            out  = blur(imIn, n_levels-1, filt)
+            res  = upConv(out, filt, 'reflect1', len(image), [0, 0], len(image))
             return res
         elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
-            # 2D image 1D filterer
+            # 2D image 1D filter
             imIn = corrDn(image, filt, 'reflect1', [2, 1])
             imIn = corrDn(imIn, filt.T, 'reflect1', [1, 2])
-            out = blur(imIn, n_levels-1, filt)
-            res = upConv(out, filt.T, 'reflect1', [1, 2], [0, 0],
+            out  = blur(imIn, n_levels-1, filt)
+            res  = upConv(out, filt.T, 'reflect1', [1, 2], [0, 0],
                          [out.shape[0], image.shape[1]])
-            res = upConv(res, filt, 'reflect1', [2, 1], [0, 0],
+            res  = upConv(res, filt, 'reflect1', [2, 1], [0, 0],
                          image.shape)
             return res
         else:
             # 2D image 2D filter
             imIn = corrDn(image, filt, 'reflect1', [2, 2])
-            out = blur(imIn, n_levels-1, filt)
-            res = upConv(out, filt, 'reflect1', [2, 2], [0, 0],
+            out  = blur(imIn, n_levels-1, filt)
+            res  = upConv(out, filt, 'reflect1', [2, 2], [0, 0],
                          image.shape)
             return res
     else:
@@ -129,7 +129,7 @@ def upBlur(image, n_levels=1, filt='binom5'):
 
     if isinstance(filt, str):
         filt = namedFilter(filt)
-    print(filt, n_levels)
+    # print(filt, n_levels)
 
     if n_levels > 1:
         image = upBlur(image, n_levels-1, filt)
@@ -173,7 +173,7 @@ def imGradient(im_array, edges="dont-compute"):
 
     # kernels from Farid & Simoncelli, IEEE Trans Image Processing,
     #   13(4):496-508, April 2004.
-    gp = np.array([0.037659, 0.249153, 0.426375, 0.249153, 0.037659]).reshape(5,1)
+    gp = np.array([ 0.037659,  0.249153, 0.426375, 0.249153, 0.037659]).reshape(5,1)
     gd = np.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5,1)
 
     dx = corrDn(corrDn(im_array, gp, edges), gd.T, edges)

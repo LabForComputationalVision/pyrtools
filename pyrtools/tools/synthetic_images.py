@@ -2,6 +2,7 @@ import numpy as np
 
 from ..pyramids.c.wrapper import pointOp
 from .utils import rcosFn
+from .imStats import var2
 
 def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
     ''' make a ramp matrix
@@ -26,8 +27,8 @@ def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
     xinc = slope * np.cos(direction)
     yinc = slope * np.sin(direction)
 
-    [xramp, yramp] = np.meshgrid( xinc * (np.array(range(size[1]))-origin[1]),
-                                  yinc * (np.array(range(size[0]))-origin[0]) )
+    [xramp, yramp] = np.meshgrid( xinc * (np.arange(size[1])-origin[1]),
+                                  yinc * (np.arange(size[0])-origin[0]) )
 
     res = intercept + xramp + yramp
 
@@ -58,9 +59,9 @@ def mkImpulse(size, origin=None, amplitude=1):
 def mkR(size, exponent=1, origin=None):
     '''make distance-from-origin (r) matrix
 
-    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar) containing samples of a
-    radial ramp function, raised to power EXPONENT (default = 1), with given ORIGIN (default =
-    (size+1)//2, (0, 0) = upper left).
+    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
+    containing samples of a radial ramp function, raised to power EXPONENT
+    (default = 1), with given ORIGIN (default = (size+1)//2, (0, 0) = upper left).
 
     NOTE: the origin is not rounded to the nearest int
     '''
@@ -76,16 +77,22 @@ def mkR(size, exponent=1, origin=None):
     xramp, yramp = np.meshgrid(np.arange(1, size[1]+1)-origin[1],
                                np.arange(1, size[0]+1)-origin[0])
 
-    res = (xramp**2 + yramp**2)**(exponent/2.0)
-
+    if exponent <= 0:
+        # zero to a negative exponent raises:
+        # ZeroDivisionError: 0.0 cannot be raised to a negative power
+        r = xramp ** 2 + yramp ** 2
+        res = np.power(r, exponent / 2.0, where=(r!=0))
+    else:
+        res = (xramp ** 2 + yramp ** 2) ** (exponent / 2.0)
     return res
 
 def mkAngle(size, phase=0, origin=None):
     '''make polar angle matrix (in radians)
 
-    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar) containing samples of the
-    polar angle (in radians, CW from the X-axis, ranging from -pi to pi), relative to angle PHASE
-    (default = 0), about ORIGIN pixel (default = (size+1)/2).
+    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
+    containing samples of the polar angle (in radians, CW from the X-axis,
+    ranging from -pi to pi), relative to angle PHASE (default = 0), about ORIGIN
+    pixel (default = (size+1)/2).
 
     NOTE: the origin is not rounded to the nearest int
     '''
@@ -115,8 +122,9 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
     SIZE (a [Y X] list/tuple, or a scalar) specifies the matrix size
     RADIUS (default = min(size)/4) specifies the radius of the disk
     ORIGIN (default = (size+1)/2) specifies the location of the disk center
-    TWIDTH (in pixels, default = 2) specifies the width over which a soft threshold transition is made.
-    VALS (default = [0,1]) should be a 2-vector containing the intensity value inside and outside the disk.
+    TWIDTH (in pixels, default = 2) specifies the width over which a soft
+    threshold transition is made. VALS (default = [0,1]) should be a 2-vector
+    containing the intensity value inside and outside the disk.
     '''
 
     if not hasattr(size, '__iter__'):
@@ -146,10 +154,11 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
 def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
     '''make a two dimensional Gaussian
 
-    A two dimensional Gaussian function of SIZE (a [Y X] list/tuple, or a scalar),
-    centered at pixel position specified by ORIGIN (default = (size+1)/2),
-    with given COVARIANCE (can be a scalar, 2-vector, or 2x2 matrix -  Default = (min(size)/6)^2 )
-    AMPLITUDE='norm' (default) will produce a probability-normalized function
+    make a two dimensional Gaussian function of SIZE (a [Y X] list/tuple,
+    or a scalar), centered at pixel position specified by ORIGIN
+    (default = (size+1)/2), with given COVARIANCE (can be a scalar, 2-vector,
+    or 2x2 matrix -  Default = (min(size)/6)^2 ) AMPLITUDE='norm' (default)
+    will produce a probability-normalized function
 
     TODO - use built in scipy function
     '''
@@ -182,8 +191,10 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
                 amplitude = 1.0 / (2.0 * np.pi *
                               np.sqrt(complex(cov[0] * covariance[1])))
             else:
-                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(covariance[0] * covariance[1]))
-        e = ( (xramp ** 2) / (-2 * covariance[1]) ) + ( (yramp ** 2) / (-2 * covariance[0]) )
+                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(covariance[0] *
+                                                        covariance[1]))
+        e = ( (xramp ** 2) / (-2 * covariance[1]) ) + (
+            (yramp ** 2) / (-2 * covariance[0]) )
 
     elif covariance.shape == (2,2):
         # square matrix
@@ -198,7 +209,8 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
                 amplitude = 1.0 / (2.0 * np.pi * np.sqrt( np.linalg.det(covariance) ) )
         covariance = - np.linalg.inv(covariance) / 2.0
         e = (covariance[1,1] * xramp**2) + (
-            (covariance[0,1] + covariance[1,0])*(xramp * yramp) ) + ( covariance[0,0] * yramp**2)
+            (covariance[0,1] + covariance[1,0])*(xramp * yramp) ) + (
+             covariance[0,0] * yramp**2)
     else:
         raise Exception("ERROR: invalid covariance shape")
 
@@ -242,7 +254,8 @@ def mkAngularSine(size, harmonic=1, amplitude=1, phase=0, origin=None):
 
     return res
 
-def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase=0, origin=None):
+def mkSine(size, period=None, direction=None, frequency=None, amplitude=1,
+           phase=0, origin=None):
     ''' make a two dimensional sinusoid
 
     IM = mkSine(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN)
@@ -275,16 +288,19 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1, phase
     #----------------------------------------------------------------
 
     if origin is None:
-        res = amplitude * np.sin(mkRamp(size=size, direction=direction, slope=frequency, intercept=phase))
+        res = amplitude * np.sin(mkRamp(size=size, direction=direction,
+            slope=frequency, intercept=phase))
 
     else:
         if not hasattr(origin, '__iter__'):
             origin = (origin, origin)
-        res = amplitude * np.sin(mkRamp(size=size, direction=direction, slope=frequency, intercept=phase,origin=[origin[0]-1, origin[1]-1]))
+        res = amplitude * np.sin(mkRamp(size=size, direction=direction,
+            slope=frequency, intercept=phase,origin=[origin[0]-1, origin[1]-1]))
 
     return res
 
-def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, phase=0, origin=None, twidth=None):
+def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
+            phase=0, origin=None, twidth=None):
     '''make a two dimensional square wave
 
     IM = mkSquare(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN, TWIDTH)
@@ -323,12 +339,14 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1, pha
     #------------------------------------------------------------
 
     if origin is None:
-        res = mkRamp(size, direction=direction, slope=frequency, intercept=phase) - np.pi/2.0
+        res = mkRamp(size, direction=direction, slope=frequency,
+                    intercept=phase) - np.pi/2.0
 
     else:
         if not hasattr(origin, '__iter__'):
             origin = (origin, origin)
-        res = mkRamp(size, direction=direction, slope=frequency, intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
+        res = mkRamp(size, direction=direction, slope=frequency,
+            intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
 
     [Xtbl, Ytbl] = rcosFn(twidth * frequency, np.pi/2.0,
                           [-amplitude, amplitude])
@@ -356,13 +374,9 @@ def mkFract(size, fract_dim=1):
     res = np.random.randn(size[0], size[1])
     fres = np.fft.fft2(res)
 
-    # TODO this should not change
-    size = res.shape
-
-    # ctr = (int(np.ceil((size[0]+1)/2.0)), int(np.ceil((size[1]+1)/2.0)))
-    origin = ((size[0]-1)/2., (size[1]-1)/2.)
-
-    sh = np.fft.ifftshift(mkR(size, -(2.5-fract_dim), origin))
+    exp = -(2.5-fract_dim)
+    ctr = np.ceil((res.shape + np.ones(2))/2.)
+    sh = np.fft.ifftshift(mkR(size, exp, ctr))
     sh[0,0] = 1  #DC term
 
     fres = sh * fres
@@ -375,32 +389,3 @@ def mkFract(size, fract_dim=1):
         res = res / np.sqrt(var2(res))
 
     return res
-
-
-if __name__ == "__main__":
-
-    from .showIm import showIm
-
-    # pick some parameters
-    size      = 256
-    direction = 2 * np.pi * np.random.rand(1)
-    slope     = 10 * np.random.rand(1) - 5
-    intercept = 10 * np.random.rand(1) - 5
-    origin    = np.round(size * np.random.rand(2,1)).astype(int)
-    exponent  = 0.8 + np.random.rand(1)
-    amplitude = 1 + 5 * np.random.rand(1)
-    phase     = 2 * np.pi * np.random.rand(1)
-    period    = 20
-    twidth    = 7
-
-    showIm(mkRamp(size, direction, slope, intercept, origin))
-    showIm(mkImpulse(size, origin, amplitude))
-    showIm(mkR(size, exponent, origin))
-    showIm(mkAngle(size, direction))
-    showIm(mkDisc(size, size/4, origin, twidth))
-    showIm(mkGaussian(size, (size/6)**2, origin, amplitude))
-    showIm(mkZonePlate(size, amplitude, phase))
-    showIm(mkAngularSine(size, 3, amplitude, phase, origin))
-    showIm(mkSine(size, period, direction, amplitude, phase, origin))
-    showIm(mkSquare(size, period, direction, amplitude, phase, origin, twidth))
-    showIm(mkFract(size, exponent))

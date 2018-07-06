@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 def maxPyrHt(imsz, filtsz):
     ''' Compute maximum pyramid height for given image and filter sizes.
@@ -41,17 +41,17 @@ def maxPyrHt(imsz, filtsz):
          imsz < filtsz ) :
         height = 0
     elif not isinstance(imsz, tuple) and not isinstance(filtsz, tuple):
-        height = 1 + maxPyrHt( numpy.floor(imsz/2.0), filtsz )
+        height = 1 + maxPyrHt( np.floor(imsz/2.0), filtsz )
     else:
-        height = 1 + maxPyrHt( (numpy.floor(imsz[0]/2.0), 
-                                numpy.floor(imsz[1]/2.0)), 
+        height = 1 + maxPyrHt( (np.floor(imsz[0]/2.0),
+                                np.floor(imsz[1]/2.0)),
                                filtsz )
 
-    return height
+    return int(height)
 
 
 
-''' new - probably not needed    
+''' new - probably not needed
     # if tuple and 1D, make column vector
     if isinstance(imsz, tuple):
         if 1 in imsz:
@@ -71,7 +71,7 @@ def maxPyrHt(imsz, filtsz):
     elif isinstance(imsz, int):  # 1D image
         image1D = True
         imsz = imsz
-    
+
     if image1D:
         if isinstance(filtsz, tuple):
             prod = 1
@@ -88,37 +88,35 @@ def maxPyrHt(imsz, filtsz):
 
     print imsz
     print filtsz
-    
+
     if isinstance(imsz, tuple) and isinstance(filtsz, tuple):
         if min(imsz) < max(filtsz):
             height = 0
         else:
-            height = 1 + maxPyrHt( (numpy.floor(imsz[0]/2.0), 
-                                    numpy.floor(imsz[1]/2.0)), 
+            height = 1 + maxPyrHt( (np.floor(imsz[0]/2.0),
+                                    np.floor(imsz[1]/2.0)),
                                    filtsz )
     elif isinstance(imsz, tuple) and isinstance(filtsz, int):
         if min(imsz) < filtsz:
             height = 0
         else:
-            height = 1 + maxPyrHt( (numpy.floor(imsz[0]/2.0), 
-                                    numpy.floor(imsz[1]/2.0)), 
+            height = 1 + maxPyrHt( (np.floor(imsz[0]/2.0),
+                                    np.floor(imsz[1]/2.0)),
                                    filtsz )
     elif isinstance(imsz, int) and isinstance(filtsz, tuple):
         if imsz < max(filtsz):
             height = 0
         else:
-            height = 1 + maxPyrHt( (numpy.floor(imsz[0]/2.0), 
-                                    numpy.floor(imsz[1]/2.0)), 
-                                   filtsz ) 
+            height = 1 + maxPyrHt( (np.floor(imsz[0]/2.0),
+                                    np.floor(imsz[1]/2.0)),
+                                   filtsz )
     elif isinstance(imsz, int) and isinstance(filtsz, int):
         if imsz < filtsz:
             height = 0
         else:
-            height = 1 + maxPyrHt( (numpy.floor(imsz[0]/2.0), 
-                                    numpy.floor(imsz[1]/2.0)), 
-                                   filtsz ) 
-        
+            height = 1 + maxPyrHt( (np.floor(imsz[0]/2.0),
+                                    np.floor(imsz[1]/2.0)),
+                                   filtsz )
+
     return height
 '''
-
-

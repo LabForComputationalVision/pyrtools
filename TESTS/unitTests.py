@@ -1015,6 +1015,7 @@ class histoMatchTests(unittest.TestCase):
        # answers between matlab and python may be different,
        #   but not necessarily incorrect.
        # similar to histo above
+       # TODO - why?
        ramp = ppt.mkRamp(10) + 0.7
        disc = ppt.mkDisc(10) + 0.7
        (rN,rX) = ppt.matlab_histo(ramp)

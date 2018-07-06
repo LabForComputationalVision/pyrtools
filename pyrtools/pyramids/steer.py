@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from .steer2HarmMtx import steer2HarmMtx
 
 def steer(basis, angle, harmonics=None, steermtx=None):
@@ -22,7 +22,7 @@ def steer(basis, angle, harmonics=None, steermtx=None):
     num = basis.shape[1]
 
     if isinstance(angle, (int, float)):
-        angle = numpy.array([angle])
+        angle = np.array([angle])
     else:
         if angle.shape[0] != basis.shape[0] or angle.shape[1] != 1:
             raise Exception('ANGLE must be a scalar, or a column vector the size of the basis elements')
@@ -30,9 +30,9 @@ def steer(basis, angle, harmonics=None, steermtx=None):
     # If HARMONICS is not specified, assume derivatives.
     if harmonics is None:
         if num % 2 == 0:
-            harmonics = numpy.array(list(range(num//2)))*2+1
+            harmonics = np.array(range(num//2))*2+1
         else:
-            harmonics = numpy.array(list(range((15+1)//2)))*2
+            harmonics = np.array(range((15+1)//2))*2
 
     if len(harmonics.shape) == 1 or harmonics.shape[0] == 1:
         # reshape to column matrix
@@ -45,24 +45,24 @@ def steer(basis, angle, harmonics=None, steermtx=None):
 
     # If STEERMTX not passed, assume evenly distributed cosine-phase filters:
     if steermtx is None:
-        steermtx = steer2HarmMtx(harmonics, numpy.pi*numpy.array(list(range(num)))/num, 'even')
+        steermtx = steer2HarmMtx(harmonics, np.pi*np.array(list(range(num)))/num, 'even')
 
-    steervect = numpy.zeros((angle.shape[0], num))
-    arg = angle * harmonics[numpy.nonzero(harmonics)[0]].T
+    steervect = np.zeros((angle.shape[0], num))
+    arg = angle * harmonics[np.nonzero(harmonics)[0]].T
     if all(harmonics):
-        steervect[:, list(range(0, num, 2))] = numpy.cos(arg)
-        steervect[:, list(range(1, num, 2))] = numpy.sin(arg)
+        steervect[:, range(0, num, 2)] = np.cos(arg)
+        steervect[:, range(1, num, 2)] = np.sin(arg)
     else:
-        steervect[:, 1] = numpy.ones((arg.shape[0], 1))
-        steervect[:, list(range(0, num, 2))] = numpy.cos(arg)
-        steervect[:, list(range(1, num, 2))] = numpy.sin(arg)
+        steervect[:, 1] = np.ones((arg.shape[0], 1))
+        steervect[:, range(0, num, 2)] = np.cos(arg)
+        steervect[:, range(1, num, 2)] = np.sin(arg)
 
-    steervect = numpy.dot(steervect, steermtx)
+    steervect = np.dot(steervect, steermtx)
 
     if steervect.shape[0] > 1:
-        tmp = numpy.dot(basis, steervect)
+        tmp = np.dot(basis, steervect)
         res = sum(tmp).T
     else:
-        res = numpy.dot(basis, steervect.T)
+        res = np.dot(basis, steervect.T)
 
     return res

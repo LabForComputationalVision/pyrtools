@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 class Pyramid:  # Pyramid base class
     # properties
@@ -17,4 +17,7 @@ class Pyramid:  # Pyramid base class
         return len(self.pyr)
 
     def band(self, bandNum):
-        return numpy.array(self.pyr[bandNum])
+        return np.array(self.pyr[bandNum])
+
+# maxPyrHt
+# showPyr

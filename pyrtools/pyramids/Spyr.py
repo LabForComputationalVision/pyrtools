@@ -1,15 +1,14 @@
-import numpy
+import numpy as np
 import os
-import math
-import matplotlib
 from .pyramid import Pyramid
 from .pyr_utils import LB2idx
 from .steerable_filters import steerable_filters
 from .maxPyrHt import maxPyrHt
 from .c.wrapper import corrDn, upConv
 from ..tools.showIm import showIm
-from ..tools import JBhelpers
+from matplotlib import cm
 
+# from ..tools import JBhelpers
 # from . import pyPyrUtils
 # from .convolutions import *
 
@@ -39,7 +38,7 @@ class Spyr(Pyramid):
            * `'dont-compute'` - zero output when filter overhangs input boundaries.
         """
         self.pyrType = 'steerable'
-        self.image = numpy.array(image)
+        self.image = np.array(image)
         self.filt = steerable_filters(filter)
         self.edges = edges
         filters = self.filt # temporary hack...
@@ -56,7 +55,7 @@ class Spyr(Pyramid):
         elif height > max_ht:
             raise Exception("cannot build pyramid higher than %d levels." % (max_ht))
         else:
-            ht = height
+            ht = int(height)
 
         nbands = bfilts.shape[1]
 
@@ -81,18 +80,18 @@ class Spyr(Pyramid):
         for i in range(ht):
             lo_sz = lo.shape
             # assume square filters  -- start of buildSpyrLevs
-            bfiltsz = int(math.floor(math.sqrt(bfilts.shape[0])))
+            bfiltsz = int(np.floor(np.sqrt(bfilts.shape[0])))
 
             for b in range(bfilts.shape[1]):
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz).T
                 band = corrDn(image = lo, filt = filt, edges = edges)
-                self.pyr[pyrCtr] = numpy.array(band)
+                self.pyr[pyrCtr] = np.array(band)
                 self.pyrSize[pyrCtr] = (band.shape[0], band.shape[1])
                 pyrCtr += 1
 
             lo = corrDn(image = lo, filt = lofilt, edges = edges, step = (2,2))
 
-        self.pyr[pyrCtr] = numpy.array(lo)
+        self.pyr[pyrCtr] = np.array(lo)
         self.pyrSize[pyrCtr] = lo.shape
 
     # methods
@@ -115,7 +114,7 @@ class Spyr(Pyramid):
         levArray = []
         for n in range(self.numBands()):
             levArray.append(self.spyrBand(lev, n))
-        levArray = numpy.array(levArray)
+        levArray = np.array(levArray)
 
         return levArray
 
@@ -145,10 +144,10 @@ class Spyr(Pyramid):
             return b-1
 
     def pyrLow(self):
-        return numpy.array(self.band(len(self.pyrSize)-1))
+        return np.array(self.band(len(self.pyrSize)-1))
 
     def pyrHigh(self):
-        return numpy.array(self.band(0))
+        return np.array(self.band(0))
 
     def reconPyr(self, *args):
         # defaults
@@ -164,7 +163,7 @@ class Spyr(Pyramid):
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
         # assume square filters  -- start of buildSpyrLevs
-        bfiltsz = int(math.floor(math.sqrt(bfilts.shape[0])))
+        bfiltsz = int(np.floor(np.sqrt(bfilts.shape[0])))
 
         if len(args) > 1:
             edges = args[1]
@@ -185,23 +184,23 @@ class Spyr(Pyramid):
 
         maxLev = 2 + self.spyrHt()
         if levs == 'all':
-            levs = numpy.array(list(range(maxLev)))
+            levs = np.array(list(range(maxLev)))
         else:
-            levs = numpy.array(levs)
+            levs = np.array(levs)
             if (levs < 0).any() or (levs >= maxLev).any():
                 raise Exception("level numbers must be in the range [0, %d]." % (maxLev-1))
             else:
-                levs = numpy.array(levs)
+                levs = np.array(levs)
                 if len(levs) > 1 and levs[0] < levs[1]:
                     levs = levs[::-1]  # we want smallest first
         if bands == 'all':
-            bands = numpy.array(list(range(self.numBands())))
+            bands = np.array(list(range(self.numBands())))
         else:
-            bands = numpy.array(bands)
+            bands = np.array(bands)
             if (bands < 0).any() or (bands > bfilts.shape[1]).any():
                 raise Exception("band numbers must be in the range [0, %d]." % (self.numBands()-1))
             else:
-                bands = numpy.array(bands)
+                bands = np.array(bands)
 
         # make a list of all pyramid layers to be used in reconstruction
         Nlevs = self.spyrHt()
@@ -220,13 +219,13 @@ class Spyr(Pyramid):
                 for band in bands:
                     reconList.append( ((lev-1) * Nbands) + band + 1)
 
-        reconList = numpy.sort(reconList)[::-1]  # deepest level first
+        reconList = np.sort(reconList)[::-1]  # deepest level first
 
         # initialize reconstruction
         if len(self.pyr)-1 in reconList:
-            recon = numpy.array(self.pyr[len(self.pyrSize)-1])
+            recon = np.array(self.pyr[len(self.pyrSize)-1])
         else:
-            recon = numpy.zeros(self.pyr[len(self.pyrSize)-1].shape)
+            recon = np.zeros(self.pyr[len(self.pyrSize)-1].shape)
 
         # recursive subsystem
         # we need to loop over recursive subsystem pairs
@@ -264,121 +263,125 @@ class Spyr(Pyramid):
         return recon
 
     def showPyr(self, prange = 'auto2', gap = 1, scale = 2, disp = 'qt'):
-        ht = self.spyrHt()
+        ht = int(self.spyrHt())
         nind = len(self.pyr)
         nbands = self.numBands()
 
         ## Auto range calculations:
         if prange == 'auto1':
-            prange = numpy.ones((nind,1))
+            prange = np.ones((nind,1))
             band = self.pyrHigh()
-            mn = numpy.amin(band)
-            mx = numpy.amax(band)
+            mn = np.amin(band)
+            mx = np.amax(band)
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
                     idx = pyPyrUtils.LB2idx(lnum, bnum, ht+2, nbands)
-                    band = self.band(idx)/(numpy.power(scale,lnum))
-                    prange[(lnum-1)*nbands+bnum+1] = numpy.power(scale,lnum-1)
-                    bmn = numpy.amin(band)
-                    bmx = numpy.amax(band)
+                    band = self.band(idx)/(np.power(scale,lnum))
+                    prange[(lnum-1)*nbands+bnum+1] = np.power(scale,lnum-1)
+                    bmn = np.amin(band)
+                    bmx = np.amax(band)
                     mn = min([mn, bmn])
                     mx = max([mx, bmx])
-            prange = numpy.outer(prange, numpy.array([mn, mx]))
+            prange = np.outer(prange, np.array([mn, mx]))
             band = self.pyrLow()
-            mn = numpy.amin(band)
-            mx = numpy.amax(band)
-            prange[nind-1,:] = numpy.array([mn, mx])
+            mn = np.amin(band)
+            mx = np.amax(band)
+            prange[nind-1,:] = np.array([mn, mx])
         elif prange == 'indep1':
-            prange = numpy.zeros((nind,2))
+            prange = np.zeros((nind,2))
             for bnum in range(nind):
                 band = self.band(bnum)
                 mn = band.min()
                 mx = band.max()
-                prange[bnum,:] = numpy.array([mn, mx])
+                prange[bnum,:] = np.array([mn, mx])
         elif prange == 'auto2':
-            prange = numpy.ones(nind)
+            prange = np.ones(nind)
             band = self.pyrHigh()
-            sqsum = numpy.sum( numpy.power(band, 2) )
+            sqsum = np.sum( np.power(band, 2) )
             numpixels = band.shape[0] * band.shape[1]
             for lnum in range(1,ht+1):
                 for bnum in range(nbands):
                     band = self.band(LB2idx(lnum, bnum, ht+2, nbands))
-                    band = band / numpy.power(scale,lnum-1)
-                    sqsum += numpy.sum( numpy.power(band, 2) )
+                    band = band / np.power(scale,lnum-1)
+                    sqsum += np.sum( np.power(band, 2) )
                     numpixels += band.shape[0] * band.shape[1]
-                    prange[(lnum-1)*nbands+bnum+1] = numpy.power(scale, lnum-1)
-            stdev = numpy.sqrt( sqsum / (numpixels-1) )
-            prange = numpy.outer(prange, numpy.array([-3*stdev, 3*stdev]))
+                    prange[(lnum-1)*nbands+bnum+1] = np.power(scale, lnum-1)
+            stdev = np.sqrt( sqsum / (numpixels-1) )
+            prange = np.outer(prange, np.array([-3*stdev, 3*stdev]))
             band = self.pyrLow()
-            av = numpy.mean(band)
-            stdev = numpy.sqrt( numpy.var(band) )
-            prange[nind-1,:] = numpy.array([av-2*stdev, av+2*stdev])
+            av = np.mean(band)
+            stdev = np.sqrt( np.var(band) )
+            prange[nind-1,:] = np.array([av-2*stdev, av+2*stdev])
         elif prange == 'indep2':
-            prange = numpy.zeros((nind,2))
+            prange = np.zeros((nind,2))
             for bnum in range(nind-1):
                 band = self.band(bnum)
-                stdev = numpy.sqrt( numpy.var(band) )
-                prange[bnum,:] = numpy.array([-3*stdev, 3*stdev])
+                stdev = np.sqrt( np.var(band) )
+                prange[bnum,:] = np.array([-3*stdev, 3*stdev])
             band = self.pyrLow()
-            av = numpy.mean(band)
-            stdev = numpy.sqrt( numpy.var(band) )
-            prange[nind-1,:] = numpy.array([av-2*stdev, av+2*stdev])
+            av = np.mean(band)
+            stdev = np.sqrt( np.var(band) )
+            prange[nind-1,:] = np.array([av-2*stdev, av+2*stdev])
         elif isinstance(prange, str):
             raise Exception("Bad RANGE argument: %s'" % (prange))
         elif prange.shape[0] == 1 and prange.shape[1] == 2:
-            scales = numpy.power(scale, list(range(ht)))
-            scales = numpy.outer( numpy.ones((nbands,1)), scales )
-            scales = numpy.array([1, scales, numpy.power(scale, ht)])
-            prange = numpy.outer(scales, prange)
+            scales = np.power(scale, list(range(ht)))
+            scales = np.outer( np.ones((nbands,1)), scales )
+            scales = np.array([1, scales, np.power(scale, ht)])
+            prange = np.outer(scales, prange)
             band = self.pyrLow()
-            prange[nind,:] += numpy.mean(band) - numpy.mean(prange[nind,:])
+            prange[nind,:] += np.mean(band) - np.mean(prange[nind,:])
 
-        colormap = matplotlib.cm.Greys_r
+        colormap = cm.Greys_r
 
         # compute positions of subbands
-        llpos = numpy.ones((nind,2));
+        llpos = np.ones((nind,2));
 
         if nbands == 2:
             ncols = 1
             nrows = 1 # pe: nrows was incorrectely set to 2, changed it to 1 2/18
         else:
-            ncols = int(numpy.ceil((nbands+1)/2))
-            nrows = int(numpy.ceil(nbands/2))
+            ncols = (nbands+1)//2
+            nrows = nbands//2
 
-        a = numpy.array(list(range(1-nrows, 1)))
-        b = numpy.zeros((1,ncols))[0]
-        ab = numpy.concatenate((a,b))
-        c = numpy.zeros((1,nrows))[0]
+        a = np.array(list(range(1-nrows, 1)))
+        b = np.zeros((1,ncols))[0]
+        ab = np.concatenate((a,b))
+        c = np.zeros((1,nrows))[0]
         d = list(range(-1, -ncols-1, -1))
-        cd = numpy.concatenate((c,d))
-        relpos = numpy.vstack((ab,cd)).T
+        cd = np.concatenate((c,d))
+        relpos = np.vstack((ab,cd)).T
 
         if nbands > 1:
-            mvpos = numpy.array([-1, -1]).reshape(1,2)
+            mvpos = np.array([-1, -1]).reshape(1,2)
         else:
-            mvpos = numpy.array([0, -1]).reshape(1,2)
-        basepos = numpy.array([0, 0]).reshape(1,2)
+            mvpos = np.array([0, -1]).reshape(1,2)
+        basepos = np.array([0, 0]).reshape(1,2)
 
         for lnum in range(1,ht+1):
             ind1 = (lnum-1)*nbands + 1
-            sz = numpy.array(self.pyrSize[ind1]) + gap
+            sz = np.array(self.pyrSize[ind1]) + gap
             basepos = basepos + mvpos * sz
             if nbands < 5:         # to align edges
                 sz += gap * (ht-lnum)
-            llpos[ind1:ind1+nbands, :] = numpy.dot(relpos, numpy.diag(sz)) + ( numpy.ones((nbands,1)) * basepos )
+            # print(relpos)
+            # print(sz)
+            # print(nbands)
+            # print(basepos)
+            llpos[ind1:ind1+nbands, :] = np.dot(relpos, np.diag(sz)) + ( np.ones((nbands,1)) * basepos )
 
         # lowpass band
-        sz = numpy.array(self.pyrSize[nind-1]) + gap
+        sz = np.array(self.pyrSize[nind-1]) + gap
         basepos += mvpos * sz
         llpos[nind-1,:] = basepos
 
         # make position list positive, and allocate appropriate image:
-        llpos = llpos - ((numpy.ones((nind,2)) * numpy.amin(llpos, axis=0)) + 1) + 1
-        llpos[0,:] = numpy.array([1, 1])
+        llpos = llpos - ((np.ones((nind,2)) * np.amin(llpos, axis=0)) + 1) + 1
+        llpos[0,:] = np.array([1, 1])
         # we want to cast it as ints, since we'll be using these as indices
         llpos = llpos.astype(int)
         urpos = llpos + self.pyrSize
-        d_im = numpy.zeros((numpy.amax(urpos), numpy.amax(urpos)))
+        d_im = np.zeros((np.amax(urpos), np.amax(urpos)))
 
         # paste bands into image, (im-r1)*(nshades-1)/(r2-r1) + 1.5
         nshades = 64;
