@@ -2,16 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
+# TODO subclass matplotlib figure so taht save fig uses correct dpi_scale_trans# ie. an integer multiple of the one used for creation of the figure
+# return an error message on plt.tight_layout
+# take a look at plt.saveim
+
 def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix=10):
-    try:
-        import wx
-        app = wx.App(False)
-        ppi_x, ppi_y = wx.ScreenDC().GetPPI()
-        assert ppi_x == ppi_y, "ppi must be same in both directions!"
-        ppi = ppi_x
-    except:
-        ppi = np.sqrt(2880 ** 2 + 1800 ** 2) / 15.4
+
+    # this is an arbitrary value
+    ppi = 96
+
     # add extra 20% to the y direction for extra info
+    # TODO if no title use all space
     fig = plt.figure(figsize=(((n_cols-1)*col_margin_pix+n_cols*axis_size_pix[1]) / ppi, ((n_rows-1)*row_margin_pix+n_rows*(axis_size_pix[0]/.8)) / ppi), dpi=ppi)
     bbox = fig.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
     fig_width, fig_height = bbox.width*fig.dpi, bbox.height*fig.dpi
@@ -28,12 +29,15 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
 def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
     ax.imshow(img, cmap=cmap, vmin=vrange[0], vmax=vrange[1], interpolation='none', **kwargs)
     # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
-    # TODO too big on my machine
-    ax.set_title(title + '\n range: [{:0.1f}, {:0.1f}] \n dims: [{}, {}] * {}'.format(
-                 vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': 5.}) # ax.bbox.height*(12./256)
+    if title is not None:
+        # TODO adapt the precision of displayed range to the order of magnitude of the values: .1E
+        ax.set_title(title + '\n range: [{:.1f}, {:.1f}] \n dims: [{}, {}] * {}'.format(
+                     vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
 
 
 def reshape_axis(ax, axis_size_pix):
+    # NOTE - can only shrink a big ax, not blow up one that is too small
+
     if ax.bbox.width < axis_size_pix[1] or ax.bbox.height < axis_size_pix[0]:
         raise Exception("Your axis is too small! Axis size: ({}, {}). Image size: ({}, {})".format(ax.bbox.width, ax.bbox.height, axis_size_pix[1], axis_size_pix[0]))
     bbox = ax.figure.get_window_extent().transformed(ax.figure.dpi_scale_trans.inverted())
@@ -44,33 +48,40 @@ def reshape_axis(ax, axis_size_pix):
     return ax
 
 
-def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gray, col_wrap=None, **kwargs):
+def showIm(img, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
+            cmap=cm.gray, **kwargs):
     '''under construction
 
-    img: 2d array (one image to display), 3d array (multiple images to display, images are indexed along the first dimension), or list of 2d arrays.
+    img: 2d array (one image to display), 3d array (multiple images to display,
+    images are indexed along the first dimension), or list of 2d arrays.
 
-    title: string or list of strings. if string, will put the same title on every plot. if list of strings, must be the same length as img, and will
-           assume that titles go with the corresponding image
+    vrange: None/auto
+    auto2
+    auto3
 
-    ax: matplotlib axis or None. If None, make the appropriate figure. If not None, we reshape it (which we only do by shrinking the bbox, so if the bbox is already too small, this will throw an Exception!)
-        so that it's the appropriate number of pixels.
+    zoom
+
+    title: string or list of strings. if string, will put the same title on
+    every plot. if list of strings, must be the same length as img, and will
+    assume that titles go with the corresponding image. If title is None,
+    no title will be printed
+
+    ax: matplotlib axis or None. If None, make the appropriate figure.
+    If not None, we reshape it (which we only do by shrinking the bbox,
+    so if the bbox is already too small, this will throw an Exception!)
+    so that it's the appropriate number of pixels.
+    first define a large enough figure using either make_figure or plt.figure
 
     col_wrap:
 
     TODO:
     independent vrrange for subimages
 
-    osx compatibility of wx in virtual env
-
-    display figure only once in nb with %matplotlib inline
-    by default include plt.show()
-
     diff zoom values
 
-    fontsize
 
-    auto vrange
-    nshades
+    low priority: nshades
+
     '''
 
     img = np.array(img)
@@ -98,6 +109,8 @@ def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gra
         title = len(img) * [title]
     else:
         assert len(img) == len(title), "Must have same number of titles and images!"
+
+    # TODO modularize - put in a different function
     if vrange is None or vrange == 'auto':
         vrange = [np.min(img), np.max(img)]
     # TODO add option to keep vrange independent accross sub images
@@ -108,142 +121,9 @@ def showIm(img, vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gra
         p1 = np.percentile(img, 10)
         p2 = np.percentile(img, 90)
         vrange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
+
+
     for a, im, t in zip(axes, img, title): # add zoom
         _showIm(im, a, vrange, zoom, t, cmap, **kwargs)
-    if ax is None:
-        plt.show()
-    else:
-        return fig
 
-if __name__ == "__main__":
-    from .synthetic_images import mkRamp
-    showIm(np.random.randn(256,256), vrange=None, zoom=1, title='', nshades=256, ax=None, cmap=cm.gray, col_wrap=None)
-
-#########################
-# OLD
-#########################
-# from PIL import ImageTk
-# import PIL
-# import scipy.stats
-# import tkinter
-# import math
-# from .utils import matlab_round
-
-# def showIm(*args):
-#     # check and set input parameters
-#     if len(args) == 0:
-#         print("showIm( matrix, range, zoom, label, nshades )")
-#         print("  matrix is string. It should be the name of a 2D array.")
-#         print("  range is a two element tuple.  It specifies the values that ")
-#         print("    map to the min and max colormap values.  Passing a value ")
-#         print("    of 'auto' (default) sets range=[min,max].  'auto2' sets ")
-#         print("    range=[mean-2*stdev, mean+2*stdev].  'auto3' sets ")
-#         print("    range=[p1-(p2-p1)/8, p2+(p2-p1)/8], where p1 is the 10th ")
-#         print("    percientile value of the sorted matix samples, and p2 is ")
-#         print("    the 90th percentile value.")
-#         print("  zoom specifies the number of matrix samples per screen pixel.")
-#         print("    It will be rounded to an integer, or 1 divided by an ")
-#         print("    integer.")
-#         #print "    A value of 'same' or 'auto' (default) causes the "
-#         #print "    zoom value to be chosen automatically to fit the image into"
-#         #print "    the current axes."
-#         #print "    A value of 'full' fills the axis region "
-#         #print "    (leaving no room for labels)."
-#         print("  label - A string that is used as a figure title.")
-#         print("  NSHADES (optional) specifies the number of gray shades, ")
-#         print("    and defaults to the size of the current colormap. ")
-#
-#     if len(args) > 0:   # matrix entered
-#         matrix = np.array(args[0])
-#
-#     if len(args) > 1:   # range entered
-#         if isinstance(args[1], str):
-#             if args[1] is "auto":
-#                 imRange = ( np.amin(matrix), np.amax(matrix) )
-#             elif args[1] is "auto2":
-#                 imRange = ( matrix.mean()-2*matrix.std(),
-#                             matrix.mean()+2*matrix.std() )
-#             elif args[1] is "auto3":
-#                 #p1 = np.percentile(matrix, 10)  not in python 2.6.6?!
-#                 #p2 = np.percentile(matrix, 90)
-#                 p1 = scipy.stats.scoreatpercentile(np.hstack(matrix), 10)
-#                 p2 = scipy.stats.scoreatpercentile(np.hstack(matrix), 90)
-#                 imRange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
-#             else:
-#                 print("Error: range of %s is not recognized." % args[1])
-#                 print("       please use a two element tuple or ")
-#                 print("       'auto', 'auto2' or 'auto3'")
-#                 print("       enter 'showIm' for more info about options")
-#                 return
-#         else:
-#             imRange = args[1][0], args[1][1]
-#     else:
-#         imRange = ( np.amin(matrix), np.amax(matrix) )
-#
-#     if len(args) > 2:   # zoom entered
-#         zoom = args[2]
-#     else:
-#         zoom = 1
-#
-#     if len(args) > 3:   # label entered
-#         label = args[3]
-#     else:
-#         label = ''
-#
-#     if len(args) > 4:   # colormap entered
-#         nshades = args[4]
-#     else:
-#         nshades = 256
-#
-#     # create window
-#     #master = Tkinter.Tk()
-#     master = tkinter.Toplevel()
-#     master.title('showIm')
-#     canvas_width = matrix.shape[0] * zoom
-#     canvas_height = matrix.shape[1] * zoom
-#     master.geometry(str(canvas_width+20) + "x" + str(canvas_height+60) +
-#                     "+200+200")
-#     # put in top spacer
-#     spacer = tkinter.Label(master, text='').pack()
-#
-#     # create canvas
-#     canvas = tkinter.Canvas(master, width=canvas_width, height=canvas_height)
-#     canvas.pack()
-#     # shift matrix to 0.0-1.0 then to 0-255
-#     if (matrix < 0).any():
-#         matrix = matrix + math.fabs(matrix.min())
-#     matrix = (matrix / matrix.max()) * 255.0
-#     print(matrix.astype('uint8')[0,:])
-#     img = PIL.Image.fromarray(matrix.astype('uint8'))
-#
-#     # make colormap
-#     colorTable = [0] * 256
-#     incr = int(np.ceil(float(matrix.max()-matrix.min()+1) / float(nshades)))
-#     colors = list(range(int(matrix.min()), int(matrix.max())+1, incr))
-#     colors[0] = 0
-#     colors[-1] = 255
-#     colctr = -1
-#     # compute color transition indices
-#     thresh = matlab_round( (matrix.max() - matrix.min()) / len(colors) )
-#     for i in range(len(colorTable)):
-#         # handle uneven color boundaries
-#         if thresh == 0 or (i % thresh == 0 and colctr < len(colors)-1):
-#             colctr += 1
-#         colorTable[i] = colors[colctr]
-#     img = img.point(colorTable)
-#
-#     # zoom
-#     if zoom != 1:
-#         img = img.resize((canvas_width, canvas_height), Image.NEAREST)
-#
-#     # apply image to canvas
-#     imgPI = ImageTk.PhotoImage(img)
-#     canvas.create_image(0,0, anchor=tkinter.NW, image=imgPI)
-#
-#     # add labels
-#     rangeStr = 'Range: [%.1f, %.1f]' % (imRange[0], imRange[1])
-#     rangeLabel = tkinter.Label(master, text=rangeStr).pack()
-#     dimsStr = 'Dims: [%d, %d] / %d' % (matrix.shape[0], matrix.shape[1], zoom)
-#     dimsLabel = tkinter.Label(master, text=dimsStr).pack()
-#
-#     tkinter.mainloop()
+    return fig
