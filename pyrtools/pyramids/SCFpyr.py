@@ -61,9 +61,8 @@ class SCFpyr(SFpyr):
         else:
             harmonics = numpy.arange((nbands-1) // 2) * 2
 
-        steermtx = steer2HarmMtx(harmonics,
-                                 numpy.pi*numpy.array(list(range(nbands)))/nbands,
-                                 'even')
+        steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(list(range(nbands)))/nbands, even_phase=True)
+        
         #------------------------------------------------------
 
         dims = numpy.array(self.image.shape)
