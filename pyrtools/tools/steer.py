@@ -1,5 +1,47 @@
 import numpy as np
-from .steer2HarmMtx import steer2HarmMtx
+
+def steer2HarmMtx(harmonics, angles=None, even_phase=True):
+    ''' Compute a steering matrix (maps a directional basis set onto the
+        angular Fourier harmonics).
+
+        HARMONICS is a vector specifying the angular harmonics contained in the
+        steerable basis/filters.
+        ANGLES (optional) is a vector specifying the angular position of each
+        filter.
+        EVEN_PHASE (optional, default = True) specifies whether the harmonics
+        are cosine or sine phase aligned about those positions.
+
+        The result matrix is suitable for passing to the function STEER.
+        '''
+
+    # default parameter
+    numh = harmonics.size +  np.count_nonzero(harmonics)
+    if angles is None:
+        angles = np.pi * np.arange(numh) / numh
+
+    # Compute inverse matrix, which maps to Fourier components onto
+    # steerable basis
+    imtx = np.zeros((angles.size, numh))
+    col = 0
+    for h in harmonics:
+        args = h * angles
+        if h == 0:
+            imtx[:, col] = np.ones(angles.shape)
+            col += 1
+        elif even_phase:
+            imtx[:, col] = np.cos(args)
+            imtx[:, col+1] = np.sin(args)
+            col += 2
+        else: # odd phase
+            imtx[:, col] = np.sin(args)
+            imtx[:, col+1] = -1.0 * np.cos(args)
+            col += 2
+
+    r = np.linalg.matrix_rank(imtx)
+    if r < np.min(imtx.shape):
+        print("Warning: matrix is not full rank")
+
+    return np.linalg.pinv(imtx)
 
 def steer(basis, angle, harmonics=None, steermtx=None):
     '''Steer BASIS to the specfied ANGLE.

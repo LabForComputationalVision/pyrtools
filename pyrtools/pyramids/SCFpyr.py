@@ -2,10 +2,10 @@ import numpy
 import cmath
 import scipy
 from .SFpyr import SFpyr
-from .steer2HarmMtx import steer2HarmMtx
 from .c.wrapper import pointOp
 from ..tools.utils import rcosFn
 from ..tools.synthetic_images import mkAngle
+from ..tools.steer import steer2HarmMtx
 
 class SCFpyr(SFpyr):
     filt = ''

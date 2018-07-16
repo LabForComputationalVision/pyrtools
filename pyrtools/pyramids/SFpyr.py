@@ -2,9 +2,9 @@ import numpy
 import scipy
 import warnings
 from .Spyr import Spyr
-from .steer2HarmMtx import steer2HarmMtx
 from .c.wrapper import pointOp
 from ..tools.utils import rcosFn
+from ..tools.steer import steer2HarmMtx
 
 
 class SFpyr(Spyr):

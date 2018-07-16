@@ -16,8 +16,6 @@ from .pyramids.Spyr import Spyr
 from .pyramids.SFpyr import SFpyr
 from .pyramids.SCFpyr import SCFpyr
 
-from .pyramids.steer2HarmMtx import steer2HarmMtx
-from .pyramids.steer import steer
 
 from .tools.showIm import showIm
 from .tools.synthetic_images import *
@@ -26,5 +24,6 @@ from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2, matlab_roun
 from .tools.convolutions import rconv2
 from .tools.comparePyr import comparePyr
 from .tools.compareRecon import compareRecon
+from .tools.steer import steer, steer2HarmMtx
 
 from .tools.extra_tools import blurDn, blur, upBlur, imGradient, strictly_decreasing, shift, clip
