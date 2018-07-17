@@ -99,7 +99,7 @@ def histoMatch(mtx, N, X, mode='edges'):
     if mode == 'centers':         # convert to edges
         nStep = X[0,1] - X[0,0]
         nX = np.concatenate((np.array([X[0,0] - 0.5 * nStep]),
-                                np.array( X[0,:] + 0.5 * nStep)))
+                             np.array( X[0,:] + 0.5 * nStep)))
     else:
         nX = X.flatten()
 
@@ -107,14 +107,13 @@ def histoMatch(mtx, N, X, mode='edges'):
     N = N + N.mean() / 1e8
     nC = np.concatenate((np.array([0]), np.cumsum(N / N.sum()) ))
 
-    # TODO - scipy error
-    # ValueError: A value in x_new is above the interpolation range.
+    # NOTE:
+    # - unlike in matlab, interp1d returns a function
+    # - need to specify in interp1d what to do beyond the range: extrapolate.
     # print(oC.min(), oC.max())
     # print(nC.min(), nC.max())
-
-    # unlike in matlab, interp1d returns a function
-    func = interp1d(nC, nX, 'linear', fill_value='extrapolate')
-    nnX = func(oC)
+    func = interp1d(nC, nX, kind='linear', fill_value='extrapolate')
+    nnX  = func(oC)
 
     return pointOp(image=mtx, lut=nnX, origin=oX[0,0], increment=oStep, warnings=0)
 

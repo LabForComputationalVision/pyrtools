@@ -7,8 +7,6 @@ from ..tools.showIm import showIm
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-# import pylab
-# from ..tools import JBhelpers
 
 class Wpyr(LaplacianPyramid):
     filt = ''
@@ -21,19 +19,15 @@ class Wpyr(LaplacianPyramid):
         self.pyrSize = []
         self.pyrType = 'wavelet'
 
-        if len(args) > 0:
-            im = args[0]
-        else:
-            print("First argument (image) is required.")
-            return
+    #constructor
+    def __init__(self, image, height='auto', filt='qmf9', edges='reflect1'):
+        self.pyr = []
+        self.pyrSize = []
+        self.pyrType = 'wavelet'
 
-        #------------------------------------------------
-        # defaults:
+        self.image = image
+        im = np.array(self.image).astype(float)
 
-        if len(args) > 2:
-            filt = args[2]
-        else:
-            filt = "qmf9"
         if isinstance(filt, str):
             filt = namedFilter(filt)
 
@@ -41,11 +35,6 @@ class Wpyr(LaplacianPyramid):
             print("Error: filter should be 1D (i.e., a vector)");
             return
         hfilt = self.modulateFlip(filt)
-
-        if len(args) > 3:
-            edges = args[3]
-        else:
-            edges = "reflect1"
 
         # Stagger sampling if filter is odd-length:
         if filt.shape[0] % 2 == 0:
@@ -60,19 +49,17 @@ class Wpyr(LaplacianPyramid):
             elif im.shape[1] == 1:
                 filt = filt.reshape(filt.shape[0], 1)
 
-        max_ht = self.maxPyrHt(im.shape, filt.shape)
-
-        if len(args) > 1:
-            ht = args[1]
-            if ht == 'auto':
-                ht = max_ht
-            elif(ht > max_ht):
-                print("Error: cannot build pyramid higher than %d levels." % (max_ht))
+        maxHeight = 1 + self.maxPyrHt(im.shape, filt.shape)
+        # used with showPyr() method
+        if isinstance(height, str) and height == "auto":
+            self.height = maxHeight
         else:
-            ht = max_ht
-        ht = int(ht)
-        self.height = ht + 1  # used with showPyr() method
-        for lev in range(ht):
+            self.height = height
+            if self.height > maxHeight:
+                raise Exception("Error: cannot build pyramid higher than %d levels" % (maxHeight))
+
+
+        for lev in range(self.height - 1):
             if len(im.shape) == 1 or im.shape[1] == 1:
                 lolo = corrDn(image = im, filt = filt, edges = edges,
                               step = (2,1), start = (stag-1,0))

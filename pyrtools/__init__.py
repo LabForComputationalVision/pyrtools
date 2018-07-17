@@ -3,6 +3,7 @@ from .pyramids.c.wrapper import corrDn, upConv, pointOp
 from .pyramids.pyramid import Pyramid
 
 from .pyramids.pyr_utils import LB2idx, idx2LB
+from .pyramids.modulateFlip import modulateFlip
 
 from .pyramids.namedFilter import namedFilter, binomialFilter
 from .pyramids.steerable_filters import steerable_filters

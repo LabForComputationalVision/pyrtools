@@ -142,8 +142,7 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
 
     res = mkR(size, exponent=1, origin=origin)
 
-    # is it stringent enough?
-    if abs(twidth) < 1e-10: #sys.float_info.min:
+    if abs(twidth) < np.finfo(np.double).tiny:
         res = vals[1] + (vals[0] - vals[1]) * (res <= radius)
     else:
         [Xtbl, Ytbl] = rcosFn(twidth, radius, [vals[0], vals[1]])

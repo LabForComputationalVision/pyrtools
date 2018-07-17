@@ -5,13 +5,12 @@ from .namedFilter import namedFilter
 from ..tools.showIm import showIm
 import matplotlib.pyplot as plt
 from matplotlib import cm
-# from ..tools import JBhelpers
 
 class LaplacianPyramid(Pyramid):
 
     # constructor
-    def __init__(self, image, pyrType='Laplacian', edgeType='reflect1',
-                 height='auto', filter1='binom5', filter2=None):
+    def __init__(self, image, height='auto', filter1='binom5', filter2=None,
+                 edgeType='reflect1', pyrType='Laplacian'):
         """Laplacian pyramid
 
             - `image` - a 2D numpy array
