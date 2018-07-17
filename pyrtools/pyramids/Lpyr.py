@@ -51,122 +51,71 @@ class LaplacianPyramid(Pyramid):
             filter = filter.reshape(1,-1)
         return filter
 
-    # return concatenation of all levels of 1d pyramid
-    def catBands(self, *args):
-        outarray = np.array([]).reshape((1,0))
-        for i in range(self.height):
-            tmp = self.band(i).T
-            outarray = np.concatenate((outarray, tmp), axis=1)
-        return outarray
+    def downSample(self, image, filt=None, edges=None):
+        imsz = image.shape
+        if filt is None:
+            filt = self.filter1
+        if edges is None:
+            edges = self.edgeType
 
-    def set(self, band, element, value):
-        """set a pyramid value
+        if imsz[0] == 1:
+            res = corrDn(image=image, filt=filt, edges=edges, step=(1,2))
+        elif len(imsz) == 1 or imsz[1] == 1:
+            res = corrDn(image=image, filt=filt, edges=edges, step=(2,1))
+        else:
+            tmp = corrDn(image=image, filt=filt.T, edges=edges, step=(1,2))
+            res = corrDn(image=tmp, filt=filt, edges=edges, step=(2,1))
+        return res
 
-        element must be a tuple, others are single numbers
-        """
-        self.pyr[band][element[0]][element[1]] = value
+    def upSample(self, image, out_size, filt=None, edges=None):
+        imsz = image.shape
+        if filt is None:
+            filt = self.filter2
+        if edges is None:
+            edges = self.edgeType
+
+        if len(imsz) == 1 or imsz[1] == 1:
+            res = upConv(image=image, filt=filt.T, edges=edges,step=(1,2), stop=(out_size[1], out_size[0])).T
+        elif imsz[0] == 1:
+            res = upConv(image=image, filt=filt.T, edges=edges, step=(2,1), stop=(out_size[1], out_size[0])).T
+        else:
+            tmp = upConv(image=image, filt=filt, edges=edges, step=(2,1), stop=(out_size[0], imsz[1]))
+            res = upConv(image=tmp, filt=filt.T, edges=edges, step=(1,2), stop=(out_size[0], out_size[1]))
+        return res
 
     def buildPyr(self):
-        # make pyramid
 
-        los = {}
-        los[0] = self.image
-        if len(los[0].shape) == 1:
-            los[0] = los[0].reshape(-1, 1)
+        img = self.image
+        if len(img.shape) == 1:
+            img = img.reshape(-1, 1)
 
-        # compute low bands
         for h in range(1,self.height):
-            im_sz = los[h-1].shape
-            if im_sz[0] == 1:
-                los[h] = corrDn(image=los[h-1], filt=self.filter1, edges=self.edgeType, step=(1,2))
-            elif len(im_sz) == 1 or im_sz[1] == 1:
-                los[h] = corrDn(image=los[h-1], filt=self.filter1, edges=self.edgeType, step=(2,1))
-            else:
-                lo = corrDn(image=los[h-1], filt=self.filter1.T, edges=self.edgeType, step=(1,2))
-                los[h] = corrDn(image=lo, filt=self.filter1, edges=self.edgeType, step=(2,1))
+            img_next = self.downSample(img)
+            img_recon = self.upSample(img_next, out_size=img.shape)
+            img_residual = img - img_recon
 
-        # compute high bands
-        for ht in range(1, self.height):
-            im_sz = los[ht].shape
-            if len(im_sz) == 1 or im_sz[1] == 1:
-                hi2 = upConv(image=los[ht], filt=self.filter2.T, edges=self.edgeType,
-                             step=(1,2), stop=(los[ht-1].shape[1], los[ht-1].shape[0])).T
-            elif im_sz[0] == 1:
-                hi2 = upConv(image=los[ht], filt=self.filter2.T, edges=self.edgeType,
-                             step=(2,1), stop=(los[ht-1].shape[1], los[ht-1].shape[0])).T
-            else:
-                hi = upConv(image=los[ht], filt=self.filter2, edges=self.edgeType,
-                            step=(2,1), stop=(los[ht-1].shape[0], im_sz[1]))
-                hi2 = upConv(image=hi, filt=self.filter2.T, edges=self.edgeType,
-                             step=(1,2), stop=(los[ht-1].shape[0], los[ht-1].shape[1]))
+            self.pyr.append(img_residual.copy())
+            self.pyrSize.append(img_residual.shape)
 
-            hi2 = los[ht-1] - hi2
-            self.pyr.append(hi2.copy())
-            self.pyrSize.append(hi2.shape)
+            img = img_next
 
-        self.pyr.append(los[self.height-1].copy())
-        self.pyrSize.append(los[self.height-1].shape)
+        self.pyr.append(img.copy())
+        self.pyrSize.append(img.shape)
 
 
-    def reconPyr(self, *args):
-        if len(args) > 0:
-            if not isinstance(args[0], str):
-                levs = np.array(args[0])
-            else:
-                levs = args[0]
-        else:
-            levs = 'all'
-
-        if len(args) > 1:
-            filter2 = args[1]
-        else:
-            filter2 = 'binom5'
-
-        if len(args) > 2:
-            edges = args[2]
-        else:
-            edges = 'reflect1';
-
-        maxLev = self.height
+    def reconPyr(self, levs='all', filter2='binom5', edgeType='reflect1'):
 
         if isinstance(levs, str) and levs == 'all':
-            levs = list(range(0,maxLev))
-        else:
-            if (levs > maxLev-1).any():
-                raise Exception("level numbers must be in the range [0, %d]." % (maxLev-1))
+            levs = np.arange(self.height)
+        levs = np.array(levs)
+        filter2 = self.parseFilter(filter2)
 
-        if isinstance(filter2, str):
-            filter2 = namedFilter(filter2)
-        else:
-            if len(filter2.shape) == 1:
-                filter2 = filter2.reshape(1, len(filter2))
-
-        res = []
-        lastLev = -1
-        for lev in range(maxLev-1, -1, -1):
-            if lev in levs and len(res) == 0:
-                res = self.band(lev)
-            elif len(res) != 0:
-                res_sz = res.shape
-                new_sz = self.band(lev).shape
-                filter2_sz = filter2.shape
-                if res_sz[0] == 1:
-                    hi2 = upConv(image = res, filt = filter2, edges = edges,
-                                 step = (2,1), stop = (new_sz[1], new_sz[0])).T
-                elif res_sz[1] == 1:
-                    hi2 = upConv(image = res, filt = filter2.T, edges = edges,
-                                 step = (1,2), stop = (new_sz[1], new_sz[0])).T
-                else:
-                    hi = upConv(image = res, filt = filter2, edges = edges,
-                                step = (2,1), stop = (new_sz[0], res_sz[1]))
-                    hi2 = upConv(image = hi, filt = filter2.T, edges = edges,
-                                 step = (1,2), stop = (new_sz[0], new_sz[1]))
-                if lev in levs:
-                    bandIm = self.band(lev)
-                    bandIm_sz = bandIm.shape
-                    res = hi2 + bandIm
-                else:
-                    res = hi2
+        res = self.band(levs.max())
+        for lev in range(levs.max()-1, -1, -1):
+            # upsample to generate higher resolution image
+            res = self.upSample(res, out_size=self.band(lev).shape, filt=filter2, edges=edgeType)
+            if lev in levs:
+                res += self.band(lev)
         return res
 
     def pyrLow(self):

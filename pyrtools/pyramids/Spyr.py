@@ -82,17 +82,6 @@ class Spyr(Pyramid):
         self.pyrSize[pyrCtr] = lo.shape
 
     # methods
-    def set(self, band, location, value):
-        """set value at specified band and location
-
-        band and value must be integers, location can be an int or a tuple
-        """
-        if isinstance(location, int):
-            self.pyr[band][0][location] = value
-        elif isinstance(location, tuple):
-            self.pyr[band][location[0]][location[1]] = value
-        else:
-            raise Exception('location parameter must be int or tuple!')
 
     def spyrLev(self, lev):
         if lev < 0 or lev > self.spyrHt()-1:
