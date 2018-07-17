@@ -23,11 +23,11 @@ class LaplacianPyramid(Pyramid):
             """
         super().__init__(image=image, pyrType=pyrType, edgeType=edgeType)
 
-        self.filter1 = self.parseFilter(filter1)
+
         if filter2 is None:
-            self.filter2 = self.filter1
-        else:
-            self.filter2 = self.parseFilter(filter2)
+            filter2 = filter1
+        self.filter1 = self.parseFilter(filter1)
+        self.filter2 = self.parseFilter(filter2)
 
         maxHeight = 1 + self.maxPyrHt(self.image.shape, self.filter1.shape)
 

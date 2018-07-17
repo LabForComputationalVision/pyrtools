@@ -1,9 +1,8 @@
 import unittest
-import math
 import numpy as np
 import scipy.io
-from PIL import Image
 from operator import mul
+import matplotlib.pyplot as plt
 import sys
 sys.path.insert(0, '../')
 import pyrtools as ppt
@@ -66,8 +65,7 @@ class binomialFilterTests(unittest.TestCase):
 class GpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr1.mat')
-        img = Image.open('../pyrtools/data/lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.Gpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -101,8 +99,7 @@ class GpyrTests(unittest.TestCase):
 class LpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr1.mat')
-        img = Image.open('../pyrtools/data/lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.LaplacianPyramid(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -139,8 +136,7 @@ class LpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test7(self):
         matPyr = scipy.io.loadmat('./matFiles/buildLpyr7.mat')
-        img = Image.open('../pyrtools/data/lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.LaplacianPyramid(img)
         recon = pyPyr.reconPyr()
         self.assertTrue((matPyr['recon'] == recon).all())
@@ -228,7 +224,7 @@ class SpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSpyr1.mat')
-        img = np.array(Image.open('../pyrtools/data/lenna-256x256.tif')).astype(float)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.Spyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -254,7 +250,7 @@ class SpyrTests(unittest.TestCase):
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSpyr5.mat')
-        img = np.array(Image.open('../pyrtools/data/lenna-256x256.tif')).astype(float)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.Spyr(img)
         recon = pyPyr.reconPyr()
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
@@ -416,8 +412,7 @@ class SFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSFpyr1.mat')
-        img = Image.open('../pyrtools/data/lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.SFpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -443,8 +438,7 @@ class SFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test6(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSFpyr6.mat')
-        img = Image.open('../pyrtools/data/lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.SFpyr(img)
         recon = pyPyr.reconPyr()
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
@@ -499,8 +493,7 @@ class SCFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSCFpyr1.mat')
-        img = Image.open('../pyrtools/data/lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.SCFpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -520,8 +513,7 @@ class SCFpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSCFpyr5.mat')
-        img = Image.open('../pyrtools/data/lenna-256x256.tif')
-        img = np.array(img.getdata()).reshape(256,256)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.SCFpyr(img)
         recon = pyPyr.reconPyr()
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
@@ -542,13 +534,13 @@ class SCFpyrTests(unittest.TestCase):
     #    pyRamp = ppt.mkRamp((200,100))
     #    pyPyr = ppt.SCFpyr(pyRamp)
     #    recon = pyPyr.reconSCFpyr()
-    #    self.failUnless(ppt.compareRecon(matPyr['recon'], recon))
+    #    self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     #def test9(self):
     #    matPyr = scipy.io.loadmat('./matFiles/buildSCFpyr9.mat')
     #    pyRamp = ppt.mkRamp((100,200))
     #    pyPyr = ppt.SCFpyr(pyRamp)
     #    recon = pyPyr.reconSCFpyr()
-    #    self.failUnless(ppt.compareRecon(matPyr['recon'], recon))
+    #    self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test10(self):
         matPyr = scipy.io.loadmat('./matFiles/buildSCFpyr10.mat')
         pyRamp = ppt.mkRamp((256,256))
@@ -576,7 +568,7 @@ class WpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildWpyr1.mat')
-        img = np.array(Image.open('../pyrtools/data/lenna-256x256.tif')).astype(float)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.Wpyr(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
@@ -596,7 +588,7 @@ class WpyrTests(unittest.TestCase):
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildWpyr5.mat')
-        img = np.array(Image.open('../pyrtools/data/lenna-256x256.tif')).astype(float)
+        img = plt.imread('../pyrtools/data/lenna-256x256.tif')
         pyPyr = ppt.Wpyr(img)
         recon = pyPyr.reconPyr()
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
@@ -722,7 +714,7 @@ class blurDnTests(unittest.TestCase):
     #    matPyr = scipy.io.loadmat('./matFiles/blurDn8.mat')
     #    pyRamp = ppt.mkRamp((256, 256))
     #    res = ppt.blurDn(pyRamp, 2dfilt)
-    #    self.failUnless(ppt.compareRecon(matPyr['res'], res))
+    #    self.assertTrue(ppt.compareRecon(matPyr['res'], res))
 
 class mkAngularSineTests(unittest.TestCase):
     def test0(self):
@@ -974,8 +966,8 @@ class histoTests(unittest.TestCase):
         (N,X) = ppt.matlab_histo(ppt.mkRamp(10) + 0.7)
         # X will not be the same because matlab returns centers and
         #   python return edges
-        #self.failUnless(ppt.compareRecon(matPyr['X'], X))
-        #self.failUnless(ppt.compareRecon(matPyr['N'], N))
+        #self.assertTrue(ppt.compareRecon(matPyr['X'], X))
+        #self.assertTrue(ppt.compareRecon(matPyr['N'], N))
         self.assertTrue((matPyr['N'] == N).all())
 # FIX: why does matlab version return N+1 bins??
 #    def test1(self):
@@ -983,33 +975,33 @@ class histoTests(unittest.TestCase):
 #        (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7, 26)
 #        # X will not be the same because matlab returns centers and
 #        #   python return edges
-#        #self.failUnless(ppt.compareRecon(matPyr['X'], X))
-#        #self.failUnless(ppt.compareRecon(matPyr['N'], N))
-#        self.failUnless(matPyr['N'] == N)
+#        #self.assertTrue(ppt.compareRecon(matPyr['X'], X))
+#        #self.assertTrue(ppt.compareRecon(matPyr['N'], N))
+#        self.assertTrue(matPyr['N'] == N)
 #    def test2(self):
 #        matPyr = scipy.io.loadmat('./matFiles/histo2.mat')
 #        (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7, -1.15)
 #        # X will not be the same because matlab returns centers and
 #        #   python return edges
-#        #self.failUnless(ppt.compareRecon(matPyr['X'], X))
-#        self.failUnless(ppt.compareRecon(matPyr['N'], N))
+#        #self.assertTrue(ppt.compareRecon(matPyr['X'], X))
+#        self.assertTrue(ppt.compareRecon(matPyr['N'], N))
 #    def test3(self):
 #        matPyr = scipy.io.loadmat('./matFiles/histo3.mat')
 #        (N,X) = ppt.histo(ppt.mkRamp(10) + 0.7, 26, 3)
 #        # X will not be the same because matlab returns centers and
 #        #   python return edges
-#        #self.failUnless(ppt.compareRecon(matPyr['X'], X))
-#        self.failUnless(ppt.compareRecon(matPyr['N'], N))
+#        #self.assertTrue(ppt.compareRecon(matPyr['X'], X))
+#        self.assertTrue(ppt.compareRecon(matPyr['N'], N))
 
 #class entropy2Tests(unittest.TestCase):
 #    def test0(self):
 #        matPyr = scipy.io.loadmat('./matFiles/entropy2_0.mat')
 #        H = ppt.entropy2(ppt.mkRamp(10))
-#        self.failUnless(matPyr['H'] == H)
+#        self.assertTrue(matPyr['H'] == H)
 #    def test1(self):
 #        matPyr = scipy.io.loadmat('./matFiles/entropy2_1.mat')
 #        H = ppt.entropy2(ppt.mkRamp(10), 1)
-#        self.failUnless(matPyr['H'] == H)
+#        self.assertTrue(matPyr['H'] == H)
 
 # class factorialTests(unittest.TestCase):
 #     def test0(self):
@@ -1033,7 +1025,7 @@ class histoMatchTests(unittest.TestCase):
        disc = ppt.mkDisc(10) + 0.7
        (rN,rX) = ppt.matlab_histo(ramp)
        res = ppt.histoMatch(disc, rN, rX, 'edges')
-       self.failUnless(ppt.compareRecon(matPyr['res'], res))
+       self.assertTrue(ppt.compareRecon(matPyr['res'], res))
 
 class imGradientTests(unittest.TestCase):
     def test0(self):
@@ -1060,7 +1052,7 @@ class skew2Tests(unittest.TestCase):
         mres = matPyr['res'][0][0]
         disc = ppt.mkDisc(10)
         res = ppt.skew2(disc)
-        self.assertTrue(np.absolute(res - mres) <= math.pow(10,-11))
+        self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/skew2_1.mat')
         # not sure why matPyr is [[ans]]???
@@ -1069,7 +1061,7 @@ class skew2Tests(unittest.TestCase):
         # using incorrect mean for better test
         mn = disc.mean() + 0.1
         res = ppt.skew2(disc, mn)
-        self.assertTrue(np.absolute(res - mres) <= math.pow(10,-11))
+        self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
     def test2(self):
         matPyr = scipy.io.loadmat('./matFiles/skew2_2.mat')
         # not sure why matPyr is [[ans]]???
@@ -1079,7 +1071,7 @@ class skew2Tests(unittest.TestCase):
         mn = disc.mean() + 0.1
         v = ppt.var2(disc) + 0.1
         res = ppt.skew2(disc, mn, v)
-        self.assertTrue(np.absolute(res - mres) <= math.pow(10,-11))
+        self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
 
 class upBlurTests(unittest.TestCase):
     def test0(self):
@@ -1131,7 +1123,7 @@ class upBlurTests(unittest.TestCase):
     #    im = ppt.mkRamp((1,20))
     #    filt = ppt.namedFilter('qmf9')
     #    res = ppt.upBlur(im, 3, filt.T)
-    #    self.failUnless(ppt.compareRecon(mres, res))
+    #    self.assertTrue(ppt.compareRecon(mres, res))
     def test8(self):
         matPyr = scipy.io.loadmat('./matFiles/upBlur8.mat')
         mres = matPyr['res']
@@ -1145,7 +1137,7 @@ class upBlurTests(unittest.TestCase):
     #    im = ppt.mkRamp((1,20))
     #    filt = ppt.namedFilter('qmf9')
     #    res = ppt.upBlur(im.T, 3, filt.T)
-    #    self.failUnless(ppt.compareRecon(mres, res))
+    #    self.assertTrue(ppt.compareRecon(mres, res))
     def test10(self):
         matPyr = scipy.io.loadmat('./matFiles/upBlur10.mat')
         mres = matPyr['res']

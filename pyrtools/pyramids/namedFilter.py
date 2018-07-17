@@ -38,7 +38,7 @@ def namedFilter(name):
                           Woods, Kluwer Academic Publishers,  Norwell, MA, 1990,
                           pp 143--192.   '''
 
-    if len(name) > 5 and name[:5] == "binom":
+    if name.startswith("binom"):
         # TODO: not sure why the normalization constant is independent of order?
         # this may affect LaplacianPyramid method
         # original code:

@@ -2,7 +2,6 @@ import numpy as np
 from .Lpyr import LaplacianPyramid
 from .pyr_utils import LB2idx
 from .namedFilter import namedFilter
-from .modulateFlip import modulateFlip
 from .c.wrapper import corrDn, upConv
 from ..tools.showIm import showIm
 import matplotlib.pyplot as plt
@@ -41,7 +40,7 @@ class Wpyr(LaplacianPyramid):
         if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
             print("Error: filter should be 1D (i.e., a vector)");
             return
-        hfilt = modulateFlip(filt)
+        hfilt = self.modulateFlip(filt)
 
         if len(args) > 3:
             edges = args[3]
@@ -191,7 +190,7 @@ class Wpyr(LaplacianPyramid):
         if isinstance(filt, str):
             filt = namedFilter(filt)
 
-        hfilt = modulateFlip(filt).T
+        hfilt = self.modulateFlip(filt).T
 
         # for odd-length filters, stagger the sampling lattices:
         if len(filt) % 2 == 0:
@@ -322,6 +321,19 @@ class Wpyr(LaplacianPyramid):
 
     def pyrLow(self):
         return np.array(self.band(len(self.pyrSize)-1))
+
+    def modulateFlip(self, lfilt):
+        ''' [HFILT] = modulateFlipShift(LFILT)
+            QMF/Wavelet highpass filter construction: modulate by (-1)^n,
+            reverse order (and shift by one, which is handled by the convolution
+            routines).  This is an extension of the original definition of QMF's
+            (e.g., see Simoncelli90).  '''
+        assert lfilt.size == max(lfilt.shape)
+        lfilt = lfilt.flatten()
+        ind = np.arange(lfilt.size,0,-1) - (lfilt.size + 1) // 2
+        hfilt = lfilt[::-1] * (-1.0) ** ind
+        # matlab version always returns a column vector
+        return hfilt.reshape(-1,1)
 
     def showPyr(self, prange = None, gap = 1, scale = None, disp = 'qt'):
         # determine 1D or 2D pyramid:
