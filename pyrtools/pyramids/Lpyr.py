@@ -1,6 +1,5 @@
 import numpy as np
 from .pyramid import Pyramid
-from .maxPyrHt import maxPyrHt
 from .c.wrapper import corrDn, upConv
 from .namedFilter import namedFilter
 from ..tools.showIm import showIm
@@ -30,7 +29,7 @@ class LaplacianPyramid(Pyramid):
         else:
             self.filter2 = self.parseFilter(filter2)
 
-        maxHeight = 1 + maxPyrHt(self.image.shape, self.filter1.shape)
+        maxHeight = 1 + self.maxPyrHt(self.image.shape, self.filter1.shape)
 
         if isinstance(height, str) and height == "auto":
             self.height = maxHeight

@@ -3,7 +3,6 @@ import os
 from .pyramid import Pyramid
 from .pyr_utils import LB2idx
 from .steerable_filters import steerable_filters
-from .maxPyrHt import maxPyrHt
 from .c.wrapper import corrDn, upConv
 from ..tools.showIm import showIm
 from matplotlib import cm
@@ -37,7 +36,7 @@ class Spyr(Pyramid):
         bfilts = filters['bfilts']
         steermtx = filters['mtx']
 
-        max_ht = maxPyrHt(self.image.shape, lofilt.shape)
+        max_ht = self.maxPyrHt(self.image.shape, lofilt.shape)
         if height == 'auto':
             ht = max_ht
         elif height > max_ht:

@@ -3,7 +3,6 @@ from .Lpyr import LaplacianPyramid
 from .pyr_utils import LB2idx
 from .namedFilter import namedFilter
 from .modulateFlip import modulateFlip
-from .maxPyrHt import maxPyrHt
 from .c.wrapper import corrDn, upConv
 from ..tools.showIm import showIm
 import matplotlib.pyplot as plt
@@ -62,7 +61,7 @@ class Wpyr(LaplacianPyramid):
             elif im.shape[1] == 1:
                 filt = filt.reshape(filt.shape[0], 1)
 
-        max_ht = maxPyrHt(im.shape, filt.shape)
+        max_ht = self.maxPyrHt(im.shape, filt.shape)
 
         if len(args) > 1:
             ht = args[1]

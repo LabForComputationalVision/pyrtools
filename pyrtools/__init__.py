@@ -2,7 +2,6 @@ from .pyramids.c.wrapper import corrDn, upConv, pointOp
 
 from .pyramids.pyramid import Pyramid
 
-from .pyramids.maxPyrHt import maxPyrHt
 from .pyramids.pyr_utils import LB2idx, idx2LB
 from .pyramids.modulateFlip import modulateFlip
 

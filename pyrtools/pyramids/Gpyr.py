@@ -1,7 +1,6 @@
 import numpy
 from .Lpyr import LaplacianPyramid
 from .namedFilter import namedFilter
-from .maxPyrHt import maxPyrHt
 from .c.wrapper import corrDn
 
 class Gpyr(LaplacianPyramid):
@@ -27,7 +26,7 @@ class Gpyr(LaplacianPyramid):
         if self.image.shape[0] == 1:
             self.filt = self.filt.reshape(1, max(self.filt.shape))
 
-        maxHeight = 1 + maxPyrHt(self.image.shape, self.filt.shape)
+        maxHeight = 1 + self.maxPyrHt(self.image.shape, self.filt.shape)
 
         if height == "auto":
             self.height = maxHeight
