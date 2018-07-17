@@ -22,8 +22,7 @@ class LaplacianPyramid(Pyramid):
             """
         super().__init__(image=image, pyrType=pyrType, edgeType=edgeType)
 
-        if filter2 is None:
-            filter2 = filter1
+        if filter2 is None: filter2 = filter1
         self.filter1 = self.parseFilter(filter1)
         self.filter2 = self.parseFilter(filter2)
 
@@ -51,11 +50,9 @@ class LaplacianPyramid(Pyramid):
         return filter
 
     def downSample(self, image, filt=None, edges=None):
+        if filt is None: filt = self.filter1
+        if edges is None: edges = self.edgeType
         imsz = image.shape
-        if filt is None:
-            filt = self.filter1
-        if edges is None:
-            edges = self.edgeType
 
         if imsz[0] == 1:
             res = corrDn(image=image, filt=filt, edges=edges, step=(1,2))
@@ -67,11 +64,9 @@ class LaplacianPyramid(Pyramid):
         return res
 
     def upSample(self, image, out_size, filt=None, edges=None):
+        if filt is None: filt = self.filter2
+        if edges is None: edges = self.edgeType
         imsz = image.shape
-        if filt is None:
-            filt = self.filter2
-        if edges is None:
-            edges = self.edgeType
 
         if len(imsz) == 1 or imsz[1] == 1:
             res = upConv(image=image, filt=filt.T, edges=edges,step=(1,2), stop=(out_size[1], out_size[0])).T

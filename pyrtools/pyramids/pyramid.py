@@ -30,20 +30,19 @@ class Pyramid:  # Pyramid base class
         assert bandNum < len(self.pyr), 'band number is out of range'
         return np.array(self.pyr[bandNum])
 
-    # # return concatenation of all levels of 1d pyramid / not used?
-    # def concatBands(self):
-    #     outarray = np.array([]).reshape((1,0))
-    #     for i in range(self.nbands()):
-    #         tmp = self.band(i).flatten()
-    #         outarray = np.concatenate((outarray, tmp), axis=1)
-    #     return outarray
+    # return concatenation of all levels of 1d pyramid / not used?
+    def concatBands(self):
+        outarray = np.array([]).reshape((1,0))
+        for i in range(self.nbands()):
+            tmp = self.band(i).T
+            outarray = np.concatenate((outarray, tmp), axis=1)
+        return outarray
 
     def setValue(self, band, location, value):
         """set a pyramid value
-
-        element must be a tuple, others are single numbers
+        location must be a tuple, others are single numbers
         """
-        self.pyr[band][location[0]][location[1]] = value
+        self.pyr[band][location[0],location[1]] = value
 
     def maxPyrHt(self, imsz, filtsz):
         ''' Compute maximum pyramid height for given image and filter sizes.
