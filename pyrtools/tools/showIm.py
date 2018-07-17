@@ -121,6 +121,7 @@ def showIm(img, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
         p1 = np.percentile(img, 10)
         p2 = np.percentile(img, 90)
         vrange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
+    # add error message if vrange not one of these
 
 
     for a, im, t in zip(axes, img, title): # add zoom

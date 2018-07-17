@@ -6,13 +6,16 @@ def compareRecon(recon1, recon2, rtol=1e-5, atol=1e-8):
         precision and 0 if not.
         function was made to accompany unit test code '''
 
+    # NOTE builtin numpy:
+    # np.allclose(recon1, recon2, rtol=1e-05, atol=1e-08, equal_nan=False)
+    # BUT won't print where and what the first error is
+
     if recon1.shape != recon2.shape:
         print('shape is different!')
         print(recon1.shape)
         print(recon2.shape)
         return 0
 
-    # TODO: use the pythonic/numpy way np.isclose()
     for i in range(recon1.shape[0]):
         for j in range(recon2.shape[1]):
             if numpy.absolute(recon1[i,j].real - recon2[i,j].real) > math.pow(10,-11):

@@ -26,7 +26,7 @@ def steer2HarmMtx(harmonics, angles=None, even_phase=True):
     for h in harmonics:
         args = h * angles
         if h == 0:
-            imtx[:, col] = np.ones(angles.shape)
+            imtx[:, col  ] = np.ones(angles.shape)
             col += 1
         elif even_phase:
             imtx[:, col  ] = np.cos(args)
@@ -86,7 +86,8 @@ def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, eve
 
     # If STEERMTX not passed, assume evenly distributed cosine-phase filters:
     if steermtx is None:
-        steermtx = steer2HarmMtx(harmonics, np.pi*np.arange(num)/num, even_phase=even_phase)
+        steermtx = steer2HarmMtx(harmonics, np.pi * np.arange(num) / num,
+                                 even_phase = even_phase)
 
     steervect = np.zeros((angle.shape[0], num))
     arg = angle * harmonics[np.nonzero(harmonics)[0]].T
