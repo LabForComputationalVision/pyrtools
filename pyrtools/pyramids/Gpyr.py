@@ -1,75 +1,36 @@
-import numpy
 from .Lpyr import LaplacianPyramid
-from .namedFilter import namedFilter
-from .c.wrapper import corrDn
 
-class Gpyr(LaplacianPyramid):
-    filt = ''
-    edges = ''
-    height = ''
+class GaussianPyramid(LaplacianPyramid):
 
     # constructor
-    def __init__(self, image, height='auto', filt='binom5', edges='reflect1'):
-        self.pyrType = 'Gaussian'
-        self.image = image
+    def __init__(self, image, height='auto', filter='binom5',
+                 edgeType='reflect1', pyrType='Gaussian'):
+        """Gaussian pyramid
 
-        if isinstance(filt, str):
-            self.filt = namedFilter(filt)
-        else:
-            self.filt = filt
-        if not (numpy.array(self.filt.shape) == 1).any():
-            raise Exception("filt should be a 1D filter (i.e., a vector)")
+            - `image` - a 2D numpy array
+            - `height` - an integer denoting number of pyramid levels desired. Defaults to `maxPyrHt`
+            - `filter` - can be a string namimg a standard filter (from namedFilter()), or a
+            numpy array which will be used for (separable) convolution. Default is 'binom5'.
+            - `edgeType` - see class Pyramid.__init__()
+            """
+        super().__init__(image=image, height=height, filter1=filter,
+                         edgeType=edgeType, pyrType=pyrType)
 
-        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
-        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
-        # we need to match the filter to the image dimensions
-        if self.image.shape[0] == 1:
-            self.filt = self.filt.reshape(1, max(self.filt.shape))
+    # methods
 
-        maxHeight = 1 + self.maxPyrHt(self.image.shape, self.filt.shape)
+    def buildPyr(self):
 
-        if height == "auto":
-            self.height = maxHeight
-        else:
-            self.height = height
-            if self.height > maxHeight:
-                raise Exception("Cannot build pyramid higher than %d levels" % (maxHeight))
+        img = self.image
+        if len(img.shape) == 1:
+            img = img.reshape(-1, 1)
 
-        self.edges = edges
+        self.pyr.append(img.copy())
+        self.pyrSize.append(img.shape)
 
-        # make pyramid
-        self.pyr = []
-        self.pyrSize = []
-        pyrCtr = 0
-        im = numpy.array(self.image).astype(float)
+        for h in range(1,self.height):
+            img = self.downSample(img)
+            self.pyr.append(img.copy())
+            self.pyrSize.append(img.shape)
 
-        if len(im.shape) == 1:
-            im = im.reshape(im.shape[0], 1)
-
-        self.pyr.append(im.copy())
-        self.pyrSize.append(im.shape)
-        pyrCtr += 1
-
-        for ht in range(self.height-1,0,-1):
-            im_sz = im.shape
-            filt_sz = self.filt.shape
-            if im_sz[0] == 1:
-                lo2 = corrDn(image=im, filt=self.filt, step=(1, 2))
-                #lo2 = numpy.array(lo2)
-            elif len(im_sz) == 1 or im_sz[1] == 1:
-                lo2 = corrDn(image=im, filt=self.filt, step=(2, 1))
-                #lo2 = numpy.array(lo2)
-            else:
-                lo = corrDn(image=im, filt=self.filt.T, step=(1, 2),
-                            start=(0, 0))
-                #lo = numpy.array(lo)
-                lo2 = corrDn(image=lo, filt=self.filt, step=(2, 1),
-                             start=(0, 0))
-                #lo2 = numpy.array(lo2)
-
-            self.pyr.append(lo2.copy())
-            self.pyrSize.append(lo2.shape)
-
-            pyrCtr += 1
-
-            im = lo2
+    def reconPyr(self, *args):
+        raise Exception('Error: undefined for Gaussian Pyramids...')

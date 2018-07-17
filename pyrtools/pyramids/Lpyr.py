@@ -40,7 +40,7 @@ class LaplacianPyramid(Pyramid):
         filter = np.array(filter)
 
         if filter.size > max(filter.shape):
-            raise Exception("Error: filter should be a 1D (i.e., a vector)")
+            raise Exception("Error: filter should be 1D (i.e., a vector)")
 
         # when the first dimension of the image is 1, we need the filter to have shape (1, x)
         # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because

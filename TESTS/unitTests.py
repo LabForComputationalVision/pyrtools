@@ -66,34 +66,34 @@ class GpyrTests(unittest.TestCase):
     def test1(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr1.mat')
         img = plt.imread('../pyrtools/data/lenna-256x256.tif')
-        pyPyr = ppt.Gpyr(img)
+        pyPyr = ppt.GaussianPyramid(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr2row.mat')
         img = np.array(list(range(256))).astype(float)
         img = img.reshape(1, 256)
-        pyPyr = ppt.Gpyr(img)
+        pyPyr = ppt.GaussianPyramid(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test3(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr2col.mat')
         img = np.array(list(range(256))).astype(float)
         img = img.reshape(256, 1)
-        pyPyr = ppt.Gpyr(img)
+        pyPyr = ppt.GaussianPyramid(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test4(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr3.mat')
         img = ppt.mkRamp(10)
-        pyPyr = ppt.Gpyr(img)
+        pyPyr = ppt.GaussianPyramid(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test5(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr4.mat')
         img = ppt.mkRamp((10,20))
-        pyPyr = ppt.Gpyr(img)
+        pyPyr = ppt.GaussianPyramid(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test6(self):
         matPyr = scipy.io.loadmat('./matFiles/buildGpyr5.mat')
         img = ppt.mkRamp((20, 10))
-        pyPyr = ppt.Gpyr(img)
+        pyPyr = ppt.GaussianPyramid(img)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
 
 class LpyrTests(unittest.TestCase):
