@@ -23,80 +23,17 @@ class LaplacianPyramid(Pyramid):
             """
         super().__init__(image=image, pyrType=pyrType, edgeType=edgeType)
 
-
         if filter2 is None:
             filter2 = filter1
         self.filter1 = self.parseFilter(filter1)
         self.filter2 = self.parseFilter(filter2)
 
-        maxHeight = 1 + self.maxPyrHt(self.image.shape, self.filter1.shape)
-
-        if isinstance(height, str) and height == "auto":
-            self.height = maxHeight
-        else:
+        self.height = 1 + self.maxPyrHt(self.image.shape, self.filter1.shape)
+        if isinstance(height, int):
+            assert height <= self.height, "Error: cannot build pyramid higher than %d levels" % (self.height)
             self.height = height
-            if self.height > maxHeight:
-                raise Exception("Error: cannot build pyramid higher than %d levels" % (maxHeight))
 
-        # make pyramid
-        pyrCtr = 0
-        im = np.array(self.image).astype(float)
-        if len(im.shape) == 1:
-            im = im.reshape(im.shape[0], 1)
-        los = {}
-        los[self.height] = im
-        # compute low bands
-        for ht in range(self.height-1,0,-1):
-            im_sz = im.shape
-            if im_sz[0] == 1:
-                lo2 = corrDn(image = im, filt = self.filter1, edges = self.edgeType,
-                             step = (1,2))
-                #lo2 = np.array(lo2)
-            elif len(im_sz) == 1 or im_sz[1] == 1:
-                lo2  = corrDn(image = im, filt = self.filter1, edges = self.edgeType,
-                              step = (2,1))
-                #lo2 = np.array(lo2)
-            else:
-                lo = corrDn(image = im, filt = self.filter1.T, edges = self.edgeType,
-                            step = (1,2), start = (0,0))
-                #lo = np.array(lo)
-                lo2 = corrDn(image = lo, filt = self.filter1, edges = self.edgeType,
-                             step = (2,1), start = (0,0))
-                #lo2 = np.array(lo2)
-
-            los[ht] = lo2
-
-            im = lo2
-
-        # adjust shape if 1D if needed
-        self.pyr.append(lo2.copy())
-        self.pyrSize.append(lo2.shape)
-
-        # compute hi bands
-        im = self.image
-        for ht in range(self.height, 1, -1):
-            im = los[ht-1]
-            im_sz = los[ht-1].shape
-            if len(im_sz) == 1 or im_sz[1] == 1:
-                hi2 = upConv(image = im, filt = self.filter2.T, edges = self.edgeType,
-                             step = (1,2), stop = (los[ht].shape[1],
-                                                   los[ht].shape[0])).T
-            elif im_sz[0] == 1:
-                hi2 = upConv(image = im, filt = self.filter2.T, edges = self.edgeType,
-                             step = (2,1), stop = (los[ht].shape[1],
-                                                   los[ht].shape[0])).T
-            else:
-                hi = upConv(image = im, filt = self.filter2, edges = self.edgeType,
-                            step = (2,1), stop = (los[ht].shape[0], im_sz[1]))
-                hi2 = upConv(image = hi, filt = self.filter2.T, edges = self.edgeType,
-                             step = (1,2), stop = (los[ht].shape[0],
-                                                   los[ht].shape[1]))
-
-            hi2 = los[ht] - hi2
-            self.pyr.insert(pyrCtr, hi2.copy())
-            self.pyrSize.insert(pyrCtr, hi2.shape)
-            pyrCtr += 1
-
+        self.buildPyr()
 
     # methods
     def parseFilter(self, filter):
@@ -128,6 +65,48 @@ class LaplacianPyramid(Pyramid):
         element must be a tuple, others are single numbers
         """
         self.pyr[band][element[0]][element[1]] = value
+
+    def buildPyr(self):
+        # make pyramid
+
+        los = {}
+        los[0] = self.image
+        if len(los[0].shape) == 1:
+            los[0] = los[0].reshape(-1, 1)
+
+        # compute low bands
+        for h in range(1,self.height):
+            im_sz = los[h-1].shape
+            if im_sz[0] == 1:
+                los[h] = corrDn(image=los[h-1], filt=self.filter1, edges=self.edgeType, step=(1,2))
+            elif len(im_sz) == 1 or im_sz[1] == 1:
+                los[h] = corrDn(image=los[h-1], filt=self.filter1, edges=self.edgeType, step=(2,1))
+            else:
+                lo = corrDn(image=los[h-1], filt=self.filter1.T, edges=self.edgeType, step=(1,2))
+                los[h] = corrDn(image=lo, filt=self.filter1, edges=self.edgeType, step=(2,1))
+
+        # compute high bands
+        for ht in range(1, self.height):
+            im_sz = los[ht].shape
+            if len(im_sz) == 1 or im_sz[1] == 1:
+                hi2 = upConv(image=los[ht], filt=self.filter2.T, edges=self.edgeType,
+                             step=(1,2), stop=(los[ht-1].shape[1], los[ht-1].shape[0])).T
+            elif im_sz[0] == 1:
+                hi2 = upConv(image=los[ht], filt=self.filter2.T, edges=self.edgeType,
+                             step=(2,1), stop=(los[ht-1].shape[1], los[ht-1].shape[0])).T
+            else:
+                hi = upConv(image=los[ht], filt=self.filter2, edges=self.edgeType,
+                            step=(2,1), stop=(los[ht-1].shape[0], im_sz[1]))
+                hi2 = upConv(image=hi, filt=self.filter2.T, edges=self.edgeType,
+                             step=(1,2), stop=(los[ht-1].shape[0], los[ht-1].shape[1]))
+
+            hi2 = los[ht-1] - hi2
+            self.pyr.append(hi2.copy())
+            self.pyrSize.append(hi2.shape)
+
+        self.pyr.append(los[self.height-1].copy())
+        self.pyrSize.append(los[self.height-1].shape)
+
 
     def reconPyr(self, *args):
         if len(args) > 0:

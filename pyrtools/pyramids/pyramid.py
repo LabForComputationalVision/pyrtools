@@ -16,7 +16,7 @@ class Pyramid:  # Pyramid base class
             * `'extend'` - reflect and invert
             * `'dont-compute'` - zero output when filter overhangs imput boundaries.
             '''
-        self.image = image
+        self.image = np.array(image).astype(np.float)
         self.pyrType = pyrType
         self.edgeType = edgeType
         self.pyr = []
