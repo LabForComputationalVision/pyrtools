@@ -1,10 +1,10 @@
 import numpy
-from .Lpyr import Lpyr
+from .Lpyr import LaplacianPyramid
 from .namedFilter import namedFilter
 from .maxPyrHt import maxPyrHt
 from .c.wrapper import corrDn
 
-class Gpyr(Lpyr):
+class Gpyr(LaplacianPyramid):
     filt = ''
     edges = ''
     height = ''

@@ -1,5 +1,5 @@
 import numpy as np
-from .Lpyr import Lpyr
+from .Lpyr import LaplacianPyramid
 from .pyr_utils import LB2idx
 from .namedFilter import namedFilter
 from .modulateFlip import modulateFlip
@@ -12,7 +12,7 @@ from matplotlib import cm
 # import pylab
 # from ..tools import JBhelpers
 
-class Wpyr(Lpyr):
+class Wpyr(LaplacianPyramid):
     filt = ''
     edges = ''
     height = ''

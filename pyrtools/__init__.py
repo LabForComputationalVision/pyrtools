@@ -9,7 +9,7 @@ from .pyramids.modulateFlip import modulateFlip
 from .pyramids.namedFilter import namedFilter, binomialFilter
 from .pyramids.steerable_filters import steerable_filters
 
-from .pyramids.Lpyr import Lpyr
+from .pyramids.Lpyr import LaplacianPyramid
 from .pyramids.Gpyr import Gpyr
 from .pyramids.Wpyr import Wpyr
 from .pyramids.Spyr import Spyr

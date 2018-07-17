@@ -13,34 +13,22 @@ from matplotlib import cm
 # from .convolutions import *
 
 class Spyr(Pyramid):
-    filt = ''
-    edges = ''
 
     #constructor
-    def __init__(self, image, height='auto', filter='sp1Filters', edges='reflect1'):
+    def __init__(self, image, pyrType='Steerable', edgeType='reflect1',
+                 height='auto', filter='sp1Filters'):
         """Steerable pyramid. image parameter is required, others are optional
-
         - `image` - a 2D numpy array
-
         - `height` - an integer denoting number of pyramid levels desired.  'auto' (default) uses
         maxPyrHt from pyPyrUtils.
-
         - `filter` - The name of one of the steerable pyramid filters in pyPyrUtils:
         `'sp0Filters'`, `'sp1Filters'`, `'sp3Filters'`, `'sp5Filters'`.  Default is `'sp1Filters'`.
-
-        - `edges` - specifies edge-handling.  Options are:
-           * `'circular'` - circular convolution
-           * `'reflect1'` - reflect about the edge pixels
-           * `'reflect2'` - reflect, doubling the edge pixels
-           * `'repeat'` - repeat the edge pixels
-           * `'zero'` - assume values of zero outside image boundary
-           * `'extend'` - reflect and invert
-           * `'dont-compute'` - zero output when filter overhangs input boundaries.
+        - `edgeType` - see class Pyramid.__init__()
         """
-        self.pyrType = 'steerable'
-        self.image = np.array(image)
+        super().__init__(image=image, pyrType=pyrType, edgeType=edgeType)
+
         self.filt = steerable_filters(filter)
-        self.edges = edges
+
         filters = self.filt # temporary hack...
         harmonics = filters['harmonics']
         lo0filt = filters['lo0filt']
@@ -69,14 +57,14 @@ class Spyr(Pyramid):
         im_sz = im.shape
         pyrCtr = 0
 
-        hi0 = corrDn(image = im, filt = hi0filt, edges = edges);
+        hi0 = corrDn(image = im, filt = hi0filt, edges = self.edgeType);
 
         self.pyr[pyrCtr] = hi0
         self.pyrSize[pyrCtr] = hi0.shape
 
         pyrCtr += 1
 
-        lo = corrDn(image = im, filt = lo0filt, edges = edges)
+        lo = corrDn(image = im, filt = lo0filt, edges = self.edgeType)
         for i in range(ht):
             lo_sz = lo.shape
             # assume square filters  -- start of buildSpyrLevs
@@ -84,12 +72,12 @@ class Spyr(Pyramid):
 
             for b in range(bfilts.shape[1]):
                 filt = bfilts[:,b].reshape(bfiltsz,bfiltsz).T
-                band = corrDn(image = lo, filt = filt, edges = edges)
+                band = corrDn(image = lo, filt = filt, edges = self.edgeType)
                 self.pyr[pyrCtr] = np.array(band)
                 self.pyrSize[pyrCtr] = (band.shape[0], band.shape[1])
                 pyrCtr += 1
 
-            lo = corrDn(image = lo, filt = lofilt, edges = edges, step = (2,2))
+            lo = corrDn(image = lo, filt = lofilt, edges = self.edgeType, step = (2,2))
 
         self.pyr[pyrCtr] = np.array(lo)
         self.pyrSize[pyrCtr] = lo.shape

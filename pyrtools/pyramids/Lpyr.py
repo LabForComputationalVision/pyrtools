@@ -8,65 +8,29 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 # from ..tools import JBhelpers
 
-class Lpyr(Pyramid):
-    """Laplacian pyramid
-
-    - `image` - a 2D numpy array
-
-    - `height` - an integer denoting number of pyramid levels desired. Defaults to `maxPyrHt`
-
-    - `filter1` - can be a string namimg a standard filter (from namedFilter()), or a
-    numpy array which will be used for (separable) convolution. Default is 'binom5'.
-
-    - `filter2` - specifies the "expansion" filter (default = filter1).
-
-    - `edges` - specifies edge-handling.  Options are:
-    * `'circular'` - circular convolution
-    * `'reflect1'` - reflect about the edge pixels
-    * `'reflect2'` - reflect, doubling the edge pixels
-    * `'repeat'` - repeat the edge pixels
-    * `'zero'` - assume values of zero outside image boundary
-    * `'extend'` - reflect and invert
-    * `'dont-compute'` - zero output when filter overhangs imput boundaries.
-    """
-    filt = ''
-    edges = ''
-    height = ''
+class LaplacianPyramid(Pyramid):
 
     # constructor
-    def __init__(self, image, height='auto', filter1='binom5', filter2=None, edges='reflect1'):
-        self.pyrType = 'Laplacian'
-        self.image = image
+    def __init__(self, image, pyrType='Laplacian', edgeType='reflect1',
+                 height='auto', filter1='binom5', filter2=None):
+        """Laplacian pyramid
 
-        if isinstance(filter1, str):
-            filter1 = namedFilter(filter1)
-        elif filter1.ndim != 1 and (filter1.shape[0] != 1 and filter1.shape[1] != 1):
-            raise Exception("Error: filter1 should be a 1D filter (i.e., a vector)")
+            - `image` - a 2D numpy array
+            - `height` - an integer denoting number of pyramid levels desired. Defaults to `maxPyrHt`
+            - `filter1` - can be a string namimg a standard filter (from namedFilter()), or a
+            numpy array which will be used for (separable) convolution. Default is 'binom5'.
+            - `filter2` - specifies the "expansion" filter (default = filter1).
+            - `edges` - see class Pyramid.__init__()
+            """
+        super().__init__(image=image, pyrType=pyrType, edgeType=edgeType)
 
-        if filter1.ndim == 1:
-            filter1 = filter1.reshape(1, len(filter1))
-        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
-        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
-        # we need to match the filter to the image dimensions
-        elif self.image.shape[0] == 1:
-            filter1 = filter1.reshape(1, max(filter1.shape))
+        self.filter1 = self.parseFilter(filter1)
+        if filter2 is None:
+            self.filter2 = self.filter1
+        else:
+            self.filter2 = self.parseFilter(filter2)
 
-        if isinstance(filter2, str):
-            filter2 = namedFilter(filter2)
-        elif filter2 is None:
-            filter2 = filter1
-        elif filter2.ndim != 1 and (filter2.shape[0] != 1 and filter2.shape[1] != 1):
-            raise Exception("Error: filter2 should be a 1D filter (i.e., a vector)")
-
-        if filter2.ndim == 1:
-            filter2 = filter2.reshape(1, len(filter2))
-        elif self.image.shape[0] == 1:
-            filter2 = filter2.reshape(1, max(filter2.shape))
-
-        self.filter1 = filter1
-        self.filter2 = filter2
-
-        maxHeight = 1 + maxPyrHt(self.image.shape, filter1.shape)
+        maxHeight = 1 + maxPyrHt(self.image.shape, self.filter1.shape)
 
         if isinstance(height, str) and height == "auto":
             self.height = maxHeight
@@ -76,8 +40,6 @@ class Lpyr(Pyramid):
                 raise Exception("Error: cannot build pyramid higher than %d levels" % (maxHeight))
 
         # make pyramid
-        self.pyr = []
-        self.pyrSize = []
         pyrCtr = 0
         im = np.array(self.image).astype(float)
         if len(im.shape) == 1:
@@ -87,20 +49,19 @@ class Lpyr(Pyramid):
         # compute low bands
         for ht in range(self.height-1,0,-1):
             im_sz = im.shape
-            filter1_sz = filter1.shape
             if im_sz[0] == 1:
-                lo2 = corrDn(image = im, filt = filter1, edges = edges,
+                lo2 = corrDn(image = im, filt = self.filter1, edges = self.edgeType,
                              step = (1,2))
                 #lo2 = np.array(lo2)
             elif len(im_sz) == 1 or im_sz[1] == 1:
-                lo2  = corrDn(image = im, filt = filter1, edges = edges,
+                lo2  = corrDn(image = im, filt = self.filter1, edges = self.edgeType,
                               step = (2,1))
                 #lo2 = np.array(lo2)
             else:
-                lo = corrDn(image = im, filt = filter1.T, edges = edges,
+                lo = corrDn(image = im, filt = self.filter1.T, edges = self.edgeType,
                             step = (1,2), start = (0,0))
                 #lo = np.array(lo)
-                lo2 = corrDn(image = lo, filt = filter1, edges = edges,
+                lo2 = corrDn(image = lo, filt = self.filter1, edges = self.edgeType,
                              step = (2,1), start = (0,0))
                 #lo2 = np.array(lo2)
 
@@ -117,19 +78,18 @@ class Lpyr(Pyramid):
         for ht in range(self.height, 1, -1):
             im = los[ht-1]
             im_sz = los[ht-1].shape
-            filter2_sz = filter2.shape
             if len(im_sz) == 1 or im_sz[1] == 1:
-                hi2 = upConv(image = im, filt = filter2.T, edges = edges,
+                hi2 = upConv(image = im, filt = self.filter2.T, edges = self.edgeType,
                              step = (1,2), stop = (los[ht].shape[1],
                                                    los[ht].shape[0])).T
             elif im_sz[0] == 1:
-                hi2 = upConv(image = im, filt = filter2.T, edges = edges,
+                hi2 = upConv(image = im, filt = self.filter2.T, edges = self.edgeType,
                              step = (2,1), stop = (los[ht].shape[1],
                                                    los[ht].shape[0])).T
             else:
-                hi = upConv(image = im, filt = filter2, edges = edges,
+                hi = upConv(image = im, filt = self.filter2, edges = self.edgeType,
                             step = (2,1), stop = (los[ht].shape[0], im_sz[1]))
-                hi2 = upConv(image = hi, filt = filter2.T, edges = edges,
+                hi2 = upConv(image = hi, filt = self.filter2.T, edges = self.edgeType,
                              step = (1,2), stop = (los[ht].shape[0],
                                                    los[ht].shape[1]))
 
@@ -138,7 +98,23 @@ class Lpyr(Pyramid):
             self.pyrSize.insert(pyrCtr, hi2.shape)
             pyrCtr += 1
 
+
     # methods
+    def parseFilter(self, filter):
+        if isinstance(filter, str):
+            filter = namedFilter(filter)
+        filter = np.array(filter)
+
+        if filter.size > max(filter.shape):
+            raise Exception("Error: filter should be a 1D (i.e., a vector)")
+
+        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
+        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
+        # we need to match the filter to the image dimensions
+        if filter.ndim == 1 or self.image.shape[0] == 1:
+            filter = filter.reshape(1,-1)
+        return filter
+
     # return concatenation of all levels of 1d pyramid
     def catBands(self, *args):
         outarray = np.array([]).reshape((1,0))
