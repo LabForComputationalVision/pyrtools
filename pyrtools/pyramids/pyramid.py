@@ -22,7 +22,27 @@ class Pyramid:  # Pyramid base class
         self.pyr = []
         self.pyrSize = []
 
-    # methods
+    # this is the base Pyramid class. each subclass should implement their own
+    # functionalities, including:
+    def initFilters(self):
+        raise Exception('Error: Not implemented for base Pyaramid class')
+
+    def initHeight(self):
+        raise Exception('Error: Not implemented for base Pyaramid class')
+
+    def buildNext(self):
+        raise Exception('Error: Not implemented for base Pyaramid class')
+
+    def buildPyr(self):
+        raise Exception('Error: Not implemented for base Pyaramid class')
+
+    def reconPrev(self):
+        raise Exception('Error: Not implemented for base Pyaramid class')
+
+    def reconPyr(self):
+        raise Exception('Error: Not implemented for base Pyaramid class')
+
+    # shared methods
     def nbands(self):
         return len(self.pyr)
 
