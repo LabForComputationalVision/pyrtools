@@ -1,5 +1,5 @@
 import numpy as np
-from .Lpyr import LaplacianPyramid
+from .pyramid import Pyramid
 from .pyr_utils import LB2idx
 from .namedFilter import namedFilter
 from .c.wrapper import corrDn, upConv
@@ -8,33 +8,21 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-class Wpyr(LaplacianPyramid):
-    filt = ''
-    edges = ''
-    height = ''
+class WaveletPyramid(Pyramid):
 
     #constructor
-    def __init__(self, *args):    # (image, height, order, twidth)
-        self.pyr = []
-        self.pyrSize = []
-        self.pyrType = 'wavelet'
+    def __init__(self, image, height='auto', filt='qmf9',
+                 edgeType='reflect1', pyrType='Wavelet'):
 
-    #constructor
-    def __init__(self, image, height='auto', filt='qmf9', edges='reflect1'):
-        self.pyr = []
-        self.pyrSize = []
-        self.pyrType = 'wavelet'
+        super().__init__(image=image, edgeType=edgeType, pyrType=pyrType)
 
-        self.image = image
-        im = np.array(self.image).astype(float)
-
-        if isinstance(filt, str):
-            filt = namedFilter(filt)
-
-        if len(filt.shape) != 1 and filt.shape[0] != 1 and filt.shape[1] != 1:
-            print("Error: filter should be 1D (i.e., a vector)");
-            return
+        filt = self.parseFilter(filt)
         hfilt = self.modulateFlip(filt)
+
+        self.height = 1 + self.maxPyrHt(self.image.shape, filt.shape)
+        if isinstance(height, int):
+            assert height <= self.height, "Error: cannot build pyramid higher than %d levels" % (self.height)
+            self.height = height
 
         # Stagger sampling if filter is odd-length:
         if filt.shape[0] % 2 == 0:
@@ -44,12 +32,12 @@ class Wpyr(LaplacianPyramid):
 
         # if 1D filter, match to image dimensions
         if len(filt.shape) == 1 or filt.shape[1] == 1:
-            if im.shape[0] == 1:
+            if self.image.shape[0] == 1:
                 filt = filt.reshape(1, filt.shape[0])
-            elif im.shape[1] == 1:
+            elif self.image.shape[1] == 1:
                 filt = filt.reshape(filt.shape[0], 1)
 
-        maxHeight = 1 + self.maxPyrHt(im.shape, filt.shape)
+        maxHeight = 1 + self.maxPyrHt(self.image.shape, filt.shape)
         # used with showPyr() method
         if isinstance(height, str) and height == "auto":
             self.height = maxHeight
@@ -58,30 +46,30 @@ class Wpyr(LaplacianPyramid):
             if self.height > maxHeight:
                 raise Exception("Error: cannot build pyramid higher than %d levels" % (maxHeight))
 
-
+        im = self.image
         for lev in range(self.height - 1):
             if len(im.shape) == 1 or im.shape[1] == 1:
-                lolo = corrDn(image = im, filt = filt, edges = edges,
+                lolo = corrDn(image = im, filt = filt, edges = edgeType,
                               step = (2,1), start = (stag-1,0))
-                hihi = corrDn(image = im, filt = hfilt, edges = edges,
+                hihi = corrDn(image = im, filt = hfilt, edges = edgeType,
                               step = (2,1), start = (1, 0))
             elif im.shape[0] == 1:
-                lolo = corrDn(image = im, filt = filt, edges = edges,
+                lolo = corrDn(image = im, filt = filt, edges = edgeType,
                               step = (1,2), start = (0, stag-1))
-                hihi = corrDn(image = im, filt = hfilt.T, edges = edges,
+                hihi = corrDn(image = im, filt = hfilt.T, edges = edgeType,
                               step = (1,2), start = (0,1))
             else:
-                lo = corrDn(image = im, filt = filt, edges = edges,
+                lo = corrDn(image = im, filt = filt, edges = edgeType,
                             step = (2,1), start = (stag-1,0))
-                hi = corrDn(image = im, filt = hfilt, edges = edges,
+                hi = corrDn(image = im, filt = hfilt, edges = edgeType,
                             step = (2,1), start = (1,0))
-                lolo = corrDn(image = lo, filt = filt.T, edges = edges,
+                lolo = corrDn(image = lo, filt = filt.T, edges = edgeType,
                               step = (1,2), start = (0, stag-1))
-                lohi = corrDn(image = hi, filt = filt.T, edges = edges,
+                lohi = corrDn(image = hi, filt = filt.T, edges = edgeType,
                               step = (1,2), start = (0,stag-1))
-                hilo = corrDn(image = lo, filt = hfilt.T, edges = edges,
+                hilo = corrDn(image = lo, filt = hfilt.T, edges = edgeType,
                               step = (1,2), start = (0,1))
-                hihi = corrDn(image = hi, filt = hfilt.T, edges = edges,
+                hihi = corrDn(image = hi, filt = hfilt.T, edges = edgeType,
                               step = (1,2), start = (0,1))
 
             if im.shape[0] == 1 or im.shape[1] == 1:

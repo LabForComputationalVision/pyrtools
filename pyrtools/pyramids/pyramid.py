@@ -6,7 +6,7 @@ from .namedFilter import namedFilter
 
 class Pyramid:  # Pyramid base class
 
-    def __init__(self, image, pyrType, edgeType):
+    def __init__(self, image, edgeType, pyrType):
         ''' - `edgeType` - specifies edge-handling.  Options are:
             * `'circular'` - circular convolution
             * `'reflect1'` - reflect about the edge pixels
@@ -68,6 +68,20 @@ class Pyramid:  # Pyramid base class
             else:
                 return 1 + self.maxPyrHt( (imsz[0] // 2, imsz[1] // 2), filtsz )
 
+    def parseFilter(self, filter):
+        if isinstance(filter, str):
+            filter = namedFilter(filter)
+        filter = np.array(filter)
+
+        if filter.size > max(filter.shape):
+            raise Exception("Error: filter should be 1D (i.e., a vector)")
+
+        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
+        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
+        # we need to match the filter to the image dimensions
+        if filter.ndim == 1 or self.image.shape[0] == 1:
+            filter = filter.reshape(1,-1)
+        return filter
 
 # maxPyrHt
 # showPyr

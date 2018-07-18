@@ -20,7 +20,7 @@ class LaplacianPyramid(Pyramid):
             - `filter2` - specifies the "expansion" filter (default = filter1).
             - `edges` - see class Pyramid.__init__()
             """
-        super().__init__(image=image, pyrType=pyrType, edgeType=edgeType)
+        super().__init__(image=image, edgeType=edgeType, pyrType=pyrType)
 
         if filter2 is None: filter2 = filter1
         self.filter1 = self.parseFilter(filter1)
@@ -34,20 +34,6 @@ class LaplacianPyramid(Pyramid):
         self.buildPyr()
 
     # methods
-    def parseFilter(self, filter):
-        if isinstance(filter, str):
-            filter = namedFilter(filter)
-        filter = np.array(filter)
-
-        if filter.size > max(filter.shape):
-            raise Exception("Error: filter should be 1D (i.e., a vector)")
-
-        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
-        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
-        # we need to match the filter to the image dimensions
-        if filter.ndim == 1 or self.image.shape[0] == 1:
-            filter = filter.reshape(1,-1)
-        return filter
 
     def downSample(self, image, filt=None, edges=None):
         if filt is None: filt = self.filter1

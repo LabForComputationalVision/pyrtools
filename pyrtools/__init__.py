@@ -10,7 +10,7 @@ from .pyramids.steerable_filters import steerable_filters
 
 from .pyramids.Lpyr import LaplacianPyramid
 from .pyramids.Gpyr import GaussianPyramid
-from .pyramids.Wpyr import Wpyr
+from .pyramids.Wpyr import WaveletPyramid
 from .pyramids.Spyr import Spyr
 from .pyramids.SFpyr import SFpyr
 from .pyramids.SCFpyr import SCFpyr
