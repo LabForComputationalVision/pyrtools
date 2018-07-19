@@ -8,7 +8,7 @@ from .pyramids.Spyr import Spyr
 from .pyramids.SFpyr import SFpyr
 from .pyramids.SCFpyr import SCFpyr
 
-from .pyramids.namedFilter import namedFilter, binomialFilter, steerable_filters
+from .pyramids.filters import namedFilter, binomialFilter, steerable_filters
 from .pyramids.steer import steer, steer2HarmMtx
 from .pyramids.pyr_utils import LB2idx, idx2LB, modulateFlip
 
