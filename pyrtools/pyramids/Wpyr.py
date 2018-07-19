@@ -16,155 +16,87 @@ class WaveletPyramid(Pyramid):
 
         super().__init__(image=image, edgeType=edgeType, pyrType=pyrType)
 
-        filt = self.parseFilter(filt)
-        hfilt = self.modulateFlip(filt)
+        self.initFilters(filter=filt)
+        self.initHeight(height=height)
+        self.buildPyr()
 
-        self.height = 1 + self.maxPyrHt(self.image.shape, filt.shape)
+    def initFilters(self, filter):
+        self.lo_filter = self.parseFilter(filter)
+        self.stag = (self.lo_filter.shape[0] + 1) % 2
+        self.hi_filter = self.modulateFlip(self.lo_filter)
+        # # if 1D filter, match to image dimensions
+        # if self.lo_filter.ndim == 1 or self.lo_filter.shape[1] == 1:
+        #     if self.image.shape[0] == 1:
+        #         self.lo_filter = self.lo_filter.reshape(1, -1)
+        #     elif self.image.shape[1] == 1:
+        #         self.lo_filter = self.lo_filter.reshape(-1, 1)
+
+    def initHeight(self, height):
+        self.height = 1 + self.maxPyrHt(self.image.shape, self.lo_filter.shape)
         if isinstance(height, int):
             assert height <= self.height, "Error: cannot build pyramid higher than %d levels" % (self.height)
             self.height = height
 
-        # Stagger sampling if filter is odd-length:
-        if filt.shape[0] % 2 == 0:
-            stag = 2
+
+    def buildNext(self, image):
+        lfilt = self.lo_filter
+        hfilt = self.hi_filter
+        edgeType = self.edgeType
+        stag = self.stag
+
+        if len(image.shape) == 1 or image.shape[1] == 1:
+            lolo = corrDn(image=image, filt=lfilt, edges=edgeType, step=(2,1), start=(stag,0))
+            hihi = corrDn(image=image, filt=hfilt, edges=edgeType, step=(2,1), start=(1,0))
+            return lolo, (hihi, )
+        elif image.shape[0] == 1:
+            lolo = corrDn(image=image, filt=lfilt, edges=edgeType, step=(1,2), start=(0,stag))
+            hihi = corrDn(image=image, filt=hfilt, edges=edgeType, step=(1,2), start=(0,1))
+            return lolo, (hihi, )
         else:
-            stag = 1
+            lo = corrDn(image = image, filt = lfilt, edges = edgeType, step = (2,1), start = (stag,0))
+            hi = corrDn(image = image, filt = hfilt, edges = edgeType, step = (2,1), start = (1,0))
+            lolo = corrDn(image = lo, filt = lfilt.T, edges = edgeType, step = (1,2), start = (0,stag))
+            lohi = corrDn(image = hi, filt = lfilt.T, edges = edgeType, step = (1,2), start = (0,stag))
+            hilo = corrDn(image = lo, filt = hfilt.T, edges = edgeType, step = (1,2), start = (0,1))
+            hihi = corrDn(image = hi, filt = hfilt.T, edges = edgeType, step = (1,2), start = (0,1))
+            return lolo, (lohi, hilo, hihi)
 
-        # if 1D filter, match to image dimensions
-        if len(filt.shape) == 1 or filt.shape[1] == 1:
-            if self.image.shape[0] == 1:
-                filt = filt.reshape(1, filt.shape[0])
-            elif self.image.shape[1] == 1:
-                filt = filt.reshape(filt.shape[0], 1)
-
-        maxHeight = 1 + self.maxPyrHt(self.image.shape, filt.shape)
-        # used with showPyr() method
-        if isinstance(height, str) and height == "auto":
-            self.height = maxHeight
-        else:
-            self.height = height
-            if self.height > maxHeight:
-                raise Exception("Error: cannot build pyramid higher than %d levels" % (maxHeight))
-
+    def buildPyr(self):
         im = self.image
         for lev in range(self.height - 1):
-            if len(im.shape) == 1 or im.shape[1] == 1:
-                lolo = corrDn(image = im, filt = filt, edges = edgeType,
-                              step = (2,1), start = (stag-1,0))
-                hihi = corrDn(image = im, filt = hfilt, edges = edgeType,
-                              step = (2,1), start = (1, 0))
-            elif im.shape[0] == 1:
-                lolo = corrDn(image = im, filt = filt, edges = edgeType,
-                              step = (1,2), start = (0, stag-1))
-                hihi = corrDn(image = im, filt = hfilt.T, edges = edgeType,
-                              step = (1,2), start = (0,1))
-            else:
-                lo = corrDn(image = im, filt = filt, edges = edgeType,
-                            step = (2,1), start = (stag-1,0))
-                hi = corrDn(image = im, filt = hfilt, edges = edgeType,
-                            step = (2,1), start = (1,0))
-                lolo = corrDn(image = lo, filt = filt.T, edges = edgeType,
-                              step = (1,2), start = (0, stag-1))
-                lohi = corrDn(image = hi, filt = filt.T, edges = edgeType,
-                              step = (1,2), start = (0,stag-1))
-                hilo = corrDn(image = lo, filt = hfilt.T, edges = edgeType,
-                              step = (1,2), start = (0,1))
-                hihi = corrDn(image = hi, filt = hfilt.T, edges = edgeType,
-                              step = (1,2), start = (0,1))
-
-            if im.shape[0] == 1 or im.shape[1] == 1:
-                self.pyr.append(hihi)
-                self.pyrSize.append(hihi.shape)
-            else:
-                self.pyr.append(lohi)
-                self.pyrSize.append(lohi.shape)
-                self.pyr.append(hilo)
-                self.pyrSize.append(hilo.shape)
-                self.pyr.append(hihi)
-                self.pyrSize.append(hihi.shape)
-            im = lolo.copy()
-        self.pyr.append(lolo)
-        self.pyrSize.append(lolo.shape)
+            im, higher_bands = self.buildNext(im)
+            for band in higher_bands:
+                self.pyr.append(band)
+                self.pyrSize.append(band.shape)
+        self.pyr.append(im)
+        self.pyrSize.append(im.shape)
 
     # methods
-
-    def wpyrHt(self):
-        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
-             self.pyrSize[0][1] == 1 ):
-            nbands = 1
-        else:
-            nbands = 3
-
-        ht = (len(self.pyrSize)-1)/float(nbands)
-
-        return ht
-
     def numBands(self):
-        if ( len(self.pyrSize[0]) == 1 or self.pyrSize[0][0] == 1 or
-             self.pyrSize[0][1] == 1 ):
-            nbands = 1
+        if len(self.pyrSize[0]) == 1 or min(self.pyrSize[0]) == 1:
+            return 1
         else:
-            nbands = 3
-        return nbands
+            return 3
 
-
-    def reconPyr(self, *args):
+    def reconPyr(self, filt='qmf9', edges='reflect1', levs='all', bands='all'):
         # Optional args
-        if len(args) > 0:
-            filt = args[0]
-        else:
-            filt = 'qmf9'
-
-        if len(args) > 1:
-            edges = args[1]
-        else:
-            edges = 'reflect1'
-
-        if len(args) > 2:
-            if not isinstance(args[2], str):
-                levs = np.array(args[2])
-            else:
-                levs = args[2]
-        else:
-            levs = 'all'
-
-        if len(args) > 3:
-            if not isinstance(args[3], str):
-                bands = np.array(args[3])
-            else:
-                bands = args[3]
-        else:
-            bands = 'all'
-
-        #------------------------------------------------------
-
-        maxLev = int(self.wpyrHt() + 1)
 
         if isinstance(levs, str) and levs == 'all':
-            levs = np.array(list(range(maxLev)))
+            levs = np.arange(self.height)
         else:
-            tmpLevs = []
-            for l in levs:
-                tmpLevs.append((maxLev-1)-l)
-            levs = np.array(tmpLevs)
-            if (levs > maxLev).any():
-                print("Error: level numbers must be in the range [0, %d]" % (maxLev))
-        allLevs = np.array(list(range(maxLev)))
+            levs = self.height - 1 - np.array(levs)
+            assert (levs < self.height).any(), "Error: level numbers must be in the range [0, %d]" % self.height
+        allLevs = np.arange(self.height)
 
         if isinstance(bands, str) and bands == "all":
-            if ( len(self.band(0)) == 1 or self.band(0).shape[0] == 1 or
-                 self.band(0).shape[1] == 1 ):
-                bands = np.array([0]);
-            else:
-                bands = np.array(list(range(3)))
+            bands = np.arange(self.numBands())
         else:
             bands = np.array(bands)
-            if (bands < 0).any() or (bands > 2).any():
-                print("Error: band numbers must be in the range [0,2].")
+            assert (bands >= 0).all(), "Error: band numbers must be larger than 0."
+            assert (bands < self.numBands()).all(), "Error: band numbers must be smaller than %d." % self.bandNums()
 
         if isinstance(filt, str):
             filt = namedFilter(filt)
-
         hfilt = self.modulateFlip(filt).T
 
         # for odd-length filters, stagger the sampling lattices:
@@ -289,12 +221,16 @@ class WaveletPyramid(Pyramid):
             reverse order (and shift by one, which is handled by the convolution
             routines).  This is an extension of the original definition of QMF's
             (e.g., see Simoncelli90).  '''
-        assert lfilt.size == max(lfilt.shape)
+        # check lfilt is effectively 1D
+        lfilt_shape = lfilt.shape
+        assert lfilt.size == max(lfilt_shape)
         lfilt = lfilt.flatten()
         ind = np.arange(lfilt.size,0,-1) - (lfilt.size + 1) // 2
         hfilt = lfilt[::-1] * (-1.0) ** ind
-        # matlab version always returns a column vector
-        return hfilt.reshape(-1,1)
+
+        # OLD: matlab version always returns a column vector
+        # NOW: same shape as input
+        return hfilt.reshape(lfilt_shape)
 
     def showPyr(self, prange = None, gap = 1, scale = None, disp = 'qt'):
         # determine 1D or 2D pyramid:
@@ -313,7 +249,7 @@ class WaveletPyramid(Pyramid):
         elif scale is None and nbands == 3:
             scale = 2
 
-        ht = int(self.wpyrHt())
+        ht = self.height - 1
         nind = len(self.pyr)
 
         ## Auto range calculations:
