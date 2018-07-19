@@ -25,5 +25,5 @@ setup(
                            depends=['pyrtools/pyramids/c/convolve.h',
                                     'pyrtools/pyramids/c/internal_pointOp.h'],
                            extra_compile_args=['-fPIC', '-shared'])],
-    tests='tests',
+    tests='TESTS',
     )
