@@ -39,9 +39,13 @@ def modulateFlip(lfilt):
         reverse order (and shift by one, which is handled by the convolution
         routines).  This is an extension of the original definition of QMF's
         (e.g., see Simoncelli90).  '''
-    assert lfilt.size == max(lfilt.shape)
+    # check lfilt is effectively 1D
+    lfilt_shape = lfilt.shape
+    assert lfilt.size == max(lfilt_shape)
     lfilt = lfilt.flatten()
     ind = np.arange(lfilt.size,0,-1) - (lfilt.size + 1) // 2
     hfilt = lfilt[::-1] * (-1.0) ** ind
-    # matlab version always returns a column vector
-    return hfilt.reshape(-1,1)
+
+    # OLD: matlab version always returns a column vector
+    # NOW: same shape as input
+    return hfilt.reshape(lfilt_shape)

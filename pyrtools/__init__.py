@@ -2,8 +2,7 @@ from .pyramids.c.wrapper import corrDn, upConv, pointOp
 
 from .pyramids.pyramid import Pyramid
 
-from .pyramids.pyr_utils import LB2idx, idx2LB
-from .pyramids.modulateFlip import modulateFlip
+from .pyramids.pyr_utils import LB2idx, idx2LB, modulateFlip
 
 from .pyramids.namedFilter import namedFilter, binomialFilter
 from .pyramids.steerable_filters import steerable_filters
@@ -19,7 +18,7 @@ from .pyramids.SCFpyr import SCFpyr
 from .tools.showIm import showIm
 from .tools.synthetic_images import *
 from .tools.imStats import imCompare, imStats, range2, skew2, var2
-from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2, matlab_round
+from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2, matlab_round, histoMatch_old
 from .tools.convolutions import rconv2
 from .tools.comparePyr import comparePyr
 from .tools.compareRecon import compareRecon

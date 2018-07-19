@@ -1,6 +1,6 @@
 import numpy as np
 from .pyramid import Pyramid
-from .pyr_utils import LB2idx
+from .pyr_utils import LB2idx, modulateFlip
 from .namedFilter import namedFilter
 from .c.wrapper import corrDn, upConv
 from ..tools.showIm import showIm
@@ -24,7 +24,7 @@ class WaveletPyramid(Pyramid):
     def initFilters(self, filter):
         self.lo_filter = self.parseFilter(filter)
         self.stag = (self.lo_filter.shape[0] + 1) % 2
-        self.hi_filter = self.modulateFlip(self.lo_filter)
+        self.hi_filter = modulateFlip(self.lo_filter)
         # # if 1D filter, match to image dimensions
         # if self.lo_filter.ndim == 1 or self.lo_filter.shape[1] == 1:
         #     if self.image.shape[0] == 1:
@@ -98,7 +98,7 @@ class WaveletPyramid(Pyramid):
 
         if isinstance(filt, str):
             filt = namedFilter(filt)
-        hfilt = self.modulateFlip(filt).T
+        hfilt = modulateFlip(filt).T
 
         # for odd-length filters, stagger the sampling lattices:
         if len(filt) % 2 == 0:
@@ -215,23 +215,6 @@ class WaveletPyramid(Pyramid):
 
     def pyrLow(self):
         return np.array(self.band(len(self.pyrSize)-1))
-
-    def modulateFlip(self, lfilt):
-        ''' [HFILT] = modulateFlipShift(LFILT)
-            QMF/Wavelet highpass filter construction: modulate by (-1)^n,
-            reverse order (and shift by one, which is handled by the convolution
-            routines).  This is an extension of the original definition of QMF's
-            (e.g., see Simoncelli90).  '''
-        # check lfilt is effectively 1D
-        lfilt_shape = lfilt.shape
-        assert lfilt.size == max(lfilt_shape)
-        lfilt = lfilt.flatten()
-        ind = np.arange(lfilt.size,0,-1) - (lfilt.size + 1) // 2
-        hfilt = lfilt[::-1] * (-1.0) ** ind
-
-        # OLD: matlab version always returns a column vector
-        # NOW: same shape as input
-        return hfilt.reshape(lfilt_shape)
 
     def showPyr(self, prange = None, gap = 1, scale = None, disp = 'qt'):
         # determine 1D or 2D pyramid:
