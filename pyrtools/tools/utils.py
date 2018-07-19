@@ -6,9 +6,9 @@ from ..pyramids.c.wrapper import pointOp
 def matlab_round(np_array):
     ''' round equivalent to matlab function, which rounds .5 away from zero
         used in matlab_histo so we can unit test against matlab code.
-        But numpy.round() would rounds .5 to nearest even number
-        e.g. numpy.round(0.5) = 0, matlab_round(0.5) = 1
-        e.g. numpy.round(2.5) = 2, matlab_round(2.5) = 3
+        But np.round() would rounds .5 to nearest even number
+        e.g. np.round(0.5) = 0, matlab_round(0.5) = 1
+        e.g. np.round(2.5) = 2, matlab_round(2.5) = 3
         '''
     (fracPart, intPart) = np.modf(np_array)
     return intPart + (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
@@ -49,7 +49,7 @@ def matlab_histo(np_array, nbins = 101, binsize = None, center = None):
         print('Warning: Overriding bin number %d (requested %d)' % (nbins2, nbins))
         nbins = nbins2
 
-    # numpy.histogram uses bin edges, not centers like Matlab's hist
+    # np.histogram uses bin edges, not centers like Matlab's hist
     # compute bin edges (nbins + 1 of them)
     edge_left = center + binsize * (-0.499 + matlab_round( (mini - center) / binsize ))
     edges = edge_left + binsize * np.arange(nbins+1)
@@ -92,6 +92,8 @@ def histoMatch(mtx, N, X, mode='edges'):
     Eero Simoncelli, 7/96. Ported to Python by Rob Young, 10/15.
     '''
 
+    # TODO needs to be fixed, see old code below
+
     [oN, oX] = matlab_histo(mtx, N.size)
     oStep = oX[0,1] - oX[0,0]
     oC = np.concatenate(( np.array([0]), np.cumsum(oN / oN.sum()) ))
@@ -116,6 +118,55 @@ def histoMatch(mtx, N, X, mode='edges'):
     nnX  = func(oC)
 
     return pointOp(image=mtx, lut=nnX, origin=oX[0,0], increment=oStep, warnings=0)
+
+# def histoMatch_old(*args):
+#     ''' RES = histoMatch(MTX, N, X, mode)
+#
+#         Modify elements of MTX so that normalized histogram matches that
+#         specified by vectors X and N, where N contains the histogram counts
+#         and X the histogram bin positions (see histo).
+#
+#         new input parameter 'mode' can be either 'centers' or 'edges' that tells
+#         the function if the input X values are bin centers or edges.
+#
+#         Eero Simoncelli, 7/96. Ported to Python by Rob Young, 10/15.  '''
+#
+#     mode = str(args[3])
+#     mtx = np.array(args[0])
+#     N = np.array(args[1])
+#     X = np.array(args[2])
+#     if mode == 'edges':         # convert to centers
+#         correction = (X[0][1] - X[0][0]) / 2.0
+#         X = (X[0][:-1] + correction).reshape(1, X.shape[1]-1)
+#
+#     [oN, oX] = matlab_histo(mtx.flatten(), X.flatten().shape[0])
+#     if mode == 'edges':        # convert to centers
+#         correction = (oX[0][1] - oX[0][0]) / 2.0
+#         oX = (oX[0][:-1] + correction).reshape(1, oX.shape[1]-1)
+#
+#     # remember: histo returns a column vector, so the indexing is thus
+#     oStep = oX[0][1] - oX[0][0]
+#     oC = np.concatenate((np.array([0]),
+#                             np.array(np.cumsum(oN) /
+#                                         float(sum(sum(oN))))))
+#     oX = np.concatenate((np.array([oX[0][0]-oStep/2.0]),
+#                             np.array(oX[0]+oStep/2.0)))
+#
+#     N = N.flatten()
+#     X = X.flatten()
+#     N = N + N.mean() / 1e8  # HACK: no empty bins ensures nC strictly monotonic
+#
+#     nStep = X[1] - X[0]
+#     nC = np.concatenate((np.array([0]),
+#                             np.array(np.cumsum(N) / sum(N))))
+#     nX = np.concatenate((np.array([X[0] - nStep / 2.0]),
+#                             np.array(X+nStep / 2.0)))
+#
+#     # unlike in matlab, interp1d returns a function
+#     func = interp1d(nC, nX, 'linear')
+#     nnX = func(oC)
+#
+#     return pointOp(mtx, nnX, oX[0], oStep, 0)
 
 def rcosFn(width=1, position=0, values=(0, 1)):
     '''Return a lookup table (suitable for use by INTERP1)

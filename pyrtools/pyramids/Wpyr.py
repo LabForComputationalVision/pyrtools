@@ -1,7 +1,7 @@
 import numpy as np
 from .pyramid import Pyramid
 from .pyr_utils import LB2idx, modulateFlip
-from .namedFilter import namedFilter
+from .filters import namedFilter
 from .c.wrapper import corrDn, upConv
 from ..tools.showIm import showIm
 import matplotlib.pyplot as plt

@@ -3,8 +3,8 @@ import scipy
 import warnings
 from .Spyr import Spyr
 from .c.wrapper import pointOp
+from .steer import steer2HarmMtx
 from ..tools.utils import rcosFn
-from ..tools.steer import steer2HarmMtx
 
 class SFpyr(Spyr):
     filt = None

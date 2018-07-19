@@ -2,7 +2,7 @@ import numpy as np
 import os
 from .pyramid import Pyramid
 from .pyr_utils import LB2idx
-from .steerable_filters import steerable_filters
+from .filters import steerable_filters
 from .c.wrapper import corrDn, upConv
 from ..tools.showIm import showIm
 from matplotlib import cm

@@ -3,7 +3,7 @@
 """
 
 import numpy as np
-from ..pyramids.namedFilter import namedFilter
+from ..pyramids.filters import namedFilter
 from ..pyramids.c.wrapper import corrDn, upConv
 
 def _init_filt(filt):

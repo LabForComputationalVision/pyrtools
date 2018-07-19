@@ -3,9 +3,9 @@ import cmath
 import scipy
 from .SFpyr import SFpyr
 from .c.wrapper import pointOp
+from .steer import steer2HarmMtx
 from ..tools.utils import rcosFn
 from ..tools.synthetic_images import mkAngle
-from ..tools.steer import steer2HarmMtx
 
 class SCFpyr(SFpyr):
     filt = ''
@@ -62,7 +62,7 @@ class SCFpyr(SFpyr):
             harmonics = numpy.arange((nbands-1) // 2) * 2
 
         steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(list(range(nbands)))/nbands, even_phase=True)
-        
+
         #------------------------------------------------------
 
         dims = numpy.array(self.image.shape)

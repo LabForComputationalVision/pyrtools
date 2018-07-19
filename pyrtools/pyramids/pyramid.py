@@ -2,7 +2,7 @@ import numpy as np
 import functools
 from operator import mul
 
-from .namedFilter import namedFilter
+from .filters import namedFilter
 
 class Pyramid:  # Pyramid base class
 
