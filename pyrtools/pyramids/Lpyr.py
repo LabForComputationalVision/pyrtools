@@ -6,7 +6,7 @@ class LaplacianPyramid(GaussianPyramid):
 
     # constructor
     def __init__(self, image, height='auto', filter1='binom5', filter2=None,
-                 edgeType='reflect1', pyrType='Laplacian'):
+                 edgeType='reflect1'):
         """Laplacian pyramid
 
             - `image` - a 2D numpy array
@@ -17,7 +17,9 @@ class LaplacianPyramid(GaussianPyramid):
             - `edges` - see class Pyramid.__init__()
             """
         super().__init__(image=image, height='auto', filter='binom5', filter2=None,
-                         edgeType=edgeType, pyrType=pyrType)
+                         edgeType=edgeType)
+        self.pyrType = 'Laplacian'
+
 
     # methods
     # def buildNext():

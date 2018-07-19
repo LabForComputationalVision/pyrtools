@@ -6,7 +6,7 @@ from .namedFilter import namedFilter
 
 class Pyramid:  # Pyramid base class
 
-    def __init__(self, image, edgeType, pyrType):
+    def __init__(self, image, edgeType):
         ''' - `edgeType` - specifies edge-handling.  Options are:
             * `'circular'` - circular convolution
             * `'reflect1'` - reflect about the edge pixels
@@ -17,7 +17,7 @@ class Pyramid:  # Pyramid base class
             * `'dont-compute'` - zero output when filter overhangs imput boundaries.
             '''
         self.image = np.array(image).astype(np.float)
-        self.pyrType = pyrType
+        self.pyrType = None
         self.edgeType = edgeType
         self.pyr = []
         self.pyrSize = []

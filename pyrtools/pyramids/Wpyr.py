@@ -12,13 +12,14 @@ class WaveletPyramid(Pyramid):
 
     #constructor
     def __init__(self, image, height='auto', filt='qmf9',
-                 edgeType='reflect1', pyrType='Wavelet'):
+                 edgeType='reflect1'):
 
-        super().__init__(image=image, edgeType=edgeType, pyrType=pyrType)
+        super().__init__(image=image, edgeType=edgeType)
 
         self.initFilters(filter=filt)
         self.initHeight(height=height)
         self.buildPyr()
+        self.pyrType = 'Wavelet'
 
     def initFilters(self, filter):
         self.lo_filter = self.parseFilter(filter)

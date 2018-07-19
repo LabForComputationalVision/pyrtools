@@ -15,7 +15,7 @@ class Spyr(Pyramid):
 
     #constructor
     def __init__(self, image, height='auto', filter='sp1Filters',
-                 edgeType='reflect1', pyrType='Steerable'):
+                 edgeType='reflect1'):
         """Steerable pyramid. image parameter is required, others are optional
         - `image` - a 2D numpy array
         - `height` - an integer denoting number of pyramid levels desired.  'auto' (default) uses
@@ -24,9 +24,10 @@ class Spyr(Pyramid):
         `'sp0Filters'`, `'sp1Filters'`, `'sp3Filters'`, `'sp5Filters'`.  Default is `'sp1Filters'`.
         - `edgeType` - see class Pyramid.__init__()
         """
-        super().__init__(image=image, edgeType=edgeType, pyrType=pyrType)
+        super().__init__(image=image, edgeType=edgeType)
 
         self.filt = steerable_filters(filter)
+        self.pyrType = 'Steerable'
 
         filters = self.filt # temporary hack...
         harmonics = filters['harmonics']
