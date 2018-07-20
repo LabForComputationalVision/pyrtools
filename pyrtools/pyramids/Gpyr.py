@@ -1,7 +1,7 @@
 import numpy as np
 from .pyramid import Pyramid
 from .c.wrapper import corrDn
-from ..tools.showIm import showIm
+from ..tools.display_tools import showIm
 import matplotlib.pyplot as plt
 from matplotlib import cm
 

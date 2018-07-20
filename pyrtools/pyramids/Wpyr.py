@@ -3,7 +3,7 @@ from .pyramid import Pyramid
 from .pyr_utils import LB2idx, modulateFlip
 from .filters import namedFilter
 from .c.wrapper import corrDn, upConv
-from ..tools.showIm import showIm
+from ..tools.display_tools import showIm
 import matplotlib.pyplot as plt
 from matplotlib import cm
 

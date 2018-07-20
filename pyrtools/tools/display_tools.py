@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from matplotlib import animation
+from IPython.display import HTML
 
 # TODO subclass matplotlib figure so taht save fig uses correct dpi_scale_trans# ie. an integer multiple of the one used for creation of the figure
 # return an error message on plt.tight_layout
@@ -128,3 +130,75 @@ def showIm(img, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
         _showIm(im, a, vrange, zoom, t, cmap, **kwargs)
 
     return fig
+
+def animshow(movie, framerate=1 / 60, vrange= None, size=5, as_html5=True,
+               **kwargs):
+    """Turn a 3D movie array into a matplotlib animation or HTML movie.
+
+    Parameters
+    ----------
+    movie : 3D numpy array
+        Array with time on the final axis.
+    framerate : float
+        Temporal resolution of the movie, in frames per second.
+    aperture : bool
+        If True, show only a central circular aperture.
+    size : float
+        Size of the underlying matplotlib figure, in inches.
+    as_html : bool
+        If True, return an HTML5 video; otherwise return the underying
+        matplotlib animation object (e.g. to save to .gif).
+
+    Returns
+    -------
+    anim : HTML object or FuncAnimation object
+        Animation, format depends on `as_html`.
+
+    TODO
+    size -> zoom, control ppi (reuse previous showIm functions?)
+
+    """
+
+    # TODO modularize the vrange function and use it in both imshow and animshow
+    if vrange is None or vrange == 'auto':
+        vrange = [np.min(movie), np.max(movie)]
+    elif vrange == 'auto2':
+        vrange = [movie.mean() - 2 * movie.std(),
+                  movie.mean() + 2 * movie.std()]
+    elif vrange == 'auto3':
+        p1 = np.percentile(movie, 10)
+        p2 = np.percentile(movie, 90)
+        vrange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
+
+    # Initialize the figure and an empty array for the frames
+    f, ax = plt.subplots(figsize=(size, size))
+    f.subplots_adjust(0, 0, 1, 1)
+    ax.set_axis_off()
+
+    kwargs.setdefault("vmin", vrange[0])
+    kwargs.setdefault("vmax", vrange[1])
+    kwargs.setdefault("cmap", "gray")
+    array = ax.imshow(np.zeros(movie.shape[:-1]), **kwargs)
+
+    # Define animation functions
+    def init_movie():
+        return array,
+
+    def animate_movie(i):
+        frame = movie[..., i].astype(np.float)
+        array.set_data(frame)
+        return array,
+
+    # Produce the animation
+    anim = animation.FuncAnimation(f,
+                                   frames=movie.shape[-1],
+                                   interval=framerate * 1000,
+                                   blit=True,
+                                   func=animate_movie,
+                                   init_func=init_movie)
+
+    plt.close(f)
+
+    if as_html5:
+        return HTML(anim.to_html5_video())
+    return anim
