@@ -8,7 +8,7 @@ from matplotlib import cm
 class GaussianPyramid(Pyramid):
 
     # constructor
-    def __init__(self, image, height='auto', filter='binom5', filter2=None,
+    def __init__(self, image, height='auto', filter1='binom5', filter2=None,
                  edgeType='reflect1'):
         """Gaussian pyramid
             - `image` - a 2D numpy array
@@ -18,7 +18,7 @@ class GaussianPyramid(Pyramid):
             - `edgeType` - see class Pyramid.__init__()
             """
         super().__init__(image=image, edgeType=edgeType)
-        self.initFilters(filter1=filter, filter2=filter2)
+        self.initFilters(filter1=filter1, filter2=filter2)
         self.initHeight(height=height)
         self.buildPyr()
         self.pyrType = 'Gaussian'

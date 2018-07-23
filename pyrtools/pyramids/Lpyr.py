@@ -16,7 +16,7 @@ class LaplacianPyramid(GaussianPyramid):
             - `filter2` - specifies the "expansion" filter (default = filter1).
             - `edges` - see class Pyramid.__init__()
             """
-        super().__init__(image=image, height='auto', filter='binom5', filter2=None,
+        super().__init__(image=image, height=height, filter1=filter1, filter2=filter2,
                          edgeType=edgeType)
         self.pyrType = 'Laplacian'
 
