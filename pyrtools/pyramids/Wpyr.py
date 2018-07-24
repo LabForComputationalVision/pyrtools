@@ -41,7 +41,7 @@ class WaveletPyramid(Pyramid):
 
     def initWidth(self):
         # compute the number of channels per level
-        if self.image.ndim == 1 or min(self.image.shape) == 1:
+        if min(self.image.shape) == 1:
             self.width = 1
         else:
             self.width = 3
@@ -53,7 +53,7 @@ class WaveletPyramid(Pyramid):
         edgeType = self.edgeType
         stag = self.stag
 
-        if len(image.shape) == 1 or image.shape[1] == 1:
+        if image.shape[1] == 1:
             lolo = corrDn(image=image, filt=lfilt, edges=edgeType, step=(2,1), start=(stag,0))
             hihi = corrDn(image=image, filt=hfilt, edges=edgeType, step=(2,1), start=(1,0))
             return lolo, (hihi, )
@@ -80,7 +80,8 @@ class WaveletPyramid(Pyramid):
         self.pyr.append(im)
         self.pyrSize.append(im.shape)
 
-    def reconPrev1D(self, image, cur_band, use_band, out_size, filt=None, hfilt=None, edges=None):
+    def reconPrev1D(self, image, cur_band, use_band, out_size,
+                    filt=None, hfilt=None, edges=None):
         if filt is None: filt = self.lo_filter
         if hfilt is None: hfilt = self.hi_filter
         if edges is None: edges = self.edgeType
@@ -88,18 +89,53 @@ class WaveletPyramid(Pyramid):
 
         if out_size[0] == 1:
             res = upConv(image=image, filt=filt.T, edges=edges,
-                         step=(1,2), start=(0,stag), stop=out_size).T
+                         step=(1,2), start=(0,stag), stop=out_size)
             if use_band:
                 res += upConv(image=cur_band, filt=hfilt, edges=edges,
                               step=(1,2), start=(0,1), stop=out_size)
         elif out_size[1] == 1:
             res = upConv(image=image, filt=filt, edges=edges,
-                         step=(2,1), start=(stag,0), stop=out_size).T
+                         step=(2,1), start=(stag,0), stop=out_size)
             if use_band:
                 res += upConv(image=cur_band, filt=hfilt.T, edges=edges,
                               step=(2,1), start=(1,0), stop=out_size)
         return res
 
+    def reconPrev2D(self, image, lev, use_band, out_size, lo_size, hi_size,
+                    filt=None, hfilt=None, edges=None):
+        if filt is None: filt = self.lo_filter
+        if hfilt is None: hfilt = self.hi_filter
+        if edges is None: edges = self.edgeType
+        stag = (filt.size + 1) % 2
+
+        ires = upConv(image=image, filt=filt.T, edges=edges,
+                      step=(1,2), start=(0,stag), stop=lo_size)
+        res = upConv(image=ires, filt=filt, edges=edges,
+                     step=(2,1), start=(stag,0), stop=out_size)
+
+        if 0 in use_band:
+            ires = upConv(image = self.band(3*lev), filt = filt.T,
+                          edges = edges, step = (1,2),
+                          start = (0, stag), stop = hi_size)
+            res += upConv(image = ires, filt = hfilt.T,
+                          edges = edges, step = (2,1),
+                          start = (1,0), stop = out_size)
+
+        if 1 in use_band:
+            ires = upConv(image = self.band(3*lev+1), filt = hfilt,
+                          edges = edges, step = (1,2),
+                          start = (0,1), stop = lo_size)
+            res += upConv(image = ires, filt = filt,
+                          edges = edges, step = (2,1),
+                          start = (stag,0), stop = out_size)
+        if 2 in use_band:
+            ires = upConv(image = self.band(3*lev+2), filt = hfilt,
+                          edges = edges, step = (1,2),
+                          start = (0,1), stop = hi_size)
+            res += upConv(image = ires, filt = hfilt.T,
+                          edges = edges, step = (2,1),
+                          start = (1,0), stop = out_size)
+        return res
 
     def reconPyr(self, filt='qmf9', edges='reflect1', levs='all', bands='all'):
         # Optional args
@@ -134,57 +170,36 @@ class WaveletPyramid(Pyramid):
             # compute size of result image: assumes critical sampling
             if self.width == 1:
                 if lev == 0:
-                    res_sz = self.image.shape
+                    out_size = self.image.shape
                 else:
-                    res_sz = self.pyrSize[lev-1]
+                    out_size = self.pyrSize[lev-1]
                 use_band = lev in levs
-                res = self.reconPrev1D(res, self.band(lev), use_band, res_sz,
+                res = self.reconPrev1D(res, self.band(lev), use_band, out_size,
                                        filt=filt, hfilt=hfilt, edges=edges)
 
             else:
-                res_sz = (self.pyrSize[3*lev][0]+self.pyrSize[3*lev+1][0],
-                          self.pyrSize[3*lev][1]+self.pyrSize[3*lev+1][1])
-                lres_sz = ([self.pyrSize[3*lev+1][0], res_sz[1]])
-                hres_sz = ([self.pyrSize[3*lev][0], res_sz[1]])
-
-                ires = upConv(image=res, filt=filt.T, edges=edges,
-                              step=(1,2), start=(0,stag), stop=lres_sz)
-                res = upConv(image=ires, filt=filt, edges=edges,
-                             step=(2,1), start=(stag,0), stop=res_sz)
-
+                out_size = (self.pyrSize[3*lev][0]+self.pyrSize[3*lev+1][0],
+                            self.pyrSize[3*lev][1]+self.pyrSize[3*lev+1][1])
+                lo_size = ([self.pyrSize[3*lev+1][0], out_size[1]])
+                hi_size = ([self.pyrSize[3*lev][0], out_size[1]])
                 if lev in levs:
+                    use_band = bands
+                else:
+                    use_band = []
 
-                    if 0 in bands:
-                        ires = upConv(image = self.band(3*lev), filt = filt.T,
-                                      edges = edges, step = (1,2),
-                                      start = (0, stag), stop = hres_sz)
-                        res += upConv(image = ires, filt = hfilt.T,
-                                     edges = edges, step = (2,1),
-                                     start = (1,0), stop = res_sz)
+                res = self.reconPrev2D(res, lev, use_band, out_size, lo_size, hi_size,
+                                       filt=filt, hfilt=hfilt, edges=edges)
 
-                    if 1 in bands:
-                        ires = upConv(image = self.band(3*lev+1), filt = hfilt,
-                                      edges = edges, step = (1,2),
-                                      start = (0,1), stop = lres_sz)
-                        res += upConv(image = ires, filt = filt, edges = edges,
-                                     step = (2,1), start = (stag,0),
-                                     stop = res_sz)
-                    if 2 in bands:
-                        ires = upConv(image = self.band(3*lev+2), filt = hfilt,
-                                      edges = edges, step = (1,2),
-                                      start = (0,1), stop = hres_sz)
-                        res += upConv(image = ires, filt = hfilt.T,
-                                     edges = edges, step = (2,1),
-                                     start = (1,0), stop = res_sz)
+
         return res
 
-    def set1D(self, *args):
-        if len(args) != 3:
-            print('Error: three input parameters required:')
-            print('  set(band, location, value)')
-            print('  where band and value are integer and location is a tuple')
-        print('%d %d %d' % (args[0], args[1], args[2]))
-        print(self.pyr[args[0]][0][1])
+    # def set1D(self, *args):
+    #     if len(args) != 3:
+    #         print('Error: three input parameters required:')
+    #         print('  set(band, location, value)')
+    #         print('  where band and value are integer and location is a tuple')
+    #     print('%d %d %d' % (args[0], args[1], args[2]))
+    #     print(self.pyr[args[0]][0][1])
 
     def pyrLow(self):
         return np.array(self.band(len(self.pyrSize)-1))

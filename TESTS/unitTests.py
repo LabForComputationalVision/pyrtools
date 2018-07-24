@@ -1,53 +1,52 @@
 import unittest
 import numpy as np
 import scipy.io
-from operator import mul
 import matplotlib.pyplot as plt
 import os.path as op
 import pyrtools as ppt
 
 matfiles_path = op.join(op.dirname(op.realpath(__file__)), 'matFiles')
-test_data_path =  op.join(op.dirname(op.realpath(__file__)), '..', 'DATA')
+test_data_path = op.join(op.dirname(op.realpath(__file__)), '..', 'DATA')
 
 class maxPyrHtTests(unittest.TestCase):
     def test1(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((1,10),(3,4)) == 0)
     def test2(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((10,1),(3,4)) == 0)
     def test3(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((10,10),(1,4)) == 2)
     def test4(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((10,10),(3,1)) == 2)
     def test5(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((10,10),(3,4)) == 2)
     def test6(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((20,10),(5,1)) == 2)
     def test7(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((10,20),(5,1)) == 2)
     def test8(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((20,10),(1,5)) == 2)
     def test9(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((10,20),(1,5)) == 2)
     def test10(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((256,1),(1,5)) == 6)
     def test11(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((256,1),(5,1)) == 6)
     def test12(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((1,256),(1,5)) == 6)
     def test13(self):
-        pyr = ppt.Pyramid(image=None, edgeType=None)
+        pyr = ppt.Pyramid(image=[0.0], edgeType=None)
         self.assertTrue(pyr.maxPyrHt((1,256),(5,1)) == 6)
 
 class binomialFilterTests(unittest.TestCase):

@@ -31,21 +31,18 @@ class LaplacianPyramid(GaussianPyramid):
         else:
             filt = self.parseFilter(filt)
         if edges is None: edges = self.edgeType
-        imsz = image.shape
 
-        if len(imsz) == 1 or imsz[1] == 1:
+        if image.shape[1] == 1:
             res = upConv(image=image, filt=filt.T, edges=edges,step=(1,2), stop=(out_size[1], out_size[0])).T
-        elif imsz[0] == 1:
+        elif image.shape[0] == 1:
             res = upConv(image=image, filt=filt.T, edges=edges, step=(2,1), stop=(out_size[1], out_size[0])).T
         else:
-            tmp = upConv(image=image, filt=filt, edges=edges, step=(2,1), stop=(out_size[0], imsz[1]))
+            tmp = upConv(image=image, filt=filt, edges=edges, step=(2,1), stop=(out_size[0], image.shape[1]))
             res = upConv(image=tmp, filt=filt.T, edges=edges, step=(1,2), stop=(out_size[0], out_size[1]))
         return res
 
     def buildPyr(self):
         img = self.image
-        if len(img.shape) == 1:
-            img = img.reshape(-1, 1)
         for h in range(1,self.height):
             img_next = self.buildNext(img)
             img_recon = self.reconPrev(img_next, out_size=img.shape)

@@ -17,6 +17,10 @@ class Pyramid:  # Pyramid base class
             * `'dont-compute'` - zero output when filter overhangs imput boundaries.
             '''
         self.image = np.array(image).astype(np.float)
+        if self.image.ndim == 1:
+            self.image = self.image.reshape(-1, 1)
+        assert self.image.ndim == 2, "Error: Input signal must be 1D or 2D."
+
         self.pyrType = None
         self.edgeType = edgeType
         self.pyr = []
@@ -25,22 +29,22 @@ class Pyramid:  # Pyramid base class
     # this is the base Pyramid class. each subclass should implement their own
     # functionalities, including:
     def initFilters(self):
-        raise Exception('Error: Not implemented for base Pyaramid class')
+        raise Exception('Error: Not implemented for base Pyramid class')
 
     def initHeight(self):
-        raise Exception('Error: Not implemented for base Pyaramid class')
+        raise Exception('Error: Not implemented for base Pyramid class')
 
     def buildNext(self):
-        raise Exception('Error: Not implemented for base Pyaramid class')
+        raise Exception('Error: Not implemented for base Pyramid class')
 
     def buildPyr(self):
-        raise Exception('Error: Not implemented for base Pyaramid class')
+        raise Exception('Error: Not implemented for base Pyramid class')
 
     def reconPrev(self):
-        raise Exception('Error: Not implemented for base Pyaramid class')
+        raise Exception('Error: Not implemented for base Pyramid class')
 
     def reconPyr(self):
-        raise Exception('Error: Not implemented for base Pyaramid class')
+        raise Exception('Error: Not implemented for base Pyramid class')
 
     # shared methods
     def nbands(self):

@@ -42,7 +42,7 @@ class GaussianPyramid(Pyramid):
         imsz = image.shape
         if imsz[0] == 1:
             res = corrDn(image=image, filt=filt, edges=edges, step=(1,2))
-        elif len(imsz) == 1 or imsz[1] == 1:
+        elif imsz[1] == 1:
             res = corrDn(image=image, filt=filt, edges=edges, step=(2,1))
         else:
             tmp = corrDn(image=image, filt=filt.T, edges=edges, step=(1,2))
@@ -51,9 +51,6 @@ class GaussianPyramid(Pyramid):
 
     def buildPyr(self):
         img = self.image
-        if len(img.shape) == 1:
-            img = img.reshape(-1, 1)
-
         self.pyr.append(img.copy())
         self.pyrSize.append(img.shape)
         for h in range(1,self.height):
