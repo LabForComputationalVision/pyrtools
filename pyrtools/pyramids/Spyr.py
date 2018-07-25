@@ -4,7 +4,7 @@ from .pyramid import Pyramid
 from .pyr_utils import LB2idx
 from .filters import steerable_filters
 from .c.wrapper import corrDn, upConv
-from ..tools.display_tools import showIm
+from ..tools.display_tools import imshow
 from matplotlib import cm
 
 # from ..tools import JBhelpers
@@ -369,6 +369,6 @@ class Spyr(Pyramid):
                  llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
 
         if disp == 'qt':
-            showIm(d_im[:self.pyrSize[0][0]*2,:])
-        elif disp == 'nb':
-            JBhelpers.showIm(d_im[:self.pyrSize[0][0]*2,:])
+            imshow(d_im[:self.pyrSize[0][0]*2,:])
+        # elif disp == 'nb':
+        #     JBhelpers.showIm(d_im[:self.pyrSize[0][0]*2,:])

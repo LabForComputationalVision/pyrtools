@@ -1,7 +1,7 @@
 import numpy as np
 from .pyramid import Pyramid
 from .c.wrapper import corrDn
-from ..tools.display_tools import showIm
+from ..tools.display_tools import imshow
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
@@ -209,6 +209,6 @@ class GaussianPyramid(Pyramid):
 
             # FIX: need a mode to switch between above and below display
             if disp == 'qt':
-                showIm(d_im[:self.band(0).shape[0]][:])
+                imshow(d_im[:self.band(0).shape[0]][:])
             # elif disp == 'nb':
             #     JBhelpers.showIm(d_im[:self.band(0).shape[0]][:])

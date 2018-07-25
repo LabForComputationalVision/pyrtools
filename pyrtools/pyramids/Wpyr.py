@@ -3,7 +3,7 @@ from .pyramid import Pyramid
 from .pyr_utils import LB2idx, modulateFlip
 from .filters import namedFilter
 from .c.wrapper import corrDn, upConv
-from ..tools.display_tools import showIm
+from ..tools.display_tools import imshow
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
@@ -16,14 +16,14 @@ class WaveletPyramid(Pyramid):
 
         super().__init__(image=image, edgeType=edgeType)
 
-        self.initFilters(filter=filt)
+        self.initFilters(filt=filt)
         self.initHeight(height=height)
         self.initWidth()
         self.buildPyr()
         self.pyrType = 'Wavelet'
 
-    def initFilters(self, filter):
-        self.lo_filter = self.parseFilter(filter)
+    def initFilters(self, filt):
+        self.lo_filter = self.parseFilter(filt)
         self.stag = (self.lo_filter.shape[0] + 1) % 2
         self.hi_filter = modulateFlip(self.lo_filter)
         # # if 1D filter, match to image dimensions
@@ -343,6 +343,6 @@ class WaveletPyramid(Pyramid):
                      llpos[bnum,1]:urpos[bnum,1]] = mult * self.band(bnum) + (1.5-mult*prange[bnum,0])
 
             if disp == 'qt':
-                showIm(d_im, 'auto', 2)
+                imshow(d_im, 'auto', 2)
             # elif disp == 'nb':
             #     JBhelpers.showIm(d_im, 'auto', 2)

@@ -4,9 +4,14 @@ from matplotlib import cm
 from matplotlib import animation
 from IPython.display import HTML
 
-# TODO subclass matplotlib figure so taht save fig uses correct dpi_scale_trans# ie. an integer multiple of the one used for creation of the figure
+# TODO
+# subclass matplotlib figure so that save fig uses correct dpi_scale_tran
+# ie. an integer multiple of the one used for creation of the figure
 # return an error message on plt.tight_layout
 # take a look at plt.saveim
+
+# def pyrshow():
+# all the display code for pyramids in this file (not redundant in each class)
 
 def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix=10):
 
@@ -30,8 +35,9 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
 
 def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
     ax.imshow(img, cmap=cmap, vmin=vrange[0], vmax=vrange[1], interpolation='none', **kwargs)
-    # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
+
     if title is not None:
+        # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
         # TODO adapt the precision of displayed range to the order of magnitude of the values: .1E
         ax.set_title(title + '\n range: [{:.1f}, {:.1f}] \n dims: [{}, {}] * {}'.format(
                      vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
@@ -49,51 +55,94 @@ def reshape_axis(ax, axis_size_pix):
     ax.set_position([*ax.get_position().bounds[:2], rel_axis_width, rel_axis_height])
     return ax
 
+def colormap_range(img, vrange):
+    # this will clip the colormap
 
-def showIm(img, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
+    if vrange == 'auto' or vrange == 'auto1':
+        vrange_list = [np.min(img), np.max(img)]
+    elif vrange == 'auto2':
+        vrange_list = [img.mean() - 2 * img.std(),
+                       img.mean() + 2 * img.std()]
+    elif vrange == 'auto3':
+        p1 = np.percentile(img, 10)
+        p2 = np.percentile(img, 90)
+        vrange_list = [p1-(p2-p1)/8.0,
+                       p2+(p2-p1)/8.0]
+
+    # get independent vrange by calling this function one image at a time
+    elif vrange is None or vrange == 'indep1':
+        vrange_list = []
+        for im in img:
+            vrange_list.append(colormap_range(im[None,:,:], vrange='auto1')[0])
+    elif vrange == 'indep2':
+        vrange_list = []
+        for im in img:
+            vrange_list.append(colormap_range(im[None,:,:], vrange='auto2')[0])
+    elif vrange == 'indep3':
+        vrange_list = []
+        for im in img:
+            vrange_list.append(colormap_range(im[None,:,:], vrange='auto3')[0])
+
+    elif isinstance(vrange, str):
+        vrange_list = colormap_range(img, vrange='auto1')
+        print('Error: bad vrange argument, using auto1 instead')
+
+    # else: # TODO if explicit values are provided
+        # vrange_list = vrange
+
+    # making sure to return as many ranges as there are images
+    if isinstance(vrange, str) and vrange[:4] == 'auto':
+        vrange_list = [vrange_list] * len(img)
+    assert len(img) == len(vrange_list)
+
+    return vrange_list
+
+def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
             cmap=cm.gray, **kwargs):
-    '''under construction
+    '''show image(s)
+
+    Parameters
+    ----------
 
     img: 2d array (one image to display), 3d array (multiple images to display,
-    images are indexed along the first dimension), or list of 2d arrays.
+    images are indexed along the first dimension), or list of 2d arrays
+        the image(s) to be shown
 
-    vrange: None/auto
-    auto2
-    auto3
+    vrange: None or string or list of two numbers
+        auto
+        indep
 
-    zoom
+    zoom: TODO
 
-    title: string or list of strings. if string, will put the same title on
-    every plot. if list of strings, must be the same length as img, and will
-    assume that titles go with the corresponding image. If title is None,
-    no title will be printed
+    title: string , list of strings or None
+        if string, will put the same title on every plot.
+        if list of strings, must be the same length as img, and will assume that titles go with the corresponding image.
+        if None, no title will be printed.
 
-    ax: matplotlib axis or None. If None, make the appropriate figure.
-    If not None, we reshape it (which we only do by shrinking the bbox,
-    so if the bbox is already too small, this will throw an Exception!)
-    so that it's the appropriate number of pixels.
-    first define a large enough figure using either make_figure or plt.figure
+    col_wrap: int or None
 
-    col_wrap:
+    ax: matplotlib axis or None
+        if None, make the appropriate figure.
+        if not None, we reshape it (which we only do by shrinking the bbox,
+        so if the bbox is already too small, this will throw an Exception!)
+        so that it's the appropriate number of pixels. first define a large enough figure using either make_figure or plt.figure
 
-    TODO:
-    independent vrrange for subimages
+    Returns
+    -------
 
-    diff zoom values
-
-
-    low priority: nshades
+    fig : figure
 
     '''
 
-    img = np.array(img)
+    img = np.array(image)
 
     if img.ndim == 2:
         img = img.reshape((1, img.shape[0], img.shape[1]))
-    # if not isinstance(zoom, list):
-    #     zoom = len(img) * [zoom]
-    # else:
-    #     assert len(img) == len(zoom), "Must have same number of zooms and images!"
+
+    # TODO zoom list
+    # TODO: verify that provided zooms make all images same size
+    # else give error message and correct by default
+
     if ax is None:
         if col_wrap is None:
             n_cols = img.shape[0]
@@ -101,37 +150,27 @@ def showIm(img, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
         else:
             n_cols = col_wrap
             n_rows = int(np.ceil(img.shape[0] / n_cols))
-        # TODO zoom list
         fig = make_figure(n_rows, n_cols, zoom * np.array(img.shape[1:]))
         axes = fig.axes
     else:
         fig = ax.figure
-        axes = [reshape_axis(ax, img.shape[1:])]
+        axes = [reshape_axis(ax,  zoom * img.shape[1:])]
+
     if not isinstance(title, list):
         title = len(img) * [title]
     else:
         assert len(img) == len(title), "Must have same number of titles and images!"
 
-    # TODO modularize - put in a different function
-    if vrange is None or vrange == 'auto':
-        vrange = [np.min(img), np.max(img)]
-    # TODO add option to keep vrange independent accross sub images
-    elif vrange == 'auto2':
-        vrange = [img.mean() - 2 * img.std(),
-                  img.mean() + 2 * img.std()]
-    elif vrange == 'auto3':
-        p1 = np.percentile(img, 10)
-        p2 = np.percentile(img, 90)
-        vrange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
-    # add error message if vrange not one of these
+    vrange_list = colormap_range(img=img, vrange=vrange)
+    # print('passed', vrange_list)
 
-
-    for a, im, t in zip(axes, img, title): # add zoom
-        _showIm(im, a, vrange, zoom, t, cmap, **kwargs)
+    for im, a, r, t in zip(img, axes, vrange_list, title):
+        # z in zooms
+        _showIm(im, a, r, zoom, t, cmap, **kwargs)
 
     return fig
 
-def animshow(movie, framerate=1 / 60, vrange= None, size=5, as_html5=True,
+def animshow(movie, framerate=1 / 60, vrange='auto', size=5, as_html5=True,
                **kwargs):
     """Turn a 3D movie array into a matplotlib animation or HTML movie.
 
@@ -154,29 +193,19 @@ def animshow(movie, framerate=1 / 60, vrange= None, size=5, as_html5=True,
     anim : HTML object or FuncAnimation object
         Animation, format depends on `as_html`.
 
-    TODO
-    size -> zoom, control ppi (reuse previous showIm functions?)
-
     """
 
-    # TODO modularize the vrange function and use it in both imshow and animshow
-    if vrange is None or vrange == 'auto':
-        vrange = [np.min(movie), np.max(movie)]
-    elif vrange == 'auto2':
-        vrange = [movie.mean() - 2 * movie.std(),
-                  movie.mean() + 2 * movie.std()]
-    elif vrange == 'auto3':
-        p1 = np.percentile(movie, 10)
-        p2 = np.percentile(movie, 90)
-        vrange = (p1-(p2-p1)/8.0, p2+(p2-p1)/8.0)
+    # TODO: size -> zoom, control ppi (reuse previous showIm functions?)
+
+    vrange_list = colormap_range(movie, vrange=vrange)
+    kwargs.setdefault("vmin", vrange_list[0][0])
+    kwargs.setdefault("vmax", vrange_list[0][1])
 
     # Initialize the figure and an empty array for the frames
     f, ax = plt.subplots(figsize=(size, size))
     f.subplots_adjust(0, 0, 1, 1)
     ax.set_axis_off()
 
-    kwargs.setdefault("vmin", vrange[0])
-    kwargs.setdefault("vmax", vrange[1])
     kwargs.setdefault("cmap", "gray")
     array = ax.imshow(np.zeros(movie.shape[:-1]), **kwargs)
 
