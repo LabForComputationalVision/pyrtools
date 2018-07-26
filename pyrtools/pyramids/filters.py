@@ -18,7 +18,7 @@ def namedFilter(name):
         L2-norm is 1.0
 
         binomN              - binomial coefficient filter of order N-1
-        haar                - Harr wavelet
+        haar                - Haar wavelet
         qmf8, qmf12, qmf16  - Symmetric Quadrature Mirror Filters [Johnston80]
         daub2, daub3, daub4 - Daubechies wavelet [Daubechies88]
         qmf5, qmf9, qmf13   - Symmetric Quadrature Mirror Filters
