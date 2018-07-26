@@ -40,7 +40,7 @@ def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
         # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
         # TODO adapt the precision of displayed range to the order of magnitude of the values: .1E
         ax.set_title(title + '\n range: [{:.1f}, {:.1f}] \n dims: [{}, {}] * {}'.format(
-                     vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
+                     vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), ) #{'fontsize': ax.bbox.height*(12./256)}
 
 
 def reshape_axis(ax, axis_size_pix):

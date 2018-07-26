@@ -198,7 +198,7 @@ class SFpyr(Spyr):
 
     def spyrHt(self):
         if len(self.pyrSize) > 2:
-            spHt = (len(self.pyrSize)-2)/self.numBands()
+            spHt = (len(self.pyrSize)-2)//self.numBands()
         else:
             spHt = 0
         return spHt
