@@ -13,14 +13,18 @@ from IPython.display import HTML
 # def pyrshow():
 # all the display code for pyramids in this file (not redundant in each class)
 
-def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix=10):
+def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix=10, vert_pct=.8):
+    """make a nice figure
 
+    vert_pct: float between 0 and 1. if less than 1, we leave a little extra room at the top to
+    allow a title. for example, if .8, then we add an extra 20% on top to leave room for a title
+    """
     # this is an arbitrary value
     ppi = 96
 
     # add extra 20% to the y direction for extra info
     # TODO if no title use all space
-    fig = plt.figure(figsize=(((n_cols-1)*col_margin_pix+n_cols*axis_size_pix[1]) / ppi, ((n_rows-1)*row_margin_pix+n_rows*(axis_size_pix[0]/.8)) / ppi), dpi=ppi)
+    fig = plt.figure(figsize=(((n_cols-1)*col_margin_pix+n_cols*axis_size_pix[1]) / ppi, ((n_rows-1)*row_margin_pix+n_rows*(axis_size_pix[0]/vert_pct)) / ppi), dpi=ppi)
     bbox = fig.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
     fig_width, fig_height = bbox.width*fig.dpi, bbox.height*fig.dpi
     rel_axis_width = axis_size_pix[1] / fig_width
@@ -29,7 +33,7 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
     rel_row_margin = row_margin_pix / fig_height
     for i in range(n_rows):
         for j in range(n_cols):
-            fig.add_axes([j*(rel_axis_width+rel_col_margin), 1.-((i+1)*rel_axis_height/.8+i*rel_row_margin), rel_axis_width, rel_axis_height], frameon=False, xticks=[],yticks=[])
+            fig.add_axes([j*(rel_axis_width+rel_col_margin), 1.-((i+1)*rel_axis_height/vert_pct+i*rel_row_margin), rel_axis_width, rel_axis_height], frameon=False, xticks=[],yticks=[])
     return fig
 
 
@@ -97,6 +101,33 @@ def colormap_range(img, vrange):
 
     return vrange_list
 
+
+def find_zooms(images):
+    """find the zooms necessary to display a list of images
+    
+    this convenience function takes a list of images and finds out if they can all be displayed at
+    the same size. for this to be the case, there must be an integer for each image such that the
+    image can be multiplied by that integer to be the same size as the biggest image.
+
+    Returns
+    -------
+    zooms: list of integers showing how much each image needs to be zoomed
+
+    max_shape: tuple of integers, showing the shape of the largest image in the list
+    """
+    # in this case, the two images were different sizes and so numpy can't combine them
+    # correctly
+    max_shape = (np.max([i.shape[0] for i in images]), np.max([i.shape[1] for i in images]))
+    zooms = []
+    for i in images:
+        if not ((max_shape[0] % i.shape[0]) == 0 or (max_shape[1] % i.shape[1]) == 0):
+            raise Exception("All images must be able to be 'zoomed in' to the largest image."
+                            "That is, the largest image must be a scalar multiple of all images.")
+        if (max_shape[0] // i.shape[0]) != max_shape[1] // i.shape[1]:
+            raise Exception("Both height and width must be multiplied by same amount!")
+        zooms.append(max_shape[0] // i.shape[0])
+    return zooms, max_shape
+
 def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
             cmap=cm.gray, **kwargs):
     '''show image(s)
@@ -134,10 +165,23 @@ def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
 
     '''
 
-    img = np.array(image)
+    image = np.array(image)
 
-    if img.ndim == 2:
-        img = img.reshape((1, img.shape[0], img.shape[1]))
+    if image.ndim == 1:
+        # in this case, the two images were different sizes and so numpy can't combine them
+        # correctly
+        zooms, max_shape = find_zooms(image)
+    elif image.ndim == 2:
+        image = image.reshape((1, image.shape[0], image.shape[1]))
+        max_shape = image.shape[1:]
+        zooms = [1]
+    else:
+        zooms = [1 for i in image]
+        max_shape = image.shape[1:]
+    max_shape = np.array(max_shape)
+    zooms = zoom * np.array(zooms)
+    if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
+        raise Exception("zoom * image.shape must result in integers!")
 
     # TODO zoom list
     # TODO: verify that provided zooms make all images same size
@@ -145,45 +189,51 @@ def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
 
     if ax is None:
         if col_wrap is None:
-            n_cols = img.shape[0]
+            n_cols = image.shape[0]
             n_rows = 1
         else:
             n_cols = col_wrap
-            n_rows = int(np.ceil(img.shape[0] / n_cols))
-        fig = make_figure(n_rows, n_cols, zoom * np.array(img.shape[1:]))
+            n_rows = int(np.ceil(image.shape[0] / n_cols))
+        if title is None:
+            vert_pct = 1
+        else:
+            vert_pct = .8
+        fig = make_figure(n_rows, n_cols, zoom * max_shape, vert_pct=vert_pct)
         axes = fig.axes
     else:
         fig = ax.figure
-        axes = [reshape_axis(ax,  zoom * img.shape[1:])]
+        axes = [reshape_axis(ax,  zoom * max_shape)]
 
     if not isinstance(title, list):
-        title = len(img) * [title]
+        title = len(image) * [title]
     else:
-        assert len(img) == len(title), "Must have same number of titles and images!"
+        assert len(image) == len(title), "Must have same number of titles and images!"
 
-    vrange_list = colormap_range(img=img, vrange=vrange)
+    vrange_list = colormap_range(img=image, vrange=vrange)
     # print('passed', vrange_list)
 
-    for im, a, r, t in zip(img, axes, vrange_list, title):
+    for im, a, r, t, z in zip(image, axes, vrange_list, title, zooms):
         # z in zooms
-        _showIm(im, a, r, zoom, t, cmap, **kwargs)
+        _showIm(im, a, r, z, t, cmap, **kwargs)
 
     return fig
 
-def animshow(movie, framerate=1 / 60, vrange='auto', size=5, as_html5=True,
+def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
                **kwargs):
     """Turn a 3D movie array into a matplotlib animation or HTML movie.
 
     Parameters
     ----------
-    movie : 3D numpy array
-        Array with time on the final axis.
+    movie : 3D numpy array or list
+        Array with time on the first axis or, equivalently, a list of 2d arrays. these 2d arrays 
+        don't have to all be the same size, but, if they're not, there must exist an integer such 
+        that all of them can be zoomed in by an integer up to the biggest image.
     framerate : float
         Temporal resolution of the movie, in frames per second.
     aperture : bool
         If True, show only a central circular aperture.
-    size : float
-        Size of the underlying matplotlib figure, in inches.
+    zoom : float
+        amount we zoom the movie frames (must result in an integer when multiplied by movie.shape[1:])
     as_html : bool
         If True, return an HTML5 video; otherwise return the underying
         matplotlib animation object (e.g. to save to .gif).
@@ -201,26 +251,29 @@ def animshow(movie, framerate=1 / 60, vrange='auto', size=5, as_html5=True,
     kwargs.setdefault("vmin", vrange_list[0][0])
     kwargs.setdefault("vmax", vrange_list[0][1])
 
+    _, max_shape = find_zooms(movie)
+    max_shape = np.array(max_shape)
+    if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
+        raise Exception("zoom * movie.shape[1:] must result in integers!")
     # Initialize the figure and an empty array for the frames
-    f, ax = plt.subplots(figsize=(size, size))
-    f.subplots_adjust(0, 0, 1, 1)
-    ax.set_axis_off()
+    f = make_figure(1, 1, zoom*max_shape, vert_pct=1)
+    ax = f.axes[0]
 
     kwargs.setdefault("cmap", "gray")
-    array = ax.imshow(np.zeros(movie.shape[:-1]), **kwargs)
+    array = ax.imshow(np.zeros(max_shape), **kwargs)
 
     # Define animation functions
     def init_movie():
         return array,
 
     def animate_movie(i):
-        frame = movie[..., i].astype(np.float)
+        frame = movie[i].astype(np.float)
         array.set_data(frame)
         return array,
 
     # Produce the animation
     anim = animation.FuncAnimation(f,
-                                   frames=movie.shape[-1],
+                                   frames=len(movie),
                                    interval=framerate * 1000,
                                    blit=True,
                                    func=animate_movie,
