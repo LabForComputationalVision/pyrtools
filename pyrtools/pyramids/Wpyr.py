@@ -24,17 +24,16 @@ class WaveletPyramid(Pyramid):
 
     def initFilters(self, filt):
         self.lo_filter = self.parseFilter(filt)
-        self.stag = (self.lo_filter.shape[0] + 1) % 2
-        self.hi_filter = modulateFlip(self.lo_filter)
-        # NOTE
-        # if 1D filter, match to image dimensions
-        # allready taken care of in parseFilter
+        # if the image is 1D, parseFilter will
+        # match the filter to the image dimensions
 
-        # if self.lo_filter.ndim == 1 or self.lo_filter.shape[1] == 1:
-        #     if self.image.shape[0] == 1:
-        #         self.lo_filter = self.lo_filter.reshape(1, -1)
-        #     elif self.image.shape[1] == 1:
-        #         self.lo_filter = self.lo_filter.reshape(-1, 1)
+        self.hi_filter = modulateFlip(self.lo_filter)
+        # modulateFlip returns a filter that has
+        # the same size as its input filter
+        assert self.lo_filter.shape == self.hi_filter.shape
+
+        # Stagger sampling if filter is odd-length
+        self.stag = (self.lo_filter.size + 1) % 2
 
     def initHeight(self, height):
         self.height = 1 + self.maxPyrHt(self.image.shape, self.lo_filter.shape)
@@ -49,13 +48,12 @@ class WaveletPyramid(Pyramid):
         else:
             self.width = 3
 
-
     def buildNext(self, image):
         lfilt = self.lo_filter
         hfilt = self.hi_filter
+
         edgeType = self.edgeType
         stag = self.stag
-        assert lfilt.shape == hfilt.shape
 
         if image.shape[1] == 1:
             lolo = corrDn(image=image, filt=lfilt, edges=edgeType, step=(2,1), start=(stag,0))
@@ -86,10 +84,10 @@ class WaveletPyramid(Pyramid):
 
     def reconPrev1D(self, image, cur_band, use_band, out_size,
                     filt=None, hfilt=None, edges=None):
-        if filt is None: filt = self.lo_filter
+        if  filt is None:  filt = self.lo_filter
         if hfilt is None: hfilt = self.hi_filter
         if edges is None: edges = self.edgeType
-        assert filt.shape == hfilt.shape
+
         stag = (filt.size + 1) % 2
 
         if out_size[0] == 1:
@@ -108,11 +106,13 @@ class WaveletPyramid(Pyramid):
 
     def reconPrev2D(self, image, lev, use_band, out_size, lo_size, hi_size,
                     filt=None, hfilt=None, edges=None):
-        if filt is None: filt = self.lo_filter
+        if filt  is None:  filt = self.lo_filter
         if hfilt is None: hfilt = self.hi_filter
         if edges is None: edges = self.edgeType
 
         stag = (filt.size + 1) % 2
+        # print(image.shape, filt.shape, hfilt.shape, stag)
+        # print(out_size, lo_size, hi_size)
 
         ires = upConv(image=image, filt=filt.T, edges=edges,
                       step=(1,2), start=(0,stag), stop=lo_size)
@@ -126,7 +126,6 @@ class WaveletPyramid(Pyramid):
             res += upConv(image = ires, filt = hfilt,
                           edges = edges, step = (2,1),
                           start = (1,0), stop = out_size)
-
         if 1 in use_band:
             ires = upConv(image = self.band(3*lev+1), filt = hfilt.T,
                           edges = edges, step = (1,2),
@@ -147,13 +146,13 @@ class WaveletPyramid(Pyramid):
         # Optional args
 
         if filt is None:
-            filt = self.lo_filter
+            filt  = self.lo_filter
             hfilt = self.hi_filter
-            stag = self.stag
+            stag  = self.stag
         else:
-            filt = self.parseFilter(filt)
-            stag = (filt.size + 1) % 2
+            filt  = self.parseFilter(filt)
             hfilt = modulateFlip(filt)
+            stag  = (filt.size + 1) % 2
 
         if edges is None: edges = self.edgeType
 

@@ -54,6 +54,10 @@ def imCompare(im_array0, im_array1):
     ''' Report min, max, mean, stdev of the difference,
         and SNR (relative to IM1).  '''
 
+    if not im_array0.size == im_array1.size:
+        print('Error: input images must have the same size')
+        return
+
     if not np.isreal(im_array0).all() or not np.isreal(im_array1).all():
         print('Error: input images must be real-valued matrices')
         return
