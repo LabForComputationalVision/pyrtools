@@ -127,8 +127,9 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
                      'dont-compute']:
         raise Exception("Don't know how to do convolution with edges %s!" % edges)
 
-    # TODO: first condition is always TRUE?
-    if ((edges != "reflect1" or edges != "extend" or edges != "repeat") and
+    # from upConv.c, the c code that gets compiled in the matlab version: upConv has a bug for
+    # even-length kernels when using the reflect1, extend, or repeat edge-handlers
+    if ((edges in ["reflect1", "extend", "repeat"]) and
             (filt.shape[0] % 2 == 0 or filt.shape[1] % 2 == 0)):
         if filt.shape[1] == 1:
             filt = np.append(filt, 0.0)
