@@ -669,6 +669,45 @@ class WpyrTests(unittest.TestCase):
         pyRamp = ppt.mkRamp((1,200)).T
         pyPyr = ppt.WaveletPyramid(pyRamp)
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
+    def testRecon1(self):
+        im = ppt.mkFract((1, 64))
+        pyr = ppt.WaveletPyramid(im)
+        res = pyr.reconPyr()
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon2(self):
+        im = ppt.mkFract((64, 1))
+        pyr = ppt.WaveletPyramid(im)
+        res = pyr.reconPyr()
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon3(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = ppt.WaveletPyramid(im)
+        res = pyr.reconPyr()
+        print(np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon4(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = ppt.WaveletPyramid(im, edgeType='circular')
+        res = pyr.reconPyr()
+        print(np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon5(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = ppt.WaveletPyramid(im, filt='daub2', edgeType='circular')
+        res = pyr.reconPyr()
+        print(np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon6(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = ppt.WaveletPyramid(im, filt='qmf13', edgeType='circular')
+        res = pyr.reconPyr()
+        print(np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon7(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = ppt.WaveletPyramid(im, filt='haar', edgeType='circular')
+        res = pyr.reconPyr()
+        self.assertTrue(np.allclose(res, im))
 
 class blurDnTests(unittest.TestCase):
     def test0(self):
