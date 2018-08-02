@@ -220,11 +220,10 @@ class Spyr(Pyramid):
                                                              bfiltsz,
                                                              order='F')
 
-                    recon = upConv(image = self.pyr[bandImageIdx],
-                                   filt = filt, edges = edges,
-                                   stop = (self.pyrSize[bandImageIdx][0],
-                                           self.pyrSize[bandImageIdx][1]),
-                                   result = recon)
+                    recon += upConv(image = self.pyr[bandImageIdx],
+                                    filt = filt, edges = edges,
+                                    stop = (self.pyrSize[bandImageIdx][0],
+                                            self.pyrSize[bandImageIdx][1]))
                     bandImageIdx += 1
 
         # apply lo0filt
@@ -233,9 +232,8 @@ class Spyr(Pyramid):
 
         # apply hi0filt if needed
         if 0 in reconList:
-            recon = upConv(image = self.pyr[0], filt = hi0filt, edges = edges,
-                           start = (0,0), step = (1,1), stop = recon.shape,
-                           result = recon)
+            recon += upConv(image = self.pyr[0], filt = hi0filt, edges = edges,
+                            start = (0,0), step = (1,1), stop = recon.shape)
 
         return recon
 

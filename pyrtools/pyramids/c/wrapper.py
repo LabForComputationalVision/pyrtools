@@ -17,7 +17,7 @@ libpath = glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'w
 lib = ctypes.cdll.LoadLibrary(libpath[0])
 
 
-def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, result=None):
+def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
     """Compute correlation of matrices image with `filt, followed by downsampling.
 
     These arguments should be 1D or 2D matrices, and image must be larger (in both dimensions) than
@@ -50,18 +50,19 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     image = image.copy().astype(float)
     filt = filt.copy().astype(float)
 
+    if edges not in ['circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
+                     'dont-compute']:
+        raise Exception("Don't know how to do convolution with edges %s!" % edges)
+
     if filt.ndim == 1:
         filt = filt.reshape(1,-1)
 
     if stop is None:
         stop = (image.shape[0], image.shape[1])
 
-    if result is None:
-        rxsz = len(range(start[0], stop[0], step[0]))
-        rysz = len(range(start[1], stop[1], step[1]))
-        result = np.zeros((rxsz, rysz))
-    else:
-        result = np.array(result.copy())
+    rxsz = len(range(start[0], stop[0], step[0]))
+    rysz = len(range(start[1], stop[1], step[1]))
+    result = np.zeros((rxsz, rysz))
 
     if edges == 'circular':
         lib.internal_wrap_reduce(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -86,7 +87,7 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     return result
 
 
-def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, result=None):
+def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
     """Upsample matrix image, followed by convolution with matrix filt.
 
     These arguments should be 1D or 2D matrices, and image must be larger (in both dimensions) than
@@ -107,10 +108,6 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     The window over which the convolution occurs is specfied by start (optional, default=(0, 0),
     and stop (optional, default = step .* (size(IM) + floor((start-1)./step))).
 
-    result is an optional result matrix.  The convolution result will be destructively added into
-    this matrix.  If this argument is passed, the result matrix will not be returned. DO NOT USE
-    THIS ARGUMENT IF YOU DO NOT UNDERSTAND WHAT THIS MEANS!!
-
     NOTE: this operation corresponds to multiplication of a signal vector by a matrix whose columns
     contain copies of the time-reversed (or space-reversed) FILT shifted by multiples of STEP.  See
     corrDn.m for the operation corresponding to the transpose of this matrix.
@@ -126,8 +123,13 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
     if filt.ndim == 1:
         filt = filt.reshape(1,-1)
 
-    # TODO: first condition is always TRUE?
-    if ((edges != "reflect1" or edges != "extend" or edges != "repeat") and
+    if edges not in ['circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
+                     'dont-compute']:
+        raise Exception("Don't know how to do convolution with edges %s!" % edges)
+
+    # from upConv.c, the c code that gets compiled in the matlab version: upConv has a bug for
+    # even-length kernels when using the reflect1, extend, or repeat edge-handlers
+    if ((edges in ["reflect1", "extend", "repeat"]) and
             (filt.shape[0] % 2 == 0 or filt.shape[1] % 2 == 0)):
         if filt.shape[1] == 1:
             filt = np.append(filt, 0.0)
@@ -138,15 +140,10 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
         else:
             raise Exception('Even sized 2D filters not yet supported by upConv.')
 
-    if stop is None and result is None:
+    if stop is None:
         stop = [imshape_d * step_d for imshape_d, step_d in zip(image.shape, step)]
-    elif stop is None:
-        stop = result.shape
 
-    if result is None:
-        result = np.zeros((stop[1], stop[0]))
-    else:
-        result = np.array(result.copy())
+    result = np.zeros((stop[1], stop[0]))
 
     temp = np.zeros((filt.shape[1], filt.shape[0]))
 
@@ -157,7 +154,6 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
                                  step[1], stop[1], start[0], step[0], stop[0],
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  stop[1], stop[0])
-        result = result.T
     else:
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -166,7 +162,7 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None, 
                             stop[1], start[0], step[0], stop[0],
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             stop[1], stop[0], edges.encode('ascii'))
-        result = np.reshape(result, stop)
+    result = np.reshape(result, stop)
 
     return result
 

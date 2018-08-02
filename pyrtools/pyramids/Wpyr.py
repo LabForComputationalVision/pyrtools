@@ -170,12 +170,15 @@ class WaveletPyramid(Pyramid):
             assert (bands >= 0).all(), "Error: band numbers must be larger than 0."
             assert (bands < self.width).all(), "Error: band numbers must be smaller than %d." % self.bandNums()
 
-        if self.height-1 in levs:
-            res = self.pyr[-1]
-        else:
-            res = np.zeros(self.pyrSize[-1])
 
-        for lev in range(self.height-2, -1, -1):
+
+        for lev in reversed(range(self.height)):
+            if lev == self.height-1:
+                if self.height-1 in levs:
+                    res = self.pyr[-1]
+                else:
+                    res = np.zeros(self.pyrSize[-1])
+                continue
 
             # compute size of result image: assumes critical sampling
             if self.width == 1:

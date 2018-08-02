@@ -14,13 +14,13 @@ def compareRecon(recon1, recon2, rtol=1e-5, atol=1e-8):
         print('shape is different!')
         print(recon1.shape)
         print(recon2.shape)
-        return 0
+        return False
 
     for i in range(recon1.shape[0]):
         for j in range(recon2.shape[1]):
             if numpy.absolute(recon1[i,j].real - recon2[i,j].real) > math.pow(10,-11):
                 print("real: i=%d j=%d %.15f %.15f diff=%.15f" % (i, j, recon1[i,j].real, recon2[i,j].real, numpy.absolute(recon1[i,j].real-recon2[i,j].real)))
-                return 0
+                return False
             ## FIX: need a better way to test
             # if we have many significant digits to the left of decimal we
             #   need to be less stringent about digits to the right.
@@ -33,6 +33,6 @@ def compareRecon(recon1, recon2, rtol=1e-5, atol=1e-8):
                 print(prec)
                 if numpy.absolute(recon1[i,j].imag - recon2[i,j].imag) > math.pow(10, prec):
                     print("imag: i=%d j=%d %.15f %.15f diff=%.15f" % (i, j, recon1[i,j].imag, recon2[i,j].imag, numpy.absolute(recon1[i,j].imag-recon2[i,j].imag)))
-                    return 0
+                    return False
 
-    return 1
+    return True
