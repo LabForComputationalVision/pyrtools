@@ -50,6 +50,10 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
     image = image.copy().astype(float)
     filt = filt.copy().astype(float)
 
+    if edges not in ['circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
+                     'dont-compute']:
+        raise Exception("Don't know how to do convolution with edges %s!" % edges)
+
     if filt.ndim == 1:
         filt = filt.reshape(1,-1)
 
@@ -118,6 +122,10 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
 
     if filt.ndim == 1:
         filt = filt.reshape(1,-1)
+
+    if edges not in ['circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
+                     'dont-compute']:
+        raise Exception("Don't know how to do convolution with edges %s!" % edges)
 
     # TODO: first condition is always TRUE?
     if ((edges != "reflect1" or edges != "extend" or edges != "repeat") and
