@@ -154,7 +154,6 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
                                  step[1], stop[1], start[0], step[0], stop[0],
                                  result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                                  stop[1], stop[0])
-        result = result.T
     else:
         lib.internal_expand(image.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             filt.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -163,7 +162,7 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
                             stop[1], start[0], step[0], stop[0],
                             result.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             stop[1], stop[0], edges.encode('ascii'))
-        result = np.reshape(result, stop)
+    result = np.reshape(result, stop)
 
     return result
 
