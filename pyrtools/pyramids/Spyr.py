@@ -14,7 +14,7 @@ from matplotlib import cm
 class Spyr(Pyramid):
 
     #constructor
-    def __init__(self, image, height='auto', filter='sp1Filters',
+    def __init__(self, image, height='auto', filt='sp1Filters',
                  edgeType='reflect1'):
         """Steerable pyramid. image parameter is required, others are optional
         - `image` - a 2D numpy array
@@ -26,16 +26,16 @@ class Spyr(Pyramid):
         """
         super().__init__(image=image, edgeType=edgeType)
 
-        self.filt = steerable_filters(filter)
+        self.filt = steerable_filters(filt)
         self.pyrType = 'Steerable'
 
-        filters = self.filt # temporary hack...
+        filters   = self.filt # temporary hack...
         harmonics = filters['harmonics']
-        lo0filt = filters['lo0filt']
-        hi0filt = filters['hi0filt']
-        lofilt = filters['lofilt']
-        bfilts = filters['bfilts']
-        steermtx = filters['mtx']
+        lo0filt   = filters['lo0filt']
+        hi0filt   = filters['hi0filt']
+        lofilt    = filters['lofilt']
+        bfilts    = filters['bfilts']
+        steermtx  = filters['mtx']
 
         max_ht = self.maxPyrHt(self.image.shape, lofilt.shape)
         if height == 'auto':
@@ -53,8 +53,8 @@ class Spyr(Pyramid):
             self.pyr.append([])
             self.pyrSize.append([])
 
-        im = self.image
-        im_sz = im.shape
+        im     = self.image
+        im_sz  = im.shape
         pyrCtr = 0
 
         hi0 = corrDn(image = im, filt = hi0filt, edges = self.edgeType);
@@ -126,13 +126,13 @@ class Spyr(Pyramid):
     def pyrHigh(self):
         return np.array(self.band(0))
 
-    def reconPyr(self, *args):
+    def reconPyr(self, filt=None, edgeType=None, levs='all', bands='all'):
         # defaults
 
-        if len(args) > 0:
-            filters = steerable_filters(args[0])
+        if filt is None:
+            filters = self.filt
         else:
-            filters = steerable_filters('sp1Filters')
+            filters = steerable_filters(filt)
 
         lo0filt = filters['lo0filt']
         hi0filt = filters['hi0filt']
@@ -142,42 +142,26 @@ class Spyr(Pyramid):
         # assume square filters  -- start of buildSpyrLevs
         bfiltsz = int(np.floor(np.sqrt(bfilts.shape[0])))
 
-        if len(args) > 1:
-            edges = args[1]
+        if edgeType is None:
+            edges = self.edgeType
         else:
-            edges = 'reflect1'
-
-        if len(args) > 2:
-            levs = args[2]
-        else:
-            levs = 'all'
-
-        if len(args) > 3:
-            bands = args[3]
-        else:
-            bands = 'all'
-
-        #---------------------------------------------------------
+            edges = edgeType
 
         maxLev = 2 + self.spyrHt()
-        if levs == 'all':
-            levs = np.array(list(range(maxLev)))
+        if isinstance(levs, str) and levs == 'all':
+            levs = np.arange(maxLev)
         else:
             levs = np.array(levs)
-            if (levs < 0).any() or (levs >= maxLev).any():
-                raise Exception("level numbers must be in the range [0, %d]." % (maxLev-1))
-            else:
-                levs = np.array(levs)
-                if len(levs) > 1 and levs[0] < levs[1]:
-                    levs = levs[::-1]  # we want smallest first
-        if bands == 'all':
-            bands = np.array(list(range(self.numBands())))
+            assert (levs >= 0).all(), "Error: level numbers must be larger than 0."
+            assert (levs < maxLev).all(), "Error: level numbers must be in the range [0, %d]" % (maxLev - 1)
+            levs = np.sort(levs) # we want smallest first
+
+        if isinstance(bands, str) and bands == "all":
+            bands = np.arange(self.numBands())
         else:
             bands = np.array(bands)
-            if (bands < 0).any() or (bands > bfilts.shape[1]).any():
-                raise Exception("band numbers must be in the range [0, %d]." % (self.numBands()-1))
-            else:
-                bands = np.array(bands)
+            assert (bands >= 0).all(), "Error: band numbers must be larger than 0."
+            assert (bands < bfilts.shape[1]).all(), "Error: band numbers must be in the range [0, %d]" % (self.numBands() - 1)
 
         # make a list of all pyramid layers to be used in reconstruction
         Nlevs = self.spyrHt()
@@ -186,9 +170,9 @@ class Spyr(Pyramid):
         reconList = []  # pyr indices used in reconstruction
 
         for lev in levs:
-            if lev == 0:
+            if lev == 0: # highpass residual
                 reconList.append(0)
-            elif lev == Nlevs+1:
+            elif lev == Nlevs+1: # lowpass residual
                 # number of levels times number of bands + top and bottom
                 #   minus 1 for 0 starting index
                 reconList.append( (Nlevs*Nbands) + 2 - 1)
@@ -197,6 +181,8 @@ class Spyr(Pyramid):
                     reconList.append( ((lev-1) * Nbands) + band + 1)
 
         reconList = np.sort(reconList)[::-1]  # deepest level first
+
+        # print(reconList) # TODO recon should still work without the hipass
 
         # initialize reconstruction
         if len(self.pyr)-1 in reconList:

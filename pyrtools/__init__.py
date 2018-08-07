@@ -10,7 +10,7 @@ from .pyramids.SCFpyr import SCFpyr
 
 from .pyramids.filters import namedFilter, binomialFilter, steerable_filters
 from .pyramids.steer import steer, steer2HarmMtx
-from .pyramids.pyr_utils import LB2idx, idx2LB, modulateFlip
+from .pyramids.pyr_utils import LB2idx, idx2LB
 
 from .tools.display_tools import imshow, animshow
 from .tools.synthetic_images import *

@@ -1,6 +1,6 @@
 import numpy as np
 from .pyramid import Pyramid
-from .pyr_utils import LB2idx, modulateFlip
+from .pyr_utils import LB2idx
 from .filters import namedFilter
 from .c.wrapper import corrDn, upConv
 from ..tools.display_tools import imshow
@@ -27,7 +27,7 @@ class WaveletPyramid(Pyramid):
         # if the image is 1D, parseFilter will
         # match the filter to the image dimensions
 
-        self.hi_filter = modulateFlip(self.lo_filter)
+        self.hi_filter = self.modulateFlip(self.lo_filter)
         # modulateFlip returns a filter that has
         # the same size as its input filter
         assert self.lo_filter.shape == self.hi_filter.shape
@@ -35,11 +35,28 @@ class WaveletPyramid(Pyramid):
         # Stagger sampling if filter is odd-length
         self.stag = (self.lo_filter.size + 1) % 2
 
+    def modulateFlip(self, lfilt):
+        ''' [HFILT] = modulateFlipShift(LFILT)
+            QMF/Wavelet highpass filter construction: modulate by (-1)^n,
+            reverse order (and shift by one, which is handled by the convolution
+            routines).  This is an extension of the original definition of QMF's
+            (e.g., see Simoncelli90).  '''
+        # check lfilt is effectively 1D
+        lfilt_shape = lfilt.shape
+        assert lfilt.size == max(lfilt_shape)
+        lfilt = lfilt.flatten()
+        ind = np.arange(lfilt.size,0,-1) - (lfilt.size + 1) // 2
+        hfilt = lfilt[::-1] * (-1.0) ** ind
+
+        # OLD: matlab version always returns a column vector
+        # NOW: same shape as input
+        return hfilt.reshape(lfilt_shape)
+
     def initHeight(self, height):
         self.height = 1 + self.maxPyrHt(self.image.shape, self.lo_filter.shape)
         if isinstance(height, int):
             assert height <= self.height, "Error: cannot build pyramid higher than %d levels" % (self.height)
-            self.height = height
+            self.height = 1 + height
 
     def initWidth(self):
         # compute the number of channels per level
@@ -142,7 +159,7 @@ class WaveletPyramid(Pyramid):
                           start = (1,0), stop = out_size)
         return res
 
-    def reconPyr(self, filt=None, edges=None, levs='all', bands='all'):
+    def reconPyr(self, filt=None, edgeType=None, levs='all', bands='all'):
         # Optional args
 
         if filt is None:
@@ -151,10 +168,13 @@ class WaveletPyramid(Pyramid):
             stag  = self.stag
         else:
             filt  = self.parseFilter(filt)
-            hfilt = modulateFlip(filt)
+            hfilt = self.modulateFlip(filt)
             stag  = (filt.size + 1) % 2
 
-        if edges is None: edges = self.edgeType
+        if edgeType is None:
+            edges = self.edgeType
+        else:
+            edges = edgeType
 
         if isinstance(levs, str) and levs == 'all':
             levs = np.arange(self.height)
@@ -169,8 +189,6 @@ class WaveletPyramid(Pyramid):
             bands = np.array(bands)
             assert (bands >= 0).all(), "Error: band numbers must be larger than 0."
             assert (bands < self.width).all(), "Error: band numbers must be smaller than %d." % self.bandNums()
-
-
 
         for lev in reversed(range(self.height)):
             if lev == self.height-1:
@@ -203,7 +221,6 @@ class WaveletPyramid(Pyramid):
 
                 res = self.reconPrev2D(res, lev, use_band, out_size, lo_size, hi_size,
                                        filt=filt, hfilt=hfilt, edges=edges)
-
 
         return res
 
