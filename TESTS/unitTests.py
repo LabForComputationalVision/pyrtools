@@ -300,95 +300,95 @@ class SpyrTests(unittest.TestCase):
     def test13(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr13.mat'))
         pyRamp = ppt.mkRamp((20,20))
-        pyPyr = ppt.Spyr(pyRamp, height=1, filter='sp0Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=1, filt='sp0Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test14(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr14.mat'))
         pyRamp = ppt.mkRamp((200,200))
-        pyPyr = ppt.Spyr(pyRamp, height=3, filter='sp0Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=3, filt='sp0Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test15(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr15.mat'))
         pyRamp = ppt.mkRamp((200,200))
-        pyPyr = ppt.Spyr(pyRamp, height=1, filter='sp1Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=1, filt='sp1Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test16(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr16.mat'))
         pyRamp = ppt.mkRamp((200,200))
-        pyPyr = ppt.Spyr(pyRamp, height=3, filter='sp1Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=3, filt='sp1Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test17(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr17.mat'))
         pyRamp = ppt.mkRamp((200,200))
-        pyPyr = ppt.Spyr(pyRamp, height=1, filter='sp3Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=1, filt='sp3Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test18(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr18.mat'))
         pyRamp = ppt.mkRamp((200,200))
-        pyPyr = ppt.Spyr(pyRamp, height=3, filter='sp3Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=3, filt='sp3Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test19(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr19.mat'))
         pyRamp = ppt.mkRamp((200,200))
-        pyPyr = ppt.Spyr(pyRamp, height=1, filter='sp5Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=1, filt='sp5Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test20(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr20.mat'))
         pyRamp = ppt.mkRamp((200,200))
-        pyPyr = ppt.Spyr(pyRamp, height=3, filter='sp5Filters')
+        pyPyr = ppt.Spyr(pyRamp, height=3, filt='sp5Filters')
         self.assertTrue(ppt.comparePyr(matPyr['pyr'], pyPyr))
     def test21(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr21.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp0Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp0Filters')
         recon = pyPyr.reconPyr('sp0Filters');
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test22(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr22.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp1Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp1Filters')
         recon = pyPyr.reconPyr('sp1Filters');
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test23(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr23.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp3Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp3Filters')
         recon = pyPyr.reconPyr('sp3Filters');
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test24(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr24.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp5Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp5Filters')
         recon = pyPyr.reconPyr('sp5Filters');
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test25(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr25.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp5Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp5Filters')
         recon = pyPyr.reconPyr('sp5Filters','reflect1',[0,1,2], [0]);
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test26(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr26.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp0Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp0Filters')
         recon = pyPyr.reconPyr('sp0Filters','reflect1',[0,1,2], [0]);
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test27(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr27.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp1Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp1Filters')
         recon = pyPyr.reconPyr('sp1Filters','reflect1',[0,1,2], [0]);
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test28(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr28.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp3Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp3Filters')
         recon = pyPyr.reconPyr('sp3Filters','reflect1',[0,1,2], [0]);
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
     def test29(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr29.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = ppt.Spyr(texture, height=3, filter='sp5Filters')
+        pyPyr = ppt.Spyr(texture, height=3, filt='sp5Filters')
         recon = pyPyr.reconPyr('sp5Filters','reflect1',[0,1,2], [0]);
         self.assertTrue(ppt.compareRecon(matPyr['recon'], recon))
 

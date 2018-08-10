@@ -26,8 +26,9 @@ class WaveletPyramid(Pyramid):
         self.lo_filter = self.parseFilter(filt)
         # if the image is 1D, parseFilter will
         # match the filter to the image dimensions
-
+        #print(self.modulateFlip2)
         self.hi_filter = self.modulateFlip(self.lo_filter)
+        # self.hi_filter = WaveletPyramid.modulateFlip([1.])
         # modulateFlip returns a filter that has
         # the same size as its input filter
         assert self.lo_filter.shape == self.hi_filter.shape
@@ -35,7 +36,9 @@ class WaveletPyramid(Pyramid):
         # Stagger sampling if filter is odd-length
         self.stag = (self.lo_filter.size + 1) % 2
 
-    def modulateFlip(self, lfilt):
+
+    @staticmethod
+    def modulateFlip(lfilt):
         ''' [HFILT] = modulateFlipShift(LFILT)
             QMF/Wavelet highpass filter construction: modulate by (-1)^n,
             reverse order (and shift by one, which is handled by the convolution
