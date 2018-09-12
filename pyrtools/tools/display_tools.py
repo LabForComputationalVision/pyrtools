@@ -321,6 +321,7 @@ def visualize_coeffs_tiled(coeffs, figsize):
         plt.plot([image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], [0-.5, image_size/ 2**(i) -.5], color='y', linestyle='-', linewidth=1)
         plt.plot([0, image_size/ 2**(i)-.5],[image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], color='y', linestyle='-', linewidth=1)
 
+#### rescale_image function is from stack overflow 
 def rescale_image(old_image):
     OldRange = (np.max(old_image) - np.min(old_image))
     NewRange = (255 - 0)
