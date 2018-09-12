@@ -104,7 +104,7 @@ def colormap_range(img, vrange):
 
 def find_zooms(images):
     """find the zooms necessary to display a list of images
-    
+
     this convenience function takes a list of images and finds out if they can all be displayed at
     the same size. for this to be the case, there must be an integer for each image such that the
     image can be multiplied by that integer to be the same size as the biggest image.
@@ -225,8 +225,8 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
     Parameters
     ----------
     movie : 3D numpy array or list
-        Array with time on the first axis or, equivalently, a list of 2d arrays. these 2d arrays 
-        don't have to all be the same size, but, if they're not, there must exist an integer such 
+        Array with time on the first axis or, equivalently, a list of 2d arrays. these 2d arrays
+        don't have to all be the same size, but, if they're not, there must exist an integer such
         that all of them can be zoomed in by an integer up to the biggest image.
     framerate : float
         Temporal resolution of the movie, in frames per second.
@@ -284,3 +284,45 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
     if as_html5:
         return HTML(anim.to_html5_video())
     return anim
+
+
+
+
+
+
+
+##### added this to be used for tiled diplay
+def visualize_coeffs_tiled(coeffs, figsize):
+    '''visulaizes wavelet coefficients in a tiled fashion. Assumes coeffs are from a complete representatoin
+    i.e. there are only 3 bands per scale
+    @coeffs: a list of tuples of arrays. Example for a wavelet pyramid of height 3:
+    [cA_n, (cH3_n, cV3_n, cD3_n), (cH2_n, cV2_n, cD2_n) , (cH1_n, cV1_n, cD1_n)]'''
+
+    levels = len(coeffs) - 1
+
+    image_size = 0
+    for i in range(len(coeffs)):
+        image_size = coeffs[i][0].shape[0] + image_size
+
+    temp = rescale_image(coeffs[0])
+    for i in range(1, levels+1):
+        temp1 = np.hstack((temp, rescale_image(coeffs[i][0])))
+        temp2 = np.hstack((rescale_image(coeffs[i][1]), rescale_image(coeffs[i][2])))
+        temp = np.vstack((temp1, temp2))
+    plt.figure(figsize= figsize)
+
+    plt.imshow(temp, 'gray')
+    plt.xlim(-.5,image_size-.5)
+    plt.ylim(image_size-.5,-.5)
+    plt.axis('off')
+
+    # Add lines
+    for i in range(levels):
+        plt.plot([image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], [0-.5, image_size/ 2**(i) -.5], color='y', linestyle='-', linewidth=1)
+        plt.plot([0, image_size/ 2**(i)-.5],[image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], color='y', linestyle='-', linewidth=1)
+
+def rescale_image(old_image):
+    OldRange = (np.max(old_image) - np.min(old_image))
+    NewRange = (255 - 0)
+    NewValue = (((old_image - np.min(old_image) ) * NewRange) / OldRange)
+    return NewValue
