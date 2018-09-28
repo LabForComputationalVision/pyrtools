@@ -6,14 +6,9 @@ from matplotlib.figure import Figure
 from matplotlib import animation
 from IPython.display import HTML
 
-# TODO
-# subclass matplotlib figure so that save fig uses correct dpi_scale_tran
-# ie. an integer multiple of the one used for creation of the figure
-# return an error message on plt.tight_layout
-# take a look at plt.saveim
-
 # def pyrshow():
 # all the display code for pyramids in this file (not redundant in each class)
+# for getting the right organization of axes: https://matplotlib.org/users/gridspec.html
 
 class PyrFigure(Figure):
     def __init__(self, dpi=96, *args, **kwargs):
@@ -23,10 +18,10 @@ class PyrFigure(Figure):
         function.
 
         If you do want to use, do the following: fig = plt.figure(FigureClass=PyrFigure) (NOT fig =
-        PyrFigure())
+        PyrFigure()) and analogously for other pyplot functions (plt.subplots, etc)
 
-        this enables us to make sure there's no aliasing: a single in the (image) array that we're
-        plotting will be represented as an integer multiple of pixels in the displayed figure
+        this enables us to make sure there's no aliasing: a single value in the (image) array that
+        we're plotting will be represented as an integer multiple of pixels in the displayed figure
 
         The dpi that's chosen is an arbitrary value, the only thing that matters is that we use the
         same one when creating and saving the figure, which is what we ensure here. This also means
