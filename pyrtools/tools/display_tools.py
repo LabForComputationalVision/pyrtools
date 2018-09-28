@@ -168,10 +168,10 @@ def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
     ax.imshow(img, cmap=cmap, vmin=vrange[0], vmax=vrange[1], interpolation='none', **kwargs)
 
     if title is not None:
-        # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
-        # TODO adapt the precision of displayed range to the order of magnitude of the values: .1E
-        ax.set_title(title + '\n range: [{:.1f}, {:.1f}] \n dims: [{}, {}] * {}'.format(
-                     vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), ) #{'fontsize': ax.bbox.height*(12./256)}
+        # adapt the precision of displayed range to the order of magnitude of the values
+        ax.set_title(title + '\n range: [{:.1e}, {:.1e}] \n dims: [{}, {}] * {}'.format(
+                 vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
+                 # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
 
 
 def reshape_axis(ax, axis_size_pix):
@@ -197,14 +197,17 @@ def reshape_axis(ax, axis_size_pix):
 def colormap_range(img, vrange):
     # this will clip the colormap
 
+    flatimg = np.concatenate([i.flatten() for i in img]).flatten()
+
     if vrange == 'auto' or vrange == 'auto1':
-        vrange_list = [np.min(img), np.max(img)]
+        vrange_list = [np.min(flatimg),
+                       np.max(flatimg)]
     elif vrange == 'auto2':
-        vrange_list = [img.mean() - 2 * img.std(),
-                       img.mean() + 2 * img.std()]
+        vrange_list = [flatimg.mean() - 2 * flatimg.std(),
+                       flatimg.mean() + 2 * flatimg.std()]
     elif vrange == 'auto3':
-        p1 = np.percentile(img, 10)
-        p2 = np.percentile(img, 90)
+        p1 = np.percentile(flatimg, 10)
+        p2 = np.percentile(flatimg, 90)
         vrange_list = [p1-(p2-p1)/8.0,
                        p2+(p2-p1)/8.0]
 
@@ -301,7 +304,9 @@ def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
 
     '''
 
-    image = np.array(image)
+    # making sure plotting works for
+    # (list of) arrays / torch.tensor
+    image = np.array([np.array(i) for i in image])
 
     if image.ndim == 1:
         # in this case, the two images were different sizes and so numpy can't combine them
@@ -422,40 +427,21 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
         return HTML(anim.to_html5_video())
     return anim
 
+def pyrshow(pyr, vrange = 'indep1'):
+    """
+    UNDER CONSTRUCTION
 
-##### added this to be used for tiled diplay
-def visualize_coeffs_tiled(coeffs, figsize):
-    '''visulaizes wavelet coefficients in a tiled fashion. Assumes coeffs are from a complete representatoin
-    i.e. there are only 3 bands per scale
-    @coeffs: a list of tuples of arrays. Example for a wavelet pyramid of height 3:
-    [cA_n, (cH3_n, cV3_n, cD3_n), (cH2_n, cV2_n, cD2_n) , (cH1_n, cV1_n, cD1_n)]'''
+    # TODO:
+        pyr_utils
+        spyrHt numBands
+        band pyrLow pyrHigh pyrSize
 
-    levels = len(coeffs) - 1
+    """
 
-    image_size = 0
-    for i in range(len(coeffs)):
-        image_size = coeffs[i][0].shape[0] + image_size
+    # DRAFT
+    # TODO - handle the complex filters
+    # ppt.imshow([pyr[s][o,:,:] for s in range(1, nScale + 1) for o in range(nOri)],
+    #             vrange=vrange, col_wrap=nOri);
+    # ppt.imshow([y[0],
+    #             y[nScale + 1]]);
 
-    temp = rescale_image(coeffs[0])
-    for i in range(1, levels+1):
-        temp1 = np.hstack((temp, rescale_image(coeffs[i][0])))
-        temp2 = np.hstack((rescale_image(coeffs[i][1]), rescale_image(coeffs[i][2])))
-        temp = np.vstack((temp1, temp2))
-    plt.figure(figsize= figsize)
-
-    plt.imshow(temp, 'gray')
-    plt.xlim(-.5,image_size-.5)
-    plt.ylim(image_size-.5,-.5)
-    plt.axis('off')
-
-    # Add lines
-    for i in range(levels):
-        plt.plot([image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], [0-.5, image_size/ 2**(i) -.5], color='y', linestyle='-', linewidth=1)
-        plt.plot([0, image_size/ 2**(i)-.5],[image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], color='y', linestyle='-', linewidth=1)
-
-#### rescale_image function is from stack overflow 
-def rescale_image(old_image):
-    OldRange = (np.max(old_image) - np.min(old_image))
-    NewRange = (255 - 0)
-    NewValue = (((old_image - np.min(old_image) ) * NewRange) / OldRange)
-    return NewValue
