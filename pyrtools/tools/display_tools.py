@@ -1,17 +1,135 @@
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from matplotlib.figure import Figure
 from matplotlib import animation
 from IPython.display import HTML
 
-# TODO
-# subclass matplotlib figure so that save fig uses correct dpi_scale_tran
-# ie. an integer multiple of the one used for creation of the figure
-# return an error message on plt.tight_layout
-# take a look at plt.saveim
-
 # def pyrshow():
 # all the display code for pyramids in this file (not redundant in each class)
+# for getting the right organization of axes: https://matplotlib.org/users/gridspec.html
+
+class PyrFigure(Figure):
+    def __init__(self, dpi=96, *args, **kwargs):
+        """custom figure class to ensure that plots are created and saved with a constant dpi
+
+        NOTE: generally, you shouldn't use this directly, relyign instead on the make_figure
+        function.
+
+        If you do want to use, do the following: fig = plt.figure(FigureClass=PyrFigure) (NOT fig =
+        PyrFigure()) and analogously for other pyplot functions (plt.subplots, etc)
+
+        this enables us to make sure there's no aliasing: a single value in the (image) array that
+        we're plotting will be represented as an integer multiple of pixels in the displayed figure
+
+        The dpi that's chosen is an arbitrary value, the only thing that matters is that we use the
+        same one when creating and saving the figure, which is what we ensure here. This also means
+        that you will be unable to use plt.tight_layout, since we set the spacing and size of the
+        subplots very intentionally.
+        """
+        kwargs['dpi'] = dpi
+        Figure.__init__(self, *args, **kwargs)
+
+
+    def savefig(self, fname, dpi_multiple=1, **kwargs):
+        """Save the current figure.
+
+        Call signature::
+
+          savefig(fname, dpi_multiple=1, facecolor='w', edgecolor='w',
+                  orientation='portrait', papertype=None, format=None,
+                  transparent=False, bbox_inches=None, pad_inches=0.1,
+                  frameon=None)
+
+        The output formats available depend on the backend being used.
+
+        Parameters
+        ----------
+
+        fname : str or file-like object
+            A string containing a path to a filename, or a Python
+            file-like object, or possibly some backend-dependent object
+            such as :class:`~matplotlib.backends.backend_pdf.PdfPages`.
+
+            If *format* is *None* and *fname* is a string, the output
+            format is deduced from the extension of the filename. If
+            the filename has no extension, the value of the rc parameter
+            ``savefig.format`` is used.
+
+            If *fname* is not a string, remember to specify *format* to
+            ensure that the correct backend is used.
+
+        Other Parameters
+        ----------------
+
+        dpi_multiple : [ scalar integer > 0 ]
+            How to scale the figure's dots per inch (must be an integer to
+            prevent aliasing). Default is 1, equivalent to using to the value
+            of the figure (default matplotlib savefig behavior with dpi='figure')
+
+        facecolor : color spec or None, optional
+            the facecolor of the figure; if None, defaults to savefig.facecolor
+
+        edgecolor : color spec or None, optional
+            the edgecolor of the figure; if None, defaults to savefig.edgecolor
+
+        orientation : {'landscape', 'portrait'}
+            not supported on all backends; currently only on postscript output
+
+        papertype : str
+            One of 'letter', 'legal', 'executive', 'ledger', 'a0' through
+            'a10', 'b0' through 'b10'. Only supported for postscript
+            output.
+
+        format : str
+            One of the file extensions supported by the active
+            backend.  Most backends support png, pdf, ps, eps and svg.
+
+        transparent : bool
+            If *True*, the axes patches will all be transparent; the
+            figure patch will also be transparent unless facecolor
+            and/or edgecolor are specified via kwargs.
+            This is useful, for example, for displaying
+            a plot on top of a colored background on a web page.  The
+            transparency of these patches will be restored to their
+            original values upon exit of this function.
+
+        frameon : bool
+            If *True*, the figure patch will be colored, if *False*, the
+            figure background will be transparent.  If not provided, the
+            rcParam 'savefig.frameon' will be used.
+
+        bbox_inches : str or `~matplotlib.transforms.Bbox`, optional
+            Bbox in inches. Only the given portion of the figure is
+            saved. If 'tight', try to figure out the tight bbox of
+            the figure. If None, use savefig.bbox
+
+        pad_inches : scalar, optional
+            Amount of padding around the figure when bbox_inches is
+            'tight'. If None, use savefig.pad_inches
+
+        bbox_extra_artists : list of `~matplotlib.artist.Artist`, optional
+            A list of extra artists that will be considered when the
+            tight bbox is calculated.
+        """
+        dpi = kwargs.pop('dpi', None)
+        if dpi is not None:
+            warnings.warn("Ignoring dpi argument: with PyrFigure, we do not use the dpi argument"
+                          " for saving, use dpi_multiple instead (this is done to prevent "
+                          "aliasing)")
+        kwargs['dpi'] = self.dpi * dpi_multiple
+        super().savefig(fname, **kwargs)
+
+
+    def tight_layout(self, renderer=None, pad=1.08, h_pad=None, w_pad=None,
+                     rect=None):
+        """THIS IS NOT SUPPORTED (we control placement very specifically)
+        """
+        raise AttributeError("tight_layout is not supported with PyrFigure (we control the "
+                             "layout, size, and spacing of these figures quite specifically and "
+                             "don't want this kind of automatic changes)")
+
 
 def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix=10, vert_pct=.8):
     """make a nice figure
@@ -24,7 +142,10 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
 
     # add extra 20% to the y direction for extra info
     # TODO if no title use all space
-    fig = plt.figure(figsize=(((n_cols-1)*col_margin_pix+n_cols*axis_size_pix[1]) / ppi, ((n_rows-1)*row_margin_pix+n_rows*(axis_size_pix[0]/vert_pct)) / ppi), dpi=ppi)
+    fig = plt.figure(FigureClass=PyrFigure,
+                     figsize=(((n_cols-1)*col_margin_pix+n_cols*axis_size_pix[1]) / ppi,
+                              ((n_rows-1)*row_margin_pix+n_rows*(axis_size_pix[0]/vert_pct)) / ppi),
+                     dpi=ppi)
     bbox = fig.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
     fig_width, fig_height = bbox.width*fig.dpi, bbox.height*fig.dpi
     rel_axis_width = axis_size_pix[1] / fig_width
@@ -33,23 +154,36 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
     rel_row_margin = row_margin_pix / fig_height
     for i in range(n_rows):
         for j in range(n_cols):
-            fig.add_axes([j*(rel_axis_width+rel_col_margin), 1.-((i+1)*rel_axis_height/vert_pct+i*rel_row_margin), rel_axis_width, rel_axis_height], frameon=False, xticks=[],yticks=[])
+            fig.add_axes([j*(rel_axis_width+rel_col_margin),
+                          1.-((i+1)*rel_axis_height/vert_pct+i*rel_row_margin), rel_axis_width,
+                          rel_axis_height], frameon=False, xticks=[],yticks=[])
     return fig
 
 
 def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
+    """helper function to display the image on the specified axis
+
+    NOTE: should not be used directly.
+    """
     ax.imshow(img, cmap=cmap, vmin=vrange[0], vmax=vrange[1], interpolation='none', **kwargs)
 
     if title is not None:
-        # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
-        # TODO adapt the precision of displayed range to the order of magnitude of the values: .1E
-        ax.set_title(title + '\n range: [{:.1f}, {:.1f}] \n dims: [{}, {}] * {}'.format(
-                     vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), ) #{'fontsize': ax.bbox.height*(12./256)}
+        # adapt the precision of displayed range to the order of magnitude of the values
+        ax.set_title(title + '\n range: [{:.1e}, {:.1e}] \n dims: [{}, {}] * {}'.format(
+                 vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
+                 # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
 
 
 def reshape_axis(ax, axis_size_pix):
-    # NOTE - can only shrink a big ax, not blow up one that is too small
+    """reshape axis to the specified size in pixels
 
+    this will reshape an axis so that the given axis is the specified size in pixels, which we use
+    to make sure that an axis is the same size as (or an integer multiple of) the array we're
+    trying to display. this is to prevent aliasing
+
+    NOTE: this can only shrink a big axis, not make a small one bigger, and will throw an exception
+    if you try to do thta.
+    """
     if ax.bbox.width < axis_size_pix[1] or ax.bbox.height < axis_size_pix[0]:
         raise Exception("Your axis is too small! Axis size: ({}, {}). Image size: ({}, {})".format(ax.bbox.width, ax.bbox.height, axis_size_pix[1], axis_size_pix[0]))
     bbox = ax.figure.get_window_extent().transformed(ax.figure.dpi_scale_trans.inverted())
@@ -59,17 +193,21 @@ def reshape_axis(ax, axis_size_pix):
     ax.set_position([*ax.get_position().bounds[:2], rel_axis_width, rel_axis_height])
     return ax
 
+
 def colormap_range(img, vrange):
     # this will clip the colormap
 
+    flatimg = np.concatenate([i.flatten() for i in img]).flatten()
+
     if vrange == 'auto' or vrange == 'auto1':
-        vrange_list = [np.min(img), np.max(img)]
+        vrange_list = [np.min(flatimg),
+                       np.max(flatimg)]
     elif vrange == 'auto2':
-        vrange_list = [img.mean() - 2 * img.std(),
-                       img.mean() + 2 * img.std()]
+        vrange_list = [flatimg.mean() - 2 * flatimg.std(),
+                       flatimg.mean() + 2 * flatimg.std()]
     elif vrange == 'auto3':
-        p1 = np.percentile(img, 10)
-        p2 = np.percentile(img, 90)
+        p1 = np.percentile(flatimg, 10)
+        p2 = np.percentile(flatimg, 90)
         vrange_list = [p1-(p2-p1)/8.0,
                        p2+(p2-p1)/8.0]
 
@@ -89,7 +227,7 @@ def colormap_range(img, vrange):
 
     elif isinstance(vrange, str):
         vrange_list = colormap_range(img, vrange='auto1')
-        print('Error: bad vrange argument, using auto1 instead')
+        warnings.warn('Bad vrange argument, using auto1 instead')
 
     # else: # TODO if explicit values are provided
         # vrange_list = vrange
@@ -128,6 +266,7 @@ def find_zooms(images):
         zooms.append(max_shape[0] // i.shape[0])
     return zooms, max_shape
 
+
 def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
             cmap=cm.gray, **kwargs):
     '''show image(s)
@@ -165,7 +304,9 @@ def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
 
     '''
 
-    image = np.array(image)
+    # making sure plotting works for
+    # (list of) arrays / torch.tensor
+    image = np.array([np.array(i) for i in image])
 
     if image.ndim == 1:
         # in this case, the two images were different sizes and so numpy can't combine them
@@ -217,6 +358,7 @@ def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
         _showIm(im, a, r, z, t, cmap, **kwargs)
 
     return fig
+
 
 def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
                **kwargs):
@@ -285,45 +427,20 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
         return HTML(anim.to_html5_video())
     return anim
 
+def pyrshow(pyr, vrange = 'indep1'):
+    """
+    UNDER CONSTRUCTION
 
+    # TODO:
+        pyr_utils
+        spyrHt numBands
+        band pyrLow pyrHigh pyrSize
 
+    """
 
-
-
-
-##### added this to be used for tiled diplay
-def visualize_coeffs_tiled(coeffs, figsize):
-    '''visulaizes wavelet coefficients in a tiled fashion. Assumes coeffs are from a complete representatoin
-    i.e. there are only 3 bands per scale
-    @coeffs: a list of tuples of arrays. Example for a wavelet pyramid of height 3:
-    [cA_n, (cH3_n, cV3_n, cD3_n), (cH2_n, cV2_n, cD2_n) , (cH1_n, cV1_n, cD1_n)]'''
-
-    levels = len(coeffs) - 1
-
-    image_size = 0
-    for i in range(len(coeffs)):
-        image_size = coeffs[i][0].shape[0] + image_size
-
-    temp = rescale_image(coeffs[0])
-    for i in range(1, levels+1):
-        temp1 = np.hstack((temp, rescale_image(coeffs[i][0])))
-        temp2 = np.hstack((rescale_image(coeffs[i][1]), rescale_image(coeffs[i][2])))
-        temp = np.vstack((temp1, temp2))
-    plt.figure(figsize= figsize)
-
-    plt.imshow(temp, 'gray')
-    plt.xlim(-.5,image_size-.5)
-    plt.ylim(image_size-.5,-.5)
-    plt.axis('off')
-
-    # Add lines
-    for i in range(levels):
-        plt.plot([image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], [0-.5, image_size/ 2**(i) -.5], color='y', linestyle='-', linewidth=1)
-        plt.plot([0, image_size/ 2**(i)-.5],[image_size/(2)**(i+1)-.5, image_size/2**(i+1)-.5], color='y', linestyle='-', linewidth=1)
-
-#### rescale_image function is from stackoverflow 
-def rescale_image(old_image):
-    OldRange = (np.max(old_image) - np.min(old_image))
-    NewRange = (255 - 0)
-    NewValue = (((old_image - np.min(old_image) ) * NewRange) / OldRange)
-    return NewValue
+    # DRAFT
+    # TODO - handle the complex filters
+    # ppt.imshow([pyr[s][o,:,:] for s in range(1, nScale + 1) for o in range(nOri)],
+    #             vrange=vrange, col_wrap=nOri);
+    # ppt.imshow([y[0],
+    #             y[nScale + 1]]);
