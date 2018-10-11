@@ -194,48 +194,40 @@ def reshape_axis(ax, axis_size_pix):
     return ax
 
 
-def colormap_range(img, vrange):
+def colormap_range(img, vrange='indep1'):
     # this will clip the colormap
-    # MAKE THIS SIMPLER
 
+    # flatimg is one long 1d array, which enables the min, max, mean, std, and percentile calls to
+    # operate on the values from each of the images simultaneously.
     flatimg = np.concatenate([i.flatten() for i in img]).flatten()
 
-    if vrange == 'auto' or vrange == 'auto1':
-        vrange_list = [np.min(flatimg),
-                       np.max(flatimg)]
-    elif vrange == 'auto2':
-        vrange_list = [flatimg.mean() - 2 * flatimg.std(),
-                       flatimg.mean() + 2 * flatimg.std()]
-    elif vrange == 'auto3':
-        p1 = np.percentile(flatimg, 10)
-        p2 = np.percentile(flatimg, 90)
-        vrange_list = [p1-(p2-p1)/8.0,
-                       p2+(p2-p1)/8.0]
+    if isinstance(vrange, str):
+        if vrange[:4] == 'auto':
+            if vrange == 'auto1':
+                vrange_list = [np.min(flatimg), np.max(flatimg)]
+            elif vrange == 'auto2':
+                vrange_list = [flatimg.mean() - 2 * flatimg.std(), flatimg.mean() + 2 * flatimg.std()]
+            elif vrange == 'auto3':
+                p1 = np.percentile(flatimg, 10)
+                p2 = np.percentile(flatimg, 90)
+                vrange_list = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
 
-    # get independent vrange by calling this function one image at a time
-    elif vrange is None or vrange == 'indep1':
-        vrange_list = []
-        for im in img:
-            vrange_list.append(colormap_range(im[None,:,:], vrange='auto1')[0])
-    elif vrange == 'indep2':
-        vrange_list = []
-        for im in img:
-            vrange_list.append(colormap_range(im[None,:,:], vrange='auto2')[0])
-    elif vrange == 'indep3':
-        vrange_list = []
-        for im in img:
-            vrange_list.append(colormap_range(im[None,:,:], vrange='auto3')[0])
+            # make sure to return as many ranges as there are images
+            vrange_list = [vrange_list] * len(img)
+            
+        elif vrange[:5] == 'indep':
+        # get independent vrange by calling this function one image at a time
+            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0] for im in img]
+        else:
+            vrange_list = colormap_range(img, vrange='auto1')
+            warnings.warn('Unknown vrange argument, using auto1 instead')
+    else:
+        # in this case, we've been passed two numbers, either as a list or tuple
+        if len(vrange) != 2:
+            raise Exception("If you're passing numbers to vrange, there must be 2 of them!")
+        vrange_list = [tuple(vrange)] * len(img)
 
-    elif isinstance(vrange, str):
-        vrange_list = colormap_range(img, vrange='auto1')
-        warnings.warn('Bad vrange argument, using auto1 instead')
-
-    # else: # TODO if explicit values are provided
-        # vrange_list = vrange
-
-    # making sure to return as many ranges as there are images
-    if isinstance(vrange, str) and vrange[:4] == 'auto':
-        vrange_list = [vrange_list] * len(img)
+    # double check that we're returning the right number of vranges
     assert len(img) == len(vrange_list)
 
     return vrange_list
@@ -268,7 +260,7 @@ def find_zooms(images):
     return zooms, max_shape
 
 
-def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
+def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
             cmap=cm.gray, **kwargs):
     '''show image(s)
 
@@ -279,9 +271,20 @@ def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
     images are indexed along the first dimension), or list of 2d arrays
         the image(s) to be shown
 
-    vrange: None or string or list of two numbers
-        auto
-        indep
+    vrange: One of the following strings or a list of two numbers. If two numbers, these will be
+    the vmin and vmax for all plotted images. If a string:
+    - auto1: all images have same vmin/vmax, which are the minimum/maximum values across all images
+    - auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
+             std dev (across all images)
+    - auto3: all images have same vmin/vmax. vmin is the 10th percentile minus 1/8 times the 
+             difference between the 90th and 10th percentile, and vmax is the 90th percentile plus
+             1/8 times that difference (across all images)
+    - indep1 (default): each image has an independent vmin/vmax, which are their minimum/maximum
+             values
+    - indep2: each image has an independent vmin/vmax, which is their mean minus/plus 2 std dev
+    - indep3: each image has an independent vmin/vmax. vmin is the 10th percentile minus 1/8 times 
+              the difference between the 90th and 10th percentile, and vmax is the 90th percentile
+              plus 1/8 times that difference
 
     zoom: TODO
 
@@ -302,7 +305,6 @@ def imshow(image, vrange=None, zoom=1, title='', col_wrap=None, ax=None,
     -------
 
     fig : figure
-
     '''
 
     # making sure plotting works for
