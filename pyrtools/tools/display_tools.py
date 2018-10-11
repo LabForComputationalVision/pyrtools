@@ -64,7 +64,7 @@ class PyrFigure(Figure):
         ----------------
 
         dpi_multiple : [ scalar integer > 0 ]
-            How to scale the figure's dots per inch (must be an integer to 
+            How to scale the figure's dots per inch (must be an integer to
             prevent aliasing). Default is 1, equivalent to using to the value
             of the figure (default matplotlib savefig behavior with dpi='figure')
 
@@ -452,4 +452,3 @@ def pyrshow(pyr, vrange = 'indep1'):
     #             vrange=vrange, col_wrap=nOri);
     # ppt.imshow([y[0],
     #             y[nScale + 1]]);
-
