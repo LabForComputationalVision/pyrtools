@@ -1,12 +1,13 @@
 import numpy as np
-import scipy
-import warnings
-from .Spyr import Spyr
+from scipy.special import factorial
+import warnings #
+
+from .Spyr import SteerablePyramidSpace
 from .c.wrapper import pointOp
 from .steer import steer2HarmMtx
 from ..tools.utils import rcosFn
 
-class SFpyr(Spyr):
+class SteerablePyramidFreq(SteerablePyramidSpace):
     filt = None
     edges = None
 
@@ -133,7 +134,7 @@ class SFpyr(Spyr):
             Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
             order = nbands -1
-            const = (2**(2*order))*(scipy.special.factorial(order, exact=True)**2)/ float(nbands*scipy.special.factorial(2*order, exact=True))
+            const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(nbands*factorial(2*order, exact=True))
             Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
             log_rad_test = np.reshape(log_rad,(1,
                                                   log_rad.shape[0]*
@@ -276,7 +277,7 @@ class SFpyr(Spyr):
         Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
         order = nbands -1
-        const = (2**(2*order))*(scipy.special.factorial(order, exact=True)**2)/ float(nbands*scipy.special.factorial(2*order, exact=True))
+        const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(nbands*factorial(2*order, exact=True))
         Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
 
         # lowest band

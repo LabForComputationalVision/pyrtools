@@ -6,9 +6,6 @@ from matplotlib.figure import Figure
 from matplotlib import animation
 from IPython.display import HTML
 
-# def pyrshow():
-# all the display code for pyramids in this file (not redundant in each class)
-# for getting the right organization of axes: https://matplotlib.org/users/gridspec.html
 
 class PyrFigure(Figure):
     def __init__(self, dpi=96, *args, **kwargs):
@@ -229,15 +226,21 @@ def colormap_range(img, vrange):
         vrange_list = colormap_range(img, vrange='auto1')
         warnings.warn('Bad vrange argument, using auto1 instead')
 
-    # else: # TODO if explicit values are provided
-        # vrange_list = vrange
+    # if explicit values are provided
+    elif isinstance(vrange, tuple) and isinstance(vrange[0], (int, float)) and isinstance(vrange[1], (int, float)) and len(vrange) == 2:
+        vrange_list = [vrange] * len(img)
 
     # making sure to return as many ranges as there are images
     if isinstance(vrange, str) and vrange[:4] == 'auto':
         vrange_list = [vrange_list] * len(img)
+
     assert len(img) == len(vrange_list)
 
     return vrange_list
+
+# TODO: a nice feature to add would be:
+# for vrange = 'auto*', colorm map is shared accros subplots
+# BUT the printed range of value is still private to each subplot
 
 
 def find_zooms(images):
@@ -427,20 +430,38 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
         return HTML(anim.to_html5_video())
     return anim
 
-def pyrshow(pyr, vrange = 'indep1'):
-    """
+def pyrshow(pyr, residuals = True, vrange = None, **kwargs):
+    """ Display a pyramid as a grid of images
     UNDER CONSTRUCTION
 
-    # TODO:
-        pyr_utils
-        spyrHt numBands
-        band pyrLow pyrHigh pyrSize
+    TODO
+    - make pyrtools compatible (for now used with torch code)
+        if torch detach
+        if batch, arg to chose image index
+    - optional argument to show quadrature pair filters next to one another
+    - add vrange argument for the entire thing to be on the same scale, but
+    still indicate private range in the title
 
     """
 
-    # DRAFT
-    # TODO - handle the complex filters
-    # ppt.imshow([pyr[s][o,:,:] for s in range(1, nScale + 1) for o in range(nOri)],
-    #             vrange=vrange, col_wrap=nOri);
-    # ppt.imshow([y[0],
-    #             y[nScale + 1]]);
+    nScale = len(pyr) - 2
+    nOri   = pyr[1].shape[2]
+    # complx = True if pyr[1].shape[1] is 2 else False
+    numChannels = pyr[1].shape[1]
+    i = 0
+
+    if vrange == 'allauto':
+        # vrange_list = colormap_range(pyr, None)
+        # vrange = vrange_list[0]
+        flat   = np.concatenate([pyr[s].detach().numpy().flatten() for s in range(len(pyr))]).flatten()
+        vrange = (flat.min().item(), flat.max().item())
+
+    for k in range(numChannels):
+
+        imshow([pyr[s][i,k,o,:,:].detach() for s in range(1, nScale + 1) for o in range(nOri)], col_wrap=nOri, vrange=vrange, **kwargs)
+
+        # TODO generalize that bit
+        if residuals == 'all':
+            imshow([pyr[0][i, k].squeeze().detach(),pyr[nScale + 1][i, k].squeeze().detach()], vrange=vrange, **kwargs)
+    if residuals is True:
+        imshow([pyr[0][i].squeeze().detach(),pyr[nScale + 1][i].squeeze().detach()], vrange=vrange, **kwargs)

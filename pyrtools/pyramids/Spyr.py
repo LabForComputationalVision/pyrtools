@@ -1,17 +1,14 @@
 import numpy as np
-import os
 from .pyramid import Pyramid
-from .pyr_utils import LB2idx
 from .filters import steerable_filters
 from .c.wrapper import corrDn, upConv
+
 from ..tools.display_tools import imshow
 from matplotlib import cm
+from .pyr_utils import LB2idx
 
-# from ..tools import JBhelpers
-# from . import pyPyrUtils
-# from .convolutions import *
 
-class Spyr(Pyramid):
+class SteerablePyramidSpace(Pyramid):
 
     #constructor
     def __init__(self, image, height='auto', filt='sp1Filters',
