@@ -196,6 +196,7 @@ def reshape_axis(ax, axis_size_pix):
 
 def colormap_range(img, vrange):
     # this will clip the colormap
+    # MAKE THIS SIMPLER
 
     flatimg = np.concatenate([i.flatten() for i in img]).flatten()
 
@@ -437,6 +438,13 @@ def pyrshow(pyr, vrange = 'indep1'):
         band pyrLow pyrHigh pyrSize
 
     """
+    # for complex version, there will be double the "real bands" (not highpass and lowpass), and we
+    # want to either present them one after the other or interleaved (make both possible).
+
+    # assume the python version pyramid API (instead of torch). we should probably write up a
+    # function that detaches and converts torch pyramid to python API. and then any changes to that
+    # shared API will be relatively easy to make (all pyrshow cares about is knowing how to iterate
+    # through the orientations and scales)
 
     # DRAFT
     # TODO - handle the complex filters
