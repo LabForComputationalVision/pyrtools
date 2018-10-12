@@ -141,8 +141,9 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
     # this is an arbitrary value
     ppi = 96
 
-    # add extra 20% to the y direction for extra info
-    # TODO if no title use all space
+    # we typically add extra space to the y direction to leave room for the title. this is
+    # controlled by vert_pct: the default value works well if you want a title, and it should be 1
+    # if you don't want to use a title
     fig = plt.figure(FigureClass=PyrFigure,
                      figsize=(((n_cols-1)*col_margin_pix+n_cols*axis_size_pix[1]) / ppi,
                               ((n_rows-1)*row_margin_pix+n_rows*(axis_size_pix[0]/vert_pct)) / ppi),
