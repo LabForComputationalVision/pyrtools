@@ -12,7 +12,7 @@ from .pyramids.filters import namedFilter, binomialFilter, steerable_filters
 from .pyramids.steer import steer, steer2HarmMtx
 from .pyramids.pyr_utils import LB2idx, idx2LB
 
-from .tools.display_tools import imshow, animshow
+from .tools.display_tools import imshow, animshow, pyrshow
 from .tools.synthetic_images import *
 from .tools.imStats import imCompare, imStats, range2, skew2, var2
 from .tools.utils import rcosFn, matlab_histo, histoMatch, entropy2, matlab_round
