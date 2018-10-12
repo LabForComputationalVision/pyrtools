@@ -430,7 +430,11 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
     plt.close(f)
 
     if as_html5:
-        return HTML(anim.to_html5_video())
+        # to_html5_video will call savefig with a dpi kwarg, so our custom figure class will raise
+        # a warning. we don't want to worry people, so we go ahead and suppress it
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=UserWarning)
+            return HTML(anim.to_html5_video())
     return anim
 
 def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1):
