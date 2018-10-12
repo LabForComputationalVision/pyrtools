@@ -7,9 +7,6 @@ from matplotlib.figure import Figure
 from matplotlib import animation
 from IPython.display import HTML
 
-# def pyrshow():
-# all the display code for pyramids in this file (not redundant in each class)
-# for getting the right organization of axes: https://matplotlib.org/users/gridspec.html
 
 class PyrFigure(Figure):
     def __init__(self, dpi=96, *args, **kwargs):
@@ -234,6 +231,10 @@ def colormap_range(img, vrange='indep1'):
 
     return vrange_list
 
+# TODO: a nice feature to add would be:
+# for vrange = 'auto*', colorm map is shared accros subplots
+# BUT the printed range of value is still private to each subplot
+
 
 def find_zooms(images):
     """find the zooms necessary to display a list of images
@@ -440,10 +441,13 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
 def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1):
     """UNDER CONSTRUCTION
 
-    # TODO:
-        pyr_utils
-        spyrHt numBands
-        band pyrLow pyrHigh pyrSize
+    TODO
+    - make pyrtools compatible (for now used with torch code)
+        if torch detach
+        if batch, arg to chose image index
+    - optional argument to show quadrature pair filters next to one another
+    - add vrange argument for the entire thing to be on the same scale, but
+    still indicate private range in the title
 
     col_wrap: int or None. Only usable when the pyramid is one-dimensional (e.g., Gaussian or
     Laplacian Pyramid, otherwise the column wrap is determined by the number of bands)

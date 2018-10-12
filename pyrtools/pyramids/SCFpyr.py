@@ -1,67 +1,59 @@
 import numpy
 import cmath
 import scipy
-from .SFpyr import SFpyr
+from .SFpyr import SteerablePyramidFreq
 from .c.wrapper import pointOp
 from .steer import steer2HarmMtx
 from ..tools.utils import rcosFn
 from ..tools.synthetic_images import mkAngle
 
-class SCFpyr(SFpyr):
+
+class SteerablePyramidComplex(SteerablePyramidFreq):
     filt = ''
     edges = ''
 
     #constructor
-    def __init__(self, *args):    # (image, height, order, twidth)
+    def __init__(self, image, height='auto', order=3, twidth=1):
+        """
+        description
+        why complex?
+        quadrature pair - Hilbert transform
+        Note not steerable
+        """
+
         self.pyrType = 'steerableFrequency'
+        self.image = np.array(image)
 
-        if len(args) > 0:
-            self.image = args[0]
-        else:
-            print("First argument (image) is required.")
-            return
-
-        #------------------------------------------------
-        # defaults:
-
-        max_ht = numpy.floor( numpy.log2( min(self.image.shape) ) ) - 2
-        if len(args) > 1:
-            if(args[1] > max_ht):
-                print("Error: cannot build pyramid higher than %d levels." % (max_ht))
-            ht = args[1]
-        else:
+        max_ht = np.floor(np.log2(min(self.image.shape))) - 2
+        if height == 'auto':
             ht = max_ht
+        elif height > max_ht:
+            raise Exception("Cannot build pyramid higher than %d levels." % (max_ht))
+        else:
+            ht = height
         ht = int(ht)
 
-        if len(args) > 2:
-            if args[2] > 15 or args[2] < 0:
-                print("Warning: order must be an integer in the range [0,15]. Truncating.")
-                order = min( max(args[2],0), 15 )
-            else:
-                order = args[2]
-        else:
-            order = 3
+        if order > 15 or order < 0:
+            warnings.warn("order must be an integer in the range [0,15]. Truncating.")
+            order = min(max(order, 0), 15)
+        order = int(order)
 
         nbands = order+1
 
-        if len(args) > 3:
-            if args[3] <= 0:
-                print("Warning: twidth must be positive. Setting to 1.")
-                twidth = 1
-            else:
-                twidth = args[3]
-        else:
+        if twidth <= 0:
+            warnings.warn("twidth must be positive. Setting to 1.")
             twidth = 1
+        twidth = int(twidth)
 
         #------------------------------------------------------
+        # DOES NOT MAKE SENSE HERE
         # steering stuff:
-
-        if nbands % 2 == 0:
-            harmonics = numpy.arange(nbands // 2) * 2 + 1
-        else:
-            harmonics = numpy.arange((nbands-1) // 2) * 2
-
-        steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(list(range(nbands)))/nbands, even_phase=True)
+        # if nbands % 2 == 0:
+        #     harmonics = numpy.arange(nbands // 2) * 2 + 1
+        # else:
+        #     harmonics = numpy.arange((nbands-1) // 2) * 2
+        #
+        # steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(list(range(nbands)))/nbands, even_phase=True)
 
         #------------------------------------------------------
 

@@ -4,9 +4,9 @@ from .pyramids.pyramid import Pyramid
 from .pyramids.Gpyr import GaussianPyramid
 from .pyramids.Lpyr import LaplacianPyramid
 from .pyramids.Wpyr import WaveletPyramid
-from .pyramids.Spyr import Spyr
-from .pyramids.SFpyr import SFpyr
-from .pyramids.SCFpyr import SCFpyr
+from .pyramids.Spyr import SteerablePyramidSpace
+from .pyramids.SFpyr import SteerablePyramidFreq
+from .pyramids.SCFpyr import SteerablePyramidComplex
 
 from .pyramids.filters import namedFilter, binomialFilter, steerable_filters
 from .pyramids.steer import steer, steer2HarmMtx

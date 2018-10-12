@@ -104,8 +104,8 @@ def steerable_filters(filter_name):
         return sp3Filters()
     elif filter_name == 'sp5Filters':
         return sp5Filters()
-    elif os.path.isfile(filter_name):
-        raise Exception("Filter files not supported yet")
+    # elif os.path.isfile(filter_name):
+    #     raise Exception("Filter files not supported yet")
     else:
         raise Exception("filter parameters value %s not supported" % (filter_name))
 
