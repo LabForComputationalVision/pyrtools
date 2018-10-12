@@ -203,7 +203,7 @@ def colormap_range(img, vrange='indep1'):
 
     if isinstance(vrange, str):
         if vrange[:4] == 'auto':
-            if vrange == 'auto1':
+            if vrange == 'auto1' or vrange == 'auto':
                 vrange_list = [np.min(flatimg), np.max(flatimg)]
             elif vrange == 'auto2':
                 vrange_list = [flatimg.mean() - 2 * flatimg.std(), flatimg.mean() + 2 * flatimg.std()]
@@ -273,7 +273,8 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
     vrange: One of the following strings or a list of two numbers. If two numbers, these will be
     the vmin and vmax for all plotted images. If a string:
-    - auto1: all images have same vmin/vmax, which are the minimum/maximum values across all images
+    - auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all 
+                  images
     - auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
              std dev (across all images)
     - auto3: all images have same vmin/vmax. vmin is the 10th percentile minus 1/8 times the 
