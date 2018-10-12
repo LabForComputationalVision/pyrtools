@@ -1,3 +1,4 @@
+import itertools
 import warnings
 import numpy as np
 import matplotlib.pyplot as plt
@@ -431,16 +432,26 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
         return HTML(anim.to_html5_video())
     return anim
 
-def pyrshow(pyr, vrange = 'indep1'):
-    """
-    UNDER CONSTRUCTION
+def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1):
+    """UNDER CONSTRUCTION
 
     # TODO:
         pyr_utils
         spyrHt numBands
         band pyrLow pyrHigh pyrSize
 
+    col_wrap: int or None. Only usable when the pyramid is one-dimensional (e.g., Gaussian or
+    Laplacian Pyramid, otherwise the column wrap is determined by the number of bands)
+
+    zoom: float. how much to scale the size of the images by. zoom times the size of the largest
+    image must be an integer (and thus zoom should probably be an integer or 1/(2^n)).
     """
+    # thinking about doing two versions of this:
+    # 1. like current one, shows each band at its actual size, arranged in some orderly way
+    #    (using https://matplotlib.org/users/gridspec.html)
+    # 2. in a more reasonable way, all shown at same size (with zoom made clear), arranged by
+    #    height/width
+    
     # for complex version, there will be double the "real bands" (not highpass and lowpass), and we
     # want to either present them one after the other or interleaved (make both possible).
 
@@ -455,3 +466,32 @@ def pyrshow(pyr, vrange = 'indep1'):
     #             vrange=vrange, col_wrap=nOri);
     # ppt.imshow([y[0],
     #             y[nScale + 1]]);
+
+    # if the pyramid has a "width", that is, multiple sub-bands at the same height (corresponding
+    # to different orientations), we want to use that to structure our grid of axes.
+    try:
+        # Wavelet pyramid has a width attribute
+        col_wrap_new = pyr.width
+        imgs = pyr.pyr
+        # the last height does not have all the bands, only the residuals
+        titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.height-1),
+                                                                                range(pyr.width))]
+        titles = titles + ["residual lowpass"]
+    except AttributeError:
+        try:
+            # and the steerable pyramids have a numBands function
+            col_wrap_new = pyr.numBands()
+            imgs = pyr.pyr[1:-1] + [pyr.pyr[0], pyr.pyr[-1]]
+            titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.spyrHt()),
+                                                                                    range(pyr.numBands()))]
+            titles = titles + ["residual highpass", "residual lowpass"]
+        except AttributeError:
+            col_wrap_new = None
+            imgs = pyr.pyr
+            titles = ["height %02d"%h for h in range(pyr.height)]
+    if col_wrap_new is not None:
+        if col_wrap is not None:
+            warnings.warn("The pyramid to display has multiple sub-bands at a given height, so we"
+                          " use that to determine the col_wrap instead of the user-specified value")
+        col_wrap = col_wrap_new
+    imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles)
