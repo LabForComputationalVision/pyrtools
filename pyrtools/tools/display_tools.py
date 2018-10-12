@@ -267,9 +267,10 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     Parameters
     ----------
 
-    img: 2d array (one image to display), 3d array (multiple images to display,
-    images are indexed along the first dimension), or list of 2d arrays
-        the image(s) to be shown
+    img: 2d array (one image to display), 3d array (multiple images to display, images are indexed
+    along the first dimension), or list of 2d arrays. the image(s) to be shown. all images will be
+    automatically rescaled so they're displayed at the same size. thus, their sizes must be scalar
+    multiples of each other.
 
     vrange: One of the following strings or a list of two numbers. If two numbers, these will be
     the vmin and vmax for all plotted images. If a string:
@@ -287,7 +288,8 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
               the difference between the 90th and 10th percentile, and vmax is the 90th percentile
               plus 1/8 times that difference
 
-    zoom: TODO
+    zoom: float. how much to scale the size of the images by. zoom times the size of the largest
+    image must be an integer (and thus zoom should probably be an integer or 1/(2^n)).
 
     title: string , list of strings or None
         if string, will put the same title on every plot.
@@ -312,6 +314,8 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     # (list of) arrays / torch.tensor
     image = np.array([np.array(i) for i in image])
 
+    if hasattr(zoom, '__iter__'):
+        raise Exception("zoom must be a single number!")
     if image.ndim == 1:
         # in this case, the two images were different sizes and so numpy can't combine them
         # correctly
@@ -327,10 +331,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     zooms = zoom * np.array(zooms)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
         raise Exception("zoom * image.shape must result in integers!")
-
-    # TODO zoom list
-    # TODO: verify that provided zooms make all images same size
-    # else give error message and correct by default
 
     if ax is None:
         if col_wrap is None:
