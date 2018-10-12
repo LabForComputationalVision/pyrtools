@@ -19,7 +19,7 @@ class SteerablePyramidComplex(SteerablePyramidFreq):
         why complex?
         quadrature pair - Hilbert transform
         Note not steerable
-        """"
+        """
 
         self.pyrType = 'steerableFrequency'
         self.image = np.array(image)
