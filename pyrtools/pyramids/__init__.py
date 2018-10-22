@@ -1,8 +1,3 @@
-# __all__ = ["GaussianPyramid", 'LaplacianPyramid', 'WaveletPyramid', 'SteerablePyramidSpace',
-#            'SteerablePyramidFreq', 'SteerablePyramidComplex', 'namedFilter', 'binomialFilter',
-#            'steerable_filters', 'steer', 'steer2HarmMtx', 'LB2idx', 'idx2LB']
-
-# from .pyramid import Pyramid
 from .GaussianPyramid import GaussianPyramid
 from .LaplacianPyramid import LaplacianPyramid
 from .WaveletPyramid import WaveletPyramid
