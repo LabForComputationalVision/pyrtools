@@ -2,7 +2,7 @@ import numpy as np
 from scipy.special import factorial
 import warnings #
 
-from .Spyr import SteerablePyramidSpace
+from .SteerablePyramidSpace import SteerablePyramidSpace
 from .c.wrapper import pointOp
 from .steer import steer2HarmMtx
 from ..tools.utils import rcosFn

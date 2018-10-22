@@ -1,7 +1,7 @@
 import numpy
 import cmath
 import scipy
-from .SFpyr import SteerablePyramidFreq
+from .SteerablePyramidFreq import SteerablePyramidFreq
 from .c.wrapper import pointOp
 from .steer import steer2HarmMtx
 from ..tools.utils import rcosFn

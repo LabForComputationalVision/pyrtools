@@ -1,5 +1,5 @@
 import numpy as np
-from .Gpyr import GaussianPyramid
+from .GaussianPyramid import GaussianPyramid
 from .c.wrapper import upConv
 
 class LaplacianPyramid(GaussianPyramid):
