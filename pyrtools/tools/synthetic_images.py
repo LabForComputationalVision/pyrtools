@@ -284,6 +284,10 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1,
         direction = np.arctan2(frequency[0], frequency[1])
         frequency = np.linalg.norm(frequency)
 
+    elif period is None and direction is None and frequency is None:
+        frequency = (2.0 * np.pi) / np.log2(size[0])
+        direction = 0
+
     #----------------------------------------------------------------
 
     if origin is None:
@@ -331,6 +335,10 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
     elif frequency is not None:
         direction = np.arctan2(frequency[0], frequency[1])
         frequency = np.linalg.norm(frequency)
+
+    elif period is None and direction is None and frequency is None:
+        frequency = (2.0 * np.pi) / np.log2(size[0])
+        direction = 0
 
     if twidth is None:
         twidth = min(2, 2.0 * np.pi / (3.0*frequency))

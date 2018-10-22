@@ -170,7 +170,7 @@ def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
     if title is not None:
         # adapt the precision of displayed range to the order of magnitude of the values
         ax.set_title(title + '\n range: [{:.1e}, {:.1e}] \n dims: [{}, {}] * {}'.format(
-                 vrange[0], vrange[1], img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
+                 img.min(), img.max(), img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
                  # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
 
 
@@ -214,7 +214,7 @@ def colormap_range(img, vrange='indep1'):
 
             # make sure to return as many ranges as there are images
             vrange_list = [vrange_list] * len(img)
-            
+
         elif vrange[:5] == 'indep':
         # get independent vrange by calling this function one image at a time
             vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0] for im in img]
@@ -231,10 +231,6 @@ def colormap_range(img, vrange='indep1'):
     assert len(img) == len(vrange_list)
 
     return vrange_list
-
-# TODO: a nice feature to add would be:
-# for vrange = 'auto*', colorm map is shared accros subplots
-# BUT the printed range of value is still private to each subplot
 
 
 def find_zooms(images):
@@ -278,17 +274,17 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
     vrange: One of the following strings or a list of two numbers. If two numbers, these will be
     the vmin and vmax for all plotted images. If a string:
-    - auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all 
+    - auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all
                   images
     - auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
              std dev (across all images)
-    - auto3: all images have same vmin/vmax. vmin is the 10th percentile minus 1/8 times the 
+    - auto3: all images have same vmin/vmax. vmin is the 10th percentile minus 1/8 times the
              difference between the 90th and 10th percentile, and vmax is the 90th percentile plus
              1/8 times that difference (across all images)
     - indep1 (default): each image has an independent vmin/vmax, which are their minimum/maximum
              values
     - indep2: each image has an independent vmin/vmax, which is their mean minus/plus 2 std dev
-    - indep3: each image has an independent vmin/vmax. vmin is the 10th percentile minus 1/8 times 
+    - indep3: each image has an independent vmin/vmax. vmin is the 10th percentile minus 1/8 times
               the difference between the 90th and 10th percentile, and vmax is the 90th percentile
               plus 1/8 times that difference
 
@@ -344,16 +340,16 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         if np.iscomplex(img).any():
             if plot_complex == 'rectangular':
                 image_tmp.extend([np.real(img), np.imag(img)])
-                title_tmp.extend([t + ", real", t + ", imaginary"])
-            else:
+                title_tmp.extend([t + " real", t + " imaginary"])
+            elif plot_complex == 'polar':
                 image_tmp.extend([np.abs(img), np.angle(img)])
-                title_tmp.extend([t + ", amplitude", t + ", phase"])
+                title_tmp.extend([t + " amplitude", t + " phase"])
         else:
             image_tmp.append(np.array(img))
             title_tmp.append(t)
     image = np.array(image_tmp)
     title = title_tmp
-    
+
 
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
@@ -427,8 +423,6 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
 
     """
 
-    # TODO: size -> zoom, control ppi (reuse previous showIm functions?)
-
     vrange_list = colormap_range(movie, vrange=vrange)
     kwargs.setdefault("vmin", vrange_list[0][0])
     kwargs.setdefault("vmax", vrange_list[0][1])
@@ -471,29 +465,27 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
             return HTML(anim.to_html5_video())
     return anim
 
+
 def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
     """UNDER CONSTRUCTION
-
-    TODO
-    - make pyrtools compatible (for now used with torch code)
-        if torch detach
-        if batch, arg to chose image index
-    - optional argument to show quadrature pair filters next to one another
-    - add vrange argument for the entire thing to be on the same scale, but
-    still indicate private range in the title
 
     col_wrap: int or None. Only usable when the pyramid is one-dimensional (e.g., Gaussian or
     Laplacian Pyramid, otherwise the column wrap is determined by the number of bands)
 
     zoom: float. how much to scale the size of the images by. zoom times the size of the largest
     image must be an integer (and thus zoom should probably be an integer or 1/(2^n)).
+
+    TODO
+    - handle 1D signals
+
+
     """
     # thinking about doing two versions of this:
     # 1. like current one, shows each band at its actual size, arranged in some orderly way
     #    (using https://matplotlib.org/users/gridspec.html)
     # 2. in a more reasonable way, all shown at same size (with zoom made clear), arranged by
     #    height/width
-    
+
     # for complex version, there will be double the "real bands" (not highpass and lowpass), and we
     # want to either present them one after the other or interleaved (make both possible).
 
