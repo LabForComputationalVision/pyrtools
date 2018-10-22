@@ -304,7 +304,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         so if the bbox is already too small, this will throw an Exception!)
         so that it's the appropriate number of pixels. first define a large enough figure using either make_figure or plt.figure
 
-    plot_complex: {'rectangular', 'polar'}. how to handle complex inputs. we either plot the
+    plot_complex: {'rectangular', 'polar', 'logpolar'}. how to handle complex inputs. we either plot the
     rectangular version of it (real and imaginary separately, which you probably want to do for the
     outputs of the complex steerable pyramid) or the polar version of it (amplitude and phase
     separately, which you probably want to do for a Fourier transform). for any other value, we
@@ -316,7 +316,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     fig : figure
     '''
 
-    if plot_complex not in ['rectangular', 'polar']:
+    if plot_complex not in ['rectangular', 'polar', 'logpolar']:
         warnings.warn("Don't know how to handle plot_complex value %s, defaulting to "
                       "'rectangular'" % plot_complex)
         plot_complex = 'rectangular'
@@ -344,6 +344,9 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
             elif plot_complex == 'polar':
                 image_tmp.extend([np.abs(img), np.angle(img)])
                 title_tmp.extend([t + " amplitude", t + " phase"])
+            elif plot_complex == 'logpolar':
+                image_tmp.extend([np.log2(np.abs(img)), np.angle(img)])
+                title_tmp.extend([t + " log amplitude", t + " phase"])
         else:
             image_tmp.append(np.array(img))
             title_tmp.append(t)
