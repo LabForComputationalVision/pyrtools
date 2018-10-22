@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import cmath
 import scipy
 from .SteerablePyramidFreq import SteerablePyramidFreq
@@ -49,34 +49,34 @@ class SteerablePyramidComplex(SteerablePyramidFreq):
         # DOES NOT MAKE SENSE HERE
         # steering stuff:
         # if nbands % 2 == 0:
-        #     harmonics = numpy.arange(nbands // 2) * 2 + 1
+        #     harmonics = np.arange(nbands // 2) * 2 + 1
         # else:
-        #     harmonics = numpy.arange((nbands-1) // 2) * 2
+        #     harmonics = np.arange((nbands-1) // 2) * 2
         #
-        # steermtx = steer2HarmMtx(harmonics, numpy.pi * numpy.array(list(range(nbands)))/nbands, even_phase=True)
+        # steermtx = steer2HarmMtx(harmonics, np.pi * np.array(list(range(nbands)))/nbands, even_phase=True)
 
         #------------------------------------------------------
 
-        dims = numpy.array(self.image.shape)
-        ctr = numpy.ceil((numpy.array(dims)+0.5)/2).astype(int)
+        dims = np.array(self.image.shape)
+        ctr = np.ceil((np.array(dims)+0.5)/2).astype(int)
 
-        (xramp, yramp) = numpy.meshgrid((numpy.array(list(range(1,dims[1]+1)))-ctr[1])/
+        (xramp, yramp) = np.meshgrid((np.array(list(range(1,dims[1]+1)))-ctr[1])/
                                      (dims[1]/2),
-                                     (numpy.array(list(range(1,dims[0]+1)))-ctr[0])/
+                                     (np.array(list(range(1,dims[0]+1)))-ctr[0])/
                                      (dims[0]/2))
-        angle = numpy.arctan2(yramp, xramp)
-        log_rad = numpy.sqrt(xramp**2 + yramp**2)
+        angle = np.arctan2(yramp, xramp)
+        log_rad = np.sqrt(xramp**2 + yramp**2)
         log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
-        log_rad = numpy.log2(log_rad);
+        log_rad = np.log2(log_rad);
 
         ## Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), numpy.array([0,1]))
-        Yrcos = numpy.sqrt(Yrcos)
+        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.array([0,1]))
+        Yrcos = np.sqrt(Yrcos)
 
-        YIrcos = numpy.sqrt(1.0 - Yrcos**2)
+        YIrcos = np.sqrt(1.0 - Yrcos**2)
         lo0mask = pointOp(log_rad, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
 
-        imdft = numpy.fft.fftshift(numpy.fft.fft2(self.image))
+        imdft = np.fft.fftshift(np.fft.fft2(self.image))
 
         self.pyr = []
         self.pyrSize = []
@@ -84,65 +84,65 @@ class SteerablePyramidComplex(SteerablePyramidFreq):
         hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
 
         hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
-        hi0 = numpy.fft.ifft2(numpy.fft.ifftshift(hi0dft))
+        hi0 = np.fft.ifft2(np.fft.ifftshift(hi0dft))
 
-        self.pyr.append(numpy.real(hi0.copy()))
+        self.pyr.append(np.real(hi0.copy()))
         self.pyrSize.append(hi0.shape)
 
         lo0mask = lo0mask.reshape(imdft.shape[0], imdft.shape[1])
         lodft = imdft * lo0mask
 
         for i in range(ht):
-            bands = numpy.zeros((lodft.shape[0]*lodft.shape[1], nbands))
-            bind = numpy.zeros((nbands, 2))
+            bands = np.zeros((lodft.shape[0]*lodft.shape[1], nbands))
+            bind = np.zeros((nbands, 2))
 
-            Xrcos -= numpy.log2(2)
+            Xrcos -= np.log2(2)
 
             lutsize = 1024
-            Xcosn = numpy.pi * numpy.array(list(range(-(2*lutsize+1), (lutsize+2)))) / lutsize
+            Xcosn = np.pi * np.array(list(range(-(2*lutsize+1), (lutsize+2)))) / lutsize
 
             order = nbands -1
             const = (2**(2*order))*(scipy.special.factorial(order, exact=True)**2)/float(nbands*scipy.special.factorial(2*order, exact=True))
 
-            alfa = ( (numpy.pi+Xcosn) % (2.0*numpy.pi) ) - numpy.pi
-            Ycosn = ( 2.0*numpy.sqrt(const) * (numpy.cos(Xcosn)**order) *
-                      (numpy.abs(alfa)<numpy.pi/2.0).astype(int) )
-            log_rad_tmp = numpy.reshape(log_rad, (1,log_rad.shape[0]*
+            alfa = ( (np.pi+Xcosn) % (2.0*np.pi) ) - np.pi
+            Ycosn = ( 2.0*np.sqrt(const) * (np.cos(Xcosn)**order) *
+                      (np.abs(alfa)<np.pi/2.0).astype(int) )
+            log_rad_tmp = np.reshape(log_rad, (1,log_rad.shape[0]*
                                                   log_rad.shape[1]))
             himask = pointOp(log_rad_tmp, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
 
             himask = himask.reshape(lodft.shape[0], lodft.shape[1])
             for b in range(nbands):
-                angle_tmp = numpy.reshape(angle,
+                angle_tmp = np.reshape(angle,
                                           (1,angle.shape[0]*angle.shape[1]))
                 anglemask = pointOp(angle_tmp, Ycosn,
-                                    Xcosn[0]+numpy.pi*b/nbands,
+                                    Xcosn[0]+np.pi*b/nbands,
                                     Xcosn[1]-Xcosn[0], 0)
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 banddft = (cmath.sqrt(-1)**order) * lodft * anglemask * himask
-                band = numpy.negative(numpy.fft.ifft2(numpy.fft.ifftshift(banddft)))
+                band = np.negative(np.fft.ifft2(np.fft.ifftshift(banddft)))
                 self.pyr.append(band.copy())
                 self.pyrSize.append(band.shape)
 
-            dims = numpy.array(lodft.shape)
-            ctr = numpy.ceil((dims+0.5)/2).astype(int)
-            lodims = numpy.ceil((dims-0.5)/2).astype(int)
-            loctr = numpy.ceil((lodims+0.5)/2).astype(int)
+            dims = np.array(lodft.shape)
+            ctr = np.ceil((dims+0.5)/2).astype(int)
+            lodims = np.ceil((dims-0.5)/2).astype(int)
+            loctr = np.ceil((lodims+0.5)/2).astype(int)
             lostart = ctr - loctr
             loend = lostart + lodims
 
             log_rad = log_rad[lostart[0]:loend[0], lostart[1]:loend[1]]
             angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
-            YIrcos = numpy.abs(numpy.sqrt(1.0 - Yrcos**2))
-            log_rad_tmp = numpy.reshape(log_rad,
+            YIrcos = np.abs(np.sqrt(1.0 - Yrcos**2))
+            log_rad_tmp = np.reshape(log_rad,
                                         (1,log_rad.shape[0]*log_rad.shape[1]))
             lomask = pointOp(log_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
                              0)
             lodft = lodft * lomask.reshape(lodft.shape[0], lodft.shape[1])
 
-        lodft = numpy.fft.ifft2(numpy.fft.ifftshift(lodft))
-        self.pyr.append(numpy.real(numpy.array(lodft).copy()))
+        lodft = np.fft.ifft2(np.fft.ifftshift(lodft))
+        self.pyr.append(np.real(np.array(lodft).copy()))
         self.pyrSize.append(lodft.shape)
 
     # methods
@@ -169,31 +169,31 @@ class SteerablePyramidComplex(SteerablePyramidFreq):
         #-----------------------------------------------------------------
 
         pind = self.pyrSize
-        Nsc = int(numpy.log2(pind[0][0] / pind[-1][0]))
+        Nsc = int(np.log2(pind[0][0] / pind[-1][0]))
         Nor = (len(pind)-2) // Nsc
 
         pyrIdx = 1
         for nsc in range(Nsc):
             firstBnum = nsc * Nor + 2
             dims = pind[firstBnum][:]
-            ctr = (numpy.ceil((dims[0]+0.5)/2.0).astype(int), numpy.ceil((dims[1]+0.5)/2.0).astype(int)) #-1?
+            ctr = (np.ceil((dims[0]+0.5)/2.0).astype(int), np.ceil((dims[1]+0.5)/2.0).astype(int)) #-1?
             ang = mkAngle(dims, 0, ctr)
-            ang[ctr[0]-1, ctr[1]-1] = -numpy.pi/2.0
+            ang[ctr[0]-1, ctr[1]-1] = -np.pi/2.0
             for nor in range(Nor):
                 nband = nsc * Nor + nor + 1
                 ch = self.pyr[nband]
-                ang0 = numpy.pi * nor / Nor
-                xang = ((ang-ang0+numpy.pi) % (2.0*numpy.pi)) - numpy.pi
-                amask = 2 * (numpy.abs(xang) < (numpy.pi/2.0)).astype(int) + (numpy.abs(xang) == (numpy.pi/2.0)).astype(int)
+                ang0 = np.pi * nor / Nor
+                xang = ((ang-ang0+np.pi) % (2.0*np.pi)) - np.pi
+                amask = 2 * (np.abs(xang) < (np.pi/2.0)).astype(int) + (np.abs(xang) == (np.pi/2.0)).astype(int)
                 amask[ctr[0]-1, ctr[1]-1] = 1
                 amask[:,0] = 1
                 amask[0,:] = 1
-                amask = numpy.fft.fftshift(amask)
-                ch = numpy.fft.ifft2(amask * numpy.fft.fft2(ch))  # 'Analytic' version
+                amask = np.fft.fftshift(amask)
+                ch = np.fft.ifft2(amask * np.fft.fft2(ch))  # 'Analytic' version
                 # f = 1.000008  # With this factor the reconstruction SNR
                                 # goes up around 6 dB!
                 f = 1
-                ch = f*0.5*numpy.real(ch)   # real part
+                ch = f*0.5*np.real(ch)   # real part
                 self.pyr[pyrIdx] = ch
                 pyrIdx += 1
 

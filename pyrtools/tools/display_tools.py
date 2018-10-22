@@ -6,6 +6,7 @@ from matplotlib import cm
 from matplotlib.figure import Figure
 from matplotlib import animation
 from IPython.display import HTML
+from ..pyramids.SteerablePyramidComplex import SteerablePyramidComplex
 
 
 class PyrFigure(Figure):
@@ -264,7 +265,7 @@ def find_zooms(images):
 
 
 def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-            cmap=cm.gray, **kwargs):
+           cmap=cm.gray, plot_complex='rectangular', **kwargs):
     '''show image(s)
 
     Parameters
@@ -307,15 +308,52 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         so if the bbox is already too small, this will throw an Exception!)
         so that it's the appropriate number of pixels. first define a large enough figure using either make_figure or plt.figure
 
+    plot_complex: {'rectangular', 'polar'}. how to handle complex inputs. we either plot the
+    rectangular version of it (real and imaginary separately, which you probably want to do for the
+    outputs of the complex steerable pyramid) or the polar version of it (amplitude and phase
+    separately, which you probably want to do for a Fourier transform). for any other value, we
+    raise a warning and default to rectangular.
+
     Returns
     -------
 
     fig : figure
     '''
 
-    # making sure plotting works for
-    # (list of) arrays / torch.tensor
-    image = np.array([np.array(i) for i in image])
+    if plot_complex not in ['rectangular', 'polar']:
+        warnings.warn("Don't know how to handle plot_complex value %s, defaulting to "
+                      "'rectangular'" % plot_complex)
+        plot_complex = 'rectangular'
+
+    try:
+        if image.ndim == 2:
+            # then this is a single image
+            image = [image]
+    except AttributeError:
+        # then this is a list and we don't do anything
+        pass
+    if not isinstance(title, list):
+        title = len(image) * [title]
+    else:
+        assert len(image) == len(title), "Must have same number of titles and images!"
+
+    # making sure plotting works for (list of) arrays / torch.tensor
+    image_tmp = []
+    title_tmp = []
+    for img, t in zip(image, title):
+        if np.iscomplex(img).any():
+            if plot_complex == 'rectangular':
+                image_tmp.extend([np.real(img), np.imag(img)])
+                title_tmp.extend([t + ", real", t + ", imaginary"])
+            else:
+                image_tmp.extend([np.abs(img), np.angle(img)])
+                title_tmp.extend([t + ", amplitude", t + ", phase"])
+        else:
+            image_tmp.append(np.array(img))
+            title_tmp.append(t)
+    image = np.array(image_tmp)
+    title = title_tmp
+    
 
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
@@ -351,11 +389,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     else:
         fig = ax.figure
         axes = [reshape_axis(ax,  zoom * max_shape)]
-
-    if not isinstance(title, list):
-        title = len(image) * [title]
-    else:
-        assert len(image) == len(title), "Must have same number of titles and images!"
 
     vrange_list = colormap_range(img=image, vrange=vrange)
     # print('passed', vrange_list)
@@ -438,7 +471,7 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
             return HTML(anim.to_html5_video())
     return anim
 
-def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1):
+def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
     """UNDER CONSTRUCTION
 
     TODO
@@ -490,6 +523,8 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1):
         try:
             # and the steerable pyramids have a numBands function
             col_wrap_new = pyr.numBands()
+            if isinstance(pyr, SteerablePyramidComplex):
+                col_wrap_new *= 2
             imgs = pyr.pyr[1:-1] + [pyr.pyr[0], pyr.pyr[-1]]
             titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.spyrHt()),
                                                                                     range(pyr.numBands()))]
@@ -503,4 +538,4 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1):
             warnings.warn("The pyramid to display has multiple sub-bands at a given height, so we"
                           " use that to determine the col_wrap instead of the user-specified value")
         col_wrap = col_wrap_new
-    imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles)
+    imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)
