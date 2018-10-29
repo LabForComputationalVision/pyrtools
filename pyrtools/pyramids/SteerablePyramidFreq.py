@@ -12,7 +12,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
     edges = None
 
     #constructor
-    def __init__(self, image, height='auto', order=3, twidth=1):
+    def __init__(self, image, height='auto', order=3, twidth=1, is_complex=False):
         """Steerable frequency pyramid.
 
         Construct a steerable pyramid on matrix IM, in the Fourier domain.
@@ -43,6 +43,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
 
         self.pyrType = 'steerableFrequency'
         self.image = np.array(image)
+        self.is_complex = is_complex
 
         max_ht = np.floor(np.log2(min(self.image.shape))) - 2
         if height == 'auto':
@@ -135,7 +136,15 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
 
             order = nbands -1
             const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(nbands*factorial(2*order, exact=True))
-            Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
+
+            if self.is_complex:
+                # TODO clean that up and give comments
+                alfa = ( (np.pi+Xcosn) % (2.0*np.pi) ) - np.pi
+                Ycosn = ( 2.0 * np.sqrt(const) * (np.cos(Xcosn) ** order) *
+                          (np.abs(alfa)<np.pi/2.0).astype(int) )
+            else:
+                Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
+
             log_rad_test = np.reshape(log_rad,(1,
                                                   log_rad.shape[0]*
                                                   log_rad.shape[1]))
@@ -154,10 +163,12 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
 
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 anglemasks.append(anglemask)
-                banddft = ( ((-np.power(-1+0j,0.5))**order) * lodft *
-                            anglemask * himask )
+                banddft = -1j ** order * lodft * anglemask * himask
                 band = np.fft.ifft2(np.fft.ifftshift(banddft))
-                self.pyr.append(np.real(band.copy()))
+                if not self.is_complex:
+                    self.pyr.append(np.real(band.copy()))
+                else:
+                    self.pyr.append(band.copy())
                 self.pyrSize.append(band.shape)
 
             self._anglemasks.append(anglemasks)
