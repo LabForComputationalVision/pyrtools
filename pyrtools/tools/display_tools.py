@@ -469,7 +469,30 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
 
 
 def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
-    """UNDER CONSTRUCTION
+    """Display the coefficients of the pyramid in an orderly fashion
+
+    NOTE: this currently only works for 2d signals. we still need to figure out how to handle 1D
+    signals.
+
+    Parameters
+    ----------
+    pyr: the pyramid object to display
+
+    vrange: One of the following strings or a list of two numbers. If two numbers, these will be
+    the vmin and vmax for all plotted images. If a string:
+    - auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all
+                  images
+    - auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
+             std dev (across all images)
+    - auto3: all images have same vmin/vmax. vmin is the 10th percentile minus 1/8 times the
+             difference between the 90th and 10th percentile, and vmax is the 90th percentile plus
+             1/8 times that difference (across all images)
+    - indep1 (default): each image has an independent vmin/vmax, which are their minimum/maximum
+             values
+    - indep2: each image has an independent vmin/vmax, which is their mean minus/plus 2 std dev
+    - indep3: each image has an independent vmin/vmax. vmin is the 10th percentile minus 1/8 times
+              the difference between the 90th and 10th percentile, and vmax is the 90th percentile
+              plus 1/8 times that difference
 
     col_wrap: int or None. Only usable when the pyramid is one-dimensional (e.g., Gaussian or
     Laplacian Pyramid, otherwise the column wrap is determined by the number of bands)
@@ -480,25 +503,21 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, 
     show_residuals: boolean. whether to display the residual bands (lowpass, highpass depending on
     the pyramid type)
 
-    TODO
-    - handle 1D signals
+    any additional kwargs will be passed through to imshow.
+
+    Returns
+    -------
+
+    fig: the matplotlib figure displaying the coefficients.
     """
-    # thinking about doing two versions of this:
-    # 1. like current one, shows each band at its actual size, arranged in some orderly way
-    #    (using https://matplotlib.org/users/gridspec.html)
-    # 2. in a more reasonable way, all shown at same size (with zoom made clear), arranged by
-    #    height/width
-
-    # for complex version, there will be double the "real bands" (not highpass and lowpass), and we
-    # want to either present them one after the other or interleaved (make both possible).
-
-    # assume the python version pyramid API (instead of torch). we should probably write up a
-    # function that detaches and converts torch pyramid to python API. and then any changes to that
-    # shared API will be relatively easy to make (all pyrshow cares about is knowing how to iterate
-    # through the orientations and scales)
-
-    # if the pyramid has a "width", that is, multiple sub-bands at the same height (corresponding
-    # to different orientations), we want to use that to structure our grid of axes.
+    # right now, we do *not* do this the same as the old code. Instead of taking the coefficients
+    # and arranging them in a spiral, we use imshow and arrange them neatly, displaying all at the
+    # same size (and zoom / original image size clear), with different options for vrange. It
+    # doesn't seem worth it to me to implement a version that looks like the old one, since that
+    # would be a fair amount of work for dubious payoff, but if you want to implement that, the way
+    # to do it is to probably use gridspec (https://matplotlib.org/users/gridspec.html), arranging
+    # the axes in an orderly way and then passing them through to imshow somehow, rather than
+    # pasting all coefficients into a giant array.
     try:
         # Wavelet pyramid has a width attribute
         col_wrap_new = pyr.width
@@ -530,4 +549,4 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, 
     if col_wrap_new is not None:
         if col_wrap is None:
             col_wrap = col_wrap_new
-    imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)
+    return imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)
