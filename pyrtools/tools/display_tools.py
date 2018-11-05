@@ -481,7 +481,6 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
     TODO
     - handle 1D signals
 
-
     """
     # thinking about doing two versions of this:
     # 1. like current one, shows each band at its actual size, arranged in some orderly way
@@ -496,13 +495,6 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
     # function that detaches and converts torch pyramid to python API. and then any changes to that
     # shared API will be relatively easy to make (all pyrshow cares about is knowing how to iterate
     # through the orientations and scales)
-
-    # DRAFT
-    # TODO - handle the complex filters
-    # ppt.imshow([pyr[s][o,:,:] for s in range(1, nScale + 1) for o in range(nOri)],
-    #             vrange=vrange, col_wrap=nOri);
-    # ppt.imshow([y[0],
-    #             y[nScale + 1]]);
 
     # if the pyramid has a "width", that is, multiple sub-bands at the same height (corresponding
     # to different orientations), we want to use that to structure our grid of axes.
@@ -529,8 +521,6 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
             imgs = pyr.pyr
             titles = ["height %02d"%h for h in range(pyr.height)]
     if col_wrap_new is not None:
-        if col_wrap is not None:
-            warnings.warn("The pyramid to display has multiple sub-bands at a given height, so we"
-                          " use that to determine the col_wrap instead of the user-specified value")
-        col_wrap = col_wrap_new
+        if col_wrap is None:
+            col_wrap = col_wrap_new
     imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)
