@@ -25,6 +25,7 @@ class Pyramid:  # Pyramid base class
         self.edgeType = edgeType
         self.pyr = []
         self.pyrSize = []
+        self.is_complex = False
 
     # this is the base Pyramid class. each subclass should implement their own
     # functionalities, including:
