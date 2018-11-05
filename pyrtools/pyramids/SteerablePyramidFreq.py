@@ -39,6 +39,11 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
 
         - `twidth` (optional), int. Default value is 1.
         The width of the transition region of the radial lowpass function, in octaves
+
+        - `is_complex` (optional), boolean. Default False. Whether the pyramid coefficients should
+        be complex or not. If True, the real and imaginary parts correspond to a pair of even and
+        odd symmetric filters. If False, the coefficients only include the real part / even
+        symmetric filter.
         """
 
         self.pyrType = 'steerableFrequency'
@@ -215,7 +220,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
             spHt = 0
         return spHt
 
-    def _reconSFpyr(self, levs='all', bands='all', twidth=1):
+    def reconPyr(self, levs='all', bands='all', twidth=1):
 
         if twidth <= 0:
             warnings.warn("twidth must be positive. Setting to 1.")
@@ -373,7 +378,11 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
                                             Xcosn[1]-Xcosn[0], 0)
 
                         anglemask = anglemask.reshape(nangle.shape)
-                        band = self.pyr[bandIdx]
+                        # either the coefficients will already be real-valued (if
+                        # self.is_complex=False) or complex (if self.is_complex=True). in the
+                        # former case, this np.real() does nothing. in the latter, we want to only
+                        # reconstruct with the real portion
+                        band = np.real(self.pyr[bandIdx])
                         curLev = self.spyrHt() - (idx-1)
                         if curLev in levs and b in bands:
                             banddft = np.fft.fftshift(np.fft.fft2(band))
@@ -403,5 +412,3 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         outresdft = np.real(np.fft.ifft2(np.fft.ifftshift(resdft)))
 
         return outresdft
-
-    reconPyr = _reconSFpyr

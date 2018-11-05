@@ -6,7 +6,6 @@ from matplotlib import cm
 from matplotlib.figure import Figure
 from matplotlib import animation
 from IPython.display import HTML
-from ..pyramids.SteerablePyramidComplex import SteerablePyramidComplex
 
 
 class PyrFigure(Figure):
@@ -510,7 +509,7 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
         try:
             # and the steerable pyramids have a numBands function
             col_wrap_new = pyr.numBands()
-            if isinstance(pyr, SteerablePyramidComplex):
+            if pyr.is_complex:
                 col_wrap_new *= 2
             imgs = pyr.pyr[1:-1] + [pyr.pyr[0], pyr.pyr[-1]]
             titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.spyrHt()),
