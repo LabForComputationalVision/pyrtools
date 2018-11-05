@@ -468,7 +468,7 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
     return anim
 
 
-def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
+def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
     """UNDER CONSTRUCTION
 
     col_wrap: int or None. Only usable when the pyramid is one-dimensional (e.g., Gaussian or
@@ -477,9 +477,11 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
     zoom: float. how much to scale the size of the images by. zoom times the size of the largest
     image must be an integer (and thus zoom should probably be an integer or 1/(2^n)).
 
+    show_residuals: boolean. whether to display the residual bands (lowpass, highpass depending on
+    the pyramid type)
+
     TODO
     - handle 1D signals
-
     """
     # thinking about doing two versions of this:
     # 1. like current one, shows each band at its actual size, arranged in some orderly way
@@ -505,6 +507,9 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
         titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.height-1),
                                                                                 range(pyr.width))]
         titles = titles + ["residual lowpass"]
+        if not show_residuals:
+            imgs = imgs[:-1]
+            titles = titles[:-1]
     except AttributeError:
         try:
             # and the steerable pyramids have a numBands function
@@ -515,6 +520,9 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, **kwargs):
             titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.spyrHt()),
                                                                                     range(pyr.numBands()))]
             titles = titles + ["residual highpass", "residual lowpass"]
+            if not show_residuals:
+                imgs = imgs[:-2]
+                titles = titles[:-2]
         except AttributeError:
             col_wrap_new = None
             imgs = pyr.pyr
