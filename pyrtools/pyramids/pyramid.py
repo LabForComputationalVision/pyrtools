@@ -22,7 +22,7 @@ class Pyramid:  # Pyramid base class
         assert self.image.ndim == 2, "Error: Input signal must be 1D or 2D."
 
         self.image_size = self.image.shape
-        self.pyrType = None
+        self.pyr_type = None
         self.edge_type = edge_type
         self.edgeType = edge_type
         self.pyr = []
@@ -95,7 +95,7 @@ class Pyramid:  # Pyramid base class
             else:
                 return 1 + self.maxPyrHt( (imsz[0] // 2, imsz[1] // 2), filtsz )
 
-    def parseFilter(self, filt):
+    def _parse_filter(self, filt):
         if isinstance(filt, str):
             filt = namedFilter(filt)
         filt = np.array(filt)

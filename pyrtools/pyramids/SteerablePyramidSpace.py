@@ -34,7 +34,7 @@ class SteerablePyramidSpace(Pyramid):
         super().__init__(image=image, edge_type=edge_type)
 
         self.filters = steerable_filters(filters)
-        self.pyrType = 'Steerable'
+        self.pyr_type = 'Steerable'
         self.num_orientations = int(filters.replace('sp', '').replace('Filters', '')) + 1
 
         max_ht = self.maxPyrHt(self.image.shape, self.filters['lofilt'].shape)

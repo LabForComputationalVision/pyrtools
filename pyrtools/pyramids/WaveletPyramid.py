@@ -11,31 +11,49 @@ from matplotlib import cm
 class WaveletPyramid(Pyramid):
 
     #constructor
-    def __init__(self, image, height='auto', filt='qmf9',
-                 edge_type='reflect1'):
+    def __init__(self, image, height='auto', filters='qmf9', edge_type='reflect1'):
 
         super().__init__(image=image, edge_type=edge_type)
+        self.pyr_type = 'Wavelet'
+        self.pyr_coeffs = {}
+        self.pyr_size = {}
 
-        self.initFilters(filt=filt)
-        self.initHeight(height=height)
-        self.initWidth()
-        self.buildPyr()
-        self.pyrType = 'Wavelet'
-
-    def initFilters(self, filt):
-        self.lo_filter = self.parseFilter(filt)
+        self.lo_filter = self._parse_filter(filters)
         # if the image is 1D, parseFilter will
         # match the filter to the image dimensions
-        self.hi_filter = self.modulateFlip(self.lo_filter)
+        self.hi_filter = self._modulate_flip(self.lo_filter)
         # modulateFlip returns a filter that has
         # the same size as its input filter
         assert self.lo_filter.shape == self.hi_filter.shape
 
         # Stagger sampling if filter is odd-length
-        self.stag = (self.lo_filter.size + 1) % 2
+        self.stagger = (self.lo_filter.size + 1) % 2
 
-    @staticmethod
-    def modulateFlip(lfilt):
+        max_ht = self.maxPyrHt(self.image.shape, self.lo_filter.shape)
+        if height == 'auto':
+            self.num_scales = max_ht
+        elif height > max_ht:
+            raise Exception("cannot build pyramid higher than %d levels." % (max_ht))
+        else:
+            self.num_scales = int(height)
+
+        # compute the number of channels per level
+        if min(self.image.shape) == 1:
+            self.num_orientations = 1
+        else:
+            self.num_orientations = 3
+
+        im = self.image
+        for i, lev in enumerate(range(self.num_scales - 1)):
+            im, higher_bands = self._build_next(im)
+            for j, band in enumerate(higher_bands):
+                self.pyr_coeffs[(i, j)] = band
+                self.pyr_size[(i, j)] = band.shape
+        self.pyr_coeffs['residual_lowpass'] = im
+        self.pyr_size['residual_lowpass'] = im.shape
+
+
+    def _modulate_flip(self, lfilt):
         ''' [HFILT] = modulateFlipShift(LFILT)
             QMF/Wavelet highpass filter construction: modulate by (-1)^n,
             reverse order (and shift by one, which is handled by the convolution
@@ -52,52 +70,30 @@ class WaveletPyramid(Pyramid):
         # NOW: same shape as input
         return hfilt.reshape(lfilt_shape)
 
-    def initHeight(self, height):
-        self.height = 1 + self.maxPyrHt(self.image.shape, self.lo_filter.shape)
-        if isinstance(height, int):
-            assert height <= self.height, "Error: cannot build pyramid higher than %d levels" % (self.height)
-            self.height = 1 + height
-
-    def initWidth(self):
-        # compute the number of channels per level
-        if min(self.image.shape) == 1:
-            self.width = 1
-        else:
-            self.width = 3
-
-    def buildNext(self, image):
-        lfilt = self.lo_filter
-        hfilt = self.hi_filter
-
-        edge_type = self.edge_type
-        stag = self.stag
-
+    def _build_next(self, image):
         if image.shape[1] == 1:
-            lolo = corrDn(image=image, filt=lfilt, edges=edge_type, step=(2,1), start=(stag,0))
-            hihi = corrDn(image=image, filt=hfilt, edges=edge_type, step=(2,1), start=(1,0))
+            lolo = corrDn(image=image, filt=self.lo_filter, edges=self.edge_type, step=(2,1),
+                          start=(self.stagger,0))
+            hihi = corrDn(image=image, filt=self.hi_filter, edges=self.edge_type, step=(2,1),
+                          start=(1,0))
             return lolo, (hihi, )
         elif image.shape[0] == 1:
-            lolo = corrDn(image=image, filt=lfilt, edges=edge_type, step=(1,2), start=(0,stag))
-            hihi = corrDn(image=image, filt=hfilt, edges=edge_type, step=(1,2), start=(0,1))
+            lolo = corrDn(image=image, filt=self.lo_filter, edges=self.edge_type, step=(1,2),
+                          start=(0,self.stagger))
+            hihi = corrDn(image=image, filt=self.hi_filter, edges=self.edge_type, step=(1,2),
+                          start=(0,1))
             return lolo, (hihi, )
         else:
-            lo = corrDn(image=image, filt=lfilt, edges=edge_type, step=(2,1), start=(stag,0))
-            hi = corrDn(image=image, filt=hfilt, edges=edge_type, step=(2,1), start=(1,0))
-            lolo = corrDn(image=lo, filt=lfilt.T, edges=edge_type, step=(1,2), start=(0,stag))
-            lohi = corrDn(image=hi, filt=lfilt.T, edges=edge_type, step=(1,2), start=(0,stag))
-            hilo = corrDn(image=lo, filt=hfilt.T, edges=edge_type, step=(1,2), start=(0,1))
-            hihi = corrDn(image=hi, filt=hfilt.T, edges=edge_type, step=(1,2), start=(0,1))
+            lo = corrDn(image=image, filt=self.lo_filter, edges=self.edge_type, step=(2,1),
+                        start=(self.stagger,0))
+            hi = corrDn(image=image, filt=self.hi_filter, edges=self.edge_type, step=(2,1), start=(1,0))
+            lolo = corrDn(image=lo, filt=self.lo_filter.T, edges=self.edge_type, step=(1,2),
+                          start=(0,self.stagger))
+            lohi = corrDn(image=hi, filt=self.lo_filter.T, edges=self.edge_type, step=(1,2),
+                          start=(0,self.stagger))
+            hilo = corrDn(image=lo, filt=self.hi_filter.T, edges=self.edge_type, step=(1,2), start=(0,1))
+            hihi = corrDn(image=hi, filt=self.hi_filter.T, edges=self.edge_type, step=(1,2), start=(0,1))
             return lolo, (lohi, hilo, hihi)
-
-    def buildPyr(self):
-        im = self.image
-        for lev in range(self.height - 1):
-            im, higher_bands = self.buildNext(im)
-            for band in higher_bands:
-                self.pyr.append(band)
-                self.pyrSize.append(band.shape)
-        self.pyr.append(im)
-        self.pyrSize.append(im.shape)
 
     def reconPrev1D(self, image, cur_band, use_band, out_size,
                     lfilt=None, hfilt=None, edges=None):
@@ -168,9 +164,9 @@ class WaveletPyramid(Pyramid):
         if filt is None:
             lfilt = self.lo_filter
             hfilt = self.hi_filter
-            stag  = self.stag
+            stag  = self.stagger
         else:
-            lfilt  = self.parseFilter(filt)
+            lfilt  = self._parse_filter(filt)
             hfilt = self.modulateFlip(lfilt)
             stag  = (lfilt.size + 1) % 2
 
