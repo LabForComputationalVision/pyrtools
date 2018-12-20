@@ -8,15 +8,15 @@ class GaussianPyramid(Pyramid):
 
     # constructor
     def __init__(self, image, height='auto', filter1='binom5', filter2=None,
-                 edgeType='reflect1'):
+                 edge_type='reflect1'):
         """Gaussian pyramid
             - `image` - a 2D numpy array
             - `height` - an integer denoting number of pyramid levels desired. Defaults to `maxPyrHt`
             - `filter` - can be a string namimg a standard filter (from namedFilter()), or a
             numpy array which will be used for (separable) convolution. Default is 'binom5'.
-            - `edgeType` - see class Pyramid.__init__()
+            - `edge_type` - see class Pyramid.__init__()
             """
-        super().__init__(image=image, edgeType=edgeType)
+        super().__init__(image=image, edge_type=edge_type)
         self.initFilters(filter1=filter1, filter2=filter2)
         self.initHeight(height=height)
         self.buildPyr()
@@ -37,7 +37,7 @@ class GaussianPyramid(Pyramid):
 
     def buildNext(self, image, filt=None, edges=None):
         if filt is None: filt = self.filter1
-        if edges is None: edges = self.edgeType
+        if edges is None: edges = self.edge_type
         imsz = image.shape
         if imsz[0] == 1:
             res = corrDn(image=image, filt=filt, edges=edges, step=(1,2))

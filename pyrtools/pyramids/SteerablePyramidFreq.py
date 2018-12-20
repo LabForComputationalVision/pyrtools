@@ -12,7 +12,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
     edges = None
 
     #constructor
-    def __init__(self, image, height='auto', order=3, twidth=1, is_complex=False):
+    def __init__(self, image, height='auto', num_orientations=4, twidth=1, is_complex=False):
         """Steerable frequency pyramid.
 
         Construct a steerable pyramid on matrix IM, in the Fourier domain.
@@ -34,8 +34,9 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         - `height` (optional) specifies the number of pyramid levels to build.
         'auto' (default) is floor(log2(min(image.shape)))-2
 
-        - `order` (optional), int. Default value is 3.
-        The number of orientation bands - 1.
+        - `num_orientations` (optional), int in range [1, 16]. Default
+          value is 4. The number of orientation bands. This is the
+          order of the steerable pyramid + 1.
 
         - `twidth` (optional), int. Default value is 1.
         The width of the transition region of the radial lowpass function, in octaves
@@ -44,6 +45,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         be complex or not. If True, the real and imaginary parts correspond to a pair of even and
         odd symmetric filters. If False, the coefficients only include the real part / even
         symmetric filter.
+
         """
 
         self.pyrType = 'steerableFrequency'
@@ -59,12 +61,10 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
             ht = height
         ht = int(ht)
 
-        if order > 15 or order < 0:
-            warnings.warn("order must be an integer in the range [0,15]. Truncating.")
-            order = min(max(order, 0), 15)
-        order = int(order)
-
-        nbands = order+1
+        if num_orientations > 16 or num_orientations < 1:
+            warnings.warn("num_orientations must be an integer in the range [1,16]. Truncating.")
+            num_orientations = min(max(num_orientations, 1), 16)
+        self.num_orientations = int(num_orientations)
 
         if twidth <= 0:
             warnings.warn("twidth must be positive. Setting to 1.")
@@ -74,19 +74,19 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         #------------------------------------------------------
         # steering stuff:
 
-        if nbands % 2 == 0:
-            harmonics = np.arange(nbands // 2) * 2 + 1
+        if self.num_orientations % 2 == 0:
+            harmonics = np.arange(self.num_orientations // 2) * 2 + 1
         else:
-            harmonics = np.arange((nbands-1) // 2) * 2
+            harmonics = np.arange((self.num_orientations-1) // 2) * 2
         if harmonics.size == 0:
             # in this case, harmonics is an empty matrix. This happens when
-            # nbands=0 and (based on how the matlab code acts), in that situation,
+            # self.num_orientations=0 and (based on how the matlab code acts), in that situation,
             # we actually want harmonics to be 0.
             harmonics = np.array([0])
         self.harmonics = harmonics
 
         self.steermtx = steer2HarmMtx(harmonics,
-                                np.pi * np.arange(nbands)/nbands, even_phase=True)
+                                np.pi * np.arange(self.num_orientations)/self.num_orientations, even_phase=True)
 
         #------------------------------------------------------
 
@@ -131,16 +131,16 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         self._lomasks = []
 
         for i in range(ht):
-            bands = np.zeros((lodft.shape[0]*lodft.shape[1], nbands))
-            bind = np.zeros((nbands, 2))
+            bands = np.zeros((lodft.shape[0]*lodft.shape[1], self.num_orientations))
+            bind = np.zeros((self.num_orientations, 2))
 
             Xrcos -= np.log2(2)
 
             lutsize = 1024
             Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
-            order = nbands -1
-            const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(nbands*factorial(2*order, exact=True))
+            order = self.num_orientations -1
+            const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(self.num_orientations*factorial(2*order, exact=True))
 
             if self.is_complex:
                 # TODO clean that up and give comments
@@ -159,11 +159,11 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
             self._himasks.append(himask)
 
             anglemasks = []
-            for b in range(nbands):
+            for b in range(self.num_orientations):
                 angle_tmp = np.reshape(angle,
                                           (1,angle.shape[0]*angle.shape[1]))
                 anglemask = pointOp(angle_tmp, Ycosn,
-                                    Xcosn[0]+np.pi*b/nbands,
+                                    Xcosn[0]+np.pi*b/self.num_orientations,
                                     Xcosn[1]-Xcosn[0],0)
 
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
@@ -203,19 +203,19 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         self.height = self.spyrHt()
 
     # methods
-    def numBands(self):      # FIX: why isn't this inherited
-        if len(self.pyrSize) == 2:
-            return 0
-        else:
-            b = 2
-            while ( b <= len(self.pyrSize) and
-                    self.pyrSize[b] == self.pyrSize[1] ):
-                b += 1
-            return b-1
+    # def numBands(self):      # FIX: why isn't this inherited
+    #     if len(self.pyrSize) == 2:
+    #         return 0
+    #     else:
+    #         b = 2
+    #         while ( b <= len(self.pyrSize) and
+    #                 self.pyrSize[b] == self.pyrSize[1] ):
+    #             b += 1
+    #         return b-1
 
     def spyrHt(self):
         if len(self.pyrSize) > 2:
-            spHt = (len(self.pyrSize)-2)//self.numBands()
+            spHt = (len(self.pyrSize)-2)//self.num_orientations
         else:
             spHt = 0
         return spHt
@@ -228,8 +228,6 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
 
         #-----------------------------------------------------------------
 
-        nbands = self.numBands()
-
         maxLev = 1 + self.spyrHt()
         if isinstance(levs, str) and levs == 'all':
             levs = np.arange(maxLev + 1)
@@ -241,7 +239,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
             levs = np.array(levs)
 
         if isinstance(bands, str) and bands == 'all':
-            bands = np.arange(nbands)
+            bands = np.arange(self.num_orientations)
         elif isinstance(bands, str):
             raise Exception("%s not valid for bands parameter."
                             "bands must be either a 1D numpy"
@@ -292,8 +290,8 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         lutsize = 1024
         Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
-        order = nbands -1
-        const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(nbands*factorial(2*order, exact=True))
+        order = self.num_orientations -1
+        const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(self.num_orientations*factorial(2*order, exact=True))
         Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
 
         # lowest band
@@ -323,7 +321,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
                boundList[1][1]:boundList[1][3]] = nresdft * lomask
 
         # middle bands
-        bandIdx = (len(self.pyr)-1) + nbands
+        bandIdx = (len(self.pyr)-1) + self.num_orientations
         for idx in range(1, len(boundList)-1):
             bounds1 = (0, 0, 0, 0)
             bounds2 = (0, 0, 0, 0)
@@ -357,11 +355,11 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
                         boundList[idx][1]:boundList[idx][3]] = resdft * lomask
                 resdft = nresdft.copy()
 
-            bandIdx -= 2 * nbands
+            bandIdx -= 2 * self.num_orientations
 
             # reconSFpyrLevs
             if idx != 0 and idx != len(boundList)-1:
-                for b in range(nbands):
+                for b in range(self.num_orientations):
                     if (bands == b).any():
                         nlog_rad1_tmp = np.reshape(nlog_rad1,
                                                       (1,nlog_rad1.shape[0]*
@@ -374,7 +372,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
                                                             nangle.shape[0]*
                                                             nangle.shape[1]))
                         anglemask = pointOp(nangle_tmp, Ycosn,
-                                            Xcosn[0]+np.pi*b/nbands,
+                                            Xcosn[0]+np.pi*b/self.num_orientations,
                                             Xcosn[1]-Xcosn[0], 0)
 
                         anglemask = anglemask.reshape(nangle.shape)
@@ -388,7 +386,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
                             banddft = np.fft.fftshift(np.fft.fft2(band))
                         else:
                             banddft = np.zeros(band.shape)
-                        resdft += ( (np.power(-1+0j,0.5))**(nbands-1) *
+                        resdft += ( (np.power(-1+0j,0.5))**(self.num_orientations-1) *
                                     banddft * anglemask * himask )
                     bandIdx += 1
 

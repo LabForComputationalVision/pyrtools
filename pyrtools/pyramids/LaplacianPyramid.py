@@ -6,7 +6,7 @@ class LaplacianPyramid(GaussianPyramid):
 
     # constructor
     def __init__(self, image, height='auto', filter1='binom5', filter2=None,
-                 edgeType='reflect1'):
+                 edge_type='reflect1'):
         """Laplacian pyramid
 
             - `image` - a 2D numpy array
@@ -17,7 +17,7 @@ class LaplacianPyramid(GaussianPyramid):
             - `edges` - see class Pyramid.__init__()
             """
         super().__init__(image=image, height=height, filter1=filter1, filter2=filter2,
-                         edgeType=edgeType)
+                         edge_type=edge_type)
         self.pyrType = 'Laplacian'
 
 
@@ -30,7 +30,7 @@ class LaplacianPyramid(GaussianPyramid):
             filt = self.filter2
         else:
             filt = self.parseFilter(filt)
-        if edges is None: edges = self.edgeType
+        if edges is None: edges = self.edge_type
 
         if image.shape[1] == 1:
             res = upConv(image=image, filt=filt.T, edges=edges,step=(1,2), stop=(out_size[1], out_size[0])).T
@@ -53,14 +53,14 @@ class LaplacianPyramid(GaussianPyramid):
         self.pyr.append(img.copy())
         self.pyrSize.append(img.shape)
 
-    def reconPyr(self, levs='all', filter2=None, edgeType=None):
+    def reconPyr(self, levs='all', filter2=None, edge_type=None):
         if isinstance(levs, str) and levs == 'all':
             levs = np.arange(self.height)
         levs = np.array(levs)
         res = self.band(levs.max())
         for lev in range(levs.max()-1, -1, -1):
             # upsample to generate higher resolution image
-            res = self.reconPrev(res, out_size=self.band(lev).shape, filt=filter2, edges=edgeType)
+            res = self.reconPrev(res, out_size=self.band(lev).shape, filt=filter2, edges=edge_type)
             if lev in levs:
                 res += self.band(lev)
         return res

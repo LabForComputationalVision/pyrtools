@@ -32,3 +32,22 @@ def idx2LB(idx, nlevs, nbands):
         if band == nbands:
             band = 0
         return (lev, band)
+
+def convert_pyr_coeffs_to_pyr(pyr_coeffs):
+    """this function takes a 'new pyramid' and returns the coefficients as a list
+
+    returns them in original order, so 'residual highpass', all the
+    bands, 'residual low pass'
+    
+    this is to enable backwards compatibility, will be deprecated
+
+    """
+    # we first remove the residual high and lowpass from the
+    # pyramid coefficients dictionary, then grab the rest of
+    # the bands in ascending order, putting those residuals at
+    # the end
+    coeffs = [pyr_coeffs.pop('residual_highpass')]
+    coeffs.append(pyr_coeffs.pop('residual_lowpass'))
+    coeffs = [coeffs[0]] + [i[1] for i in sorted(pyr_coeffs.items(), key=lambda x: x[0])] + [coeffs[-1]]
+    return coeffs
+    

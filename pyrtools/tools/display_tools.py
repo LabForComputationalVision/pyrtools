@@ -6,6 +6,7 @@ from matplotlib import cm
 from matplotlib.figure import Figure
 from matplotlib import animation
 from IPython.display import HTML
+from ..pyramids import convert_pyr_coeffs_to_pyr
 
 
 class PyrFigure(Figure):
@@ -531,13 +532,21 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, 
             titles = titles[:-1]
     except AttributeError:
         try:
-            # and the steerable pyramids have a numBands function
-            col_wrap_new = pyr.numBands()
+            # and the steerable pyramids have a num_orientations attribute
+            col_wrap_new = pyr.num_orientations
             if pyr.is_complex:
                 col_wrap_new *= 2
-            imgs = pyr.pyr[1:-1] + [pyr.pyr[0], pyr.pyr[-1]]
-            titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.spyrHt()),
-                                                                                    range(pyr.numBands()))]
+            # not sure about scope here, so we make sure to copy the
+            # pyr_coeffs dictionary. this call returns [residual
+            # highpass, all bands, residual lowpass]
+            imgs = convert_pyr_coeffs_to_pyr(pyr.pyr_coeffs.copy())
+            # ... so we need to reorder it to [all bands, residual
+            # highpass, residual lowpass]
+            imgs = imgs[1:-1] + [imgs[0]] + [imgs[-1]]
+            # we can similarly grab the labels for height and band
+            # from the keys in this pyramid coefficients dictionary
+            pyr_coeffs_keys = [k for k in pyr.pyr_coeffs.keys() if isinstance(k, tuple)]
+            titles = ["height %02d, band %02d"%(h, b) for h, b in sorted(pyr_coeffs_keys)]
             titles = titles + ["residual highpass", "residual lowpass"]
             if not show_residuals:
                 imgs = imgs[:-2]

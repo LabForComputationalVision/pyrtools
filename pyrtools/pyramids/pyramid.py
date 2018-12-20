@@ -6,8 +6,8 @@ from .filters import namedFilter
 
 class Pyramid:  # Pyramid base class
 
-    def __init__(self, image, edgeType):
-        ''' - `edgeType` - specifies edge-handling.  Options are:
+    def __init__(self, image, edge_type):
+        ''' - `edge_type` - specifies edge-handling.  Options are:
             * `'circular'` - circular convolution
             * `'reflect1'` - reflect about the edge pixels
             * `'reflect2'` - reflect, doubling the edge pixels
@@ -21,8 +21,10 @@ class Pyramid:  # Pyramid base class
             self.image = self.image.reshape(-1, 1)
         assert self.image.ndim == 2, "Error: Input signal must be 1D or 2D."
 
+        self.image_size = self.image.shape
         self.pyrType = None
-        self.edgeType = edgeType
+        self.edge_type = edge_type
+        self.edgeType = edge_type
         self.pyr = []
         self.pyrSize = []
         self.is_complex = False
