@@ -3,13 +3,9 @@ from .pyramid import Pyramid
 from .filters import steerable_filters
 from .c.wrapper import corrDn, upConv
 
-from matplotlib import cm
-from .pyr_utils import LB2idx
-
 
 class SteerablePyramidSpace(Pyramid):
 
-    #constructor
     def __init__(self, image, height='auto', filters='sp1Filters',
                  edge_type='reflect1'):
         """Steerable pyramid. image parameter is required, others are optional
@@ -55,24 +51,22 @@ class SteerablePyramidSpace(Pyramid):
 
         lo = corrDn(image=self.image, filt=self.filters['lo0filt'], edges=self.edge_type)
         for i in range(self.num_scales):
-            lo_sz = lo.shape
             # assume square filters  -- start of buildSpyrLevs
             bfiltsz = int(np.floor(np.sqrt(self.filters['bfilts'].shape[0])))
 
             for b in range(self.num_orientations):
-                filt = self.filters['bfilts'][:,b].reshape(bfiltsz,bfiltsz).T
-                band = corrDn(image = lo, filt = filt, edges = self.edge_type)
+                filt = self.filters['bfilts'][:, b].reshape(bfiltsz, bfiltsz).T
+                band = corrDn(image=lo, filt=filt, edges=self.edge_type)
                 self.pyr_coeffs[(i, b)] = np.array(band)
                 self.pyr_size[(i, b)] = (band.shape[0], band.shape[1])
 
-            lo = corrDn(image=lo, filt=self.filters['lofilt'], edges=self.edge_type, step=(2,2))
+            lo = corrDn(image=lo, filt=self.filters['lofilt'], edges=self.edge_type, step=(2, 2))
 
         self.pyr_coeffs['residual_lowpass'] = np.array(lo)
         self.pyr_size['residual_lowpass'] = lo.shape
 
-
     def recon_pyr(self, filters=None, edge_type=None, levels='all', bands='all'):
-        """
+        """Reconstruct the image, optionally using subset of pyramid coefficients.
         """
         # defaults
 
@@ -95,7 +89,7 @@ class SteerablePyramidSpace(Pyramid):
             levs_nums = np.array([int(i) for i in levels if isinstance(i, int) or i.isdigit()])
             assert (levs_nums >= 0).all(), "Level numbers must be non-negative."
             assert (levs_nums < self.num_scales).all(), "Level numbers must be in the range [0, %d]" % (self.num_scales-1)
-            levs_tmp = list(np.sort(levs_nums)) # we want smallest first
+            levs_tmp = list(np.sort(levs_nums))  # we want smallest first
             if 'residual_highpass' in levels:
                 levs_tmp = ['residual_highpass'] + levs_tmp
             if 'residual_lowpass' in levels:
@@ -132,7 +126,7 @@ class SteerablePyramidSpace(Pyramid):
             # we need to upConv once per level, in order to up-sample
             # the image back to the right shape.
             recon = upConv(image=recon, filt=filters['lofilt'], edges=edges,
-                           step=(2,2), start=(0,0), stop=self.pyr_size[(lev, 0)])
+                           step=(2, 2), start=(0, 0), stop=self.pyr_size[(lev, 0)])
             # I think the most effective way to do this is to just
             # check every possible sub-band and then only add in the
             # ones we want (given that we have to loop through the
@@ -142,12 +136,12 @@ class SteerablePyramidSpace(Pyramid):
                     filt = filters['bfilts'][:, band].reshape(bfiltsz, bfiltsz, order='F')
                     recon += upConv(image=self.pyr_coeffs[(lev, band)], filt=filt, edges=edges,
                                     stop=self.pyr_size[(lev, band)])
-            
+
         # apply lo0filt
         recon = upConv(image=recon, filt=filters['lo0filt'], edges=edges, stop=recon.shape)
-        
+
         if 'residual_highpass' in recon_keys:
             recon += upConv(image=self.pyr_coeffs['residual_highpass'], filt=filters['hi0filt'],
-                            edges=edges, start=(0,0), step=(1,1), stop=recon.shape)
+                            edges=edges, start=(0, 0), step=(1, 1), stop=recon.shape)
 
         return recon
