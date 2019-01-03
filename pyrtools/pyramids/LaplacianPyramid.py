@@ -29,7 +29,7 @@ class LaplacianPyramid(GaussianPyramid):
         if filt is None:
             filt = self.filter2
         else:
-            filt = self.parseFilter(filt)
+            filt = self._parse_filter(filt)
         if edges is None: edges = self.edge_type
 
         if image.shape[1] == 1:

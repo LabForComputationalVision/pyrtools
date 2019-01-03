@@ -1,5 +1,5 @@
 import math
-import numpy as np
+
 
 def LB2idx(lev, band, nlevs, nbands):
     ''' convert level and band to dictionary index '''
@@ -19,6 +19,7 @@ def LB2idx(lev, band, nlevs, nbands):
 
     return idx
 
+
 def idx2LB(idx, nlevs, nbands):
     ''' given an index into dictionary return level and band '''
 
@@ -33,21 +34,23 @@ def idx2LB(idx, nlevs, nbands):
             band = 0
         return (lev, band)
 
+
 def convert_pyr_coeffs_to_pyr(pyr_coeffs):
     """this function takes a 'new pyramid' and returns the coefficients as a list
 
-    returns them in original order, so 'residual highpass', all the
+    returns the in original order, so 'residual highpass', all the
     bands, 'residual low pass'
-    
+
     this is to enable backwards compatibility, will be deprecated
 
     """
-    # we first remove the residual high and lowpass from the
-    # pyramid coefficients dictionary, then grab the rest of
-    # the bands in ascending order, putting those residuals at
-    # the end
-    coeffs = [pyr_coeffs.pop('residual_highpass')]
-    coeffs.append(pyr_coeffs.pop('residual_lowpass'))
-    coeffs = [coeffs[0]] + [i[1] for i in sorted(pyr_coeffs.items(), key=lambda x: x[0])] + [coeffs[-1]]
-    return coeffs
-    
+    try:
+        highpass = pyr_coeffs.pop('residual_highpass')
+    except KeyError:
+        highpass = None
+    try:
+        lowpass = pyr_coeffs.pop('residual_lowpass')
+    except KeyError:
+        lowpass = None
+    coeffs = [i[1] for i in sorted(pyr_coeffs.items(), key=lambda x: x[0])]
+    return coeffs, highpass, lowpass

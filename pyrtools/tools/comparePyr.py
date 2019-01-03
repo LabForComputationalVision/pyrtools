@@ -3,8 +3,8 @@ from ..pyramids import convert_pyr_coeffs_to_pyr
 
 
 def comparePyr(matPyr, pyPyr, rtol=1e-5, atol=1e-8):
-    ''' compare two pyramids and return 1 if they are the same with in
-        desired precision and 0 if not.
+    ''' compare two pyramids and return True if they are the same with in
+        desired precision and False if not.
         written for unit testing code. '''
     # compare two pyramids - return 0 for !=, 1 for ==
     # correct number of elements?
@@ -21,11 +21,11 @@ def comparePyr(matPyr, pyPyr, rtol=1e-5, atol=1e-8):
     # values are close to each other?
     matStart = 0
     try:
-        # we first remove the residual high and lowpass from the
-        # pyramid coefficients dictionary, then grab the rest of
-        # the bands in ascending order, putting those residuals at
-        # the end
-        pyCoeffs = convert_pyr_coeffs_to_pyr(pyPyr.pyr_coeffs)
+        pyCoeffs, pyHigh, pyLow = convert_pyr_coeffs_to_pyr(pyPyr.pyr_coeffs)
+        if pyHigh is not None:
+            pyCoeffs.insert(0, pyHigh)
+        if pyLow is not None:
+            pyCoeffs.append(pyLow)
     except AttributeError:
         pyCoeffs = pyPyr.pyr
     for idx, pyTmp in enumerate(pyCoeffs):

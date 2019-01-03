@@ -107,8 +107,59 @@ class Pyramid:  # Pyramid base class
         # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
         # we need to match the filter to the image dimensions
         if filt.ndim == 1 or self.image.shape[0] == 1:
-            filt = filt.reshape(1,-1)
+            filt = filt.reshape(1, -1)
         return filt
+
+    def _recon_levels_check(self, levels):
+        """when reconstructing pyramid, check whether levels arg is valid and return
+        """
+        if isinstance(levels, str) and levels == 'all':
+            levels = ['residual_highpass'] + list(range(self.num_scales)) + ['residual_lowpass']
+        else:
+            levs_nums = np.array([int(i) for i in levels if isinstance(i, int) or i.isdigit()])
+            assert (levs_nums >= 0).all(), "Level numbers must be non-negative."
+            assert (levs_nums < self.num_scales).all(), "Level numbers must be in the range [0, %d]" % (self.num_scales-1)
+            levs_tmp = list(np.sort(levs_nums))  # we want smallest first
+            if 'residual_highpass' in levels:
+                levs_tmp = ['residual_highpass'] + levs_tmp
+            if 'residual_lowpass' in levels:
+                levs_tmp = levs_tmp + ['residual_lowpass']
+            levels = levs_tmp
+        # not all pyramids have residual highpass / lowpass, but it's easier to construct the list
+        # including them, then remove them if necessary.
+        if 'residual_lowpass' not in self.pyr_coeffs.keys() and 'residual_lowpass' in levels:
+            levels.pop(-1)
+        if 'residual_highpass' not in self.pyr_coeffs.keys() and 'residual_highpass' in levels:
+            levels.pop(0)
+        return levels
+
+    def _recon_bands_check(self, bands):
+        """when reconstructing pyramid, check whether bands arg is valid and return
+        """
+        if isinstance(bands, str) and bands == "all":
+            bands = np.arange(self.num_orientations)
+        else:
+            bands = np.array(bands)
+            assert (bands >= 0).all(), "Error: band numbers must be larger than 0."
+            assert (bands < self.num_orientations).all(), "Error: band numbers must be in the range [0, %d]" % (self.num_orientations - 1)
+        return bands
+
+    def _recon_keys(self, levels, bands):
+        """make a list of all the keys from pyr_coeffs to use in pyramid reconstruction
+        """
+        levels = self._recon_levels_check(levels)
+        bands = self._recon_bands_check(bands)
+        recon_keys = []
+        for level in levels:
+            # residual highpass and lowpass
+            if isinstance(level, str):
+                recon_keys.append(level)
+            # else we have to get each of the (specified) bands at
+            # that level
+            else:
+                recon_keys.extend([(level, band) for band in bands])
+        return recon_keys
+
 
 # maxPyrHt
 # showPyr

@@ -1,8 +1,7 @@
 import numpy as np
 from .pyramid import Pyramid
 from .c.wrapper import corrDn
-import matplotlib.pyplot as plt
-from matplotlib import cm
+
 
 class GaussianPyramid(Pyramid):
 
@@ -26,8 +25,8 @@ class GaussianPyramid(Pyramid):
 
     def initFilters(self, filter1, filter2):
         if filter2 is None: filter2 = filter1
-        self.filter1 = self.parseFilter(filter1)
-        self.filter2 = self.parseFilter(filter2)
+        self.filter1 = self._parse_filter(filter1)
+        self.filter2 = self._parse_filter(filter2)
 
     def initHeight(self, height):
         self.height = 1 + self.maxPyrHt(self.image.shape, self.filter1.shape)

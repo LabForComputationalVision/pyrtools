@@ -83,36 +83,7 @@ class SteerablePyramidSpace(Pyramid):
         else:
             edges = edge_type
 
-        if isinstance(levels, str) and levels == 'all':
-            levels = ['residual_highpass'] + list(range(self.num_scales)) + ['residual_lowpass']
-        else:
-            levs_nums = np.array([int(i) for i in levels if isinstance(i, int) or i.isdigit()])
-            assert (levs_nums >= 0).all(), "Level numbers must be non-negative."
-            assert (levs_nums < self.num_scales).all(), "Level numbers must be in the range [0, %d]" % (self.num_scales-1)
-            levs_tmp = list(np.sort(levs_nums))  # we want smallest first
-            if 'residual_highpass' in levels:
-                levs_tmp = ['residual_highpass'] + levs_tmp
-            if 'residual_lowpass' in levels:
-                levs_tmp = levs_tmp + ['residual_lowpass']
-            levels = levs_tmp
-
-        if isinstance(bands, str) and bands == "all":
-            bands = np.arange(self.num_orientations)
-        else:
-            bands = np.array(bands)
-            assert (bands >= 0).all(), "Error: band numbers must be larger than 0."
-            assert (bands < self.num_orientations).all(), "Error: band numbers must be in the range [0, %d]" % (self.num_orientations - 1)
-
-        # make a list of all the keys from pyr_coeffs to use in pyramid reconstruction
-        recon_keys = []
-        for level in levels:
-            # residual highpass and lowpass
-            if isinstance(level, str):
-                recon_keys.append(level)
-            # else we have to get each of the (specified) bands at
-            # that level
-            else:
-                recon_keys.extend([(level, band) for band in bands])
+        recon_keys = self._recon_keys(levels, bands)
 
         # initialize reconstruction
         if 'residual_lowpass' in recon_keys:
@@ -120,9 +91,7 @@ class SteerablePyramidSpace(Pyramid):
         else:
             recon = np.zeros(self.pyr_coeffs['residual_lowpass'].shape)
 
-        # this just goes through the levels backwards, from top to
-        # bottom
-        for lev in range(self.num_scales)[::-1]:
+        for lev in reversed(range(self.num_scales)):
             # we need to upConv once per level, in order to up-sample
             # the image back to the right shape.
             recon = upConv(image=recon, filt=filters['lofilt'], edges=edges,
@@ -131,7 +100,7 @@ class SteerablePyramidSpace(Pyramid):
             # check every possible sub-band and then only add in the
             # ones we want (given that we have to loop through the
             # levels above in order to up-sample)
-            for band in range(self.num_orientations)[::-1]:
+            for band in reversed(range(self.num_orientations)):
                 if (lev, band) in recon_keys:
                     filt = filters['bfilts'][:, band].reshape(bfiltsz, bfiltsz, order='F')
                     recon += upConv(image=self.pyr_coeffs[(lev, band)], filt=filt, edges=edges,

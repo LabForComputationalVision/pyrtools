@@ -537,20 +537,19 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, 
             if pyr.is_complex:
                 col_wrap_new *= 2
             # not sure about scope here, so we make sure to copy the
-            # pyr_coeffs dictionary. this call returns [residual
-            # highpass, all bands, residual lowpass]
-            imgs = convert_pyr_coeffs_to_pyr(pyr.pyr_coeffs.copy())
-            # ... so we need to reorder it to [all bands, residual
-            # highpass, residual lowpass]
-            imgs = imgs[1:-1] + [imgs[0]] + [imgs[-1]]
+            # pyr_coeffs dictionary.
+            imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr.pyr_coeffs.copy())
             # we can similarly grab the labels for height and band
             # from the keys in this pyramid coefficients dictionary
             pyr_coeffs_keys = [k for k in pyr.pyr_coeffs.keys() if isinstance(k, tuple)]
             titles = ["height %02d, band %02d"%(h, b) for h, b in sorted(pyr_coeffs_keys)]
-            titles = titles + ["residual highpass", "residual lowpass"]
-            if not show_residuals:
-                imgs = imgs[:-2]
-                titles = titles[:-2]
+            if show_residuals:
+                if highpass is not None:
+                    titles += ["residual highpass"]
+                    imgs.append(highpass)
+                if lowpass is not None:
+                    titles += ["residual lowpass"]
+                    imgs.append(lowpass)
         except AttributeError:
             col_wrap_new = None
             imgs = pyr.pyr
