@@ -44,13 +44,7 @@ def convert_pyr_coeffs_to_pyr(pyr_coeffs):
     this is to enable backwards compatibility, will be deprecated
 
     """
-    try:
-        highpass = pyr_coeffs.pop('residual_highpass')
-    except KeyError:
-        highpass = None
-    try:
-        lowpass = pyr_coeffs.pop('residual_lowpass')
-    except KeyError:
-        lowpass = None
+    highpass = pyr_coeffs.pop('residual_highpass', None)
+    lowpass = pyr_coeffs.pop('residual_lowpass', None)
     coeffs = [i[1] for i in sorted(pyr_coeffs.items(), key=lambda x: x[0])]
     return coeffs, highpass, lowpass
