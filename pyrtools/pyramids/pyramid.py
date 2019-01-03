@@ -1,8 +1,8 @@
 import numpy as np
-import functools
-from operator import mul
-
+import warnings
+from .pyr_utils import max_pyr_height
 from .filters import namedFilter
+
 
 class Pyramid:  # Pyramid base class
 
@@ -22,11 +22,12 @@ class Pyramid:  # Pyramid base class
         assert self.image.ndim == 2, "Error: Input signal must be 1D or 2D."
 
         self.image_size = self.image.shape
-        self.pyr_type = None
+        if not hasattr(self, 'pyr_type'):
+            self.pyr_type = None
         self.edge_type = edge_type
         self.edgeType = edge_type
-        self.pyr = []
-        self.pyrSize = []
+        self.pyr_coeffs = {}
+        self.pyr_size = {}
         self.is_complex = False
 
     # this is the base Pyramid class. each subclass should implement their own
@@ -71,43 +72,32 @@ class Pyramid:  # Pyramid base class
         """
         self.pyr[band][location[0],location[1]] = value
 
-    def maxPyrHt(self, imsz, filtsz):
-        ''' Compute maximum pyramid height for given image and filter sizes.
-            Specifically: the number of corrDn operations that can be sequentially
-            performed when subsampling by a factor of 2. '''
-        # check if inputs are one of int, tuple and have consistent type
-        assert (isinstance(imsz, int) and isinstance(filtsz, int)) or (
-                isinstance(imsz, tuple) and isinstance(filtsz, tuple))
-        # 1D image case: reduce to the integer case
-        if isinstance(imsz, tuple) and (len(imsz) == 1 or 1 in imsz):
-            imsz = functools.reduce(mul, imsz)
-            filtsz = functools.reduce(mul, filtsz)
-        # integer case
-        if isinstance(imsz, int):
-            if imsz < filtsz:
-                return 0
-            else:
-                return 1 + self.maxPyrHt( imsz // 2, filtsz )
-        # 2D image case
-        if isinstance(imsz, tuple):
-            if min(imsz) < max(filtsz):
-                return 0
-            else:
-                return 1 + self.maxPyrHt( (imsz[0] // 2, imsz[1] // 2), filtsz )
+    def _set_num_scales(self, filter_name, height, extra_height=0):
+        # the Gaussian and Laplacian pyramids can go one higher than the value returned here, so we
+        # use the extra_height argument to allow for that
+        max_ht = max_pyr_height(self.image.shape, self.filters[filter_name].shape) + extra_height
+        if height == 'auto':
+            self.num_scales = max_ht
+        elif height > max_ht:
+            raise Exception("cannot build pyramid higher than %d levels." % (max_ht))
+        else:
+            self.num_scales = int(height)
 
     def _parse_filter(self, filt):
         if isinstance(filt, str):
             filt = namedFilter(filt)
-        filt = np.array(filt)
 
-        if filt.size > max(filt.shape):
-            raise Exception("Error: filter should be 1D (i.e., a vector)")
+        # the steerable pyramid filters are returned as a dictionary and we don't need to do this
+        # check for them
+        if not isinstance(filt, dict):
+            if filt.size > max(filt.shape):
+                raise Exception("Error: filter should be 1D (i.e., a vector)")
 
-        # when the first dimension of the image is 1, we need the filter to have shape (1, x)
-        # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
-        # we need to match the filter to the image dimensions
-        if filt.ndim == 1 or self.image.shape[0] == 1:
-            filt = filt.reshape(1, -1)
+            # when the first dimension of the image is 1, we need the filter to have shape (1, x)
+            # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
+            # we need to match the filter to the image dimensions
+            if filt.ndim == 1 or self.image.shape[0] == 1:
+                filt = filt.reshape(1, -1)
         return filt
 
     def _recon_levels_check(self, levels):
@@ -139,16 +129,26 @@ class Pyramid:  # Pyramid base class
         if isinstance(bands, str) and bands == "all":
             bands = np.arange(self.num_orientations)
         else:
-            bands = np.array(bands)
+            bands = np.array(bands, ndmin=1)
             assert (bands >= 0).all(), "Error: band numbers must be larger than 0."
             assert (bands < self.num_orientations).all(), "Error: band numbers must be in the range [0, %d]" % (self.num_orientations - 1)
         return bands
 
-    def _recon_keys(self, levels, bands):
+    def _recon_keys(self, levels, bands, max_orientations=None):
         """make a list of all the keys from pyr_coeffs to use in pyramid reconstruction
+
+        max_orientations: None or int. The maximum number of orientations we allow in the
+        reconstruction. when we determine which ints are allowed for bands, we ignore all those
+        greater than max_orientations.
         """
         levels = self._recon_levels_check(levels)
         bands = self._recon_bands_check(bands)
+        if max_orientations is not None:
+            for i in bands:
+                if i >= max_orientations:
+                    warnings.warn(("You wanted band %d in the reconstruction but max_orientation"
+                                   " is %d, so we're ignoring that band" % (i, max_orientations)))
+            bands = [i for i in bands if i < max_orientations]
         recon_keys = []
         for level in levels:
             # residual highpass and lowpass
@@ -159,7 +159,3 @@ class Pyramid:  # Pyramid base class
             else:
                 recon_keys.extend([(level, band) for band in bands])
         return recon_keys
-
-
-# maxPyrHt
-# showPyr

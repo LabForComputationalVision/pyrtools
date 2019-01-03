@@ -47,10 +47,11 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         symmetric filter.
 
         """
-
         self.pyrType = 'steerableFrequency'
         self.image = np.array(image)
         self.is_complex = is_complex
+        self.pyr = []
+        self.pyrSize = []
 
         max_ht = np.floor(np.log2(min(self.image.shape))) - 2
         if height == 'auto':

@@ -9,46 +9,33 @@ from pyrtools.pyramids.pyramid import Pyramid
 matfiles_path = op.join(op.dirname(op.realpath(__file__)), 'matFiles')
 test_data_path = op.join(op.dirname(op.realpath(__file__)), '..', 'DATA')
 
-class maxPyrHtTests(unittest.TestCase):
+class maxPyrHeightTests(unittest.TestCase):
     def test1(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((1,10),(3,4)) == 0)
+        self.assertTrue(pt.pyramids.max_pyr_height((1,10),(3,4)) == 0)
     def test2(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((10,1),(3,4)) == 0)
+        self.assertTrue(pt.pyramids.max_pyr_height((10,1),(3,4)) == 0)
     def test3(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((10,10),(1,4)) == 2)
+        self.assertTrue(pt.pyramids.max_pyr_height((10,10),(1,4)) == 2)
     def test4(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((10,10),(3,1)) == 2)
+        self.assertTrue(pt.pyramids.max_pyr_height((10,10),(3,1)) == 2)
     def test5(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((10,10),(3,4)) == 2)
+        self.assertTrue(pt.pyramids.max_pyr_height((10,10),(3,4)) == 2)
     def test6(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((20,10),(5,1)) == 2)
+        self.assertTrue(pt.pyramids.max_pyr_height((20,10),(5,1)) == 2)
     def test7(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((10,20),(5,1)) == 2)
+        self.assertTrue(pt.pyramids.max_pyr_height((10,20),(5,1)) == 2)
     def test8(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((20,10),(1,5)) == 2)
+        self.assertTrue(pt.pyramids.max_pyr_height((20,10),(1,5)) == 2)
     def test9(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((10,20),(1,5)) == 2)
+        self.assertTrue(pt.pyramids.max_pyr_height((10,20),(1,5)) == 2)
     def test10(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((256,1),(1,5)) == 6)
+        self.assertTrue(pt.pyramids.max_pyr_height((256,1),(1,5)) == 6)
     def test11(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((256,1),(5,1)) == 6)
+        self.assertTrue(pt.pyramids.max_pyr_height((256,1),(5,1)) == 6)
     def test12(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((1,256),(1,5)) == 6)
+        self.assertTrue(pt.pyramids.max_pyr_height((1,256),(1,5)) == 6)
     def test13(self):
-        pyr = Pyramid(image=[0.0], edge_type=None)
-        self.assertTrue(pyr.maxPyrHt((1,256),(5,1)) == 6)
+        self.assertTrue(pt.pyramids.max_pyr_height((1,256),(5,1)) == 6)
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
@@ -129,8 +116,8 @@ class LpyrTests(unittest.TestCase):
         # shape, that won't happen (if they're (5,1) instead, it will)
         pySig = np.zeros((1, 36))
         pyr = pt.pyramids.LaplacianPyramid(pySig)
-        self.assertTrue(pyr.filter1.shape == (1, 5))
-        self.assertTrue(pyr.filter2.shape == (1, 5))
+        self.assertTrue(pyr.filters['downsample_filter'].shape == (1, 5))
+        self.assertTrue(pyr.filters['upsample_filter'].shape == (1, 5))
     def test6(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr6.mat'))
         pyRamp = np.array(list(range(200)))
@@ -140,37 +127,37 @@ class LpyrTests(unittest.TestCase):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr7.mat'))
         img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
         pyPyr = pt.pyramids.LaplacianPyramid(img)
-        recon = pyPyr.reconPyr()
+        recon = pyPyr.recon_pyr()
         self.assertTrue((matPyr['recon'] == recon).all())
     def test8(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr8.mat'))
         pyRamp = pt.mkRamp(200)
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
-        recon = pyPyr.reconPyr()
+        recon = pyPyr.recon_pyr()
         self.assertTrue((matPyr['recon'] == recon).all())
     def test9(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr9.mat'))
         pyRamp = pt.mkRamp((200,100))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
-        recon = pyPyr.reconPyr()
+        recon = pyPyr.recon_pyr()
         self.assertTrue((matPyr['recon'] == recon).all())
     def test10(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr10.mat'))
         pyRamp = pt.mkRamp((100,200))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
-        recon = pyPyr.reconPyr()
+        recon = pyPyr.recon_pyr()
         self.assertTrue((matPyr['recon'] == recon).all())
     def test11(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr11.mat'))
         pyRamp = pt.mkRamp((200,200))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
-        recon = pyPyr.reconPyr([1])
+        recon = pyPyr.recon_pyr(levels=[1])
         self.assertTrue((matPyr['recon'] == recon).all())
     def test12(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr12.mat'))
         pyRamp = pt.mkRamp((200,200))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
-        recon = pyPyr.reconPyr([0,2,4])
+        recon = pyPyr.recon_pyr(levels=[0, 2, 4])
         self.assertTrue((matPyr['recon'] == recon).all())
 
 class spFilterTests(unittest.TestCase):
@@ -290,111 +277,109 @@ class SteerablePyramidSpaceTests(unittest.TestCase):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr11.mat'))
         pyRamp = pt.mkRamp((200,200))
         pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp)
-        recon = pyPyr.recon_pyr('sp1Filters', 'reflect1', [0])
+        recon = pyPyr.recon_pyr(2, 'reflect1', [0])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test12(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr12.mat'))
         pyRamp = pt.mkRamp((200,200))
         pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp)
-        recon = pyPyr.recon_pyr('sp1Filters', 'reflect1',
+        recon = pyPyr.recon_pyr(2, 'reflect1',
                                 ['residual_highpass', 1, 3])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test13(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr13.mat'))
         pyRamp = pt.mkRamp((20,20))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, filters='sp0Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, num_orientations=1)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test14(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr14.mat'))
         pyRamp = pt.mkRamp((200,200))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, filters='sp0Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, num_orientations=1)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test15(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr15.mat'))
         pyRamp = pt.mkRamp((200,200))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, filters='sp1Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, num_orientations=2)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test16(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr16.mat'))
         pyRamp = pt.mkRamp((200,200))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, filters='sp1Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, num_orientations=2)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test17(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr17.mat'))
         pyRamp = pt.mkRamp((200,200))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, filters='sp3Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, num_orientations=4)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test18(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr18.mat'))
         pyRamp = pt.mkRamp((200,200))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, filters='sp3Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, num_orientations=4)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test19(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr19.mat'))
         pyRamp = pt.mkRamp((200,200))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, filters='sp5Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=1, num_orientations=6)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test20(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr20.mat'))
         pyRamp = pt.mkRamp((200,200))
-        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, filters='sp5Filters')
+        pyPyr = pt.pyramids.SteerablePyramidSpace(pyRamp, height=3, num_orientations=6)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test21(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr21.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp0Filters')
-        recon = pyPyr.recon_pyr('sp0Filters');
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=1)
+        recon = pyPyr.recon_pyr(1);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test22(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr22.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp1Filters')
-        recon = pyPyr.recon_pyr('sp1Filters');
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=2)
+        recon = pyPyr.recon_pyr(2);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test23(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr23.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp3Filters')
-        recon = pyPyr.recon_pyr('sp3Filters');
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=4)
+        recon = pyPyr.recon_pyr(4);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test24(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr24.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp5Filters')
-        recon = pyPyr.recon_pyr('sp5Filters');
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=6)
+        recon = pyPyr.recon_pyr(6);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test25(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr25.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp5Filters')
-        recon = pyPyr.recon_pyr('sp5Filters','reflect1', ['residual_highpass', 0, 1], [0]);
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=6)
+        recon = pyPyr.recon_pyr(6,'reflect1', ['residual_highpass', 0, 1], [0]);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test26(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr26.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp0Filters')
-        recon = pyPyr.recon_pyr('sp0Filters','reflect1', ['residual_highpass', 0, 1], [0]);
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=1)
+        recon = pyPyr.recon_pyr(1,'reflect1', ['residual_highpass', 0, 1], [0]);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test27(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr27.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp1Filters')
-        recon = pyPyr.recon_pyr('sp1Filters','reflect1', ['residual_highpass', 0, 1], [0]);
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=2)
+        recon = pyPyr.recon_pyr(2,'reflect1', ['residual_highpass', 0, 1], [0]);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test28(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr28.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp3Filters')
-        recon = pyPyr.recon_pyr('sp3Filters','reflect1', ['residual_highpass', 0, 1], [0]);
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=4)
+        recon = pyPyr.recon_pyr(4,'reflect1', ['residual_highpass', 0, 1], [0]);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test29(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr29.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
-        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, filters='sp5Filters')
-        recon = pyPyr.recon_pyr('sp5Filters','reflect1', ['residual_highpass', 0, 1], [0]);
+        pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, num_orientations=6)
+        recon = pyPyr.recon_pyr(6,'reflect1', ['residual_highpass', 0, 1], [0]);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-
-
 
 
 class pointOpTests(unittest.TestCase):
@@ -695,19 +680,19 @@ class WpyrTests(unittest.TestCase):
         self.assertTrue(np.allclose(res, im, atol=5e-3))
     def testRecon5(self):
         im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im, filters='daub2', edge_type='circular')
+        pyr = pt.pyramids.WaveletPyramid(im, filter_name='daub2', edge_type='circular')
         res = pyr.recon_pyr()
         print("\n%s\n" % np.max(res-im))
         self.assertTrue(np.allclose(res, im, atol=5e-3))
     def testRecon6(self):
         im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im, filters='qmf13', edge_type='circular')
+        pyr = pt.pyramids.WaveletPyramid(im, filter_name='qmf13', edge_type='circular')
         res = pyr.recon_pyr()
         print("\n%s\n" % np.max(res-im))
         self.assertTrue(np.allclose(res, im, atol=5e-3))
     def testRecon7(self):
         im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im, filters='haar', edge_type='circular')
+        pyr = pt.pyramids.WaveletPyramid(im, filter_name='haar', edge_type='circular')
         res = pyr.recon_pyr()
         self.assertTrue(np.allclose(res, im))
 

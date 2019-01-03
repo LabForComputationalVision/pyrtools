@@ -30,7 +30,6 @@ class PyrFigure(Figure):
         kwargs['dpi'] = dpi
         Figure.__init__(self, *args, **kwargs)
 
-
     def savefig(self, fname, dpi_multiple=1, **kwargs):
         """Save the current figure.
 
@@ -519,42 +518,25 @@ def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, 
     # to do it is to probably use gridspec (https://matplotlib.org/users/gridspec.html), arranging
     # the axes in an orderly way and then passing them through to imshow somehow, rather than
     # pasting all coefficients into a giant array.
-    try:
-        # Wavelet pyramid has a width attribute
-        col_wrap_new = pyr.width
-        imgs = pyr.pyr
-        # the last height does not have all the bands, only the residuals
-        titles = ["height %02d, band %02d"%(h, b) for h, b in itertools.product(range(pyr.height-1),
-                                                                                range(pyr.width))]
-        titles = titles + ["residual lowpass"]
-        if not show_residuals:
-            imgs = imgs[:-1]
-            titles = titles[:-1]
-    except AttributeError:
-        try:
-            # and the steerable pyramids have a num_orientations attribute
-            col_wrap_new = pyr.num_orientations
-            if pyr.is_complex:
-                col_wrap_new *= 2
-            # not sure about scope here, so we make sure to copy the
-            # pyr_coeffs dictionary.
-            imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr.pyr_coeffs.copy())
-            # we can similarly grab the labels for height and band
-            # from the keys in this pyramid coefficients dictionary
-            pyr_coeffs_keys = [k for k in pyr.pyr_coeffs.keys() if isinstance(k, tuple)]
-            titles = ["height %02d, band %02d"%(h, b) for h, b in sorted(pyr_coeffs_keys)]
-            if show_residuals:
-                if highpass is not None:
-                    titles += ["residual highpass"]
-                    imgs.append(highpass)
-                if lowpass is not None:
-                    titles += ["residual lowpass"]
-                    imgs.append(lowpass)
-        except AttributeError:
-            col_wrap_new = None
-            imgs = pyr.pyr
-            titles = ["height %02d"%h for h in range(pyr.height)]
-    if col_wrap_new is not None:
+    # and the steerable pyramids have a num_orientations attribute
+    col_wrap_new = pyr.num_orientations
+    if pyr.is_complex:
+        col_wrap_new *= 2
+    # not sure about scope here, so we make sure to copy the
+    # pyr_coeffs dictionary.
+    imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr.pyr_coeffs.copy())
+    # we can similarly grab the labels for height and band
+    # from the keys in this pyramid coefficients dictionary
+    pyr_coeffs_keys = [k for k in pyr.pyr_coeffs.keys() if isinstance(k, tuple)]
+    titles = ["height %02d, band %02d" % (h, b) for h, b in sorted(pyr_coeffs_keys)]
+    if show_residuals:
+        if highpass is not None:
+            titles += ["residual highpass"]
+            imgs.append(highpass)
+        if lowpass is not None:
+            titles += ["residual lowpass"]
+            imgs.append(lowpass)
+    if col_wrap_new is not None and col_wrap_new != 1:
         if col_wrap is None:
             col_wrap = col_wrap_new
     return imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)

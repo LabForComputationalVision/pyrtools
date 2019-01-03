@@ -1,22 +1,21 @@
 import numpy as np
 from .pyramid import Pyramid
-from .filters import steerable_filters
 from .c.wrapper import corrDn, upConv
 
 
 class SteerablePyramidSpace(Pyramid):
 
-    def __init__(self, image, height='auto', filters='sp1Filters',
-                 edge_type='reflect1'):
-        """Steerable pyramid. image parameter is required, others are optional
+    def __init__(self, image, height='auto', num_orientations=2, edge_type='reflect1'):
+        """Steerable pyramid.
 
         - `image` - a 2D numpy array
 
         - `height` - an integer denoting number of pyramid levels desired.  'auto' (default) uses
-        maxPyrHt from pyPyrUtils.
+        max_pyr_height from pyr_utils.
 
-        - `filters` - The name of one of the steerable pyramid filters:
-        `'sp0Filters'`, `'sp1Filters'`, `'sp3Filters'`, `'sp5Filters'`.
+        - num_orientations: {1, 2, 4, 6}. the number of orientations you want in the steerable
+        - pyramid filters. If you want a different value, see SteerablePyramidFreq. Note that this
+        - is the order of the pyramid plus one.
 
         - `edge_type` - specifies edge-handling.  Options are:
             * `'circular'` - circular convolution
@@ -26,23 +25,14 @@ class SteerablePyramidSpace(Pyramid):
             * `'zero'` - assume values of zero outside image boundary
             * `'extend'` - reflect and invert
             * `'dont-compute'` - zero output when filter overhangs imput boundaries.
+
         """
         super().__init__(image=image, edge_type=edge_type)
 
-        self.filters = steerable_filters(filters)
+        self.num_orientations = num_orientations
+        self.filters = self._parse_filter("sp{:d}Filters".format(num_orientations-1))
         self.pyr_type = 'Steerable'
-        self.num_orientations = int(filters.replace('sp', '').replace('Filters', '')) + 1
-
-        max_ht = self.maxPyrHt(self.image.shape, self.filters['lofilt'].shape)
-        if height == 'auto':
-            self.num_scales = max_ht
-        elif height > max_ht:
-            raise Exception("cannot build pyramid higher than %d levels." % (max_ht))
-        else:
-            self.num_scales = int(height)
-
-        self.pyr_coeffs = {}
-        self.pyr_size = {}
+        self._set_num_scales('lofilt', height)
 
         hi0 = corrDn(image=self.image, filt=self.filters['hi0filt'], edges=self.edge_type)
 
@@ -65,15 +55,15 @@ class SteerablePyramidSpace(Pyramid):
         self.pyr_coeffs['residual_lowpass'] = np.array(lo)
         self.pyr_size['residual_lowpass'] = lo.shape
 
-    def recon_pyr(self, filters=None, edge_type=None, levels='all', bands='all'):
+    def recon_pyr(self, num_orientations=None, edge_type=None, levels='all', bands='all'):
         """Reconstruct the image, optionally using subset of pyramid coefficients.
         """
         # defaults
 
-        if filters is None:
+        if num_orientations is None:
             filters = self.filters
         else:
-            filters = steerable_filters(filters)
+            filters = self._parse_filter("sp{:d}Filters".format(num_orientations-1))
 
         # assume square filters  -- start of buildSpyrLevs
         bfiltsz = int(np.floor(np.sqrt(filters['bfilts'].shape[0])))
@@ -83,13 +73,13 @@ class SteerablePyramidSpace(Pyramid):
         else:
             edges = edge_type
 
-        recon_keys = self._recon_keys(levels, bands)
+        recon_keys = self._recon_keys(levels, bands, num_orientations)
 
         # initialize reconstruction
         if 'residual_lowpass' in recon_keys:
             recon = self.pyr_coeffs['residual_lowpass']
         else:
-            recon = np.zeros(self.pyr_coeffs['residual_lowpass'].shape)
+            recon = np.zeros_like(self.pyr_coeffs['residual_lowpass'])
 
         for lev in reversed(range(self.num_scales)):
             # we need to upConv once per level, in order to up-sample

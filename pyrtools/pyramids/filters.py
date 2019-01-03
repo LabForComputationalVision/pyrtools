@@ -48,6 +48,8 @@ def namedFilter(name):
         # kernel = binomialFilter(int(name[5:]))
         # kernel = kernel / np.sqrt(np.sum((kernel ** 2)))
 
+    elif name.startswith('sp'):
+        kernel = steerable_filters(name)
     elif name is "qmf5":
         kernel = np.array([[-0.076103], [0.3535534], [0.8593118], [0.3535534], [-0.076103]])
     elif name is "qmf9":
@@ -75,7 +77,7 @@ def namedFilter(name):
     else:
         raise Exception("Error: Unknown filter name: %s" % (name))
 
-    return np.array(kernel)
+    return kernel
 
 def steerable_filters(filter_name):
     ''' Steerable pyramid filters.  Transform described  in:
