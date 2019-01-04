@@ -63,6 +63,9 @@ class Pyramid:  # Pyramid base class
         if isinstance(levels, str) and levels == 'all':
             levels = ['residual_highpass'] + list(range(self.num_scales)) + ['residual_lowpass']
         else:
+            if not hasattr(levels, '__iter__') or isinstance(levels, str):
+                # then it's a single int or string
+                levels = [levels]
             levs_nums = np.array([int(i) for i in levels if isinstance(i, int) or i.isdigit()])
             assert (levs_nums >= 0).all(), "Level numbers must be non-negative."
             assert (levs_nums < self.num_scales).all(), "Level numbers must be in the range [0, %d]" % (self.num_scales-1)
