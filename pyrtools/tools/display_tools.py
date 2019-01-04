@@ -1,4 +1,3 @@
-import itertools
 import warnings
 import numpy as np
 import matplotlib.pyplot as plt
@@ -119,7 +118,6 @@ class PyrFigure(Figure):
         kwargs['dpi'] = self.dpi * dpi_multiple
         super().savefig(fname, **kwargs)
 
-
     def tight_layout(self, renderer=None, pad=1.08, h_pad=None, w_pad=None,
                      rect=None):
         """THIS IS NOT SUPPORTED (we control placement very specifically)
@@ -155,7 +153,7 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
         for j in range(n_cols):
             fig.add_axes([j*(rel_axis_width+rel_col_margin),
                           1.-((i+1)*rel_axis_height/vert_pct+i*rel_row_margin), rel_axis_width,
-                          rel_axis_height], frameon=False, xticks=[],yticks=[])
+                          rel_axis_height], frameon=False, xticks=[], yticks=[])
     return fig
 
 
@@ -168,9 +166,10 @@ def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
 
     if title is not None:
         # adapt the precision of displayed range to the order of magnitude of the values
-        ax.set_title(title + '\n range: [{:.1e}, {:.1e}] \n dims: [{}, {}] * {}'.format(
-                 img.min(), img.max(), img.shape[0], img.shape[1], zoom), {'fontsize': ax.bbox.height*(12./256)})
-                 # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
+        title = title + '\n range: [{:.1e}, {:.1e}] \n dims: [{}, {}] * {}'
+        # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
+        ax.set_title(title.format(img.min(), img.max(), img.shape[0], img.shape[1], zoom),
+                     {'fontsize': ax.bbox.height*(12./256)})
 
 
 def reshape_axis(ax, axis_size_pix):
@@ -184,7 +183,8 @@ def reshape_axis(ax, axis_size_pix):
     if you try to do thta.
     """
     if ax.bbox.width < axis_size_pix[1] or ax.bbox.height < axis_size_pix[0]:
-        raise Exception("Your axis is too small! Axis size: ({}, {}). Image size: ({}, {})".format(ax.bbox.width, ax.bbox.height, axis_size_pix[1], axis_size_pix[0]))
+        raise Exception("Your axis is too small! Axis size: ({}, {}). Image size: ({}, {})".format(
+            ax.bbox.width, ax.bbox.height, axis_size_pix[1], axis_size_pix[0]))
     bbox = ax.figure.get_window_extent().transformed(ax.figure.dpi_scale_trans.inverted())
     fig_width, fig_height = bbox.width*ax.figure.dpi, bbox.height*ax.figure.dpi
     rel_axis_width = axis_size_pix[1] / fig_width
@@ -205,7 +205,8 @@ def colormap_range(img, vrange='indep1'):
             if vrange == 'auto1' or vrange == 'auto':
                 vrange_list = [np.min(flatimg), np.max(flatimg)]
             elif vrange == 'auto2':
-                vrange_list = [flatimg.mean() - 2 * flatimg.std(), flatimg.mean() + 2 * flatimg.std()]
+                vrange_list = [flatimg.mean() - 2 * flatimg.std(),
+                               flatimg.mean() + 2 * flatimg.std()]
             elif vrange == 'auto3':
                 p1 = np.percentile(flatimg, 10)
                 p2 = np.percentile(flatimg, 90)
@@ -215,7 +216,7 @@ def colormap_range(img, vrange='indep1'):
             vrange_list = [vrange_list] * len(img)
 
         elif vrange[:5] == 'indep':
-        # get independent vrange by calling this function one image at a time
+            # get independent vrange by calling this function one image at a time
             vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0] for im in img]
         else:
             vrange_list = colormap_range(img, vrange='auto1')
@@ -291,28 +292,29 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     image must be an integer (and thus zoom should probably be an integer or 1/(2^n)).
 
     title: string , list of strings or None
-        if string, will put the same title on every plot.
-        if list of strings, must be the same length as img, and will assume that titles go with the corresponding image.
-        if None, no title will be printed.
+        - if string, will put the same title on every plot.
+        - if list of strings, must be the same length as img, and will assume that titles go
+          with the corresponding image.
+        - if None, no title will be printed.
 
     col_wrap: int or None
 
-    ax: matplotlib axis or None
-        if None, make the appropriate figure.
-        if not None, we reshape it (which we only do by shrinking the bbox,
-        so if the bbox is already too small, this will throw an Exception!)
-        so that it's the appropriate number of pixels. first define a large enough figure using either make_figure or plt.figure
+    ax: matplotlib axis or None if None, make the appropriate figure.  if not None, we reshape it
+        (which we only do by shrinking the bbox, so if the bbox is already too small, this will
+        throw an Exception!)  so that it's the appropriate number of pixels. first define a large
+        enough figure using either make_figure or plt.figure
 
-    plot_complex: {'rectangular', 'polar', 'logpolar'}. how to handle complex inputs. we either plot the
-    rectangular version of it (real and imaginary separately, which you probably want to do for the
-    outputs of the complex steerable pyramid) or the polar version of it (amplitude and phase
-    separately, which you probably want to do for a Fourier transform). for any other value, we
-    raise a warning and default to rectangular.
+    plot_complex: {'rectangular', 'polar', 'logpolar'}. how to handle complex inputs. we either
+    plot the rectangular version of it (real and imaginary separately, which you probably want to
+    do for the outputs of the complex steerable pyramid) or the polar version of it (amplitude and
+    phase separately, which you probably want to do for a Fourier transform). for any other value,
+    we raise a warning and default to rectangular.
 
     Returns
     -------
 
     fig : figure
+
     '''
 
     if plot_complex not in ['rectangular', 'polar', 'logpolar']:
@@ -351,7 +353,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
             title_tmp.append(t)
     image = np.array(image_tmp)
     title = title_tmp
-
 
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
@@ -398,8 +399,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     return fig
 
 
-def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
-               **kwargs):
+def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True, **kwargs):
     """Turn a 3D movie array into a matplotlib animation or HTML movie.
 
     Parameters
@@ -413,7 +413,8 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
     aperture : bool
         If True, show only a central circular aperture.
     zoom : float
-        amount we zoom the movie frames (must result in an integer when multiplied by movie.shape[1:])
+        amount we zoom the movie frames (must result in an integer when multiplied by
+        movie.shape[1:])
     as_html : bool
         If True, return an HTML5 video; otherwise return the underying
         matplotlib animation object (e.g. to save to .gif).
@@ -468,7 +469,7 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True,
     return anim
 
 
-def pyrshow(pyr, vrange = 'indep1', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
+def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
     """Display the coefficients of the pyramid in an orderly fashion
 
     NOTE: this currently only works for 2d signals. we still need to figure out how to handle 1D

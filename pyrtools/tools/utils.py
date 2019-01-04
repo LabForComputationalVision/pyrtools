@@ -1,7 +1,7 @@
 import numpy as np
-
 from scipy.interpolate import interp1d
 from ..pyramids.c.wrapper import pointOp
+
 
 def matlab_round(np_array):
     ''' round equivalent to matlab function, which rounds .5 away from zero
@@ -13,7 +13,8 @@ def matlab_round(np_array):
     (fracPart, intPart) = np.modf(np_array)
     return intPart + (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
 
-def matlab_histo(np_array, nbins = 101, binsize = None, center = None):
+
+def matlab_histo(np_array, nbins=101, binsize=None, center=None):
     ''' [N,edges] = matlab_histo(np_array, nbins = 101, binsize = None, center = None)
         Compute a histogram of np_array.
         N contains the histogram counts,
@@ -44,23 +45,24 @@ def matlab_histo(np_array, nbins = 101, binsize = None, center = None):
         # use nbins to determine binsize
         binsize = (maxi-mini) / nbins
 
-    nbins2 = int( matlab_round( (maxi - center) / binsize) - matlab_round( (mini - center) / binsize) )
+    nbins2 = int(matlab_round((maxi - center) / binsize) - matlab_round((mini - center) / binsize))
     if nbins2 != nbins:
         print('Warning: Overriding bin number %d (requested %d)' % (nbins2, nbins))
         nbins = nbins2
 
     # np.histogram uses bin edges, not centers like Matlab's hist
     # compute bin edges (nbins + 1 of them)
-    edge_left = center + binsize * (-0.499 + matlab_round( (mini - center) / binsize ))
+    edge_left = center + binsize * (-0.499 + matlab_round((mini - center) / binsize))
     edges = edge_left + binsize * np.arange(nbins+1)
     N, _ = np.histogram(np_array, edges)
 
     # matlab version returns column vectors, so we will too.
     # to check: return edges or centers? edit comments.
-    return (N.reshape(1,-1), edges.reshape(1,-1))
+    return (N.reshape(1, -1), edges.reshape(1, -1))
 
-def entropy2(np_array, binsize=None):
-    ''' E = entropy2(np_array, binsize=None):
+
+def entropy2(vec, binsize=None):
+    ''' E = entropy2(vec, binsize=None):
 
         Compute the first-order sample entropy of MTX.  Samples of VEC are
         first discretized.  Optional argument BINSIZE controls the
@@ -73,11 +75,12 @@ def entropy2(np_array, binsize=None):
 
     [bincount, _] = matlab_histo(vec, nbins=256, binsize=binsize)
 
-    ## Collect non-zero bins:
-    H = bincount[ np.where(bincount > 0) ]
+    # Collect non-zero bins:
+    H = bincount[np.where(bincount > 0)]
     H = H / H.sum()
 
     return -(H * np.log2(H)).sum()
+
 
 def histoMatch(mtx, N, X, mode='edges'):
     '''Modify elements of MTX so that normalized histogram matches that
@@ -95,19 +98,19 @@ def histoMatch(mtx, N, X, mode='edges'):
     # TODO needs to be fixed, see old code below
 
     [oN, oX] = matlab_histo(mtx, N.size)
-    oStep = oX[0,1] - oX[0,0]
-    oC = np.concatenate(( np.array([0]), np.cumsum(oN / oN.sum()) ))
+    oStep = oX[0, 1] - oX[0, 0]
+    oC = np.concatenate((np.array([0]), np.cumsum(oN / oN.sum())))
 
     if mode == 'centers':         # convert to edges
-        nStep = X[0,1] - X[0,0]
-        nX = np.concatenate((np.array([X[0,0] - 0.5 * nStep]),
-                             np.array( X[0,:] + 0.5 * nStep)))
+        nStep = X[0, 1] - X[0, 0]
+        nX = np.concatenate((np.array([X[0, 0] - 0.5 * nStep]),
+                             np.array(X[0, :] + 0.5 * nStep)))
     else:
         nX = X.flatten()
 
     # HACK: no empty bins ensures nC strictly monotonic
     N = N + N.mean() / 1e8
-    nC = np.concatenate((np.array([0]), np.cumsum(N / N.sum()) ))
+    nC = np.concatenate((np.array([0]), np.cumsum(N / N.sum())))
 
     # NOTE:
     # - unlike in matlab, interp1d returns a function
@@ -115,9 +118,9 @@ def histoMatch(mtx, N, X, mode='edges'):
     # print(oC.min(), oC.max())
     # print(nC.min(), nC.max())
     func = interp1d(nC, nX, kind='linear', fill_value='extrapolate')
-    nnX  = func(oC)
+    nnX = func(oC)
 
-    return pointOp(image=mtx, lut=nnX, origin=oX[0,0], increment=oStep, warnings=0)
+    return pointOp(image=mtx, lut=nnX, origin=oX[0, 0], increment=oStep, warnings=0)
 
 # def histoMatch_old(*args):
 #     ''' RES = histoMatch(MTX, N, X, mode)
@@ -168,6 +171,7 @@ def histoMatch(mtx, N, X, mode='edges'):
 #
 #     return pointOp(mtx, nnX, oX[0], oStep, 0)
 
+
 def rcosFn(width=1, position=0, values=(0, 1)):
     '''Return a lookup table (suitable for use by INTERP1)
     containing a "raised cosine" soft threshold function:
@@ -184,7 +188,7 @@ def rcosFn(width=1, position=0, values=(0, 1)):
 
     sz = 256   # arbitrary!
 
-    X = np.pi * np.arange(-sz-1,2) / (2*sz)
+    X = np.pi * np.arange(-sz-1, 2) / (2*sz)
 
     Y = values[0] + (values[1]-values[0]) * np.cos(X)**2
 
@@ -194,7 +198,8 @@ def rcosFn(width=1, position=0, values=(0, 1)):
 
     X = position + (2*width/np.pi) * (X + np.pi/4)
 
-    return (X,Y)
+    return (X, Y)
+
 
 if __name__ == "__main__":
     X, Y = rcosFn(width=1, position=0, values=(0, 1))

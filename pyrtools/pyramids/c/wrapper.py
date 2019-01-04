@@ -1,7 +1,6 @@
 #!/usr/bin/python
 """functions that interact with the C code, for handling convolutions mostly.
 """
-
 import ctypes
 import os
 import glob
@@ -9,7 +8,6 @@ import numpy as np
 
 # the wrapConv.so file can have some system information after it from the compiler, so we just find
 # whatever it is called
-# libpath = glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'c', 'wrapConv*.so'))
 libpath = glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'wrapConv*.so'))
 # print(libpath)
 
@@ -55,7 +53,7 @@ def corrDn(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
         raise Exception("Don't know how to do convolution with edges %s!" % edges)
 
     if filt.ndim == 1:
-        filt = filt.reshape(1,-1)
+        filt = filt.reshape(1, -1)
 
     if stop is None:
         stop = (image.shape[0], image.shape[1])
@@ -121,7 +119,7 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
     filt = filt.copy().astype(float)
 
     if filt.ndim == 1:
-        filt = filt.reshape(1,-1)
+        filt = filt.reshape(1, -1)
 
     if edges not in ['circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
                      'dont-compute']:
@@ -170,11 +168,17 @@ def upConv(image, filt, edges='reflect1', step=(1, 1), start=(0, 0), stop=None):
 def pointOp(image, lut, origin, increment, warnings):
     """Apply a point operation, specified by lookup table `lut`, to image `im`.
 
-    `lut` must be a row or column vector, and is assumed to contain (equi-spaced) samples of the function.
-    `origin` specifies the abscissa associated with the first sample, and `increment` specifies the spacing between samples.
-    Between-sample values are estimated via linear interpolation.  If `warnings` is non-zero, the function prints a warning whenever the lookup table is extrapolated.
+    `lut` must be a row or column vector, and is assumed to contain (equi-spaced) samples of the
+    function.
 
-    This function is very fast and allows extrapolation beyond the lookup table domain.  The drawbacks are that the lookup table must be equi-spaced, and the interpolation is linear.
+    `origin` specifies the abscissa associated with the first sample, and `increment` specifies the
+    spacing between samples.
+
+    Between-sample values are estimated via linear interpolation.  If `warnings` is non-zero, the
+    function prints a warning whenever the lookup table is extrapolated.
+
+    This function is very fast and allows extrapolation beyond the lookup table domain.  The
+    drawbacks are that the lookup table must be equi-spaced, and the interpolation is linear.
     """
     result = np.empty_like(image)
 

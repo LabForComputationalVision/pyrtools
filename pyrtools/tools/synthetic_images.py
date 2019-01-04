@@ -1,8 +1,8 @@
 import numpy as np
-
 from ..pyramids.c.wrapper import pointOp
 from .utils import rcosFn
 from .imStats import var2
+
 
 def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
     ''' make a ramp matrix
@@ -19,7 +19,7 @@ def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
 
     if origin is None:
         # TODO understand why minus one (not plus)
-        origin = ( (size[0] - 1)/2., (size[1] - 1)/2. )
+        origin = ((size[0] - 1)/2., (size[1] - 1)/2.)
         # origin = ( (size[0] + 1)/2., (size[1] + 1)/2. )
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
@@ -27,12 +27,13 @@ def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
     xinc = slope * np.cos(direction)
     yinc = slope * np.sin(direction)
 
-    [xramp, yramp] = np.meshgrid( xinc * (np.arange(size[1])-origin[1]),
-                                  yinc * (np.arange(size[0])-origin[0]) )
+    [xramp, yramp] = np.meshgrid(xinc * (np.arange(size[1])-origin[1]),
+                                 yinc * (np.arange(size[0])-origin[0]))
 
     res = intercept + xramp + yramp
 
     return res
+
 
 def mkImpulse(size, origin=None, amplitude=1):
     '''make an impulse matrix
@@ -47,7 +48,7 @@ def mkImpulse(size, origin=None, amplitude=1):
         size = (size, size)
 
     if origin is None:
-        origin = ( (size[0] + 1)//2, (size[1] + 1)//2 )
+        origin = ((size[0] + 1)//2, (size[1] + 1)//2)
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
@@ -55,6 +56,7 @@ def mkImpulse(size, origin=None, amplitude=1):
     res[origin[0], origin[1]] = amplitude
 
     return res
+
 
 def mkR(size, exponent=1, origin=None):
     '''make distance-from-origin (r) matrix
@@ -81,10 +83,11 @@ def mkR(size, exponent=1, origin=None):
         # zero to a negative exponent raises:
         # ZeroDivisionError: 0.0 cannot be raised to a negative power
         r = xramp ** 2 + yramp ** 2
-        res = np.power(r, exponent / 2.0, where=(r!=0))
+        res = np.power(r, exponent / 2.0, where=(r != 0))
     else:
         res = (xramp ** 2 + yramp ** 2) ** (exponent / 2.0)
     return res
+
 
 def mkAngle(size, phase=0, origin=None):
     '''make polar angle matrix (in radians)
@@ -116,7 +119,8 @@ def mkAngle(size, phase=0, origin=None):
 
     return res
 
-def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
+
+def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
     '''make a "disk" image
 
     SIZE (a [Y X] list/tuple, or a scalar) specifies the matrix size
@@ -138,8 +142,6 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    #--------------------------------------------------------------
-
     res = mkR(size, exponent=1, origin=origin)
 
     if abs(twidth) < np.finfo(np.double).tiny:
@@ -149,6 +151,7 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1,0)):
         res = pointOp(res, Ytbl, Xtbl[0], Xtbl[1]-Xtbl[0], 0)
 
     return np.array(res)
+
 
 def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
     '''make a two dimensional Gaussian
@@ -174,28 +177,24 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    #---------------------------------------------------------------
-
-    (xramp, yramp) = np.meshgrid(np.arange(1,size[1]+1)-origin[1],
-                                 np.arange(1,size[0]+1)-origin[0])
+    (xramp, yramp) = np.meshgrid(np.arange(1, size[1]+1)-origin[1],
+                                 np.arange(1, size[0]+1)-origin[0])
 
     if len(covariance.shape) == 0:
         if isinstance(amplitude, str) and amplitude == 'norm':
             amplitude = 1.0 / (2.0 * np.pi * covariance)
-        e = ( (xramp ** 2) + (yramp ** 2) ) / ( -2.0 * covariance )
+        e = ((xramp ** 2) + (yramp ** 2)) / (-2.0 * covariance)
 
     elif len(covariance.shape) == 1:
         if isinstance(amplitude, str) and amplitude == 'norm':
             if covariance[0] * covariance[1] < 0:
-                amplitude = 1.0 / (2.0 * np.pi *
-                              np.sqrt(complex(cov[0] * covariance[1])))
+                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(complex(covariance[0] * covariance[1])))
             else:
-                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(covariance[0] *
-                                                        covariance[1]))
-        e = ( (xramp ** 2) / (-2 * covariance[1]) ) + (
-            (yramp ** 2) / (-2 * covariance[0]) )
+                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(covariance[0] * covariance[1]))
+        e = (((xramp ** 2) / (-2 * covariance[1])) +
+             ((yramp ** 2) / (-2 * covariance[0])))
 
-    elif covariance.shape == (2,2):
+    elif covariance.shape == (2, 2):
         # square matrix
         if isinstance(amplitude, str) and amplitude == 'norm':
             detCov = np.linalg.det(covariance)
@@ -203,13 +202,13 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
                 detCovComplex = np.empty(detCov.shape, dtype=complex)
                 detCovComplex.real = detCov
                 detCovComplex.imag = np.zeros(detCov.shape)
-                amplitude = 1.0 / ( 2.0 * np.pi * np.sqrt( detCovComplex ) )
+                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(detCovComplex))
             else:
-                amplitude = 1.0 / (2.0 * np.pi * np.sqrt( np.linalg.det(covariance) ) )
+                amplitude = 1.0 / (2.0 * np.pi * np.sqrt(np.linalg.det(covariance)))
         covariance = - np.linalg.inv(covariance) / 2.0
-        e = (covariance[1,1] * xramp**2) + (
-            (covariance[0,1] + covariance[1,0])*(xramp * yramp) ) + (
-             covariance[0,0] * yramp**2)
+        e = ((covariance[1, 1] * xramp**2) +
+             ((covariance[0, 1] + covariance[1, 0]) * (xramp*yramp)) +
+             (covariance[0, 0] * yramp**2))
     else:
         raise Exception("ERROR: invalid covariance shape")
 
@@ -217,7 +216,8 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
 
     return res
 
-def mkZonePlate(size, amplitude = 1, phase=0):
+
+def mkZonePlate(size, amplitude=1, phase=0):
     '''make a "zone plate" image
 
     SIZE specifies the matrix size
@@ -228,9 +228,10 @@ def mkZonePlate(size, amplitude = 1, phase=0):
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
-    res = amplitude * np.cos( (np.pi / max(size)) * mkR(size, 2) + phase )
+    res = amplitude * np.cos((np.pi / max(size)) * mkR(size, 2) + phase)
 
     return res
+
 
 def mkAngularSine(size, harmonic=1, amplitude=1, phase=0, origin=None):
     '''make an angular sinusoidal image:
@@ -249,9 +250,10 @@ def mkAngularSine(size, harmonic=1, amplitude=1, phase=0, origin=None):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    res = amplitude * np.sin( harmonic * mkAngle(size, phase, origin) + phase )
+    res = amplitude * np.sin(harmonic * mkAngle(size, phase, origin) + phase)
 
     return res
+
 
 def mkSine(size, period=None, direction=None, frequency=None, amplitude=1,
            phase=0, origin=None):
@@ -288,22 +290,22 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1,
         frequency = (2.0 * np.pi) / np.log2(size[0])
         direction = 0
 
-    #----------------------------------------------------------------
-
     if origin is None:
         res = amplitude * np.sin(mkRamp(size=size, direction=direction,
-            slope=frequency, intercept=phase))
+                                        slope=frequency, intercept=phase))
 
     else:
         if not hasattr(origin, '__iter__'):
             origin = (origin, origin)
         res = amplitude * np.sin(mkRamp(size=size, direction=direction,
-            slope=frequency, intercept=phase,origin=[origin[0]-1, origin[1]-1]))
+                                        slope=frequency, intercept=phase,
+                                        origin=[origin[0]-1, origin[1]-1]))
 
     return res
 
+
 def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
-            phase=0, origin=None, twidth=None):
+             phase=0, origin=None, twidth=None):
     '''make a two dimensional square wave
 
     IM = mkSquare(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN, TWIDTH)
@@ -343,17 +345,15 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
     if twidth is None:
         twidth = min(2, 2.0 * np.pi / (3.0*frequency))
 
-    #------------------------------------------------------------
-
     if origin is None:
         res = mkRamp(size, direction=direction, slope=frequency,
-                    intercept=phase) - np.pi/2.0
+                     intercept=phase) - np.pi/2.0
 
     else:
         if not hasattr(origin, '__iter__'):
             origin = (origin, origin)
         res = mkRamp(size, direction=direction, slope=frequency,
-            intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
+                     intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
 
     [Xtbl, Ytbl] = rcosFn(twidth * frequency, np.pi/2.0,
                           [-amplitude, amplitude])
@@ -362,6 +362,7 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
                   Xtbl[0], Xtbl[1]-Xtbl[0], 0)
 
     return res
+
 
 def mkFract(size, fract_dim=1):
     '''make pink noise
@@ -384,7 +385,7 @@ def mkFract(size, fract_dim=1):
     exp = -(2.5-fract_dim)
     ctr = np.ceil((res.shape + np.ones(2))/2.)
     sh = np.fft.ifftshift(mkR(size, exp, ctr))
-    sh[0,0] = 1  #DC term
+    sh[0, 0] = 1  # DC term
 
     fres = sh * fres
     fres = np.fft.ifft2(fres)

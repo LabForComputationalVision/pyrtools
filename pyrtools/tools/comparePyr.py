@@ -40,8 +40,9 @@ def comparePyr(matPyr, pyPyr, rtol=1e-5, atol=1e-8):
             print("some pyramid elements not identical: checking...")
             for i in range(isclose.shape[0]):
                 for j in range(isclose.shape[1]):
-                    if not isclose[i,j]:
-                        print("failed level:%d element:%d %d value:%.15f %.15f" % (idx, i, j, matTmp[i,j], pyTmp[i,j]))
+                    if not isclose[i, j]:
+                        print("failed level:%d element:%d %d value:%.15f %.15f" %
+                              (idx, i, j, matTmp[i, j], pyTmp[i, j]))
                         return False
 
     return True

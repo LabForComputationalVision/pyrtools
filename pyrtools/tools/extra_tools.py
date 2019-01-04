@@ -1,10 +1,10 @@
 #!/usr/bin/python
 """variety of (non-display) image utilities
 """
-
 import numpy as np
 from ..pyramids.filters import namedFilter
 from ..pyramids.c.wrapper import corrDn, upConv
+
 
 def _init_filt(filt):
     if isinstance(filt, str):
@@ -12,6 +12,7 @@ def _init_filt(filt):
     else:
         filt = np.array(filt)
     return filt / filt.sum()
+
 
 def blur(image, n_levels=1, filt='binom5'):
     '''blur an image by filtering and downsampling then by upsampling and filtering
@@ -37,28 +38,29 @@ def blur(image, n_levels=1, filt='binom5'):
                 raise Exception('Error: can not apply 2D filterer to 1D signal')
 
             imIn = corrDn(image, filt, 'reflect1', len(image))
-            out  = blur(imIn, n_levels-1, filt)
-            res  = upConv(out, filt, 'reflect1', len(image), [0, 0], len(image))
+            out = blur(imIn, n_levels-1, filt)
+            res = upConv(out, filt, 'reflect1', len(image), [0, 0], len(image))
             return res
         elif len(filt.shape) == 1 or filt.shape[0] == 1 or filt.shape[1] == 1:
             # 2D image 1D filter
             imIn = corrDn(image, filt, 'reflect1', [2, 1])
             imIn = corrDn(imIn, filt.T, 'reflect1', [1, 2])
-            out  = blur(imIn, n_levels-1, filt)
-            res  = upConv(out, filt.T, 'reflect1', [1, 2], [0, 0],
+            out = blur(imIn, n_levels-1, filt)
+            res = upConv(out, filt.T, 'reflect1', [1, 2], [0, 0],
                          [out.shape[0], image.shape[1]])
-            res  = upConv(res, filt, 'reflect1', [2, 1], [0, 0],
+            res = upConv(res, filt, 'reflect1', [2, 1], [0, 0],
                          image.shape)
             return res
         else:
             # 2D image 2D filter
             imIn = corrDn(image, filt, 'reflect1', [2, 2])
-            out  = blur(imIn, n_levels-1, filt)
-            res  = upConv(out, filt, 'reflect1', [2, 2], [0, 0],
+            out = blur(imIn, n_levels-1, filt)
+            res = upConv(out, filt, 'reflect1', [2, 2], [0, 0],
                          image.shape)
             return res
     else:
         return image
+
 
 def blurDn(image, n_levels=1, filt='binom5'):
     '''blur and downsample an image
@@ -113,6 +115,7 @@ def blurDn(image, n_levels=1, filt='binom5'):
 
     return res
 
+
 def upBlur(image, n_levels=1, filt='binom5'):
     '''upsample and blur an image.
 
@@ -155,6 +158,7 @@ def upBlur(image, n_levels=1, filt='binom5'):
 
     return res
 
+
 def imGradient(im_array, edges="dont-compute"):
     ''' [dx, dy] = imGradient(im, edges)
 
@@ -173,18 +177,20 @@ def imGradient(im_array, edges="dont-compute"):
 
     # kernels from Farid & Simoncelli, IEEE Trans Image Processing,
     #   13(4):496-508, April 2004.
-    gp = np.array([ 0.037659,  0.249153, 0.426375, 0.249153, 0.037659]).reshape(5,1)
-    gd = np.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5,1)
+    gp = np.array([0.037659,  0.249153, 0.426375, 0.249153, 0.037659]).reshape(5, 1)
+    gd = np.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5, 1)
 
     dx = corrDn(corrDn(im_array, gp, edges), gd.T, edges)
     dy = corrDn(corrDn(im_array, gd, edges), gp.T, edges)
 
-    return (dx,dy)
+    return (dx, dy)
+
 
 # not really necessary as a new function
 def strictly_decreasing(np_array):
     ''' are all elements of list strictly decreasing '''
     return np.all(np.diff(np_array) < 0)
+
 
 # not really necessary as a new function
 def shift(np_array, offset):
@@ -192,7 +198,8 @@ def shift(np_array, offset):
         such that  RES(POS) = MTX(POS-OFFSET).  '''
     return np.roll(np_array, offset)
 
-def clip(np_array, mini_or_range = 0.0, maxi = 1.0):
+
+def clip(np_array, mini_or_range=0.0, maxi=1.0):
     ''' [RES] = clip(np_array, mini_or_range = 0.0, maxi = 1.0):
 
         A wrapper of numpy.np that handles multiple ways to pass parameters
@@ -200,10 +207,12 @@ def clip(np_array, mini_or_range = 0.0, maxi = 1.0):
 
     if isinstance(mini_or_range, (int, float)):
         mini = mini_or_range
-    elif len(mini_or_range) == 2: # a range is provided
+    # a range is provided
+    elif len(mini_or_range) == 2:
         mini = mini_or_range[0]
         maxi = mini_or_range[1]
     else:
-        raise Exception('Error: mini_or_range must be an integer/float or a list/tuple of length 2!')
+        raise Exception('Error: mini_or_range must be an integer/float '
+                        'or a list/tuple of length 2!')
 
     return np.clip(np_array, mini, maxi)
