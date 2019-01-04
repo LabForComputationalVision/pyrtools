@@ -158,9 +158,9 @@ class SteerablePyramidFreq(Pyramid):
 
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 anglemasks.append(anglemask)
-                # that term in the beginning will be 1, -j, -1, j for order 0, 1, 2, 3, and will
-                # then loop again
-                banddft = (-np.sqrt(-1+0j)) ** order * lodft * anglemask * himask
+                # that (-1j)**order term in the beginning will be 1, -j, -1, j for order 0, 1, 2,
+                # 3, and will then loop again
+                banddft = (-1j) ** order * lodft * anglemask * himask
                 band = np.fft.ifft2(np.fft.ifftshift(banddft))
                 if not self.is_complex:
                     self.pyr_coeffs[(i, b)] = np.real(band.copy())
