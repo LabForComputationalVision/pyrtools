@@ -1,17 +1,14 @@
+import warnings
 import numpy as np
 from scipy.special import factorial
-import warnings #
-
-from .SteerablePyramidSpace import SteerablePyramidSpace
+from .pyramid import Pyramid
 from .c.wrapper import pointOp
 from .steer import steer2HarmMtx
 from ..tools.utils import rcosFn
 
-class SteerablePyramidFreq(SteerablePyramidSpace):
-    filt = None
-    edges = None
 
-    #constructor
+class SteerablePyramidFreq(Pyramid):
+
     def __init__(self, image, height='auto', num_orientations=4, twidth=1, is_complex=False):
         """Steerable frequency pyramid.
 
@@ -47,20 +44,22 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         symmetric filter.
 
         """
-        self.pyrType = 'steerableFrequency'
-        self.image = np.array(image)
-        self.is_complex = is_complex
-        self.pyr = []
-        self.pyrSize = []
+        # in the Fourier domain, there's only one choice for how do edge-handling: circular. to
+        # emphasize that thisisn'ta choice, we use None here.
+        super().__init__(image=image, edge_type=None)
 
+        self.pyr_type = 'SteerableFrequency'
+        self.is_complex = is_complex
+
+        # we can't use the base class's _set_num_scales method because the max height is calculated
+        # slightly differently
         max_ht = np.floor(np.log2(min(self.image.shape))) - 2
         if height == 'auto':
-            ht = max_ht
+            self.num_scales = int(max_ht)
         elif height > max_ht:
             raise Exception("Cannot build pyramid higher than %d levels." % (max_ht))
         else:
-            ht = height
-        ht = int(ht)
+            self.num_scales = int(height)
 
         if num_orientations > 16 or num_orientations < 1:
             warnings.warn("num_orientations must be an integer in the range [1,16]. Truncating.")
@@ -72,7 +71,7 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
             twidth = 1
         twidth = int(twidth)
 
-        #------------------------------------------------------
+        # ------------------------------------------------------
         # steering stuff:
 
         if self.num_orientations % 2 == 0:
@@ -87,23 +86,24 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         self.harmonics = harmonics
 
         self.steermtx = steer2HarmMtx(harmonics,
-                                np.pi * np.arange(self.num_orientations)/self.num_orientations, even_phase=True)
+                                      np.pi * np.arange(self.num_orientations)/self.num_orientations,
+                                      even_phase=True)
 
-        #------------------------------------------------------
+        # ------------------------------------------------------
 
         dims = np.array(self.image.shape)
         ctr = np.ceil((np.array(dims)+0.5)/2).astype(int)
 
-        (xramp, yramp) = np.meshgrid(np.linspace(-1,1,dims[1]+1)[:-1],
-                                     np.linspace(-1,1,dims[0]+1)[:-1])
+        (xramp, yramp) = np.meshgrid(np.linspace(-1, 1, dims[1]+1)[:-1],
+                                     np.linspace(-1, 1, dims[0]+1)[:-1])
 
         angle = np.arctan2(yramp, xramp)
         log_rad = np.sqrt(xramp**2 + yramp**2)
         log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
         log_rad = np.log2(log_rad)
 
-        ## Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.array([0,1]))
+        # Radial transition function (a raised cosine in log-frequency):
+        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.array([0, 1]))
         Yrcos = np.sqrt(Yrcos)
 
         YIrcos = np.sqrt(1.0 - Yrcos**2)
@@ -112,17 +112,14 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
 
         imdft = np.fft.fftshift(np.fft.fft2(self.image))
 
-        self.pyr = []
-        self.pyrSize = []
-
         hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
         self._hi0mask = hi0mask
 
         hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
         hi0 = np.fft.ifft2(np.fft.ifftshift(hi0dft))
 
-        self.pyr.append(np.real(hi0))
-        self.pyrSize.append(hi0.shape)
+        self.pyr_coeffs['residual_highpass'] = np.real(hi0)
+        self.pyr_size['residual_highpass'] = hi0.shape
 
         lo0mask = lo0mask.reshape(imdft.shape[0], imdft.shape[1])
         lodft = imdft * lo0mask
@@ -131,51 +128,43 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         self._himasks = []
         self._lomasks = []
 
-        for i in range(ht):
-            bands = np.zeros((lodft.shape[0]*lodft.shape[1], self.num_orientations))
-            bind = np.zeros((self.num_orientations, 2))
-
+        for i in range(self.num_scales):
             Xrcos -= np.log2(2)
 
             lutsize = 1024
             Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
-            order = self.num_orientations -1
+            order = self.num_orientations - 1
             const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(self.num_orientations*factorial(2*order, exact=True))
 
             if self.is_complex:
                 # TODO clean that up and give comments
-                alfa = ( (np.pi+Xcosn) % (2.0*np.pi) ) - np.pi
-                Ycosn = ( 2.0 * np.sqrt(const) * (np.cos(Xcosn) ** order) *
-                          (np.abs(alfa)<np.pi/2.0).astype(int) )
+                alfa = ((np.pi+Xcosn) % (2.0*np.pi)) - np.pi
+                Ycosn = (2.0 * np.sqrt(const) * (np.cos(Xcosn) ** order) *
+                         (np.abs(alfa) < np.pi/2.0).astype(int))
             else:
                 Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
 
-            log_rad_test = np.reshape(log_rad,(1,
-                                                  log_rad.shape[0]*
-                                                  log_rad.shape[1]))
-            himask = pointOp(log_rad_test, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
-                             0)
-            himask = np.reshape(himask, (lodft.shape[0], lodft.shape[1]))
+            log_rad_test = np.reshape(log_rad, (1, log_rad.shape[0] * log_rad.shape[1]))
+            himask = pointOp(log_rad_test, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+            himask = himask.reshape((lodft.shape[0], lodft.shape[1]))
             self._himasks.append(himask)
 
             anglemasks = []
             for b in range(self.num_orientations):
-                angle_tmp = np.reshape(angle,
-                                          (1,angle.shape[0]*angle.shape[1]))
-                anglemask = pointOp(angle_tmp, Ycosn,
-                                    Xcosn[0]+np.pi*b/self.num_orientations,
-                                    Xcosn[1]-Xcosn[0],0)
+                angle_tmp = np.reshape(angle, (1, angle.shape[0] * angle.shape[1]))
+                anglemask = pointOp(angle_tmp, Ycosn, Xcosn[0]+np.pi*b/self.num_orientations,
+                                    Xcosn[1]-Xcosn[0], 0)
 
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 anglemasks.append(anglemask)
                 banddft = -1j ** order * lodft * anglemask * himask
                 band = np.fft.ifft2(np.fft.ifftshift(banddft))
                 if not self.is_complex:
-                    self.pyr.append(np.real(band.copy()))
+                    self.pyr_coeffs[(i, b)] = np.real(band.copy())
                 else:
-                    self.pyr.append(band.copy())
-                self.pyrSize.append(band.shape)
+                    self.pyr_coeffs[(i, b)] = band.copy()
+                self.pyr_size[(i, b)] = band.shape
 
             self._anglemasks.append(anglemasks)
             dims = np.array(lodft.shape)
@@ -189,101 +178,57 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
             angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
             YIrcos = np.abs(np.sqrt(1.0 - Yrcos**2))
-            log_rad_tmp = np.reshape(log_rad,
-                                        (1,log_rad.shape[0]*log_rad.shape[1]))
-            lomask = pointOp(log_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0],
-                             0).reshape(lodft.shape[0], lodft.shape[1])
+            log_rad_tmp = np.reshape(log_rad, (1, log_rad.shape[0] * log_rad.shape[1]))
+            lomask = pointOp(log_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+            lomask = lomask.reshape(lodft.shape[0], lodft.shape[1])
             self._lomasks.append(lomask)
 
             lodft = lodft * lomask
 
         lodft = np.fft.ifft2(np.fft.ifftshift(lodft))
-        self.pyr.append(np.real(np.array(lodft).copy()))
-        self.pyrSize.append(lodft.shape)
+        self.pyr_coeffs['residual_lowpass'] = np.real(np.array(lodft).copy())
+        self.pyr_size['residual_lowpass'] = lodft.shape
 
-        self.height = self.spyrHt()
-
-    # methods
-    # def numBands(self):      # FIX: why isn't this inherited
-    #     if len(self.pyrSize) == 2:
-    #         return 0
-    #     else:
-    #         b = 2
-    #         while ( b <= len(self.pyrSize) and
-    #                 self.pyrSize[b] == self.pyrSize[1] ):
-    #             b += 1
-    #         return b-1
-
-    def spyrHt(self):
-        if len(self.pyrSize) > 2:
-            spHt = (len(self.pyrSize)-2)//self.num_orientations
-        else:
-            spHt = 0
-        return spHt
-
-    def reconPyr(self, levs='all', bands='all', twidth=1):
+    def recon_pyr(self, levels='all', bands='all', twidth=1):
 
         if twidth <= 0:
             warnings.warn("twidth must be positive. Setting to 1.")
             twidth = 1
 
-        #-----------------------------------------------------------------
+        recon_keys = self._recon_keys(levels, bands)
 
-        maxLev = 1 + self.spyrHt()
-        if isinstance(levs, str) and levs == 'all':
-            levs = np.arange(maxLev + 1)
-        elif isinstance(levs, str):
-            raise Exception("%s not valid for levs parameter. "
-                           "levs must be either a 1D numpy array"
-                            " or the string 'all'." % levs)
-        else:
-            levs = np.array(levs)
-
-        if isinstance(bands, str) and bands == 'all':
-            bands = np.arange(self.num_orientations)
-        elif isinstance(bands, str):
-            raise Exception("%s not valid for bands parameter."
-                            "bands must be either a 1D numpy"
-                            " array or the string 'all'." % bands)
-            return
-        else:
-            bands = np.array(bands)
-
-        #-------------------------------------------------------------------
         # make list of dims and bounds
-        boundList = []
-        dimList = []
-        for dimIdx in range(len(self.pyrSize)-1,-1,-1):
-            dims = np.array(self.pyrSize[dimIdx])
-            if (dims[0], dims[1]) not in dimList:
-                dimList.append( (dims[0], dims[1]) )
+        bound_list = []
+        dim_list = []
+        # we go through pyr_sizes from smallest to largest
+        for dims in sorted(self.pyr_size.values()):
+            if dims in dim_list:
+                continue
+            dim_list.append(dims)
+            dims = np.array(dims)
             ctr = np.ceil((dims+0.5)/2).astype(int)
             lodims = np.ceil((dims-0.5)/2).astype(int)
             loctr = np.ceil((lodims+0.5)/2).astype(int)
             lostart = ctr - loctr
             loend = lostart + lodims
             bounds = (lostart[0], lostart[1], loend[0], loend[1])
-            if bounds not in boundList:
-                boundList.append(bounds)
-        boundList.append((0, 0, dimList[len(dimList)-1][0],
-                          dimList[len(dimList)-1][1]))
-        dimList.append((dimList[len(dimList)-1][0], dimList[len(dimList)-1][1]))
+            bound_list.append(bounds)
+        bound_list.append((0, 0, dim_list[-1][0], dim_list[-1][1]))
+        dim_list.append((dim_list[-1][0], dim_list[-1][1]))
 
         # matlab code starts here
-        dims = np.array(self.pyrSize[0])
+        dims = np.array(self.pyr_size['residual_highpass'])
         ctr = np.ceil((dims+0.5)/2.0).astype(int)
 
-        (xramp, yramp) = np.meshgrid((np.arange(1,dims[1]+1)-ctr[1])/
-                                     (dims[1]/2.),
-                                     (np.arange(1,dims[0]+1)-ctr[0])/
-                                     (dims[0]/2.))
+        (xramp, yramp) = np.meshgrid((np.arange(1, dims[1]+1)-ctr[1]) / (dims[1]/2.),
+                                     (np.arange(1, dims[0]+1)-ctr[0]) / (dims[0]/2.))
         angle = np.arctan2(yramp, xramp)
         log_rad = np.sqrt(xramp**2 + yramp**2)
         log_rad[ctr[0]-1, ctr[1]-1] = log_rad[ctr[0]-1, ctr[1]-2]
         log_rad = np.log2(log_rad)
 
-        ## Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.array([0,1]))
+        # Radial transition function (a raised cosine in log-frequency):
+        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.array([0, 1]))
         Yrcos = np.sqrt(Yrcos)
         YIrcos = np.sqrt(1.0 - Yrcos**2)
 
@@ -291,104 +236,95 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         lutsize = 1024
         Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
-        order = self.num_orientations -1
-        const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(self.num_orientations*factorial(2*order, exact=True))
+        order = self.num_orientations - 1
+        const = (2**(2*order))*(factorial(order, exact=True)**2) / float(self.num_orientations*factorial(2*order, exact=True))
         Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
 
         # lowest band
-        nres = self.pyr[len(self.pyr)-1]
-        if self.spyrHt()+1 in levs:
-            nresdft = np.fft.fftshift(np.fft.fft2(nres))
+        # initialize reconstruction
+        if 'residual_lowpass' in recon_keys:
+            nresdft = np.fft.fftshift(np.fft.fft2(self.pyr_coeffs['residual_lowpass']))
         else:
-            nresdft = np.zeros(nres.shape)
-        resdft = np.zeros(dimList[1]) + 0j
+            nresdft = np.zeros_like(self.pyr_coeffs['residual_lowpass'])
+        resdft = np.zeros(dim_list[1]) + 0j
 
         bounds = (0, 0, 0, 0)
-        for idx in range(len(boundList)-2, 0, -1):
-            diff = (boundList[idx][2]-boundList[idx][0],
-                    boundList[idx][3]-boundList[idx][1])
-            bounds = (bounds[0]+boundList[idx][0], bounds[1]+boundList[idx][1],
-                      bounds[0]+boundList[idx][0] + diff[0],
-                      bounds[1]+boundList[idx][1] + diff[1])
+        for idx in range(len(bound_list)-2, 0, -1):
+            diff = (bound_list[idx][2]-bound_list[idx][0],
+                    bound_list[idx][3]-bound_list[idx][1])
+            bounds = (bounds[0]+bound_list[idx][0], bounds[1]+bound_list[idx][1],
+                      bounds[0]+bound_list[idx][0] + diff[0],
+                      bounds[1]+bound_list[idx][1] + diff[1])
             Xrcos -= np.log2(2.0)
         nlog_rad = log_rad[bounds[0]:bounds[2], bounds[1]:bounds[3]]
 
-        nlog_rad_tmp = np.reshape(nlog_rad,
-                                     (1,nlog_rad.shape[0]*nlog_rad.shape[1]))
+        nlog_rad_tmp = np.reshape(nlog_rad, (1, nlog_rad.shape[0]*nlog_rad.shape[1]))
         lomask = pointOp(nlog_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
-        lomask = lomask.reshape(nres.shape[0], nres.shape[1])
+        lomask = lomask.reshape(nresdft.shape[0], nresdft.shape[1])
         lomask = lomask + 0j
-        resdft[boundList[1][0]:boundList[1][2],
-               boundList[1][1]:boundList[1][3]] = nresdft * lomask
+        resdft[bound_list[1][0]:bound_list[1][2],
+               bound_list[1][1]:bound_list[1][3]] = nresdft * lomask
 
         # middle bands
-        bandIdx = (len(self.pyr)-1) + self.num_orientations
-        for idx in range(1, len(boundList)-1):
+        bandIdx = (len(self.pyr_coeffs)-1) + self.num_orientations
+        for idx in range(1, len(bound_list)-1):
             bounds1 = (0, 0, 0, 0)
             bounds2 = (0, 0, 0, 0)
-            for boundIdx in range(len(boundList)-1,idx-1,-1):
-                diff = (boundList[boundIdx][2]-boundList[boundIdx][0],
-                        boundList[boundIdx][3]-boundList[boundIdx][1])
+            for boundIdx in range(len(bound_list) - 1, idx - 1, -1):
+                diff = (bound_list[boundIdx][2]-bound_list[boundIdx][0],
+                        bound_list[boundIdx][3]-bound_list[boundIdx][1])
                 bound2tmp = bounds2
-                bounds2 = (bounds2[0]+boundList[boundIdx][0],
-                           bounds2[1]+boundList[boundIdx][1],
-                           bounds2[0]+boundList[boundIdx][0] + diff[0],
-                           bounds2[1]+boundList[boundIdx][1] + diff[1])
+                bounds2 = (bounds2[0]+bound_list[boundIdx][0],
+                           bounds2[1]+bound_list[boundIdx][1],
+                           bounds2[0]+bound_list[boundIdx][0] + diff[0],
+                           bounds2[1]+bound_list[boundIdx][1] + diff[1])
                 bounds1 = bound2tmp
             nlog_rad1 = log_rad[bounds1[0]:bounds1[2], bounds1[1]:bounds1[3]]
-            nlog_rad2 = log_rad[bounds2[0]:bounds2[2],bounds2[1]:bounds2[3]]
-            dims = dimList[idx]
+            nlog_rad2 = log_rad[bounds2[0]:bounds2[2], bounds2[1]:bounds2[3]]
+            dims = dim_list[idx]
             nangle = angle[bounds1[0]:bounds1[2], bounds1[1]:bounds1[3]]
             YIrcos = np.abs(np.sqrt(1.0 - Yrcos**2))
             if idx > 1:
                 Xrcos += np.log2(2.0)
-                nlog_rad2_tmp = np.reshape(nlog_rad2,
-                                              (1,nlog_rad2.shape[0]*
-                                               nlog_rad2.shape[1]))
+                nlog_rad2_tmp = np.reshape(nlog_rad2, (1, nlog_rad2.shape[0]*nlog_rad2.shape[1]))
                 lomask = pointOp(nlog_rad2_tmp, YIrcos, Xrcos[0],
                                  Xrcos[1]-Xrcos[0], 0)
-
                 lomask = lomask.reshape(bounds2[2]-bounds2[0],
                                         bounds2[3]-bounds2[1])
                 lomask = lomask + 0j
-                nresdft = np.zeros(dimList[idx]) + 0j
-                nresdft[boundList[idx][0]:boundList[idx][2],
-                        boundList[idx][1]:boundList[idx][3]] = resdft * lomask
+                nresdft = np.zeros(dim_list[idx]) + 0j
+                nresdft[bound_list[idx][0]:bound_list[idx][2],
+                        bound_list[idx][1]:bound_list[idx][3]] = resdft * lomask
                 resdft = nresdft.copy()
 
             bandIdx -= 2 * self.num_orientations
 
             # reconSFpyrLevs
-            if idx != 0 and idx != len(boundList)-1:
+            if idx != 0 and idx != len(bound_list)-1:
                 for b in range(self.num_orientations):
-                    if (bands == b).any():
-                        nlog_rad1_tmp = np.reshape(nlog_rad1,
-                                                      (1,nlog_rad1.shape[0]*
-                                                       nlog_rad1.shape[1]))
-                        himask = pointOp(nlog_rad1_tmp, Yrcos, Xrcos[0],
-                                         Xrcos[1]-Xrcos[0], 0)
+                    nlog_rad1_tmp = np.reshape(nlog_rad1,
+                                               (1, nlog_rad1.shape[0]*nlog_rad1.shape[1]))
+                    himask = pointOp(nlog_rad1_tmp, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
 
-                        himask = himask.reshape(nlog_rad1.shape)
-                        nangle_tmp = np.reshape(nangle, (1,
-                                                            nangle.shape[0]*
-                                                            nangle.shape[1]))
-                        anglemask = pointOp(nangle_tmp, Ycosn,
-                                            Xcosn[0]+np.pi*b/self.num_orientations,
-                                            Xcosn[1]-Xcosn[0], 0)
+                    himask = himask.reshape(nlog_rad1.shape)
+                    nangle_tmp = np.reshape(nangle, (1, nangle.shape[0]*nangle.shape[1]))
+                    anglemask = pointOp(nangle_tmp, Ycosn,
+                                        Xcosn[0]+np.pi*b/self.num_orientations,
+                                        Xcosn[1]-Xcosn[0], 0)
 
-                        anglemask = anglemask.reshape(nangle.shape)
-                        # either the coefficients will already be real-valued (if
-                        # self.is_complex=False) or complex (if self.is_complex=True). in the
-                        # former case, this np.real() does nothing. in the latter, we want to only
-                        # reconstruct with the real portion
-                        band = np.real(self.pyr[bandIdx])
-                        curLev = self.spyrHt() - (idx-1)
-                        if curLev in levs and b in bands:
-                            banddft = np.fft.fftshift(np.fft.fft2(band))
-                        else:
-                            banddft = np.zeros(band.shape)
-                        resdft += ( (np.power(-1+0j,0.5))**(self.num_orientations-1) *
-                                    banddft * anglemask * himask )
+                    anglemask = anglemask.reshape(nangle.shape)
+                    # either the coefficients will already be real-valued (if
+                    # self.is_complex=False) or complex (if self.is_complex=True). in the
+                    # former case, this np.real() does nothing. in the latter, we want to only
+                    # reconstruct with the real portion
+                    curLev = self.num_scales-1 - (idx-1)
+                    band = np.real(self.pyr_coeffs[(curLev, b)])
+                    if (curLev, b) in recon_keys:
+                        banddft = np.fft.fftshift(np.fft.fft2(band))
+                    else:
+                        banddft = np.zeros(band.shape)
+                    resdft += ((np.power(-1+0j, 0.5))**(self.num_orientations-1) *
+                               banddft * anglemask * himask)
                     bandIdx += 1
 
         # apply lo0mask
@@ -402,10 +338,10 @@ class SteerablePyramidFreq(SteerablePyramidSpace):
         hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
 
         hi0mask = hi0mask.reshape(resdft.shape[0], resdft.shape[1])
-        if 0 in levs:
-            hidft = np.fft.fftshift(np.fft.fft2(self.pyr[0]))
+        if 'residual_highpass' in recon_keys:
+            hidft = np.fft.fftshift(np.fft.fft2(self.pyr_coeffs['residual_highpass']))
         else:
-            hidft = np.zeros(self.pyr[0].shape)
+            hidft = np.zeros_like(self.pyr_coeffs['residual_highpass'])
         resdft += hidft * hi0mask
 
         outresdft = np.real(np.fft.ifft2(np.fft.ifftshift(resdft)))

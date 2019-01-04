@@ -25,52 +25,9 @@ class Pyramid:  # Pyramid base class
         if not hasattr(self, 'pyr_type'):
             self.pyr_type = None
         self.edge_type = edge_type
-        self.edgeType = edge_type
         self.pyr_coeffs = {}
         self.pyr_size = {}
         self.is_complex = False
-
-    # this is the base Pyramid class. each subclass should implement their own
-    # functionalities, including:
-    def initFilters(self):
-        raise Exception('Error: Not implemented for base Pyramid class')
-
-    def initHeight(self):
-        raise Exception('Error: Not implemented for base Pyramid class')
-
-    def buildNext(self):
-        raise Exception('Error: Not implemented for base Pyramid class')
-
-    def buildPyr(self):
-        raise Exception('Error: Not implemented for base Pyramid class')
-
-    def reconPrev(self):
-        raise Exception('Error: Not implemented for base Pyramid class')
-
-    def reconPyr(self):
-        raise Exception('Error: Not implemented for base Pyramid class')
-
-    # shared methods
-    def nbands(self):
-        return len(self.pyr)
-
-    def band(self, bandNum):
-        assert bandNum < len(self.pyr), 'band number is out of range'
-        return np.array(self.pyr[bandNum])
-
-    # return concatenation of all levels of 1d pyramid / not used?
-    def concatBands(self):
-        outarray = np.array([]).reshape((1,0))
-        for i in range(self.nbands()):
-            tmp = self.band(i).T
-            outarray = np.concatenate((outarray, tmp), axis=1)
-        return outarray
-
-    def setValue(self, band, location, value):
-        """set a pyramid value
-        location must be a tuple, others are single numbers
-        """
-        self.pyr[band][location[0],location[1]] = value
 
     def _set_num_scales(self, filter_name, height, extra_height=0):
         # the Gaussian and Laplacian pyramids can go one higher than the value returned here, so we
@@ -94,8 +51,8 @@ class Pyramid:  # Pyramid base class
                 raise Exception("Error: filter should be 1D (i.e., a vector)")
 
             # when the first dimension of the image is 1, we need the filter to have shape (1, x)
-            # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's because
-            # we need to match the filter to the image dimensions
+            # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's
+            # because we need to match the filter to the image dimensions
             if filt.ndim == 1 or self.image.shape[0] == 1:
                 filt = filt.reshape(1, -1)
         return filt

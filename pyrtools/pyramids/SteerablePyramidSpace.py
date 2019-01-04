@@ -31,7 +31,7 @@ class SteerablePyramidSpace(Pyramid):
 
         self.num_orientations = num_orientations
         self.filters = self._parse_filter("sp{:d}Filters".format(num_orientations-1))
-        self.pyr_type = 'Steerable'
+        self.pyr_type = 'SteerableSpace'
         self._set_num_scales('lofilt', height)
 
         hi0 = corrDn(image=self.image, filt=self.filters['hi0filt'], edges=self.edge_type)
