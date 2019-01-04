@@ -158,7 +158,9 @@ class SteerablePyramidFreq(Pyramid):
 
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 anglemasks.append(anglemask)
-                banddft = -1j ** order * lodft * anglemask * himask
+                # that term in the beginning will be 1, -j, -1, j for order 0, 1, 2, 3, and will
+                # then loop again
+                banddft = (-np.sqrt(-1+0j)) ** order * lodft * anglemask * himask
                 band = np.fft.ifft2(np.fft.ifftshift(banddft))
                 if not self.is_complex:
                     self.pyr_coeffs[(i, b)] = np.real(band.copy())
@@ -234,6 +236,7 @@ class SteerablePyramidFreq(Pyramid):
 
         # from reconSFpyrLevs
         lutsize = 1024
+
         Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
         order = self.num_orientations - 1
@@ -266,7 +269,6 @@ class SteerablePyramidFreq(Pyramid):
                bound_list[1][1]:bound_list[1][3]] = nresdft * lomask
 
         # middle bands
-        bandIdx = (len(self.pyr_coeffs)-1) + self.num_orientations
         for idx in range(1, len(bound_list)-1):
             bounds1 = (0, 0, 0, 0)
             bounds2 = (0, 0, 0, 0)
@@ -297,8 +299,6 @@ class SteerablePyramidFreq(Pyramid):
                         bound_list[idx][1]:bound_list[idx][3]] = resdft * lomask
                 resdft = nresdft.copy()
 
-            bandIdx -= 2 * self.num_orientations
-
             # reconSFpyrLevs
             if idx != 0 and idx != len(bound_list)-1:
                 for b in range(self.num_orientations):
@@ -325,7 +325,6 @@ class SteerablePyramidFreq(Pyramid):
                         banddft = np.zeros(band.shape)
                     resdft += ((np.power(-1+0j, 0.5))**(self.num_orientations-1) *
                                banddft * anglemask * himask)
-                    bandIdx += 1
 
         # apply lo0mask
         Xrcos += np.log2(2.0)

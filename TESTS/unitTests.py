@@ -472,6 +472,17 @@ class SteerablePyramidFreqpyrTests(unittest.TestCase):
         pyPyr = pt.pyramids.SteerablePyramidFreq(pyRamp)
         recon = pyPyr.recon_pyr(['residual_highpass', 1, 3], [1])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def testRecon1(self):
+        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.SteerablePyramidFreq(img)
+        recon = pyr.recon_pyr()
+        self.assertTrue(np.allclose(img, recon, atol=5e-3))
+    # we initially had a bug with odd orientations, since fixed
+    def testRecon2(self):
+        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.SteerablePyramidFreq(img, num_orientations=3)
+        recon = pyr.recon_pyr()
+        self.assertTrue(np.allclose(img, recon, atol=5e-3))
 
 class SteerablePyramidComplexTests(unittest.TestCase):
     def test0(self):
@@ -547,6 +558,17 @@ class SteerablePyramidComplexTests(unittest.TestCase):
         pyPyr = pt.pyramids.SteerablePyramidFreq(pyRamp, is_complex=True)
         recon = pyPyr.recon_pyr(['residual_highpass', 1, 3], [1])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def testRecon1(self):
+        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.SteerablePyramidFreq(img, is_complex=True)
+        recon = pyr.recon_pyr()
+        self.assertTrue(np.allclose(img, recon, atol=5e-3))
+    # we initially had a bug with odd orientations, since fixed
+    def testRecon2(self):
+        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.SteerablePyramidFreq(img, num_orientations=3, is_complex=True)
+        recon = pyr.recon_pyr()
+        self.assertTrue(np.allclose(img, recon, atol=5e-3))
 
 class WpyrTests(unittest.TestCase):
     def test0(self):
