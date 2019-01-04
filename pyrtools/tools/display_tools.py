@@ -246,17 +246,28 @@ def find_zooms(images):
 
     max_shape: tuple of integers, showing the shape of the largest image in the list
     """
+    def check_shape_1d(shapes):
+        max_shape = np.max(shapes)
+        for s in shapes:
+            if not (max_shape % s) == 0:
+                raise Exception("All images must be able to be 'zoomed in' to the largest image."
+                                "That is, the largest image must be a scalar multiple of all "
+                                "images.")
+        return max_shape
     # in this case, the two images were different sizes and so numpy can't combine them
     # correctly
-    max_shape = (np.max([i.shape[0] for i in images]), np.max([i.shape[1] for i in images]))
+    max_shape = []
+    for i, _ in enumerate(images[0].shape):
+        max_shape.append(check_shape_1d([img.shape[i] for img in images]))
     zooms = []
-    for i in images:
-        if not ((max_shape[0] % i.shape[0]) == 0 or (max_shape[1] % i.shape[1]) == 0):
-            raise Exception("All images must be able to be 'zoomed in' to the largest image."
-                            "That is, the largest image must be a scalar multiple of all images.")
-        if (max_shape[0] // i.shape[0]) != max_shape[1] // i.shape[1]:
+    for img in images:
+        # this checks that there's only one unique value in the list max_shape[i] // img.shape[i],
+        # where i indexes through the dimensions; that is, that we zoom each dimension by the same
+        # amount. this should then work with an arbitrary number of dimensions (in practice, 1 or
+        # 2)
+        if len(set([max_shape[i] // img.shape[i] for i in range(img.ndim)])) > 1:
             raise Exception("Both height and width must be multiplied by same amount!")
-        zooms.append(max_shape[0] // i.shape[0])
+        zooms.append(max_shape[0] // img.shape[0])
     return zooms, max_shape
 
 
@@ -540,4 +551,24 @@ def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1, show_residuals=True, **
     if col_wrap_new is not None and col_wrap_new != 1:
         if col_wrap is None:
             col_wrap = col_wrap_new
-    return imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)
+    # if these are really 1d (i.e., have shape (1, x) or (x, 1)), then we want them to be 1d
+    imgs = [i.squeeze() for i in imgs]
+    if imgs[0].ndim == 1:
+        # then we just want to plot each of the bands in a different subplot, no need to be fancy.
+        if col_wrap is not None:
+            warnings.warn("When the pyramid is 1d, we ignore col_wrap and just use "
+                          "pyr.num_orientations to determine the number of columns!")
+        height = pyr.num_scales
+        if "residual highpass" in titles:
+            height += 1
+        if "residual lowpass" in titles:
+            height += 1
+        fig, axes = plt.subplots(height, pyr.num_orientations,
+                                 figsize=(5*zoom, 5*zoom*pyr.num_orientations), **kwargs)
+        plt.subplots_adjust(hspace=1.2, wspace=1.2)
+        for i, ax in enumerate(axes.flatten()):
+            ax.plot(imgs[i])
+            ax.set_title(titles[i])
+        return fig
+    else:
+        return imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)
