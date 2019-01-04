@@ -15,7 +15,7 @@ class WaveletPyramid(Pyramid):
         self.filters['lo_filter'] = self._parse_filter(filter_name)
         # if the image is 1D, parseFilter will
         # match the filter to the image dimensions
-        self.filters["hi_filter"] = self._modulate_flip(self.filters['lo_filter'])
+        self.filters["hi_filter"] = WaveletPyramid._modulate_flip(self.filters['lo_filter'])
         # modulate_flip returns a filter that has
         # the same size as its input filter
         assert self.filters['lo_filter'].shape == self.filters['hi_filter'].shape
@@ -40,7 +40,7 @@ class WaveletPyramid(Pyramid):
         self.pyr_coeffs['residual_lowpass'] = im
         self.pyr_size['residual_lowpass'] = im.shape
 
-    def _modulate_flip(self, lo_filter):
+    def _modulate_flip(lo_filter):
         '''construct QMF/Wavelet highpass filter from lowpass filter
 
         modulate by (-1)^n, reverse order (and shift by one, which is handled by the convolution
@@ -138,7 +138,7 @@ class WaveletPyramid(Pyramid):
             stagger = self.stagger
         else:
             lo_filter = self._parse_filter(filter_name)
-            hi_filter = self._modulate_flip(lo_filter)
+            hi_filter = WaveletPyramid._modulate_flip(lo_filter)
             stagger = (lo_filter.size + 1) % 2
 
         if edge_type is None:
