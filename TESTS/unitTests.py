@@ -1,4 +1,9 @@
 import unittest
+import tarfile
+import tqdm
+import os
+import math
+import requests
 import numpy as np
 import scipy.io
 import matplotlib.pyplot as plt
@@ -1277,4 +1282,22 @@ def main():
     unittest.main()
 
 if __name__ == '__main__':
+    if not os.path.exists(matfiles_path):
+        print("matfiles required for testing not found, downloading now...")
+        # Streaming, so we can iterate over the response.
+        r = requests.get("https://osf.io/cbux8/download", stream=True)
+
+        # Total size in bytes.
+        total_size = int(r.headers.get('content-length', 0)) 
+        block_size = 1024*1024
+        wrote = 0 
+        with open(matfiles_path + ".tar.gz", 'wb') as f:
+            for data in tqdm.tqdm(r.iter_content(block_size), total=math.ceil(total_size//block_size),
+                                  unit='MB', unit_scale=True):
+                wrote = wrote  + len(data)
+                f.write(data)
+        if total_size != 0 and wrote != total_size:
+            raise Exception("Error downloading test matfiles!")  
+        with tarfile.open(matfiles_path + ".tar.gz") as f:
+            f.extractall()
     main()
