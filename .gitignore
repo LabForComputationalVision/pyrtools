@@ -28,3 +28,5 @@ wheels/
 *-checkpoint.ipynb
 test_jimmy.py
 00_tests_pe.ipynb
+
+TESTS/matFiles*
