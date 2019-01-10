@@ -410,7 +410,8 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     return fig
 
 
-def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True, **kwargs):
+def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True, repeat=False,
+             **kwargs):
     """Turn a 3D movie array into a matplotlib animation or HTML movie.
 
     Parameters
@@ -462,12 +463,9 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True, **kw
         return array,
 
     # Produce the animation
-    anim = animation.FuncAnimation(f,
-                                   frames=len(movie),
-                                   interval=framerate * 1000,
-                                   blit=True,
-                                   func=animate_movie,
-                                   init_func=init_movie)
+    anim = animation.FuncAnimation(f, frames=len(movie), interval=framerate * 1000, blit=True,
+                                   func=animate_movie, init_func=init_movie, repeat=repeat,
+                                   repeat_delay=500)
 
     plt.close(f)
 
