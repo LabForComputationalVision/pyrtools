@@ -4,7 +4,11 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.figure import Figure
 from matplotlib import animation
-from IPython.display import HTML
+try:
+    from IPython.display import HTML
+except ImportError:
+    warnings.warn("Unable to import IPython.display.HTML, animshow must be called with "
+                  "as_html5=False")
 from ..pyramids import convert_pyr_coeffs_to_pyr
 
 
