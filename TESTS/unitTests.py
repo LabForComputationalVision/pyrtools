@@ -1299,5 +1299,6 @@ if __name__ == '__main__':
         if total_size != 0 and wrote != total_size:
             raise Exception("Error downloading test matfiles!")  
         with tarfile.open(matfiles_path + ".tar.gz") as f:
-            f.extractall()
+            f.extractall(os.path.dirname(matfiles_path))
+        os.remove(matfiles_path + ".tar.gz")
     main()
