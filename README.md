@@ -44,6 +44,13 @@ Other requirements:
  - scipy
  - matplotlib
  - Pillow
+ - tqdm
+ - requests
+
+IPython is optional. If it's not installed,
+`pyrtools.display_tools.animshow` must be called with `as_html5=False`
+(but since this is for displaying the animated image in a Jupyter /
+IPython notebook, you probably won't need that functionality).
 
 # Usage:
 
