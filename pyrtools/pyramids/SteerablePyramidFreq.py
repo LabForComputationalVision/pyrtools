@@ -50,6 +50,8 @@ class SteerablePyramidFreq(Pyramid):
 
         self.pyr_type = 'SteerableFrequency'
         self.is_complex = is_complex
+        # SteerablePyramidFreq doesn't have filters, they're constructed in the frequency space
+        self.filters = {}
 
         # we can't use the base class's _set_num_scales method because the max height is calculated
         # slightly differently
