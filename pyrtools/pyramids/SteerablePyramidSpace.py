@@ -48,17 +48,16 @@ class SteerablePyramidSpace(Pyramid):
                 filt = self.filters['bfilts'][:, b].reshape(bfiltsz, bfiltsz).T
                 band = corrDn(image=lo, filt=filt, edges=self.edge_type)
                 self.pyr_coeffs[(i, b)] = np.array(band)
-                self.pyr_size[(i, b)] = (band.shape[0], band.shape[1])
+                self.pyr_size[(i, b)] = band.shape
 
             lo = corrDn(image=lo, filt=self.filters['lofilt'], edges=self.edge_type, step=(2, 2))
 
-        self.pyr_coeffs['residual_lowpass'] = np.array(lo)
+        self.pyr_coeffs['residual_lowpass'] = lo
         self.pyr_size['residual_lowpass'] = lo.shape
 
     def recon_pyr(self, num_orientations=None, edge_type=None, levels='all', bands='all'):
         """Reconstruct the image, optionally using subset of pyramid coefficients.
         """
-        # defaults
 
         if num_orientations is None:
             filters = self.filters
