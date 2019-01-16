@@ -1,10 +1,10 @@
 import numpy as np
 from ..pyramids.c.wrapper import pointOp
 from .utils import rcosFn
-from .imStats import var2
+from .image_stats import var2
 
 
-def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
+def ramp(size, direction=0, slope=1, intercept=0, origin=None):
     ''' make a ramp matrix
 
     Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
@@ -35,7 +35,7 @@ def mkRamp(size, direction=0, slope=1, intercept=0, origin=None):
     return res
 
 
-def mkImpulse(size, origin=None, amplitude=1):
+def impulse(size, origin=None, amplitude=1):
     '''make an impulse matrix
 
     create an image that is all zeros except for an impulse
@@ -58,7 +58,7 @@ def mkImpulse(size, origin=None, amplitude=1):
     return res
 
 
-def mkR(size, exponent=1, origin=None):
+def polar_radius(size, exponent=1, origin=None):
     '''make distance-from-origin (r) matrix
 
     Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
@@ -89,7 +89,7 @@ def mkR(size, exponent=1, origin=None):
     return res
 
 
-def mkAngle(size, phase=0, origin=None):
+def polar_angle(size, phase=0, origin=None):
     '''make polar angle matrix (in radians)
 
     Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
@@ -120,7 +120,7 @@ def mkAngle(size, phase=0, origin=None):
     return res
 
 
-def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
+def disk(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
     '''make a "disk" image
 
     SIZE (a [Y X] list/tuple, or a scalar) specifies the matrix size
@@ -142,7 +142,7 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    res = mkR(size, exponent=1, origin=origin)
+    res = polar_radius(size, exponent=1, origin=origin)
 
     if abs(twidth) < np.finfo(np.double).tiny:
         res = vals[1] + (vals[0] - vals[1]) * (res <= radius)
@@ -153,7 +153,7 @@ def mkDisc(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
     return np.array(res)
 
 
-def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
+def gaussian(size, covariance=None, origin=None, amplitude='norm'):
     '''make a two dimensional Gaussian
 
     make a two dimensional Gaussian function of SIZE (a [Y X] list/tuple,
@@ -217,7 +217,7 @@ def mkGaussian(size, covariance=None, origin=None, amplitude='norm'):
     return res
 
 
-def mkZonePlate(size, amplitude=1, phase=0):
+def zone_plate(size, amplitude=1, phase=0):
     '''make a "zone plate" image
 
     SIZE specifies the matrix size
@@ -228,12 +228,12 @@ def mkZonePlate(size, amplitude=1, phase=0):
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
-    res = amplitude * np.cos((np.pi / max(size)) * mkR(size, 2) + phase)
+    res = amplitude * np.cos((np.pi / max(size)) * polar_radius(size, 2) + phase)
 
     return res
 
 
-def mkAngularSine(size, harmonic=1, amplitude=1, phase=0, origin=None):
+def angular_sine(size, harmonic=1, amplitude=1, phase=0, origin=None):
     '''make an angular sinusoidal image:
 
     AMPL * sin( HARMONIC*theta + PHASE),
@@ -250,18 +250,18 @@ def mkAngularSine(size, harmonic=1, amplitude=1, phase=0, origin=None):
     elif not hasattr(origin, '__iter__'):
         origin = (origin, origin)
 
-    res = amplitude * np.sin(harmonic * mkAngle(size, phase, origin) + phase)
+    res = amplitude * np.sin(harmonic * polar_angle(size, phase, origin) + phase)
 
     return res
 
 
-def mkSine(size, period=None, direction=None, frequency=None, amplitude=1,
-           phase=0, origin=None):
+def sine(size, period=None, direction=None, frequency=None, amplitude=1,
+         phase=0, origin=None):
     ''' make a two dimensional sinusoid
 
-    IM = mkSine(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN)
+    IM = sine(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN)
               or
-    IM = mkSine(SIZE,      FREQ,         AMPLITUDE, PHASE, ORIGIN)
+    IM = sine(SIZE,      FREQ,         AMPLITUDE, PHASE, ORIGIN)
 
     Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
     containing samples of a 2D sinusoid, with given PERIOD (in pixels),
@@ -291,26 +291,26 @@ def mkSine(size, period=None, direction=None, frequency=None, amplitude=1,
         direction = 0
 
     if origin is None:
-        res = amplitude * np.sin(mkRamp(size=size, direction=direction,
-                                        slope=frequency, intercept=phase))
+        res = amplitude * np.sin(ramp(size=size, direction=direction,
+                                      slope=frequency, intercept=phase))
 
     else:
         if not hasattr(origin, '__iter__'):
             origin = (origin, origin)
-        res = amplitude * np.sin(mkRamp(size=size, direction=direction,
-                                        slope=frequency, intercept=phase,
-                                        origin=[origin[0]-1, origin[1]-1]))
+        res = amplitude * np.sin(ramp(size=size, direction=direction,
+                                      slope=frequency, intercept=phase,
+                                      origin=[origin[0]-1, origin[1]-1]))
 
     return res
 
 
-def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
-             phase=0, origin=None, twidth=None):
+def square_wave(size, period=None, direction=None, frequency=None, amplitude=1,
+                phase=0, origin=None, twidth=None):
     '''make a two dimensional square wave
 
-    IM = mkSquare(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN, TWIDTH)
+    IM = square_wave(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN, TWIDTH)
             or
-    IM = mkSquare(SIZE,      FREQ,         AMPLITUDE, PHASE, ORIGIN, TWIDTH)
+    IM = square_wave(SIZE,      FREQ,         AMPLITUDE, PHASE, ORIGIN, TWIDTH)
 
     Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
     containing samples of a 2D square wave, with given PERIOD (in
@@ -346,14 +346,14 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
         twidth = min(2, 2.0 * np.pi / (3.0*frequency))
 
     if origin is None:
-        res = mkRamp(size, direction=direction, slope=frequency,
-                     intercept=phase) - np.pi/2.0
+        res = ramp(size, direction=direction, slope=frequency,
+                   intercept=phase) - np.pi/2.0
 
     else:
         if not hasattr(origin, '__iter__'):
             origin = (origin, origin)
-        res = mkRamp(size, direction=direction, slope=frequency,
-                     intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
+        res = ramp(size, direction=direction, slope=frequency,
+                   intercept=phase, origin=[origin[0]-1, origin[1]-1]) - np.pi/2.0
 
     [Xtbl, Ytbl] = rcosFn(twidth * frequency, np.pi/2.0,
                           [-amplitude, amplitude])
@@ -364,7 +364,7 @@ def mkSquare(size, period=None, direction=None, frequency=None, amplitude=1,
     return res
 
 
-def mkFract(size, fract_dim=1):
+def pink_noise(size, fract_dim=1):
     '''make pink noise
 
     Make a matrix of dimensions SIZE (a [Y X] list/tuple, or a scalar)
@@ -384,7 +384,7 @@ def mkFract(size, fract_dim=1):
 
     exp = -(2.5-fract_dim)
     ctr = np.ceil((res.shape + np.ones(2))/2.)
-    sh = np.fft.ifftshift(mkR(size, exp, ctr))
+    sh = np.fft.ifftshift(polar_radius(size, exp, ctr))
     sh[0, 0] = 1  # DC term
 
     fres = sh * fres

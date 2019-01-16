@@ -13,7 +13,7 @@ class WaveletPyramid(Pyramid):
 
         self.filters = {}
         self.filters['lo_filter'] = self._parse_filter(filter_name)
-        # if the image is 1D, parseFilter will
+        # if the image is 1D, parse_filter will
         # match the filter to the image dimensions
         self.filters["hi_filter"] = WaveletPyramid._modulate_flip(self.filters['lo_filter'])
         # modulate_flip returns a filter that has

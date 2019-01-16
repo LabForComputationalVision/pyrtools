@@ -2,13 +2,13 @@
 """variety of (non-display) image utilities
 """
 import numpy as np
-from ..pyramids.filters import namedFilter
+from ..pyramids.filters import named_filter
 from ..pyramids.c.wrapper import corrDn, upConv
 
 
 def _init_filt(filt):
     if isinstance(filt, str):
-        filt = namedFilter(filt)
+        filt = named_filter(filt)
     else:
         filt = np.array(filt)
     return filt / filt.sum()
@@ -20,7 +20,7 @@ def blur(image, n_levels=1, filt='binom5'):
     Blur an image, by filtering and downsampling N_LEVELS times
     (default=1), followed by upsampling and filtering LEVELS times.  The
     blurring is done with filter kernel specified by FILT (default =
-    'binom5'), which can be a string (to be passed to namedFilter), a
+    'binom5'), which can be a string (to be passed to named_filter), a
     vector (applied separably as a 1D convolution kernel in X and Y), or
     a matrix (applied as a 2D convolution kernel).  The downsampling is
     always by 2 in each direction.
@@ -67,7 +67,7 @@ def blurDn(image, n_levels=1, filt='binom5'):
 
     Blur and downsample an image.  The blurring is done with filter
     kernel specified by FILT (default = 'binom5'), which can be a string
-    (to be passed to namedFilter), a vector (applied separably as a 1D
+    (to be passed to named_filter), a vector (applied separably as a 1D
     convolution kernel in X and Y), or a matrix (applied as a 2D
     convolution kernel).  The downsampling is always by 2 in each
     direction.
@@ -121,7 +121,7 @@ def upBlur(image, n_levels=1, filt='binom5'):
 
     Upsample and blur an image.  The blurring is done with filter
     kernel specified by FILT (default = 'binom5'), which can be a string
-    (to be passed to namedFilter), a vector (applied separably as a 1D
+    (to be passed to named_filter), a vector (applied separably as a 1D
     convolution kernel in X and Y), or a matrix (applied as a 2D
     convolution kernel).  The downsampling is always by 2 in each
     direction.
@@ -131,7 +131,7 @@ def upBlur(image, n_levels=1, filt='binom5'):
     Eero Simoncelli, 4/97. Python port by Rob Young, 10/15.   '''
 
     if isinstance(filt, str):
-        filt = namedFilter(filt)
+        filt = named_filter(filt)
     # print(filt, n_levels)
 
     if n_levels > 1:
@@ -159,21 +159,32 @@ def upBlur(image, n_levels=1, filt='binom5'):
     return res
 
 
-def imGradient(im_array, edges="dont-compute"):
-    ''' [dx, dy] = imGradient(im, edges)
+def image_gradient(im_array, edges="dont-compute"):
+    '''Compute the gradient of the image using smooth derivative filters
 
-        Compute the gradient of the image using smooth derivative filters
-        optimized for accurate direction estimation.  Coordinate system
-        corresponds to standard pixel indexing: X axis points rightward.  Y
-        axis points downward.  EDGES specify boundary handling (see corrDn
-        for options).
+    Compute the gradient of the image using smooth derivative filters
+    optimized for accurate direction estimation.  Coordinate system
+    corresponds to standard pixel indexing: X axis points rightward.  Y
+    axis points downward.  EDGES specify boundary handling (see corrDn
+    for options).
 
-        EPS, 1997.
-        original filters from Int'l Conf Image Processing, 1994.
-        updated filters 10/2003: see Farid & Simoncelli, IEEE Trans Image
-                                 Processing, 13(4):496-508, April 2004.
-        Incorporated into matlabPyrTools 10/2004.
-        Python port by Rob Young, 10/15  '''
+    Returns [dx, dy]: the X derivative and the Y derivative
+
+    edges is a string determining boundary handling:
+      'circular' - Circular convolution
+      'reflect1' - Reflect about the edge pixels
+      'reflect2' - Reflect, doubling the edge pixels
+      'repeat'   - Repeat the edge pixels
+      'zero'     - Assume values of zero outside image boundary
+      'extend'   - Reflect and invert (continuous values and derivs)
+      'dont-compute' - Zero output when filter overhangs input boundaries
+
+    EPS, 1997.
+    original filters from Int'l Conf Image Processing, 1994.
+    updated filters 10/2003: see Farid & Simoncelli, IEEE Trans Image
+                             Processing, 13(4):496-508, April 2004.
+    Incorporated into matlabPyrTools 10/2004.
+    Python port by Rob Young, 10/15  '''
 
     # kernels from Farid & Simoncelli, IEEE Trans Image Processing,
     #   13(4):496-508, April 2004.
@@ -184,35 +195,3 @@ def imGradient(im_array, edges="dont-compute"):
     dy = corrDn(corrDn(im_array, gd, edges), gp.T, edges)
 
     return (dx, dy)
-
-
-# not really necessary as a new function
-def strictly_decreasing(np_array):
-    ''' are all elements of list strictly decreasing '''
-    return np.all(np.diff(np_array) < 0)
-
-
-# not really necessary as a new function
-def shift(np_array, offset):
-    ''' Circular shift 2D matrix samples by OFFSET (a [Y,X] 2-tuple),
-        such that  RES(POS) = MTX(POS-OFFSET).  '''
-    return np.roll(np_array, offset)
-
-
-def clip(np_array, mini_or_range=0.0, maxi=1.0):
-    ''' [RES] = clip(np_array, mini_or_range = 0.0, maxi = 1.0):
-
-        A wrapper of numpy.np that handles multiple ways to pass parameters
-        and default values [mini=0.0, maxi=1.0]'''
-
-    if isinstance(mini_or_range, (int, float)):
-        mini = mini_or_range
-    # a range is provided
-    elif len(mini_or_range) == 2:
-        mini = mini_or_range[0]
-        maxi = mini_or_range[1]
-    else:
-        raise Exception('Error: mini_or_range must be an integer/float '
-                        'or a list/tuple of length 2!')
-
-    return np.clip(np_array, mini, maxi)

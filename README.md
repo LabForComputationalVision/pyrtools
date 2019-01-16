@@ -112,7 +112,7 @@ freak out.
   - `imsz` - integer giving the image size
   - `filtsz` - integer giving the filter size
 
-+ `namedFilter(name)`
++ `named_filter(name)`
 
   returns numpy array of named filter.  Supported names are:
   `binom<num> ` (where <num> is a number denoting the size of the
@@ -120,7 +120,7 @@ freak out.
   `'qmf16'`, `'haar'`, `'daub2'`, `'daub3'`, `'daub4'`, `'gauss5'`,
   `'gauss3'`.
 
-+ `mkRamp(size, direction, slope, intercept, origin)`
++ `ramp(size, direction, slope, intercept, origin)`
 
   Compute a matrix of dimension `size` (a (Y X) tuple, or a scalar
   (for square matrices)) containing samples of a ramp function, with a
@@ -129,11 +129,11 @@ freak out.
   (default = 0) at the `origin` (default = `(size+1)/2`, (1 1) = upper
   left). All but the first argument are optional.
 
-+ `sp0Filters` - steerable pyramid filters (see pyPyrUtils.py for references)
++ `sp0_filters` - steerable pyramid filters (see pyPyrUtils.py for references)
 
-+ `sp1Filters` - steerable pyramid filters (see pyPyrUtils.py for references)
++ `sp1_filters` - steerable pyramid filters (see pyPyrUtils.py for references)
 
-+ `mkImpulse(size, origin, amplitude)`
++ `impulse(size, origin, amplitude)`
 
   Compute a matrix of dimension `size` (a (Y X) tuple, or a scalar
   (for square matrices)) containing a single non-zero entry, at
@@ -147,7 +147,7 @@ freak out.
   - `height` - an integer denoting number of pyramid levels
     desired. Defaults to `maxPyrHt` from pyPyrUtils.
   - `filter1` - can be a string namimg a standard filter (from
-		  	   pyPyrUtils.namedFilter()), or a numpy array which
+		  	   pyPyrUtils.named_filter()), or a numpy array which
 			   will be used for (separable) convolution. Default is
 			   'binom5'.
   - `filter2` - specifies the "expansion" filter (default = filt1).
@@ -167,7 +167,7 @@ freak out.
      - `levs` (optional) - numpy array of levels to include, or the
        string `'all'` (default). The finest scale is 0.
 	 - `filt2` (optional) - valid string name for
-       `pyPyrUtils.namedFilter()` or a numpy array which will be used
+       `pyPyrUtils.named_filter()` or a numpy array which will be used
        for (separable) convolution. Default = `'binom5'`.
 	 - `edges` (optional) - same as edges for constructor above.
    - `pyrLow()`: Returns the coarsest band.
@@ -201,7 +201,7 @@ freak out.
   - `height` - an integer denoting number of pyramid levels desired.
     Defaults to `maxPyrHt` from pyPyrUtils.
   - `filter` - can be a string namimg a standard filter (from
-    `pyPyrUtils.namedFilter()`), or a numpy array which will be used
+    `pyPyrUtils.named_filter()`), or a numpy array which will be used
     for (separable) convolution. Default is `'binom5'`.
   - `edges` - specifies edge-handling.  Options are:
     * `'circular'` - circular convolution
@@ -222,8 +222,8 @@ freak out.
 				   pyPyrUtils. You can specify 'auto' to use
 				   this value.
   - `filter` - The name of one of the steerable pyramid filters in
-    pyPyrUtils: `'sp0Filters'`, `'sp1Filters'`, `'sp3Filters'`,
-    `'sp5Filters'`.  Default is `'sp1Filters'`.
+    pyPyrUtils: `'sp0_filters'`, `'sp1_filters'`, `'sp3_filters'`,
+    `'sp5_filters'`.  Default is `'sp1_filters'`.
   - `edges` - specifies edge-handling.  Options are:
     * `'circular'` - circular convolution
 	* `'reflect1'` - reflect about the edge pixels
@@ -239,7 +239,7 @@ freak out.
   - `pyrLow()` - return the lowest band
   - `pyrHight()` - return the highest band
   - `reconSpyr(filter, edges, levs, bands)` - reconstruct image from pyramid
-    - `filter` - (optional) same as for constructor above. Default is 'sp1Filters'.
+    - `filter` - (optional) same as for constructor above. Default is 'sp1_filters'.
     - `edges` - (optional) same as for constructor above. Default is 'reflect1'.
     - `levs` - (optional) should be a numpy array of levels to
       include, or the string `'all'` (default). 0 corresponds to the

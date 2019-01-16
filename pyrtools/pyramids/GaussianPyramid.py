@@ -13,7 +13,7 @@ class GaussianPyramid(Pyramid):
               1+`max_pyr_heightt`
 
             - `filter_name` - can be a string naming a standard filter (from
-              namedFilter()), or a numpy array which will be used for (separable) convolution.
+              named_filter()), or a numpy array which will be used for (separable) convolution.
 
             - `edge_type` - see class Pyramid.__init__()
 

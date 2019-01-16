@@ -1,6 +1,7 @@
 import numpy as np
 
-def steer2HarmMtx(harmonics, angles=None, even_phase=True):
+
+def steer_to_harmonics_mtx(harmonics, angles=None, even_phase=True):
     ''' Compute a steering matrix (maps a directional basis set onto the
         angular Fourier harmonics).
 
@@ -15,7 +16,7 @@ def steer2HarmMtx(harmonics, angles=None, even_phase=True):
         '''
 
     # default parameter
-    numh = harmonics.size +  np.count_nonzero(harmonics)
+    numh = harmonics.size + np.count_nonzero(harmonics)
     if angles is None:
         angles = np.pi * np.arange(numh) / numh
 
@@ -26,14 +27,14 @@ def steer2HarmMtx(harmonics, angles=None, even_phase=True):
     for h in harmonics:
         args = h * angles
         if h == 0:
-            imtx[:, col  ] = np.ones(angles.shape)
+            imtx[:, col] = np.ones(angles.shape)
             col += 1
         elif even_phase:
-            imtx[:, col  ] = np.cos(args)
+            imtx[:, col] = np.cos(args)
             imtx[:, col+1] = np.sin(args)
             col += 2
-        else: # odd phase
-            imtx[:, col  ] = np.sin(args)
+        else:  # odd phase
+            imtx[:, col] = np.sin(args)
             imtx[:, col+1] = -1.0 * np.cos(args)
             col += 2
 
@@ -59,7 +60,7 @@ def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, eve
     STEERMTX (optional, default assumes cosine phase harmonic components, and
     filter positions at 2pi*n/N) should be a matrix which maps the filters onto
     Fourier series components (ordered [cos0 cos1 sin1 cos2 sin2 ... sinN]).
-    See steer2HarmMtx function for more details.
+    See steer_to_harmonics_mtx function for more details.
     '''
 
     num = basis.shape[1]
@@ -73,7 +74,7 @@ def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, eve
 
     # If HARMONICS is not specified, assume derivatives.
     if harmonics is None:
-        harmonics = np.arange(1-(num%2),num,2)
+        harmonics = np.arange(1 - (num % 2), num, 2)
 
     if len(harmonics.shape) == 1 or harmonics.shape[0] == 1:
         # reshape to column matrix
@@ -86,8 +87,8 @@ def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, eve
 
     # If STEERMTX not passed, assume evenly distributed cosine-phase filters:
     if steermtx is None:
-        steermtx = steer2HarmMtx(harmonics, np.pi * np.arange(num) / num,
-                                 even_phase = even_phase)
+        steermtx = steer_to_harmonics_mtx(harmonics, np.pi * np.arange(num) / num,
+                                          even_phase=even_phase)
 
     steervect = np.zeros((angle.shape[0], num))
     arg = angle * harmonics[np.nonzero(harmonics)[0]].T

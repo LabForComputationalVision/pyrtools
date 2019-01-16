@@ -57,7 +57,7 @@ def kurt2(np_array, mean=None, var=None):
                                                                       var.imag)
 
 
-def imCompare(im_array0, im_array1):
+def image_compare(im_array0, im_array1):
     ''' Report min, max, mean, stdev of the difference,
         and SNR (relative to IM1).  '''
 
@@ -82,7 +82,7 @@ def imCompare(im_array0, im_array1):
     print('  Mean: %f,  Stdev (rmse): %f,  SNR (dB): %f' % (mean_diff, np.sqrt(var_diff), snr))
 
 
-def imStats(im_array):
+def image_stats(im_array):
     ''' Report image (matrix) statistics: min, max, mean, stdev,
         and kurtosis.
         '''

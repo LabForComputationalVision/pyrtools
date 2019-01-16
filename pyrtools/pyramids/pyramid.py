@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
 from .pyr_utils import max_pyr_height
-from .filters import namedFilter
+from .filters import named_filter
 
 
 class Pyramid:  # Pyramid base class
@@ -42,7 +42,7 @@ class Pyramid:  # Pyramid base class
 
     def _parse_filter(self, filt):
         if isinstance(filt, str):
-            filt = namedFilter(filt)
+            filt = named_filter(filt)
 
         # the steerable pyramid filters are returned as a dictionary and we don't need to do this
         # check for them

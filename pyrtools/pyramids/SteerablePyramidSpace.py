@@ -30,7 +30,7 @@ class SteerablePyramidSpace(Pyramid):
         super().__init__(image=image, edge_type=edge_type)
 
         self.num_orientations = num_orientations
-        self.filters = self._parse_filter("sp{:d}Filters".format(num_orientations-1))
+        self.filters = self._parse_filter("sp{:d}_filters".format(num_orientations-1))
         self.pyr_type = 'SteerableSpace'
         self._set_num_scales('lofilt', height)
 
@@ -62,7 +62,7 @@ class SteerablePyramidSpace(Pyramid):
         if num_orientations is None:
             filters = self.filters
         else:
-            filters = self._parse_filter("sp{:d}Filters".format(num_orientations-1))
+            filters = self._parse_filter("sp{:d}_filters".format(num_orientations-1))
 
         # assume square filters  -- start of buildSpyrLevs
         bfiltsz = int(np.floor(np.sqrt(filters['bfilts'].shape[0])))

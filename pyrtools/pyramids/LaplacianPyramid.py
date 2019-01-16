@@ -15,7 +15,7 @@ class LaplacianPyramid(GaussianPyramid):
               1+`max_pyr_height`
 
             - `downsample_filter_name` - can be a string namimg a standard filter (from
-              namedFilter()), or a numpy array which will be used for (separable)
+              named_filter()), or a numpy array which will be used for (separable)
               convolution to downsample the image. Default is 'binom5'.
 
             - `upsample_filter_name` - specifies the "expansion" filter. If None, then sets it to

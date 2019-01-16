@@ -3,7 +3,7 @@ import numpy as np
 from scipy.special import factorial
 from .pyramid import Pyramid
 from .c.wrapper import pointOp
-from .steer import steer2HarmMtx
+from .steer import steer_to_harmonics_mtx
 from ..tools.utils import rcosFn
 
 
@@ -87,9 +87,8 @@ class SteerablePyramidFreq(Pyramid):
             harmonics = np.array([0])
         self.harmonics = harmonics
 
-        self.steermtx = steer2HarmMtx(harmonics,
-                                      np.pi * np.arange(self.num_orientations)/self.num_orientations,
-                                      even_phase=True)
+        angles = np.pi * np.arange(self.num_orientations)/self.num_orientations
+        self.steermtx = steer_to_harmonics_mtx(harmonics, angles, even_phase=True)
 
         # ------------------------------------------------------
 
