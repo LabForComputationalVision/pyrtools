@@ -414,8 +414,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     return fig
 
 
-def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True, repeat=False,
-             **kwargs):
+def animshow(movie, framerate=2, vrange='auto', zoom=1, as_html5=True, repeat=False, **kwargs):
     """Turn a 3D movie array into a matplotlib animation or HTML movie.
 
     Parameters
@@ -425,7 +424,7 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True, repe
         don't have to all be the same size, but, if they're not, there must exist an integer such
         that all of them can be zoomed in by an integer up to the biggest image.
     framerate : float
-        Temporal resolution of the movie, in frames per second.
+        Temporal resolution of the movie, in Hz (frames per second).
     aperture : bool
         If True, show only a central circular aperture.
     zoom : float
@@ -467,7 +466,7 @@ def animshow(movie, framerate=1 / 60, vrange='auto', zoom=1, as_html5=True, repe
         return array,
 
     # Produce the animation
-    anim = animation.FuncAnimation(f, frames=len(movie), interval=framerate * 1000, blit=True,
+    anim = animation.FuncAnimation(f, frames=len(movie), interval=1000/framerate, blit=True,
                                    func=animate_movie, init_func=init_movie, repeat=repeat,
                                    repeat_delay=500)
 
