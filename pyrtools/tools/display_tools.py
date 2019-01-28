@@ -287,43 +287,39 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     automatically rescaled so they're displayed at the same size. thus, their sizes must be scalar
     multiples of each other.
 
-    vrange: One of the following strings or a list of two numbers. If two numbers, these will be
-    the vmin and vmax for all plotted images. If a string:
+    vrange: A list of two numbers, or a string. If two numbers, these specify the image values 
+             vmin/vmax that are mapped to black/white, respectively. If a string:
     - auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all
                   images
     - auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
              std dev (across all images)
-    - auto3: all images have same vmin/vmax. vmin is the 10th percentile minus 1/8 times the
-             difference between the 90th and 10th percentile, and vmax is the 90th percentile plus
-             1/8 times that difference (across all images)
+    - auto3: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile values to
+             the 10th/90th percentile of the display intensity range. For example: vmin is the 10th
+             percentile image value minus 1/8 times the difference between the 90th and 10th percentile
     - indep1 (default): each image has an independent vmin/vmax, which are their minimum/maximum
              values
     - indep2: each image has an independent vmin/vmax, which is their mean minus/plus 2 std dev
-    - indep3: each image has an independent vmin/vmax. vmin is the 10th percentile minus 1/8 times
-              the difference between the 90th and 10th percentile, and vmax is the 90th percentile
-              plus 1/8 times that difference
+    - indep3: each image has an independent vmin/vmax, chosen so that the 10th/90th percentile values
+              map to the 10th/90th percentile intensities.
 
-    zoom: float. how much to scale the size of the images by. zoom times the size of the largest
-    image must be an integer (and thus zoom should probably be an integer or 1/(2^n)).
+    zoom: float. ratio of display pixels to image pixels. if >1, must be an integer.  If <1, must be 1/d
+        where d is a a divisor of the size of the largest image.
 
     title: string , list of strings or None
         - if string, will put the same title on every plot.
-        - if list of strings, must be the same length as img, and will assume that titles go
-          with the corresponding image.
-        - if None, no title will be printed.
+        - if list of strings, must be the same length as img, assigning each title to corresponding image.
+        - if None (default), no title will be printed.
 
     col_wrap: int or None
 
-    ax: matplotlib axis or None if None, make the appropriate figure.  if not None, we reshape it
-        (which we only do by shrinking the bbox, so if the bbox is already too small, this will
-        throw an Exception!)  so that it's the appropriate number of pixels. first define a large
+    ax: matplotlib axis or None if None, make the appropriate figure. otherwise, we resize it
+        so that it's the appropriate number of pixels (done by shrinking the bbox - if the bbox 
+        is already too small, this will throw an Exception!). first define a large
         enough figure using either make_figure or plt.figure
 
-    plot_complex: {'rectangular', 'polar', 'logpolar'}. how to handle complex inputs. we either
-    plot the rectangular version of it (real and imaginary separately, which you probably want to
-    do for the outputs of the complex steerable pyramid) or the polar version of it (amplitude and
-    phase separately, which you probably want to do for a Fourier transform). for any other value,
-    we raise a warning and default to rectangular.
+    plot_complex: {'rectangular', 'polar', 'logpolar'}. specifies handling of complex values.
+    options are to plot the real/imaginary parts as separate images (default), with same intensity scaling, 
+    or plot amplitude and phase. for any other value, we raise a warning and default to rectangular.
 
     Returns
     -------
