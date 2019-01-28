@@ -1,44 +1,25 @@
-# pyrtools
+# pyrtools: tools for multi-scale image processing
 
-A python 3.6 port of Eero Simoncelli's matlabPyrTools.  This port does
-not attempt to recreate all of the matlab code from matlabPyrTools.
-The goal is to create a Python interface for the C code at the heart
-of matlabPyrTools.
-
-NOTE: This code is all under development and will NOT WORK for a while yet.
-We are actively porting it to python 3.6 and (parts of it) to pytorch.
-
-All code should be considered a beta release.  By that we mean that it is being
-actively developed and tested.  You can find unit tests in
-`TESTING/unitTests.py`.
-
-If you're using functions or parameters that do not have associated unit
-tests you should test this yourself to make sure the results are correct.
-You could then submit your test code, so that we can build more complete
-unit tests.
-
-# Authors
-
-Rob Young and Eero Simoncelli, 7/13
-
-William Broderick, 6/17
+Briefly, the tools include:
+  - Recursive multi-scale image decompositions (pyramids), including
+    Laplacian pyramids, QMFs, Wavelets, and steerable pyramids.  These
+    operate on 1D or 2D signals of arbitrary dimension.
+  - Fast 2D convolution routines, with subsampling and boundary-handling.
+  - Fast point-operations, histograms, histogram-matching.
+  - Fast synthetic image generation: sine gratings, zone plates, fractals, etc.
+  - Display routines for images and pyramids.  These include several
+    auto-scaling options, rounding to integer zoom factors to avoid
+    resampling artifacts, and useful labeling (dimensions and gray-range).
 
 # Installation
 
-
-It's recommended you install from pip: `pip install pyPyrTools`. The
+It's recommended you install from pip: `pip install pyrtools`. The
 pip install only been tested on Linux, there is no guarantee that it
 will work on other systems. Installing from source (see below) should
 work on OSX as well, but Windows is NOT supported.
 
-But if you want to install from source or pip doesn't work, you'll
-need to compile the associated C code yourself: assuming your path to
-python libraries is `/usr/local/anaconda2`, you would type:
 
-```
-gcc -shared -L/usr/local/anaconda2/lib -I/usr/local/anaconda2/include/python2.7/ -lpython2.7 -o wrapConv.so -fPIC convolve.c edges.c wrap.c internal_pointOp.c
-```
-
+## Dependencies
 Other requirements:
  - numpy
  - scipy
@@ -52,6 +33,17 @@ IPython is optional. If it's not installed,
 (but since this is for displaying the animated image in a Jupyter /
 IPython notebook, you probably won't need that functionality).
 
+# Authors
+
+Rob Young and Eero Simoncelli, 7/13
+
+William Broderick, 6/17
+
+A python 3.6 port of Eero Simoncelli's matlabPyrTools. This port does
+not attempt to recreate all of the matlab code from matlabPyrTools.
+The goal is to create a Python interface for the C code at the heart
+of matlabPyrTools.
+
 # Usage:
 
 method parameters mimic the matlab function parameters except that there's no
@@ -62,13 +54,13 @@ properties of the class.
   first two lines):
 ```
 >> import sys
->> sys.path.append('path to pyPyrTools parent directory')
->> import pyrPyrTools as ppt
+>> sys.path.append('path to pyrtools parent directory')
+>> import pyrtools as pt
 ```
 
 - create pyramid:
 ```
->> myPyr = ppt.Lpyr(img)
+>> myPyr = pt.pyramids.LaplacianPyramid(img)
 ```
 
 - reconstruct image from pyramid:
@@ -82,168 +74,13 @@ and Jupyter installed.
 
 # Testing
 
-To use the included test, navigate to `pyPyrTools/TESTS/` and run
-`python unitTests.py`. Note that a large amount of text will appear in
-your terminal window, *even if the tests are succeeding*, so don't
-freak out.
+All code should be considered a beta release.  By that we mean that it is being
+actively developed and tested.  You can find unit tests in
+`TESTING/unitTests.py`.
+and run
+`python unitTests.py`.
 
-# Function list
-
-+ `showIm(image, range, label, colormap, colorbar)`
-
-  display an image in a figure window
-  - `image` - a 2D numpy array
-  - `range` - a two element tuple. It specifies the values that map to
-    the min and max colormap value.  Passing a value of `'auto'`
-    (default) sets `range=[min,max]`. `'auto2'` sets `range=[mean-2*stdev,
-    mean+2*stdev]`.  `'auto3'` sets `range=[p1-(p2-p1)/8, p2+(p2-p1)/8]`,
-    where `p1` is the 10th percentile value of the sorted matrix
-    samples, and `p2` is the 90th percentile value.
-  - `label` - a string that is used as a figure title
-  - `colormap` - either the string `'auto'` (grey colormap will be
-      	       used) or a string that is the name of a colormap
-      	       variable
-  - `colorbar` - a boolean that specifies whether or not a colorbar is displayed
-
-+ `maxPyrHt(imsz, filtsz)`
-
-  return the maximum possible pyramid height from the given image and filter
-  size
-  - `imsz` - integer giving the image size
-  - `filtsz` - integer giving the filter size
-
-+ `named_filter(name)`
-
-  returns numpy array of named filter.  Supported names are:
-  `binom<num> ` (where <num> is a number denoting the size of the
-  filter), `'qmf5'`, `'qmf9'`, `'qmf13'`, `'qmf8'`, `'qmf12'`,
-  `'qmf16'`, `'haar'`, `'daub2'`, `'daub3'`, `'daub4'`, `'gauss5'`,
-  `'gauss3'`.
-
-+ `ramp(size, direction, slope, intercept, origin)`
-
-  Compute a matrix of dimension `size` (a (Y X) tuple, or a scalar
-  (for square matrices)) containing samples of a ramp function, with a
-  given gradient `direction` (radians, CW from X-axis, default=0),
-  `slope` (per pixel, default = 1), and a value of `intercept`
-  (default = 0) at the `origin` (default = `(size+1)/2`, (1 1) = upper
-  left). All but the first argument are optional.
-
-+ `sp0_filters` - steerable pyramid filters (see pyPyrUtils.py for references)
-
-+ `sp1_filters` - steerable pyramid filters (see pyPyrUtils.py for references)
-
-+ `impulse(size, origin, amplitude)`
-
-  Compute a matrix of dimension `size` (a (Y X) tuple, or a scalar
-  (for square matrices)) containing a single non-zero entry, at
-  position `origin` (defaults to `ceil(size/2)`), of value `amplitude`
-  (defaults to 1).
-
-+ `Lpyr(image, height, filter1, filter2, edges)`
-
-  Laplacian pyramid: image parameter is required, others are optional
-  - `image` - a 2D numpy array
-  - `height` - an integer denoting number of pyramid levels
-    desired. Defaults to `maxPyrHt` from pyPyrUtils.
-  - `filter1` - can be a string namimg a standard filter (from
-		  	   pyPyrUtils.named_filter()), or a numpy array which
-			   will be used for (separable) convolution. Default is
-			   'binom5'.
-  - `filter2` - specifies the "expansion" filter (default = filt1).
-  - `edges` - specifies edge-handling.  Options are:
-	* `'circular'` - circular convolution
-	* `'reflect1'` - reflect about the edge pixels
-	* `'reflect2'` - reflect, doubling the edge pixels
-	* `'repeat'` - repeat the edge pixels
-	* `'zero'` - assume values of zero outside image boundary
-	* `'extend'` - reflect and invert
-	* `'dont-compute'` - zero output when filter overhangs imput
-	  boundaries.
-
-   Methods:
-   - `reconLpyr(levs, filt2, edges)`: Reconstruct image from Laplacian
-     pyramid object	 
-     - `levs` (optional) - numpy array of levels to include, or the
-       string `'all'` (default). The finest scale is 0.
-	 - `filt2` (optional) - valid string name for
-       `pyPyrUtils.named_filter()` or a numpy array which will be used
-       for (separable) convolution. Default = `'binom5'`.
-	 - `edges` (optional) - same as edges for constructor above.
-   - `pyrLow()`: Returns the coarsest band.
-   - `showPyr(range, gap, level_scale_factor)`: Show all bands of the pyramid in a figure window.
-     - `range` - a two element tuple specifying the values that map to
-       black and white respectively. These values are scaled by
-       `level_scale_factor**(lev-1)` for bands at each level. Passing a
-       value of `'auto1'` sets range to the min and max values of
-       matrix. `'auto2'` sets range to 3 standard deviations below and
-       above 0.0. In both of these cases, the lowpass band is
-       independently scaled.  A value of `'indep1'` sets the range of
-       each subband independently, as in a call to
-       `pyPyrUtils.showIm(subband, 'auto1')`.  Similarly, `'indep2'`
-       causes each subband to be scaled independently as if by
-       `pyPyrUtils.showIm(subband, 'indep2')`.  The default value for
-       range is `'auto1'` for 1D images and `'auto2'` for 2D images.
-     - `gap` - specifies the gap in pixels to leave between subbands
-       (2D images only). default = 1.
-     - `level_scale_factor` - indicates the relative scaling between
-       pyramid levels.  This should be set to the sum of the kernel
-       taps of the lowpass filter used to construct the pyramid
-       (default assumes L2-normalized filters, using a value of 2 for
-       2D images, sqrt(2) for 1D images).
-
-+ `Gpyr(image, height, filter, edges)`
-
-  Gaussian pyramid (subclass of Lpyr). image parameter is required,
-  others are optional.
-
-  - `image` - a 2D numpy array
-  - `height` - an integer denoting number of pyramid levels desired.
-    Defaults to `maxPyrHt` from pyPyrUtils.
-  - `filter` - can be a string namimg a standard filter (from
-    `pyPyrUtils.named_filter()`), or a numpy array which will be used
-    for (separable) convolution. Default is `'binom5'`.
-  - `edges` - specifies edge-handling.  Options are:
-    * `'circular'` - circular convolution
-	* `'reflect1'` - reflect about the edge pixels
-	* `'reflect2'` - reflect, doubling the edge pixels
-	* `'repeat'` - repeat the edge pixels
-	* `'zero'` - assume values of zero outside image boundary
-	* `'extend'` - reflect and invert
-	* `'dont-compute'` - zero output when filter overhangs imput boundaries.
-
-+ `Spyr(image, height, filter, edges)`
-
-  Steerable pyramid. image parameter is required, others are optional
-
-  - `image` - a 2D numpy array
-  - `height` - an integer denoting number of pyramid levels
-		       	  	   desired.  Defaults to maxPyrHt from
-				   pyPyrUtils. You can specify 'auto' to use
-				   this value.
-  - `filter` - The name of one of the steerable pyramid filters in
-    pyPyrUtils: `'sp0_filters'`, `'sp1_filters'`, `'sp3_filters'`,
-    `'sp5_filters'`.  Default is `'sp1_filters'`.
-  - `edges` - specifies edge-handling.  Options are:
-    * `'circular'` - circular convolution
-	* `'reflect1'` - reflect about the edge pixels
-	* `'reflect2'` - reflect, doubling the edge pixels
-	* `'repeat'` - repeat the edge pixels
-	* `'zero'` - assume values of zero outside image boundary
-	* `'extend'` - reflect and invert
-    * `'dont-compute'` - zero output when filter overhangs input
-      boundaries.
-
-  - `spyrHt()` - return the height of the pyramid
-  - `numBands()` - return the number of bands in the pyramid
-  - `pyrLow()` - return the lowest band
-  - `pyrHight()` - return the highest band
-  - `reconSpyr(filter, edges, levs, bands)` - reconstruct image from pyramid
-    - `filter` - (optional) same as for constructor above. Default is 'sp1_filters'.
-    - `edges` - (optional) same as for constructor above. Default is 'reflect1'.
-    - `levs` - (optional) should be a numpy array of levels to
-      include, or the string `'all'` (default). 0 corresponds to the
-      residual highpass subband. 1 corresponds to number `spyrHt()+1`.
-    - `bands` - (optional) should be a list of bands to include, or
-      the string `'all'` (default). 0 = vertical, rest proceeding
-      anti-clockwise.
+If you're using functions or parameters that do not have associated unit
+tests you should test this yourself to make sure the results are correct.
+You could then submit your test code, so that we can build more complete
+unit tests.
