@@ -4,18 +4,49 @@ from .pyr_utils import max_pyr_height
 from .filters import named_filter
 
 
-class Pyramid:  # Pyramid base class
+class Pyramid:
+    """Base class for multiscle pyramids
+
+    You should not instantiate this base class, it is instead inherited by the other classes found
+    in this module.
+
+    Parameters
+    ----------
+    image : array_like
+        1d or 2d image upon which to construct to the pyramid.
+    edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
+        Specifies how to handle edges. Options are:
+        * `'circular'` - circular convolution
+        * `'reflect1'` - reflect about the edge pixels
+        * `'reflect2'` - reflect, doubling the edge pixels
+        * `'repeat'` - repeat the edge pixels
+        * `'zero'` - assume values of zero outside image boundary
+        * `'extend'` - reflect and invert
+        * `'dont-compute'` - zero output when filter overhangs imput boundaries.
+
+    Attributes
+    ----------
+    image : `array_like`
+        The input image used to construct the pyramid.
+    image_size : `tuple`
+        The size of the input image.
+    pyr_type : `str` or `None`
+        Human-readable string specifying the type of pyramid. For base class, is None.
+    edge_type : `str`
+        Specifies how edges were handled.
+    pyr_coeffs : `dict`
+        Dictionary containing the coefficients of the pyramid. Keys are `(level, band)` tuples and
+        values are 1d or 2d numpy arrays (same number of dimensions as the input image)
+    pyr_size : `dict`
+        Dictionary containing the sizes of the pyramid coefficients. Keys are `(level, band)`
+        tuples and values are tuples.
+    is_complex : `boolean`
+        Whether the coefficients are complex- or real-valued. Only `SteerablePyramidFreq` can have
+        a value of True, all others must be False.
+    """
 
     def __init__(self, image, edge_type):
-        ''' - `edge_type` - specifies edge-handling.  Options are:
-            * `'circular'` - circular convolution
-            * `'reflect1'` - reflect about the edge pixels
-            * `'reflect2'` - reflect, doubling the edge pixels
-            * `'repeat'` - repeat the edge pixels
-            * `'zero'` - assume values of zero outside image boundary
-            * `'extend'` - reflect and invert
-            * `'dont-compute'` - zero output when filter overhangs imput boundaries.
-            '''
+
         self.image = np.array(image).astype(np.float)
         if self.image.ndim == 1:
             self.image = self.image.reshape(-1, 1)
@@ -28,17 +59,6 @@ class Pyramid:  # Pyramid base class
         self.pyr_coeffs = {}
         self.pyr_size = {}
         self.is_complex = False
-
-    def _set_num_scales(self, filter_name, height, extra_height=0):
-        # the Gaussian and Laplacian pyramids can go one higher than the value returned here, so we
-        # use the extra_height argument to allow for that
-        max_ht = max_pyr_height(self.image.shape, self.filters[filter_name].shape) + extra_height
-        if height == 'auto':
-            self.num_scales = max_ht
-        elif height > max_ht:
-            raise Exception("cannot build pyramid higher than %d levels." % (max_ht))
-        else:
-            self.num_scales = int(height)
 
     def _parse_filter(self, filt):
         if isinstance(filt, str):
@@ -57,8 +77,64 @@ class Pyramid:  # Pyramid base class
                 filt = filt.reshape(1, -1)
         return filt
 
+    def _set_num_scales(self, filter_name, height, extra_height=0):
+        """Figure out the number of scales (height) of the pyramid
+
+        The user should not call this directly. This is called during construction of a pyramid,
+        and is based on the size of the filters (thus, should be called after instantiating the
+        filters) and the input image, as well as the `extra_height` parameter (which corresponds to
+        the residuals, which the Gaussian pyramid contains and others do not).
+
+        This sets `self.num_scales` directly instead of returning something, so be careful.
+
+        Parameters
+        ----------
+        filter_name : `str`
+            Name of the filter in the `filters` dict that determines the height of the pyramid
+        height : `'auto'` or `int`
+            During construction, user can specify the number of scales (height) of the pyramid.
+            The pyramid will have this number of scales unless that's greater than the maximum
+            possible height.
+        extra_height : `int`, optional
+            The automatically calculated maximum number of scales is based on the size of the input
+            image and filter size. The Gaussian pyramid also contains the final residuals and so we
+            need to add one more to this number.
+
+        Returns
+        -------
+        None
+        """
+        # the Gaussian and Laplacian pyramids can go one higher than the value returned here, so we
+        # use the extra_height argument to allow for that
+        max_ht = max_pyr_height(self.image.shape, self.filters[filter_name].shape) + extra_height
+        if height == 'auto':
+            self.num_scales = max_ht
+        elif height > max_ht:
+            raise Exception("Cannot build pyramid higher than %d levels." % (max_ht))
+        else:
+            self.num_scales = int(height)
+
     def _recon_levels_check(self, levels):
-        """when reconstructing pyramid, check whether levels arg is valid and return
+        """Check whether levels arg is valid for reconstruction and return valid version
+
+        When reconstructing the input image (i.e., when calling `recon_pyr()`), the user specifies
+        which levels to include. This makes sure those levels are valid and gets them in the form
+        we expect for the rest of the reconstruction. If the user passes `'all'`, this constructs
+        the appropriate list (based on the values of `self.pyr_coeffs`).
+
+        Parameters
+        ----------
+        levels : `list`, `int`,  or {`'all'`, `'residual_highpass'`, or `'residual_lowpass'`}
+            If `list` should contain some subset of integers from `0` to `self.num_scales-1`
+            (inclusive) and `'residual_highpass'` and `'residual_lowpass'` (if appropriate for the
+            pyramid). If `'all'`, returned value will contain all valid levels. Otherwise, must be
+            one of the valid levels.
+
+        Returns
+        -------
+        levels : `list`
+            List containing the valid levels for reconstruction.
+
         """
         if isinstance(levels, str) and levels == 'all':
             levels = ['residual_highpass'] + list(range(self.num_scales)) + ['residual_lowpass']
@@ -84,7 +160,24 @@ class Pyramid:  # Pyramid base class
         return levels
 
     def _recon_bands_check(self, bands):
-        """when reconstructing pyramid, check whether bands arg is valid and return
+        """Check whether bands arg is valid for reconstruction and return valid version
+
+        When reconstructing the input image (i.e., when calling `recon_pyr()`), the user specifies
+        which orientations to include. This makes sure those orientations are valid and gets them
+        in the form we expect for the rest of the reconstruction. If the user passes `'all'`, this
+        constructs the appropriate list (based on the values of `self.pyr_coeffs`).
+
+        Parameters
+        ----------
+        bands : `list`, `int`, or `'all'`.
+            If list, should contain some subset of integers from `0` to `self.num_orientations-1`.
+            If `'all'`, returned value will contain all valid orientations. Otherwise, must be one
+            of the valid orientations.
+
+        Returns
+        -------
+        bands: `list`
+            List containing the valid orientations for reconstruction.
         """
         if isinstance(bands, str) and bands == "all":
             bands = np.arange(self.num_orientations)
@@ -95,11 +188,34 @@ class Pyramid:  # Pyramid base class
         return bands
 
     def _recon_keys(self, levels, bands, max_orientations=None):
-        """make a list of all the keys from pyr_coeffs to use in pyramid reconstruction
+        """Make a list of all the relevant keys from `pyr_coeffs` to use in pyramid reconstruction
 
-        max_orientations: None or int. The maximum number of orientations we allow in the
-        reconstruction. when we determine which ints are allowed for bands, we ignore all those
-        greater than max_orientations.
+        When reconstructing the input image (i.e., when calling `recon_pyr()`), the user specifies
+        some subset of the pyramid coefficients to include in the reconstruction. This function
+        takes in those specifications, checks that they're valid, and returns a list of tuples
+        that are keys into the `pyr_coeffs` dictionary.
+
+        Parameters
+        ----------
+        levels : `list`, `int`,  or {`'all'`, `'residual_highpass'`, or `'residual_lowpass'`}
+            If `list` should contain some subset of integers from `0` to `self.num_scales-1`
+            (inclusive) and `'residual_highpass'` and `'residual_lowpass'` (if appropriate for the
+            pyramid). If `'all'`, returned value will contain all valid levels. Otherwise, must be
+            one of the valid levels.
+        bands : `list`, `int`, or `'all'`.
+            If list, should contain some subset of integers from `0` to `self.num_orientations-1`.
+            If `'all'`, returned value will contain all valid orientations. Otherwise, must be one
+            of the valid orientations.
+        max_orientations: `None` or `int`.
+            The maximum number of orientations we allow in the reconstruction. when we determine
+            which ints are allowed for bands, we ignore all those greater than max_orientations.
+
+        Returns
+        -------
+        recon_keys : `list`
+            List of `tuples`, all of which are keys in `pyr_coeffs`. These are the coefficients to
+            include in the reconstruction of the image.
+
         """
         levels = self._recon_levels_check(levels)
         bands = self._recon_bands_check(bands)
