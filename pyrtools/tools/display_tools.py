@@ -172,7 +172,7 @@ def _showIm(img, ax, vrange, zoom, title='', cmap=cm.gray, **kwargs):
         # adapt the precision of displayed range to the order of magnitude of the values
         title = title + '\n range: [{:.1e}, {:.1e}] \n dims: [{}, {}] * {}'
         # 12 pt font looks good on axes that 256 pixels high, so we stick with that ratio
-        ax.set_title(title.format(img.min(), img.max(), img.shape[0], img.shape[1], zoom),
+        ax.set_title(title.format(vrange[0], vrange[1], img.shape[0], img.shape[1], zoom),
                      {'fontsize': ax.bbox.height*(12./256)})
 
 
@@ -281,7 +281,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
     Parameters
     ----------
-
     img: 2d array (one image to display), 3d array (multiple images to display, images are indexed
     along the first dimension), or list of 2d arrays. the image(s) to be shown. all images will be
     automatically rescaled so they're displayed at the same size. thus, their sizes must be scalar
