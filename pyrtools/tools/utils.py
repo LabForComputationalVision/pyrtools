@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.interpolate import interp1d
 from ..pyramids.c.wrapper import pointOp
+import warnings
 
 
 def matlab_round(np_array):
@@ -47,7 +48,7 @@ def matlab_histo(np_array, nbins=101, binsize=None, center=None):
 
     nbins2 = int(matlab_round((maxi - center) / binsize) - matlab_round((mini - center) / binsize))
     if nbins2 != nbins:
-        print('Warning: Overriding bin number %d (requested %d)' % (nbins2, nbins))
+        warnings.warn('Overriding bin number %d (requested %d)' % (nbins2, nbins))
         nbins = nbins2
 
     # np.histogram uses bin edges, not centers like Matlab's hist

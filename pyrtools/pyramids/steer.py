@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 
 def steer_to_harmonics_mtx(harmonics, angles=None, even_phase=True):
@@ -40,7 +41,7 @@ def steer_to_harmonics_mtx(harmonics, angles=None, even_phase=True):
 
     r = np.linalg.matrix_rank(imtx)
     if r < np.min(imtx.shape):
-        print("Warning: matrix is not full rank")
+        warnings.warn("Matrix is not full rank")
 
     return np.linalg.pinv(imtx)
 
