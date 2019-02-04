@@ -1,7 +1,7 @@
 import numpy as np
 from ..pyramids.c.wrapper import pointOp
 from .utils import rcosFn
-from .image_stats import var2
+from .image_stats import var
 
 
 def ramp(size, direction=0, slope=1, intercept=0, origin=None):
@@ -394,6 +394,6 @@ def pink_noise(size, fract_dim=1):
         print('Symmetry error in creating fractal')
     else:
         res = np.real(fres)
-        res = res / np.sqrt(var2(res))
+        res = res / np.sqrt(var(res))
 
     return res

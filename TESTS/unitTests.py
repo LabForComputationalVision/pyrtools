@@ -533,18 +533,6 @@ class SteerablePyramidComplexTests(unittest.TestCase):
         pyPyr = pt.pyramids.SteerablePyramidFreq(pyRamp, is_complex=True)
         recon = pyPyr.recon_pyr()
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    #def test8(self):  # fails in matlab version
-    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSCFpyr8.mat'))
-    #    pyRamp = pt.synthetic_images.ramp((200,100))
-    #    pyPyr = pt.pyramids.SteerablePyramidFreq(pyRamp, is_complex=True)
-    #    recon = pyPyr.reconSteerablePyramidFreq(, is_complex=True)
-    #    self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    #def test9(self):
-    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSCFpyr9.mat'))
-    #    pyRamp = pt.synthetic_images.ramp((100,200))
-    #    pyPyr = pt.pyramids.SteerablePyramidFreq(pyRamp, is_complex=True)
-    #    recon = pyPyr.reconSteerablePyramidFreq(, is_complex=True)
-    #    self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test10(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSCFpyr10.mat'))
         pyRamp = pt.synthetic_images.ramp((256,256))
@@ -764,10 +752,10 @@ class blurDnTests(unittest.TestCase):
         pyRamp = pt.synthetic_images.ramp((1, 256))
         res = pt.blurDn(pyRamp)
         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    #def test8(self):  need a 2D filter
+    # def test8(self):#  need a 2D filter
     #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn8.mat'))
     #    pyRamp = pt.synthetic_images.ramp((256, 256))
-    #    res = pt.blurDn(pyRamp, 2dfilt)
+    #    res = pt.blurDn(pyRamp, filt=2dfilt)
     #    self.assertTrue(pt.compareRecon(matPyr['res'], res))
 
 class mkAngularSineTests(unittest.TestCase):
@@ -1030,39 +1018,15 @@ class histoTests(unittest.TestCase):
 #        #self.assertTrue(pt.compareRecon(matPyr['X'], X))
 #        self.assertTrue(pt.compareRecon(matPyr['N'], N))
 
-#class entropy2Tests(unittest.TestCase):
-#    def test0(self):
-#        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'entropy2_0.mat'))
-#        H = pt.entropy2(pt.synthetic_images.ramp(10))
-#        self.assertTrue(matPyr['H'] == H)
-#    def test1(self):
-#        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'entropy2_1.mat'))
-#        H = pt.entropy2(pt.synthetic_images.ramp(10), 1)
-#        self.assertTrue(matPyr['H'] == H)
-
-# class factorialTests(unittest.TestCase):
-#     def test0(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'factorial0.mat'))
-#         res = pt.factorial([[1,2],[3,4]])
-#         self.assertTrue((matPyr['res'] == res).all())
-#     def test1(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'factorial1.mat'))
-#         res = pt.factorial(4)
-#         self.assertTrue(matPyr['res'] == res)
-
-class histoMatchTests(unittest.TestCase):
-   def test0(self):
-       matPyr = scipy.io.loadmat(op.join(matfiles_path, 'histoMatch0.mat'))
-       # adding 0.7 to get the bins to line up between matlab and python
-       # answers between matlab and python may be different,
-       #   but not necessarily incorrect.
-       # similar to histo above
-       # TODO - why?
-       ramp = pt.synthetic_images.ramp(10) + 0.7
-       disc = pt.synthetic_images.disk(10) + 0.7
-       (rN,rX) = pt.matlab_histo(ramp)
-       res = pt.histoMatch(disc, rN, rX, 'edges')
-       self.assertTrue(pt.compareRecon(matPyr['res'], res))
+class entropy2Tests(unittest.TestCase):
+   # def test0(self):
+   #     matPyr = scipy.io.loadmat(op.join(matfiles_path, 'entropy2_0.mat'))
+   #     H = pt.entropy(pt.synthetic_images.ramp(10))
+   #     self.assertTrue(matPyr['H'] == H)
+   def test1(self):
+       matPyr = scipy.io.loadmat(op.join(matfiles_path, 'entropy2_1.mat'))
+       H = pt.entropy(pt.synthetic_images.ramp(10), 1)
+       self.assertTrue(matPyr['H'] == H)
 
 class ImageGradientTests(unittest.TestCase):
     def test0(self):
@@ -1082,13 +1046,13 @@ class ImageGradientTests(unittest.TestCase):
         self.assertTrue(pt.compareRecon(matPyr['res'][:,:,0], dx))
         self.assertTrue(pt.compareRecon(matPyr['res'][:,:,1], dy))
 
-class skew2Tests(unittest.TestCase):
+class skewTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'skew2_0.mat'))
         # not sure why matPyr is [[ans]]???
         mres = matPyr['res'][0][0]
         disc = pt.synthetic_images.disk(10)
-        res = pt.skew2(disc)
+        res = pt.skew(disc)
         self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
     def test1(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'skew2_1.mat'))
@@ -1097,7 +1061,7 @@ class skew2Tests(unittest.TestCase):
         disc = pt.synthetic_images.disk(10)
         # using incorrect mean for better test
         mn = disc.mean() + 0.1
-        res = pt.skew2(disc, mn)
+        res = pt.skew(disc, mn)
         self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
     def test2(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'skew2_2.mat'))
@@ -1106,8 +1070,8 @@ class skew2Tests(unittest.TestCase):
         disc = pt.synthetic_images.disk(10)
         # using incorrect mean for better test
         mn = disc.mean() + 0.1
-        v = pt.var2(disc) + 0.1
-        res = pt.skew2(disc, mn, v)
+        v = pt.var(disc) + 0.1
+        res = pt.skew(disc, mn, v)
         self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
 
 class upBlurTests(unittest.TestCase):
