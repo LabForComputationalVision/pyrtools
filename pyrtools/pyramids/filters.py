@@ -23,6 +23,8 @@ def named_filter(name):
         daub2, daub3, daub4 - Daubechies wavelet [Daubechies88]
         qmf5, qmf9, qmf13   - Symmetric Quadrature Mirror Filters
                               [Simoncelli88, Simoncelli90]
+        spN_filters - steerable pyramid filters of order N (N must be one of {0, 1, 3, 5})
+
         [Johnston80] - J D Johnston, "A filter family designed for use in
                        quadrature mirror filter banks", Proc. ICASSP,
                        pp 291-294, 1980.

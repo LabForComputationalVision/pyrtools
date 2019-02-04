@@ -60,9 +60,30 @@ class Pyramid:
         self.pyr_size = {}
         self.is_complex = False
 
-    def _parse_filter(self, filt):
-        if isinstance(filt, str):
-            filt = named_filter(filt)
+    def _parse_filter(self, filter_name):
+        """Parse the name of the filter and return filter
+
+        Used during pyramid construction, user should not call this directly.
+
+        Parameters
+        ----------
+        filter_name : `str`.
+            Name of the filter, as accepted by `named_filter`. See that function for acceptable
+            names.
+
+        Returns
+        -------
+        filt : `array` or `dict`
+            If `filter_name` was one of the steerable pyramids, then this will be a dictionary
+            containing the various steerable pyramid filters. Else, it will be an array containing
+            the specified filter.
+
+        See also
+        --------
+        named_filter : function that converts `filter_name` str into an array or dict of arrays.
+        """
+        if isinstance(filter_name, str):
+            filt = named_filter(filter_name)
 
         # the steerable pyramid filters are returned as a dictionary and we don't need to do this
         # check for them
