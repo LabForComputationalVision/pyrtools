@@ -19,7 +19,7 @@ class SteerablePyramidFreq(Pyramid):
         - Boundary-handling is circular.
 
     The squared radial functions tile the Fourier plane with a raised-cosine
-    falloff. Angular functions are cos(theta- k*pi/`order`+1)^(`order`).
+    falloff. Angular functions are cos(theta- k*pi/order+1)^(order).
 
     Notes
     -----

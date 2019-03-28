@@ -30,10 +30,9 @@ def matlab_histo(array, nbins=101, binsize=None, center=None):
 
     How does this differ from MatLab's HIST function?  This function:
       - allows uniformly spaced bins only.
-      +/- operates on all elements of MTX, instead of columnwise.
+      + operates on all elements of MTX, instead of columnwise.
       + is much faster (approximately a factor of 80 on my machine).
-      + allows specification of number of bins OR binsize.
-        Default=101 bins.
+      + allows specification of number of bins OR binsize. Default=101 bins.
       + allows (optional) specification of binCenter.
 
     Arguments

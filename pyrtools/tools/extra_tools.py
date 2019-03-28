@@ -36,6 +36,7 @@ def blur(image, n_levels=1, filt='binom5'):
             'qmf5', 'qmf9', 'qmf13'}
         filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
         is 1.0
+
         * `'binomN'` - binomial coefficient filter of order N-1
         * `'haar'` - Haar wavelet
         * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
@@ -116,6 +117,7 @@ def blurDn(image, n_levels=1, filt='binom5'):
             'qmf5', 'qmf9', 'qmf13'}
         filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
         is 1.0
+
         * `'binomN'` - binomial coefficient filter of order N-1
         * `'haar'` - Haar wavelet
         * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
@@ -199,6 +201,7 @@ def upBlur(image, n_levels=1, filt='binom5'):
             'qmf5', 'qmf9', 'qmf13'}
         filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
         is 1.0
+
         * `'binomN'` - binomial coefficient filter of order N-1
         * `'haar'` - Haar wavelet
         * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
@@ -272,6 +275,7 @@ def image_gradient(image, edges="dont-compute"):
         2d array to compute the gradients of
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
+
         * `'circular'` - circular convolution
         * `'reflect1'` - reflect about the edge pixels
         * `'reflect2'` - reflect, doubling the edge pixels

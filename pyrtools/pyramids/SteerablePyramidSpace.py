@@ -23,6 +23,7 @@ class SteerablePyramidSpace(Pyramid):
         one.
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
+
         * `'circular'` - circular convolution
         * `'reflect1'` - reflect about the edge pixels
         * `'reflect2'` - reflect, doubling the edge pixels
@@ -101,6 +102,7 @@ class SteerablePyramidSpace(Pyramid):
         edge_type : {None, 'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
                      'dont-compute'}
             Specifies how to handle edges. Options are:
+
             * None (default) - use `self.edge_type`, the edge_type used to construct the pyramid
             * `'circular'` - circular convolution
             * `'reflect1'` - reflect about the edge pixels

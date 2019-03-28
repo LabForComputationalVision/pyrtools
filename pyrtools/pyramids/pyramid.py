@@ -16,6 +16,7 @@ class Pyramid:
         1d or 2d image upon which to construct to the pyramid.
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
+
         * `'circular'` - circular convolution
         * `'reflect1'` - reflect about the edge pixels
         * `'reflect2'` - reflect, doubling the edge pixels

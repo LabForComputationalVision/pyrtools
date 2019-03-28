@@ -1,121 +1,198 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrtools.pyramids package &#8212; pyrtools 1.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyrtools.pyramids package &mdash; pyrtools 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pyrtools.pyramids.c package" href="pyrtools.pyramids.c.html" />
-    <link rel="prev" title="pyrtools package" href="pyrtools.html" />
+    <link rel="prev" title="pyrtools package" href="pyrtools.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-  </head><body>
-  <div class="document">
+  <div class="wy-grid-for-nav">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">pyrtools</a></h1>
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
 
+          
+            <a href="index.html" class="icon icon-home"> pyrtools
+          
 
+          
+          </a>
 
-<p class="blurb">Python tools for multi-scale image processing</p>
+          
+            
+            
+          
 
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
 
+          
+        </div>
 
-
-<p>
-<iframe src="https://ghbtns.com/github-btn.html?user=LabForComputationalVision&repo=pyrtools&type=star&count=true&size=large&v=2"
-  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
-</p>
-
-
-
-
-
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/LabForComputationalVision/pyrtools">
-    <img
-        alt="https://secure.travis-ci.org/LabForComputationalVision/pyrtools.svg?branch=master"
-        src="https://secure.travis-ci.org/LabForComputationalVision/pyrtools.svg?branch=master"
-    />
-</a>
-</p>
-
-
-<h3>Navigation</h3>
-<ul class="current">
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial1.html">Basic examples using the tools in pyrtools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial2.html">Image pyramid tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial3.html">Steerable pyramids</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyrtools</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="pyrtools.html">pyrtools package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="pyrtools.html">pyrtools package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyrtools.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyrtools.pyramids package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyrtools.tools.html">pyrtools.tools package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyrtools.html#module-pyrtools">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">pyrtools</a><ul>
-  <li><a href="pyrtools.html">pyrtools package</a><ul>
-      <li>Previous: <a href="pyrtools.html" title="previous chapter">pyrtools package</a></li>
-      <li>Next: <a href="pyrtools.pyramids.c.html" title="next chapter">pyrtools.pyramids.c package</a></li>
-  </ul></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
+            
+          
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyrtools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
           
 
-          <div class="body" role="main">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">pyrtools</a> &raquo;</li>
+        
+          <li><a href="pyrtools.html">pyrtools package</a> &raquo;</li>
+        
+      <li>pyrtools.pyramids package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
             
-  <div class="section" id="pyrtools-pyramids-package">
+            <a href="_sources/pyrtools.pyramids.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="pyrtools-pyramids-package">
 <h1>pyrtools.pyramids package<a class="headerlink" href="#pyrtools-pyramids-package" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
@@ -148,21 +225,27 @@
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d image upon which to construct to the pyramid.</li>
 <li><strong>height</strong> (‘auto’ or <cite>int</cite>.) – The height of the pyramid. If ‘auto’, will automatically determine based on the size of
 <cite>image</cite>.</li>
-<li><strong>filter_name</strong> (<em>{'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>, </em><em>'daub4'</em><em>, </em><em>'qmf5'</em><em>,</em>) – ‘qmf9’, ‘qmf13’}
-name of filter to use when constructing pyramid. All scaled so L-2 norm is 1.0
-* <cite>‘binomN’</cite> - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rc4e802e6cf68-1" id="id1">[1]</a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#rc4e802e6cf68-2" id="id2">[2]</a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rc4e802e6cf68-3" id="id3">[3]</a>, <a class="reference internal" href="#rc4e802e6cf68-4" id="id4">[4]</a></li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>filter_name</strong> (<em>{'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>, </em><em>'daub4'</em><em>, </em><em>'qmf5'</em><em>,</em>) – <p>‘qmf9’, ‘qmf13’}
+name of filter to use when constructing pyramid. All scaled so L-2 norm is 1.0</p>
+<ul>
+<li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rc4e802e6cf68-1" id="id1">[1]</a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#rc4e802e6cf68-2" id="id2">[2]</a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rc4e802e6cf68-3" id="id3">[3]</a>, <a class="reference internal" href="#rc4e802e6cf68-4" id="id4">[4]</a></li>
+</ul>
+</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -335,30 +418,39 @@ ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143–192.<
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d image upon which to construct to the pyramid.</li>
 <li><strong>height</strong> (‘auto’ or <cite>int</cite>.) – The height of the pyramid. If ‘auto’, will automatically determine based on the size of
 <cite>image</cite>.</li>
-<li><strong>downsample_filter_name</strong> (<em>{'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>,</em>) – ‘daub4’, ‘qmf5’, ‘qmf9’, ‘qmf13’}
+<li><strong>downsample_filter_name</strong> (<em>{'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>,</em>) – <p>‘daub4’, ‘qmf5’, ‘qmf9’, ‘qmf13’}
 name of filter to use for (separable) convolution to downsample the image. All scaled so
-L-2 norm is 1.0
-* <cite>‘binomN’</cite> (default: ‘binom5’) - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-1" id="id5">[1]</a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r0549b01c435f-2" id="id6">[2]</a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-3" id="id7">[3]</a>, <a class="reference internal" href="#r0549b01c435f-4" id="id8">[4]</a></li>
-<li><strong>upsample_filter_name</strong> (<em>{None</em><em>, </em><em>'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>,</em>) – ‘daub4’, ‘qmf5’, ‘qmf9’, ‘qmf13’}
-name of filter to use as the “expansion” filter. All scaled so L-2 norm is 1.0
-* None (default) - same as <cite>downsample_filter_name</cite>
-* <cite>‘binomN’</cite> - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-1" id="id9">[1]</a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r0549b01c435f-2" id="id10">[2]</a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-3" id="id11">[3]</a>, <a class="reference internal" href="#r0549b01c435f-4" id="id12">[4]</a></li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+L-2 norm is 1.0</p>
+<ul>
+<li><cite>’binomN’</cite> (default: ‘binom5’) - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-1" id="id5">[1]</a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r0549b01c435f-2" id="id6">[2]</a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-3" id="id7">[3]</a>, <a class="reference internal" href="#r0549b01c435f-4" id="id8">[4]</a></li>
+</ul>
+</li>
+<li><strong>upsample_filter_name</strong> (<em>{None</em><em>, </em><em>'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>,</em>) – <p>‘daub4’, ‘qmf5’, ‘qmf9’, ‘qmf13’}
+name of filter to use as the “expansion” filter. All scaled so L-2 norm is 1.0</p>
+<ul>
+<li>None (default) - same as <cite>downsample_filter_name</cite></li>
+<li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-1" id="id9">[1]</a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r0549b01c435f-2" id="id10">[2]</a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0549b01c435f-3" id="id11">[3]</a>, <a class="reference internal" href="#r0549b01c435f-4" id="id12">[4]</a></li>
+</ul>
+</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -517,11 +609,13 @@ ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143–192.<
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>upsample_filter_name</strong> (<em>{None</em><em>, </em><em>'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>,</em>) – <p>‘daub4’, ‘qmf5’, ‘qmf9’, ‘qmf13’}
-name of filter to use as “expansion” filter. All scaled so L-2 norm is 1.0
-* None (default) - use <cite>self.upsample_filter_name</cite>, the expansion filter set during</p>
-<blockquote>
-<div>initialization.</div></blockquote>
+name of filter to use as “expansion” filter. All scaled so L-2 norm is 1.0</p>
 <ul>
+<li><dl class="first docutils">
+<dt>None (default) - use <cite>self.upsample_filter_name</cite>, the expansion filter set during</dt>
+<dd>initialization.</dd>
+</dl>
+</li>
 <li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
 <li><cite>’haar’</cite> - Haar wavelet</li>
 <li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a href="#id37"><span class="problematic" id="id13">[1]_</span></a></li>
@@ -529,16 +623,19 @@ name of filter to use as “expansion” filter. All scaled so L-2 norm is 1.0
 <li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a href="#id39"><span class="problematic" id="id15">[3]_</span></a>, <a href="#id40"><span class="problematic" id="id16">[4]_</span></a></li>
 </ul>
 </li>
-<li><strong>edge_type</strong> (<em>{None</em><em>, </em><em>'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>,</em>) – ‘dont-compute’}
-Specifies how to handle edges. Options are:
-* None (default) - use <cite>self.edge_type</cite>, the edge_type used to construct the pyramid
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>edge_type</strong> (<em>{None</em><em>, </em><em>'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>,</em>) – <p>‘dont-compute’}
+Specifies how to handle edges. Options are:</p>
+<ul>
+<li>None (default) - use <cite>self.edge_type</cite>, the edge_type used to construct the pyramid</li>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 <li><strong>levels</strong> (<cite>list</cite>, <cite>int</cite>,  or {<cite>‘all’</cite>, <cite>‘residual_highpass’</cite>}) – If <cite>list</cite> should contain some subset of integers from <cite>0</cite> to <cite>self.num_scales-1</cite>
 (inclusive) and <cite>‘residual_lowpass’</cite>. If <cite>‘all’</cite>, returned value will contain all
 valid levels. Otherwise, must be one of the valid levels.</li>
@@ -578,7 +675,7 @@ This is similar to Spyr, except that:</p>
 </ul>
 </div></blockquote>
 <p>The squared radial functions tile the Fourier plane with a raised-cosine
-falloff. Angular functions are cos(theta- k*pi/<cite>order`+1)^(`order</cite>).</p>
+falloff. Angular functions are cos(theta- k*pi/order+1)^(order).</p>
 <p class="rubric">Notes</p>
 <p>Transform described in <a class="reference internal" href="#r1cfd521631c5-1" id="id17">[1]</a>, filter kernel design described in <a class="reference internal" href="#r1cfd521631c5-2" id="id18">[2]</a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -766,14 +863,17 @@ of the valid orientations.</li>
 <li><strong>num_orientations</strong> (<em>{1</em><em>, </em><em>2</em><em>, </em><em>4</em><em>, </em><em>6}.</em>) – the number of orientations you want in the steerable pyramid filters. If you want a
 different value, see SteerablePyramidFreq. Note that this is the order of the pyramid plus
 one.</li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -920,16 +1020,19 @@ Image Transforms”, ICASSP, Atlanta, GA, May 1996.</td></tr>
 <li><strong>num_orientations</strong> (<em>{None</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>4</em><em>, </em><em>6}.</em>) – the number of orientations you want in the steerable pyramid filters used to
 reconstruct the pyramid. If None, uses the same number of orientations as used to
 construct the pyramid.</li>
-<li><strong>edge_type</strong> (<em>{None</em><em>, </em><em>'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>,</em>) – ‘dont-compute’}
-Specifies how to handle edges. Options are:
-* None (default) - use <cite>self.edge_type</cite>, the edge_type used to construct the pyramid
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and inverts
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>edge_type</strong> (<em>{None</em><em>, </em><em>'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>,</em>) – <p>‘dont-compute’}
+Specifies how to handle edges. Options are:</p>
+<ul>
+<li>None (default) - use <cite>self.edge_type</cite>, the edge_type used to construct the pyramid</li>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and inverts</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 <li><strong>levels</strong> (<cite>list</cite>, <cite>int</cite>,  or {<cite>‘all’</cite>, <cite>‘residual_highpass’</cite>}) – If <cite>list</cite> should contain some subset of integers from <cite>0</cite> to <cite>self.num_scales-1</cite>
 (inclusive) and <cite>‘residual_lowpass’</cite>. If <cite>‘all’</cite>, returned value will contain all
 valid levels. Otherwise, must be one of the valid levels.</li>
@@ -967,21 +1070,27 @@ of the valid orientations.</li>
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d image upon which to construct to the pyramid.</li>
 <li><strong>height</strong> (‘auto’ or <cite>int</cite>.) – The height of the pyramid. If ‘auto’, will automatically determine based on the size of
 <cite>image</cite>.</li>
-<li><strong>filter_name</strong> (<em>{'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>, </em><em>'daub4'</em><em>, </em><em>'qmf5'</em><em>,</em>) – ‘qmf9’, ‘qmf13’}
-name of filter to use when constructing pyramid. All scaled so L-2 norm is 1.0
-* <cite>‘binomN’</cite> - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r623696a07b03-1" id="id21">[1]</a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r623696a07b03-2" id="id22">[2]</a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r623696a07b03-3" id="id23">[3]</a>, <a class="reference internal" href="#r623696a07b03-4" id="id24">[4]</a></li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>filter_name</strong> (<em>{'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>, </em><em>'daub4'</em><em>, </em><em>'qmf5'</em><em>,</em>) – <p>‘qmf9’, ‘qmf13’}
+name of filter to use when constructing pyramid. All scaled so L-2 norm is 1.0</p>
+<ul>
+<li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r623696a07b03-1" id="id21">[1]</a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r623696a07b03-2" id="id22">[2]</a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r623696a07b03-3" id="id23">[3]</a>, <a class="reference internal" href="#r623696a07b03-4" id="id24">[4]</a></li>
+</ul>
+</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -1140,24 +1249,30 @@ ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143–192.<
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filter_name</strong> (<em>{None</em><em>, </em><em>'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>, </em><em>'daub4'</em><em>,</em>) – ‘qmf5’, ‘qmf9’, ‘qmf13’}
-name of filter to use for reconstruction. All scaled so L-2 norm is 1.0
-* None (default) - use <cite>self.filter_name</cite>, the filter used to construct the pyramid.
-* <cite>‘binomN’</cite> - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a href="#id41"><span class="problematic" id="id25">[1]_</span></a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a href="#id42"><span class="problematic" id="id26">[2]_</span></a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a href="#id43"><span class="problematic" id="id27">[3]_</span></a>, <a href="#id44"><span class="problematic" id="id28">[4]_</span></a></li>
-<li><strong>edge_type</strong> (<em>{None</em><em>, </em><em>'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>,</em>) – ‘dont-compute’}
-Specifies how to handle edges. Options are:
-* None (default) - use <cite>self.edge_type</cite>, the edge_type used to construct the pyramid
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and inverts
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>filter_name</strong> (<em>{None</em><em>, </em><em>'binomN'</em><em>, </em><em>'haar'</em><em>, </em><em>'qmf8'</em><em>, </em><em>'qmf12'</em><em>, </em><em>'qmf16'</em><em>, </em><em>'daub2'</em><em>, </em><em>'daub3'</em><em>, </em><em>'daub4'</em><em>,</em>) – <p>‘qmf5’, ‘qmf9’, ‘qmf13’}
+name of filter to use for reconstruction. All scaled so L-2 norm is 1.0</p>
+<ul>
+<li>None (default) - use <cite>self.filter_name</cite>, the filter used to construct the pyramid.</li>
+<li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a href="#id41"><span class="problematic" id="id25">[1]_</span></a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a href="#id42"><span class="problematic" id="id26">[2]_</span></a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a href="#id43"><span class="problematic" id="id27">[3]_</span></a>, <a href="#id44"><span class="problematic" id="id28">[4]_</span></a></li>
+</ul>
+</li>
+<li><strong>edge_type</strong> (<em>{None</em><em>, </em><em>'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>,</em>) – <p>‘dont-compute’}
+Specifies how to handle edges. Options are:</p>
+<ul>
+<li>None (default) - use <cite>self.edge_type</cite>, the edge_type used to construct the pyramid</li>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and inverts</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 <li><strong>levels</strong> (<cite>list</cite>, <cite>int</cite>,  or {<cite>‘all’</cite>, <cite>‘residual_highpass’</cite>}) – If <cite>list</cite> should contain some subset of integers from <cite>0</cite> to <cite>self.num_scales-1</cite>
 (inclusive) and <cite>‘residual_lowpass’</cite>. If <cite>‘all’</cite>, returned value will contain all
 valid levels. Otherwise, must be one of the valid levels.</li>
@@ -1343,14 +1458,17 @@ in this module.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d image upon which to construct to the pyramid.</li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -1529,30 +1647,52 @@ assumes cosine phase harmonic components, and filter positions at 2pi*n/N.</li>
 </div>
 
 
+           </div>
+           
           </div>
-          
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyrtools.pyramids.c.html" class="btn btn-neutral float-right" title="pyrtools.pyramids.c package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pyrtools.html" class="btn btn-neutral float-left" title="pyrtools package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-    <div class="clearer"></div>
+
+    </section>
+
   </div>
-    <div class="footer">
-      &copy;2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/pyrtools.pyramids.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
+  
 
-    
-    <a href="https://github.com/LabForComputationalVision/pyrtools" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
-    </a>
-    
 
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
     
-  </body>
+   
+
+</body>
 </html>

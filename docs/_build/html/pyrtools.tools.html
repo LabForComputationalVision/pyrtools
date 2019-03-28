@@ -1,117 +1,196 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pyrtools.tools package &#8212; pyrtools 1.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyrtools.tools package &mdash; pyrtools 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-  </head><body>
-  <div class="document">
+  <div class="wy-grid-for-nav">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">pyrtools</a></h1>
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
 
+          
+            <a href="index.html" class="icon icon-home"> pyrtools
+          
 
+          
+          </a>
 
-<p class="blurb">Python tools for multi-scale image processing</p>
+          
+            
+            
+          
 
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
 
+          
+        </div>
 
-
-<p>
-<iframe src="https://ghbtns.com/github-btn.html?user=LabForComputationalVision&repo=pyrtools&type=star&count=true&size=large&v=2"
-  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
-</p>
-
-
-
-
-
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/LabForComputationalVision/pyrtools">
-    <img
-        alt="https://secure.travis-ci.org/LabForComputationalVision/pyrtools.svg?branch=master"
-        src="https://secure.travis-ci.org/LabForComputationalVision/pyrtools.svg?branch=master"
-    />
-</a>
-</p>
-
-
-<h3>Navigation</h3>
-<ul class="current">
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial1.html">Basic examples using the tools in pyrtools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial2.html">Image pyramid tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial3.html">Steerable pyramids</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyrtools</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="pyrtools.html">pyrtools package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="pyrtools.html">pyrtools package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyrtools.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyrtools.pyramids.html">pyrtools.pyramids package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyrtools.tools package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyrtools.html#module-pyrtools">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">pyrtools</a><ul>
-  <li><a href="pyrtools.html">pyrtools package</a><ul>
-  </ul></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
+            
+          
         </div>
       </div>
-      <div class="documentwrapper">
-        <div class="bodywrapper">
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyrtools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
           
 
-          <div class="body" role="main">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">pyrtools</a> &raquo;</li>
+        
+          <li><a href="pyrtools.html">pyrtools package</a> &raquo;</li>
+        
+      <li>pyrtools.tools package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
             
-  <div class="section" id="pyrtools-tools-package">
+            <a href="_sources/pyrtools.tools.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="pyrtools-tools-package">
 <h1>pyrtools.tools package<a class="headerlink" href="#pyrtools-tools-package" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
@@ -664,11 +743,13 @@ don’t have to all be the same size, but, if they’re not, there must exist an
 that all of them can be zoomed in by an integer up to the biggest image.</li>
 <li><strong>framerate</strong> (<cite>float</cite>) – Temporal resolution of the movie, in Hz (frames per second).</li>
 <li><strong>vrange</strong> (<cite>tuple</cite> or <cite>str</cite>) – <p>If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-maximum value of the colormap, respectively. If a string:
-- <cite>‘auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</p>
-<blockquote>
-<div>across all images</div></blockquote>
+maximum value of the colormap, respectively. If a string:</p>
 <ul>
+<li><dl class="first docutils">
+<dt><cite>’auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</dt>
+<dd>across all images</dd>
+</dl>
+</li>
 <li><dl class="first docutils">
 <dt><cite>’auto2’</cite>: all images have same vmin/vmax, which are the mean (across all images) minus/</dt>
 <dd>plus 2 std dev (across all images)</dd>
@@ -730,11 +811,13 @@ are indexed along the first dimension), or list of 2d arrays. the image(s) to be
 all images will be automatically rescaled so they’re displayed at the same size. thus,
 their sizes must be scalar multiples of each other.</li>
 <li><strong>vrange</strong> (<cite>tuple</cite> or <cite>str</cite>) – <p>If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-maximum value of the colormap, respectively. If a string:
-- <cite>‘auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</p>
-<blockquote>
-<div>across all images</div></blockquote>
+maximum value of the colormap, respectively. If a string:</p>
 <ul>
+<li><dl class="first docutils">
+<dt><cite>’auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</dt>
+<dd>across all images</dd>
+</dl>
+</li>
 <li><dl class="first docutils">
 <dt><cite>’auto2’</cite>: all images have same vmin/vmax, which are the mean (across all images) minus/</dt>
 <dd>plus 2 std dev (across all images)</dd>
@@ -815,11 +898,13 @@ are indexed along the first dimension), or list of 2d arrays. the image(s) to be
 all images will be automatically rescaled so they’re displayed at the same size. thus,
 their sizes must be scalar multiples of each other.</li>
 <li><strong>vrange</strong> (<cite>tuple</cite> or <cite>str</cite>) – <p>If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-maximum value of the colormap, respectively. If a string:
-- <cite>‘auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</p>
-<blockquote>
-<div>across all images</div></blockquote>
+maximum value of the colormap, respectively. If a string:</p>
 <ul>
+<li><dl class="first docutils">
+<dt><cite>’auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</dt>
+<dd>across all images</dd>
+</dl>
+</li>
 <li><dl class="first docutils">
 <dt><cite>’auto2’</cite>: all images have same vmin/vmax, which are the mean (across all images) minus/</dt>
 <dd>plus 2 std dev (across all images)</dd>
@@ -851,7 +936,8 @@ difference between the 90th and 10th percentile</dd>
 </li>
 <li><strong>zoom</strong> (<cite>float</cite>) – ratio of display pixels to image pixels. if &gt;1, must be an integer.  If &lt;1, must be 1/d
 where d is a a divisor of the size of the largest image.</li>
-<li><strong>title</strong> (<cite>str</cite> , <cite>list</cite> or None) – <ul>
+<li><strong>title</strong> (<cite>str</cite> , <cite>list</cite> or None) – <p>Title for the plot:</p>
+<ul>
 <li>if <cite>str</cite>, will put the same title on every plot.</li>
 <li>if <cite>list</cite>, all values must be <cite>str</cite>, must be the same length as img, assigning each
 title to corresponding image.</li>
@@ -864,11 +950,14 @@ number of pixels (done by shrinking the bbox - if the bbox is already too small,
 throw an Exception!, so first define a large enough figure using either make_figure or
 plt.figure)</li>
 <li><strong>cmap</strong> (<em>matplotlib colormap</em>) – colormap to use when showing these images</li>
-<li><strong>plot_complex</strong> (<em>{'rectangular'</em><em>, </em><em>'polar'</em><em>, </em><em>'logpolar'}</em>) – specifies handling of complex values.
-- <cite>‘rectangular’</cite>: plot real and imaginary components as separate images
-- <cite>‘polar’</cite>: plot amplitude and phase as separate images
-- <cite>‘logpolar’</cite>: plot log_2 amplitude and phase as separate images
-for any other value, we raise a warning and default to rectangular.</li>
+<li><strong>plot_complex</strong> (<em>{'rectangular'</em><em>, </em><em>'polar'</em><em>, </em><em>'logpolar'}</em>) – <p>specifies handling of complex values.</p>
+<ul>
+<li><cite>’rectangular’</cite>: plot real and imaginary components as separate images</li>
+<li><cite>’polar’</cite>: plot amplitude and phase as separate images</li>
+<li><cite>’logpolar’</cite>: plot log_2 amplitude and phase as separate images</li>
+</ul>
+<p>for any other value, we raise a warning and default to rectangular.</p>
+</li>
 </ul>
 </td>
 </tr>
@@ -925,11 +1014,13 @@ signals.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>pyr</strong> (<em>the pyramid object to display</em>) – </li>
 <li><strong>vrange</strong> (<cite>tuple</cite> or <cite>str</cite>) – <p>If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-maximum value of the colormap, respectively. If a string:
-- <cite>‘auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</p>
-<blockquote>
-<div>across all images</div></blockquote>
+maximum value of the colormap, respectively. If a string:</p>
 <ul>
+<li><dl class="first docutils">
+<dt><cite>’auto/auto1’</cite>: all images have same vmin/vmax, which are the minimum/maximum values</dt>
+<dd>across all images</dd>
+</dl>
+</li>
 <li><dl class="first docutils">
 <dt><cite>’auto2’</cite>: all images have same vmin/vmax, which are the mean (across all images) minus/</dt>
 <dd>plus 2 std dev (across all images)</dd>
@@ -1030,14 +1121,17 @@ downsampling is always by 2 in each direction.</p>
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d image to blur</li>
 <li><strong>n_levels</strong> (<cite>int</cite>) – the number of times to filter and downsample. the higher this is, the more blurred the
 resulting image will be</li>
-<li><strong>filt</strong> ({<cite>array_like</cite>, ‘binomN’, ‘haar’, ‘qmf8’, ‘qmf12’, ‘qmf16’, ‘daub2’, ‘daub3’, ‘daub4’,) – ‘qmf5’, ‘qmf9’, ‘qmf13’}
+<li><strong>filt</strong> ({<cite>array_like</cite>, ‘binomN’, ‘haar’, ‘qmf8’, ‘qmf12’, ‘qmf16’, ‘daub2’, ‘daub3’, ‘daub4’,) – <p>‘qmf5’, ‘qmf9’, ‘qmf13’}
 filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
-is 1.0
-* <cite>‘binomN’</cite> - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rd577a91973c1-1" id="id1">[1]</a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#rd577a91973c1-2" id="id2">[2]</a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rd577a91973c1-3" id="id3">[3]</a>, <a class="reference internal" href="#rd577a91973c1-4" id="id4">[4]</a></li>
+is 1.0</p>
+<ul>
+<li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rd577a91973c1-1" id="id1">[1]</a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#rd577a91973c1-2" id="id2">[2]</a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#rd577a91973c1-3" id="id3">[3]</a>, <a class="reference internal" href="#rd577a91973c1-4" id="id4">[4]</a></li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -1099,14 +1193,17 @@ kernel).  The downsampling is always by 2 in each direction.</p>
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d image to blur and downsample</li>
 <li><strong>n_levels</strong> (<cite>int</cite>) – the number of times to filter and downsample. the higher this is, the blurrier and smaller
 the resulting image will be</li>
-<li><strong>filt</strong> ({<cite>array_like</cite>, ‘binomN’, ‘haar’, ‘qmf8’, ‘qmf12’, ‘qmf16’, ‘daub2’, ‘daub3’, ‘daub4’,) – ‘qmf5’, ‘qmf9’, ‘qmf13’}
+<li><strong>filt</strong> ({<cite>array_like</cite>, ‘binomN’, ‘haar’, ‘qmf8’, ‘qmf12’, ‘qmf16’, ‘daub2’, ‘daub3’, ‘daub4’,) – <p>‘qmf5’, ‘qmf9’, ‘qmf13’}
 filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
-is 1.0
-* <cite>‘binomN’</cite> - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r301e31253552-1" id="id5">[1]</a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r301e31253552-2" id="id6">[2]</a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r301e31253552-3" id="id7">[3]</a>, <a class="reference internal" href="#r301e31253552-4" id="id8">[4]</a></li>
+is 1.0</p>
+<ul>
+<li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r301e31253552-1" id="id5">[1]</a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r301e31253552-2" id="id6">[2]</a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r301e31253552-3" id="id7">[3]</a>, <a class="reference internal" href="#r301e31253552-4" id="id8">[4]</a></li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -1168,14 +1265,17 @@ updated filters 10/2003: see Farid &amp; Simoncelli, IEEE Trans Image</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>image</strong> (<cite>array_like</cite>) – 2d array to compute the gradients of</li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -1206,14 +1306,17 @@ downsampling is always by 2 in each direction.</p>
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d image to upsample and blur</li>
 <li><strong>n_levels</strong> (<cite>int</cite>) – the number of times to filter and downsample. the higher this is, the blurrier and larger
 the resulting image will be</li>
-<li><strong>filt</strong> ({<cite>array_like</cite>, ‘binomN’, ‘haar’, ‘qmf8’, ‘qmf12’, ‘qmf16’, ‘daub2’, ‘daub3’, ‘daub4’,) – ‘qmf5’, ‘qmf9’, ‘qmf13’}
+<li><strong>filt</strong> ({<cite>array_like</cite>, ‘binomN’, ‘haar’, ‘qmf8’, ‘qmf12’, ‘qmf16’, ‘daub2’, ‘daub3’, ‘daub4’,) – <p>‘qmf5’, ‘qmf9’, ‘qmf13’}
 filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
-is 1.0
-* <cite>‘binomN’</cite> - binomial coefficient filter of order N-1
-* <cite>‘haar’</cite> - Haar wavelet
-* <cite>‘qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0f0b13eefaf0-1" id="id9">[1]</a>
-* <cite>‘daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r0f0b13eefaf0-2" id="id10">[2]</a>
-* <cite>‘qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0f0b13eefaf0-3" id="id11">[3]</a>, <a class="reference internal" href="#r0f0b13eefaf0-4" id="id12">[4]</a></li>
+is 1.0</p>
+<ul>
+<li><cite>’binomN’</cite> - binomial coefficient filter of order N-1</li>
+<li><cite>’haar’</cite> - Haar wavelet</li>
+<li><cite>’qmf8’</cite>, <cite>‘qmf12’</cite>, <cite>‘qmf16’</cite> - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0f0b13eefaf0-1" id="id9">[1]</a></li>
+<li><cite>’daub2’</cite>, <cite>‘daub3’</cite>, <cite>‘daub4’</cite> - Daubechies wavelet <a class="reference internal" href="#r0f0b13eefaf0-2" id="id10">[2]</a></li>
+<li><cite>’qmf5’</cite>, <cite>‘qmf9’</cite>, <cite>‘qmf13’</cite>   - Symmetric Quadrature Mirror Filters <a class="reference internal" href="#r0f0b13eefaf0-3" id="id11">[3]</a>, <a class="reference internal" href="#r0f0b13eefaf0-4" id="id12">[4]</a></li>
+</ul>
+</li>
 </ul>
 </td>
 </tr>
@@ -1812,12 +1915,10 @@ min(2, period/3)</li>
 <dd><ul class="first simple">
 <li>allows uniformly spaced bins only.</li>
 </ul>
-<p>+/- operates on all elements of MTX, instead of columnwise.
-+ is much faster (approximately a factor of 80 on my machine).
-+ allows specification of number of bins OR binsize.</p>
-<blockquote>
-<div>Default=101 bins.</div></blockquote>
 <ul class="last simple">
+<li>operates on all elements of MTX, instead of columnwise.</li>
+<li>is much faster (approximately a factor of 80 on my machine).</li>
+<li>allows specification of number of bins OR binsize. Default=101 bins.</li>
 <li>allows (optional) specification of binCenter.</li>
 </ul>
 </dd>
@@ -1903,30 +2004,43 @@ min(2, period/3)</li>
 </div>
 
 
+           </div>
+           
           </div>
-          
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-    <div class="clearer"></div>
+
+    </section>
+
   </div>
-    <div class="footer">
-      &copy;2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/pyrtools.tools.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
+  
 
-    
-    <a href="https://github.com/LabForComputationalVision/pyrtools" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
-    </a>
-    
 
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
     
-  </body>
+   
+
+</body>
 </html>

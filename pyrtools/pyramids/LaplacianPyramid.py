@@ -17,6 +17,7 @@ class LaplacianPyramid(GaussianPyramid):
                               'daub4', 'qmf5', 'qmf9', 'qmf13'}
         name of filter to use for (separable) convolution to downsample the image. All scaled so
         L-2 norm is 1.0
+
         * `'binomN'` (default: 'binom5') - binomial coefficient filter of order N-1
         * `'haar'` - Haar wavelet
         * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
@@ -25,6 +26,7 @@ class LaplacianPyramid(GaussianPyramid):
     upsample_filter_name : {None, 'binomN', 'haar', 'qmf8', 'qmf12', 'qmf16', 'daub2', 'daub3',
                             'daub4', 'qmf5', 'qmf9', 'qmf13'}
         name of filter to use as the "expansion" filter. All scaled so L-2 norm is 1.0
+
         * None (default) - same as `downsample_filter_name`
         * `'binomN'` - binomial coefficient filter of order N-1
         * `'haar'` - Haar wavelet
@@ -33,6 +35,7 @@ class LaplacianPyramid(GaussianPyramid):
         * `'qmf5'`, `'qmf9'`, `'qmf13'`   - Symmetric Quadrature Mirror Filters [3]_, [4]_
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
+
         * `'circular'` - circular convolution
         * `'reflect1'` - reflect about the edge pixels
         * `'reflect2'` - reflect, doubling the edge pixels
@@ -136,6 +139,7 @@ class LaplacianPyramid(GaussianPyramid):
         upsample_filter_name : {None, 'binomN', 'haar', 'qmf8', 'qmf12', 'qmf16', 'daub2', 'daub3',
                                 'daub4', 'qmf5', 'qmf9', 'qmf13'}
             name of filter to use as "expansion" filter. All scaled so L-2 norm is 1.0
+
             * None (default) - use `self.upsample_filter_name`, the expansion filter set during
                                initialization.
             * `'binomN'` - binomial coefficient filter of order N-1
@@ -146,6 +150,7 @@ class LaplacianPyramid(GaussianPyramid):
         edge_type : {None, 'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
                      'dont-compute'}
             Specifies how to handle edges. Options are:
+
             * None (default) - use `self.edge_type`, the edge_type used to construct the pyramid
             * `'circular'` - circular convolution
             * `'reflect1'` - reflect about the edge pixels

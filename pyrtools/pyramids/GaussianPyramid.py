@@ -15,6 +15,7 @@ class GaussianPyramid(Pyramid):
     filter_name : {'binomN', 'haar', 'qmf8', 'qmf12', 'qmf16', 'daub2', 'daub3', 'daub4', 'qmf5',
                    'qmf9', 'qmf13'}
         name of filter to use when constructing pyramid. All scaled so L-2 norm is 1.0
+
         * `'binomN'` - binomial coefficient filter of order N-1
         * `'haar'` - Haar wavelet
         * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
@@ -22,6 +23,7 @@ class GaussianPyramid(Pyramid):
         * `'qmf5'`, `'qmf9'`, `'qmf13'`   - Symmetric Quadrature Mirror Filters [3]_, [4]_
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
+
         * `'circular'` - circular convolution
         * `'reflect1'` - reflect about the edge pixels
         * `'reflect2'` - reflect, doubling the edge pixels

@@ -242,19 +242,20 @@ def colormap_range(image, vrange='indep1'):
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
-        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+
+        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
                           across all images
-        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
                      plus 2 std dev (across all images)
-        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
                      values to the 10th/90th percentile of the display intensity range. For
                      example: vmin is the 10th percentile image value minus 1/8 times the
                      difference between the 90th and 10th percentile
-        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
                       values
-        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
                       std dev
-        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
                       percentile values map to the 10th/90th percentile intensities.
 
     Returns
@@ -360,28 +361,31 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
-        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+
+        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
                           across all images
-        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
                      plus 2 std dev (across all images)
-        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
                      values to the 10th/90th percentile of the display intensity range. For
                      example: vmin is the 10th percentile image value minus 1/8 times the
                      difference between the 90th and 10th percentile
-        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
                       values
-        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
                       std dev
-        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
                       percentile values map to the 10th/90th percentile intensities.
     zoom : `float`
         ratio of display pixels to image pixels. if >1, must be an integer.  If <1, must be 1/d
         where d is a a divisor of the size of the largest image.
     title : `str` , `list` or None
-        - if `str`, will put the same title on every plot.
-        - if `list`, all values must be `str`, must be the same length as img, assigning each
+        Title for the plot:
+
+        * if `str`, will put the same title on every plot.
+        * if `list`, all values must be `str`, must be the same length as img, assigning each
           title to corresponding image.
-        - if None, no title will be printed.
+        * if None, no title will be printed.
     col_wrap : `int` or None
         number of axes to have in each row. If None, will fit all axes in a single row.
     ax : `matplotlib.pyplot.axis` or None
@@ -393,9 +397,10 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         colormap to use when showing these images
     plot_complex : {'rectangular', 'polar', 'logpolar'}
         specifies handling of complex values.
-        - `'rectangular'`: plot real and imaginary components as separate images
-        - `'polar'`: plot amplitude and phase as separate images
-        - `'logpolar'`: plot log_2 amplitude and phase as separate images
+
+        * `'rectangular'`: plot real and imaginary components as separate images
+        * `'polar'`: plot amplitude and phase as separate images
+        * `'logpolar'`: plot log_2 amplitude and phase as separate images
         for any other value, we raise a warning and default to rectangular.
 
     Returns
@@ -500,19 +505,20 @@ def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=F
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
-        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+
+        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
                           across all images
-        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
                      plus 2 std dev (across all images)
-        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
                      values to the 10th/90th percentile of the display intensity range. For
                      example: vmin is the 10th percentile image value minus 1/8 times the
                      difference between the 90th and 10th percentile
-        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
                       values
-        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
                       std dev
-        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
                       percentile values map to the 10th/90th percentile intensities.
     zoom : `float`
         amount we zoom the movie frames (must result in an integer when multiplied by
@@ -582,19 +588,20 @@ def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, *
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
-        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+
+        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
                           across all images
-        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
                      plus 2 std dev (across all images)
-        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
                      values to the 10th/90th percentile of the display intensity range. For
                      example: vmin is the 10th percentile image value minus 1/8 times the
                      difference between the 90th and 10th percentile
-        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
                       values
-        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
                       std dev
-        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
                       percentile values map to the 10th/90th percentile intensities.
     col_wrap : `int` or None
         Only usable when the pyramid is one-dimensional (e.g., Gaussian or Laplacian Pyramid),
