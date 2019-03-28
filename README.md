@@ -54,23 +54,21 @@ properties of the class.
 - load modules (note that if you installed via pip, you can skip the
   first two lines):
 ```
->> import sys
->> sys.path.append('path to pyrtools parent directory')
->> import pyrtools as pt
+import pyrtools as pt
 ```
 
 - create pyramid:
 ```
->> myPyr = pt.pyramids.LaplacianPyramid(img)
+pyr = pt.pyramids.LaplacianPyramid(img)
 ```
 
 - reconstruct image from pyramid:
 ```
->> reconImg = myPyr.reconLpyr()
+recon_img = pyr.recon_pyr()
 ```
 
-Please see `TUTORIALS/pyramids.ipynb` for more examples.  You can
-start this with: `jupyter notebook pyramids.ipynb` if you have iPython
+Please see `TUTORIALS/02_pyramids.ipynb` for more examples.  You can
+start this with: `jupyter notebook 02_pyramids.ipynb` if you have iPython
 and Jupyter installed.
 
 # Testing
