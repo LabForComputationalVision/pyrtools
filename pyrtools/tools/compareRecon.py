@@ -3,15 +3,17 @@ import math
 
 
 def compareRecon(recon1, recon2, rtol=1e-5, atol=1e-8):
-    '''compare two arrays and return True is they are the same within specified
-        precision and False if not.
-        function was made to accompany unit test code.
+    '''compare two arrays
+
+    returns True is they are the same within specified precision and False if not.  function was
+    made to accompany unit test code.
 
     This function is deprecated. Instead use the builtin numpy:
 
     np.allclose(recon1, recon2, rtol=1e-05, atol=1e-08, equal_nan=False)
 
     This will not tell you where the error is, but you can find that yourself
+
     '''
 
     # NOTE builtin numpy:

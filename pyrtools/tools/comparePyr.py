@@ -3,9 +3,13 @@ from ..pyramids import convert_pyr_coeffs_to_pyr
 
 
 def comparePyr(matPyr, pyPyr, rtol=1e-5, atol=1e-8):
-    ''' compare two pyramids and return True if they are the same with in
-        desired precision and False if not.
-        written for unit testing code. '''
+    '''compare two pyramids
+
+    returns True if they are the same with in desired precision and False if not.
+
+    written for unit testing code.
+
+    '''
     # compare two pyramids - return 0 for !=, 1 for ==
     # correct number of elements?
     matSz = sum(matPyr.shape)

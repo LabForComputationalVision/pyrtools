@@ -13,23 +13,23 @@ from ..pyramids import convert_pyr_coeffs_to_pyr
 
 
 class PyrFigure(Figure):
+    """custom figure class to ensure that plots are created and saved with a constant dpi
+
+    NOTE: generally, you shouldn't use this directly, relying instead on the make_figure
+    function.
+
+    If you do want to use, do the following: fig = plt.figure(FigureClass=PyrFigure) (NOT fig =
+    PyrFigure()) and analogously for other pyplot functions (plt.subplots, etc)
+
+    this enables us to make sure there's no aliasing: a single value in the (image) array that
+    we're plotting will be represented as an integer multiple of pixels in the displayed figure
+
+    The dpi that's chosen is an arbitrary value, the only thing that matters is that we use the
+    same one when creating and saving the figure, which is what we ensure here. This also means
+    that you will be unable to use plt.tight_layout, since we set the spacing and size of the
+    subplots very intentionally.
+    """
     def __init__(self, dpi=96, *args, **kwargs):
-        """custom figure class to ensure that plots are created and saved with a constant dpi
-
-        NOTE: generally, you shouldn't use this directly, relyign instead on the make_figure
-        function.
-
-        If you do want to use, do the following: fig = plt.figure(FigureClass=PyrFigure) (NOT fig =
-        PyrFigure()) and analogously for other pyplot functions (plt.subplots, etc)
-
-        this enables us to make sure there's no aliasing: a single value in the (image) array that
-        we're plotting will be represented as an integer multiple of pixels in the displayed figure
-
-        The dpi that's chosen is an arbitrary value, the only thing that matters is that we use the
-        same one when creating and saving the figure, which is what we ensure here. This also means
-        that you will be unable to use plt.tight_layout, since we set the spacing and size of the
-        subplots very intentionally.
-        """
         kwargs['dpi'] = dpi
         Figure.__init__(self, *args, **kwargs)
 
@@ -45,7 +45,7 @@ class PyrFigure(Figure):
 
         The output formats available depend on the backend being used.
 
-        Parameters
+        Arguments
         ----------
 
         fname : str or file-like object
@@ -61,7 +61,7 @@ class PyrFigure(Figure):
             If *fname* is not a string, remember to specify *format* to
             ensure that the correct backend is used.
 
-        Other Parameters
+        Other Arguments
         ----------------
 
         dpi_multiple : [ scalar integer > 0 ]
@@ -132,10 +132,30 @@ class PyrFigure(Figure):
 
 
 def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix=10, vert_pct=.8):
-    """make a nice figure
+    """make a nice figure.
 
-    vert_pct: float between 0 and 1. if less than 1, we leave a little extra room at the top to
-    allow a title. for example, if .8, then we add an extra 20% on top to leave room for a title
+    this uses our custom PyrFigure class under the hood.
+
+    Arguments
+    ---------
+    n_rows : `int`
+        the number of rows to create in the figure
+    n_cols : `int`
+        the number of columns to create in the figure
+    axis_size_pix : `tuple`
+        2-tuple of ints specifying the size of each axis in the figure in pixels.
+    col_margin_pix : `int`
+        the number of pixels to leave between each column of axes
+    row_margin_pix : `int`
+        the number of pixels to leave between each row of axes
+    vert_pct : `float`
+        must lie between 0 and 1. if less than 1, we leave a little extra room at the top to allow
+        a title. for example, if .8, then we add an extra 20% on top to leave room for a title
+
+    Returns
+    -------
+    fig : `PyrFigure`
+        the figure containing the axes at the specified size.
     """
     # this is an arbitrary value
     ppi = 96
@@ -184,7 +204,19 @@ def reshape_axis(ax, axis_size_pix):
     trying to display. this is to prevent aliasing
 
     NOTE: this can only shrink a big axis, not make a small one bigger, and will throw an exception
-    if you try to do thta.
+    if you try to do that.
+
+    Arguments
+    ---------
+    ax : `matpotlib.pyplot.axis`
+        the axis to reshape
+    axis_size_pix : `int`
+        the target size of the axis, in pixels
+
+    Returns
+    -------
+    ax : `matplotlib.pyplot.axis`
+        the reshaped axis
     """
     if ax.bbox.width < axis_size_pix[1] or ax.bbox.height < axis_size_pix[0]:
         raise Exception("Your axis is too small! Axis size: ({}, {}). Image size: ({}, {})".format(
@@ -197,12 +229,44 @@ def reshape_axis(ax, axis_size_pix):
     return ax
 
 
-def colormap_range(img, vrange='indep1'):
+def colormap_range(image, vrange='indep1'):
+    """Find the appropriate ranges for colormaps of provided images
+
+    Arguments
+    ---------
+    image : `np.array` or `list`
+        should be a 2d array (one image to display), 3d array (multiple images to display, images
+        are indexed along the first dimension), or list of 2d arrays. the image(s) to be shown.
+        all images will be automatically rescaled so they're displayed at the same size. thus,
+        their sizes must be scalar multiples of each other.
+    vrange : `tuple` or `str`
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
+        maximum value of the colormap, respectively. If a string:
+        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+                          across all images
+        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+                     plus 2 std dev (across all images)
+        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+                     values to the 10th/90th percentile of the display intensity range. For
+                     example: vmin is the 10th percentile image value minus 1/8 times the
+                     difference between the 90th and 10th percentile
+        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+                      values
+        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+                      std dev
+        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+                      percentile values map to the 10th/90th percentile intensities.
+
+    Returns
+    -------
+    vrange_list : `list`
+        list of tuples, same length as `image`. contains the (vmin, vmax) tuple for each image.
+    """
     # this will clip the colormap
 
     # flatimg is one long 1d array, which enables the min, max, mean, std, and percentile calls to
     # operate on the values from each of the images simultaneously.
-    flatimg = np.concatenate([i.flatten() for i in img]).flatten()
+    flatimg = np.concatenate([i.flatten() for i in image]).flatten()
 
     if isinstance(vrange, str):
         if vrange[:4] == 'auto':
@@ -217,22 +281,22 @@ def colormap_range(img, vrange='indep1'):
                 vrange_list = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
 
             # make sure to return as many ranges as there are images
-            vrange_list = [vrange_list] * len(img)
+            vrange_list = [vrange_list] * len(image)
 
         elif vrange[:5] == 'indep':
             # get independent vrange by calling this function one image at a time
-            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0] for im in img]
+            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0] for im in image]
         else:
-            vrange_list = colormap_range(img, vrange='auto1')
+            vrange_list = colormap_range(image, vrange='auto1')
             warnings.warn('Unknown vrange argument, using auto1 instead')
     else:
         # in this case, we've been passed two numbers, either as a list or tuple
         if len(vrange) != 2:
             raise Exception("If you're passing numbers to vrange, there must be 2 of them!")
-        vrange_list = [tuple(vrange)] * len(img)
+        vrange_list = [tuple(vrange)] * len(image)
 
     # double check that we're returning the right number of vranges
-    assert len(img) == len(vrange_list)
+    assert len(image) == len(vrange_list)
 
     return vrange_list
 
@@ -244,11 +308,18 @@ def find_zooms(images):
     the same size. for this to be the case, there must be an integer for each image such that the
     image can be multiplied by that integer to be the same size as the biggest image.
 
+    Arguments
+    ---------
+    images : `list`
+        list of numpy arrays to check the size of. In practice, these are 1d or 2d, but can in
+        principle be any number of dimensions
+
     Returns
     -------
-    zooms: list of integers showing how much each image needs to be zoomed
-
-    max_shape: tuple of integers, showing the shape of the largest image in the list
+    zooms : `list`
+        list of integers showing how much each image needs to be zoomed
+    max_shape : `tuple`
+        2-tuple of integers, showing the shape of the largest image in the list
     """
     def check_shape_1d(shapes):
         max_shape = np.max(shapes)
@@ -279,52 +350,58 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
            cmap=cm.gray, plot_complex='rectangular', **kwargs):
     '''show image(s)
 
-    Parameters
-    ----------
-    img: 2d array (one image to display), 3d array (multiple images to display, images are indexed
-    along the first dimension), or list of 2d arrays. the image(s) to be shown. all images will be
-    automatically rescaled so they're displayed at the same size. thus, their sizes must be scalar
-    multiples of each other.
-
-    vrange: A list of two numbers, or a string. If two numbers, these specify the image values 
-             vmin/vmax that are mapped to black/white, respectively. If a string:
-    - auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all
-                  images
-    - auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
-             std dev (across all images)
-    - auto3: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile values to
-             the 10th/90th percentile of the display intensity range. For example: vmin is the 10th
-             percentile image value minus 1/8 times the difference between the 90th and 10th percentile
-    - indep1 (default): each image has an independent vmin/vmax, which are their minimum/maximum
-             values
-    - indep2: each image has an independent vmin/vmax, which is their mean minus/plus 2 std dev
-    - indep3: each image has an independent vmin/vmax, chosen so that the 10th/90th percentile values
-              map to the 10th/90th percentile intensities.
-
-    zoom: float. ratio of display pixels to image pixels. if >1, must be an integer.  If <1, must be 1/d
+    Arguments
+    ---------
+    image : `np.array` or `list`
+        should be a 2d array (one image to display), 3d array (multiple images to display, images
+        are indexed along the first dimension), or list of 2d arrays. the image(s) to be shown.
+        all images will be automatically rescaled so they're displayed at the same size. thus,
+        their sizes must be scalar multiples of each other.
+    vrange : `tuple` or `str`
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
+        maximum value of the colormap, respectively. If a string:
+        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+                          across all images
+        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+                     plus 2 std dev (across all images)
+        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+                     values to the 10th/90th percentile of the display intensity range. For
+                     example: vmin is the 10th percentile image value minus 1/8 times the
+                     difference between the 90th and 10th percentile
+        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+                      values
+        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+                      std dev
+        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+                      percentile values map to the 10th/90th percentile intensities.
+    zoom : `float`
+        ratio of display pixels to image pixels. if >1, must be an integer.  If <1, must be 1/d
         where d is a a divisor of the size of the largest image.
-
-    title: string , list of strings or None
-        - if string, will put the same title on every plot.
-        - if list of strings, must be the same length as img, assigning each title to corresponding image.
-        - if None (default), no title will be printed.
-
-    col_wrap: int or None
-
-    ax: matplotlib axis or None if None, make the appropriate figure. otherwise, we resize it
-        so that it's the appropriate number of pixels (done by shrinking the bbox - if the bbox 
-        is already too small, this will throw an Exception!). first define a large
-        enough figure using either make_figure or plt.figure
-
-    plot_complex: {'rectangular', 'polar', 'logpolar'}. specifies handling of complex values.
-    options are to plot the real/imaginary parts as separate images (default), with same intensity scaling, 
-    or plot amplitude and phase. for any other value, we raise a warning and default to rectangular.
+    title : `str` , `list` or None
+        - if `str`, will put the same title on every plot.
+        - if `list`, all values must be `str`, must be the same length as img, assigning each
+          title to corresponding image.
+        - if None, no title will be printed.
+    col_wrap : `int` or None
+        number of axes to have in each row. If None, will fit all axes in a single row.
+    ax : `matplotlib.pyplot.axis` or None
+        if None, make the appropriate figure. otherwise, we resize it so that it's the appropriate
+        number of pixels (done by shrinking the bbox - if the bbox is already too small, this will
+        throw an Exception!, so first define a large enough figure using either make_figure or
+        plt.figure)
+    cmap : matplotlib colormap
+        colormap to use when showing these images
+    plot_complex : {'rectangular', 'polar', 'logpolar'}
+        specifies handling of complex values.
+        - `'rectangular'`: plot real and imaginary components as separate images
+        - `'polar'`: plot amplitude and phase as separate images
+        - `'logpolar'`: plot log_2 amplitude and phase as separate images
+        for any other value, we raise a warning and default to rectangular.
 
     Returns
     -------
-
-    fig : figure
-
+    fig : `PyrFigure`
+        figure containing the plotted images
     '''
 
     if plot_complex not in ['rectangular', 'polar', 'logpolar']:
@@ -409,25 +486,42 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     return fig
 
 
-def animshow(movie, framerate=2, vrange='auto', zoom=1, as_html5=True, repeat=False, **kwargs):
+def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=False, **kwargs):
     """Turn a 3D movie array into a matplotlib animation or HTML movie.
 
-    Parameters
-    ----------
-    movie : 3D numpy array or list
+    Arguments
+    ---------
+    movie : `np.array` or `list`
         Array with time on the first axis or, equivalently, a list of 2d arrays. these 2d arrays
         don't have to all be the same size, but, if they're not, there must exist an integer such
         that all of them can be zoomed in by an integer up to the biggest image.
-    framerate : float
+    framerate : `float`
         Temporal resolution of the movie, in Hz (frames per second).
-    aperture : bool
-        If True, show only a central circular aperture.
-    zoom : float
+    vrange : `tuple` or `str`
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
+        maximum value of the colormap, respectively. If a string:
+        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+                          across all images
+        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+                     plus 2 std dev (across all images)
+        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+                     values to the 10th/90th percentile of the display intensity range. For
+                     example: vmin is the 10th percentile image value minus 1/8 times the
+                     difference between the 90th and 10th percentile
+        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+                      values
+        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+                      std dev
+        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+                      percentile values map to the 10th/90th percentile intensities.
+    zoom : `float`
         amount we zoom the movie frames (must result in an integer when multiplied by
         movie.shape[1:])
-    as_html : bool
-        If True, return an HTML5 video; otherwise return the underying
-        matplotlib animation object (e.g. to save to .gif).
+    as_html : `bool`
+        If True, return an HTML5 video; otherwise return the underying matplotlib animation object
+        (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
+    repeat : `bool`
+        whether to loop the animation or just play it once
 
     Returns
     -------
@@ -476,47 +570,48 @@ def animshow(movie, framerate=2, vrange='auto', zoom=1, as_html5=True, repeat=Fa
     return anim
 
 
-def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
+def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, **kwargs):
     """Display the coefficients of the pyramid in an orderly fashion
 
     NOTE: this currently only works for 2d signals. we still need to figure out how to handle 1D
     signals.
 
-    Parameters
-    ----------
-    pyr: the pyramid object to display
-
-    vrange: One of the following strings or a list of two numbers. If two numbers, these will be
-    the vmin and vmax for all plotted images. If a string:
-    - auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all
-                  images
-    - auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
-             std dev (across all images)
-    - auto3: all images have same vmin/vmax. vmin is the 10th percentile minus 1/8 times the
-             difference between the 90th and 10th percentile, and vmax is the 90th percentile plus
-             1/8 times that difference (across all images)
-    - indep1 (default): each image has an independent vmin/vmax, which are their minimum/maximum
-             values
-    - indep2: each image has an independent vmin/vmax, which is their mean minus/plus 2 std dev
-    - indep3: each image has an independent vmin/vmax. vmin is the 10th percentile minus 1/8 times
-              the difference between the 90th and 10th percentile, and vmax is the 90th percentile
-              plus 1/8 times that difference
-
-    col_wrap: int or None. Only usable when the pyramid is one-dimensional (e.g., Gaussian or
-    Laplacian Pyramid, otherwise the column wrap is determined by the number of bands)
-
-    zoom: float. how much to scale the size of the images by. zoom times the size of the largest
-    image must be an integer (and thus zoom should probably be an integer or 1/(2^n)).
-
-    show_residuals: boolean. whether to display the residual bands (lowpass, highpass depending on
-    the pyramid type)
+    Arguments
+    ---------
+    pyr : the pyramid object to display
+    vrange : `tuple` or `str`
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
+        maximum value of the colormap, respectively. If a string:
+        - `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
+                          across all images
+        - `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
+                     plus 2 std dev (across all images)
+        - `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
+                     values to the 10th/90th percentile of the display intensity range. For
+                     example: vmin is the 10th percentile image value minus 1/8 times the
+                     difference between the 90th and 10th percentile
+        - `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
+                      values
+        - `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
+                      std dev
+        - `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
+                      percentile values map to the 10th/90th percentile intensities.
+    col_wrap : `int` or None
+        Only usable when the pyramid is one-dimensional (e.g., Gaussian or Laplacian Pyramid),
+        otherwise the column wrap is determined by the number of bands. If not None, how many axes
+        to have in a given row.
+    zoom : `float`
+        how much to scale the size of the images by. zoom times the size of the largest image must
+        be an integer (and thus zoom should probably be an integer or 1/(2^n)).
+    show_residuals : `bool`
+        whether to display the residual bands (lowpass, highpass depending on the pyramid type)
 
     any additional kwargs will be passed through to imshow.
 
     Returns
     -------
-
-    fig: the matplotlib figure displaying the coefficients.
+    fig: `PyrFigure`
+        the figure displaying the coefficients.
     """
     # right now, we do *not* do this the same as the old code. Instead of taking the coefficients
     # and arranging them in a spiral, we use imshow and arrange them neatly, displaying all at the

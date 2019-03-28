@@ -1,0 +1,235 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyrtools.pyramids.c package &#8212; pyrtools 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pyrtools-pyramids-c-package">
+<h1>pyrtools.pyramids.c package<a class="headerlink" href="#pyrtools-pyramids-c-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pyrtools.pyramids.c.wrapper">
+<span id="pyrtools-pyramids-c-wrapper-module"></span><h2>pyrtools.pyramids.c.wrapper module<a class="headerlink" href="#module-pyrtools.pyramids.c.wrapper" title="Permalink to this headline">¶</a></h2>
+<p>functions that interact with the C code, for handling convolutions mostly.</p>
+<dl class="function">
+<dt id="pyrtools.pyramids.c.wrapper.corrDn">
+<code class="descclassname">pyrtools.pyramids.c.wrapper.</code><code class="descname">corrDn</code><span class="sig-paren">(</span><em>image</em>, <em>filt</em>, <em>edge_type='reflect1'</em>, <em>step=(1</em>, <em>1)</em>, <em>start=(0</em>, <em>0)</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/c/wrapper.html#corrDn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.c.wrapper.corrDn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute correlation of image with filt, followed by downsampling.</p>
+<p>These arguments should be 1D or 2D arrays, and image must be larger (in both dimensions) than
+filt.  The origin of filt is assumed to be floor(size(filt)/2)+1.</p>
+<p>Downsampling factors are determined by step (optional, default=(1, 1)), which should be a
+2-tuple (y, x).</p>
+<p>The window over which the convolution occurs is specfied by start (optional, default=(0,0), and
+stop (optional, default=size(image)).</p>
+<p>NOTE: this operation corresponds to multiplication of a signal vector by a matrix whose rows
+contain copies of the filt shifted by multiples of step.  See <cite>upConv</cite> for the operation
+corresponding to the transpose of this matrix.</p>
+<p>WARNING: if both the image and filter are 1d, they must be 1d in the same dimension. E.g., if
+image.shape is (1, 36), then filt.shape must be (1, 5) and NOT (5, 1). If they’re both 1d and
+1d in different dimensions, then this may encounter a segfault. I’ve not been able to find a
+way to avoid that within this function (simply reshaping it does not work).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d array containing the image to correlate and downsample.</li>
+<li><strong>filt</strong> (<cite>array_like</cite>) – 1d or 2d array containing the filter to use for correlation and downsampling.</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
+* <cite>‘circular’</cite> - circular convolution
+* <cite>‘reflect1’</cite> - reflect about the edge pixels
+* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
+* <cite>‘repeat’</cite> - repeat the edge pixels
+* <cite>‘zero’</cite> - assume values of zero outside image boundary
+* <cite>‘extend’</cite> - reflect and invert
+* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>step</strong> (<cite>tuple</cite>) – 2-tuple (y, x) which determines the downsampling factor</li>
+<li><strong>start</strong> (<cite>tuple</cite> or None) – 2-tuple which specifies the start of the window over which we perform the convolution</li>
+<li><strong>start</strong> – 2-tuple which specifies the end of the window over which we perform the convolution. If
+None, perform convolution over the whole image</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>result</strong> – the correlated and downsampled array</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><cite>np.array</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrtools.pyramids.c.wrapper.pointOp">
+<code class="descclassname">pyrtools.pyramids.c.wrapper.</code><code class="descname">pointOp</code><span class="sig-paren">(</span><em>image</em>, <em>lut</em>, <em>origin</em>, <em>increment</em>, <em>warnings=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/c/wrapper.html#pointOp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.c.wrapper.pointOp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a point operation, specified by lookup table <cite>lut</cite>, to <cite>image</cite></p>
+<p>This function is very fast and allows extrapolation beyond the lookup table domain.  The
+drawbacks are that the lookup table must be equi-spaced, and the interpolation is linear.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d array</li>
+<li><strong>lut</strong> (<cite>array_like</cite>) – a row or column vector, assumed to contain (equi-spaced) samples of the function.</li>
+<li><strong>origin</strong> (<cite>float</cite>) – specifies the abscissa associated with the first sample</li>
+<li><strong>increment</strong> (<cite>float</cite>) – specifies the spacing between samples.</li>
+<li><strong>warnings</strong> (<cite>bool</cite>) – whether to print a warning whenever the lookup table is extrapolated</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrtools.pyramids.c.wrapper.upConv">
+<code class="descclassname">pyrtools.pyramids.c.wrapper.</code><code class="descname">upConv</code><span class="sig-paren">(</span><em>image</em>, <em>filt</em>, <em>edge_type='reflect1'</em>, <em>step=(1</em>, <em>1)</em>, <em>start=(0</em>, <em>0)</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/c/wrapper.html#upConv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.c.wrapper.upConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upsample matrix image, followed by convolution with matrix filt.</p>
+<p>These arguments should be 1D or 2D matrices, and image must be larger (in both dimensions) than
+filt.  The origin of filt is assumed to be floor(size(filt)/2)+1.</p>
+<p>Upsampling factors are determined by step (optional, default=(1, 1)),
+a 2-tuple (y, x).</p>
+<p>The window over which the convolution occurs is specfied by start (optional, default=(0, 0),
+and stop (optional, default = step .* (size(IM) + floor((start-1)./step))).</p>
+<p>NOTE: this operation corresponds to multiplication of a signal vector by a matrix whose columns
+contain copies of the time-reversed (or space-reversed) FILT shifted by multiples of STEP.  See
+corrDn.m for the operation corresponding to the transpose of this matrix.</p>
+<p>WARNING: if both the image and filter are 1d, they must be 1d in the same dimension. E.g., if
+image.shape is (1, 36), then filt.shape must be (1, 5) and NOT (5, 1). If they’re both 1d and
+1d in different dimensions, then this may encounter a segfault. I’ve not been able to find a
+way to avoid that within this function (simply reshaping it does not work).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d array containing the image to upsample and convolve.</li>
+<li><strong>filt</strong> (<cite>array_like</cite>) – 1d or 2d array containing the filter to use for upsampling and convolution.</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
+* <cite>‘circular’</cite> - circular convolution
+* <cite>‘reflect1’</cite> - reflect about the edge pixels
+* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
+* <cite>‘repeat’</cite> - repeat the edge pixels
+* <cite>‘zero’</cite> - assume values of zero outside image boundary
+* <cite>‘extend’</cite> - reflect and invert
+* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>step</strong> (<cite>tuple</cite>) – 2-tuple (y, x) which determines the upsampling factor</li>
+<li><strong>start</strong> (<cite>tuple</cite> or None) – 2-tuple which specifies the start of the window over which we perform the convolution.</li>
+<li><strong>start</strong> – 2-tuple which specifies the end of the window over which we perform the convolution. If
+None, perform convolution over the whole image</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>result</strong> – the correlated and downsampled array</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><cite>np.array</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyrtools.pyramids.c">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyrtools.pyramids.c" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pyrtools</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/pyrtools.pyramids.c.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

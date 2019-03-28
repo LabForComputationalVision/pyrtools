@@ -1,0 +1,359 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyrtools.pyramids.pyramid &#8212; pyrtools 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pyrtools.pyramids.pyramid</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">.pyr_utils</span> <span class="k">import</span> <span class="n">max_pyr_height</span>
+<span class="kn">from</span> <span class="nn">.filters</span> <span class="k">import</span> <span class="n">named_filter</span>
+
+
+<div class="viewcode-block" id="Pyramid"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.pyramid.Pyramid">[docs]</a><span class="k">class</span> <span class="nc">Pyramid</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Base class for multiscale pyramids</span>
+
+<span class="sd">    You should not instantiate this base class, it is instead inherited by the other classes found</span>
+<span class="sd">    in this module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : `array_like`</span>
+<span class="sd">        1d or 2d image upon which to construct to the pyramid.</span>
+<span class="sd">    edge_type : {&#39;circular&#39;, &#39;reflect1&#39;, &#39;reflect2&#39;, &#39;repeat&#39;, &#39;zero&#39;, &#39;extend&#39;, &#39;dont-compute&#39;}</span>
+<span class="sd">        Specifies how to handle edges. Options are:</span>
+<span class="sd">        * `&#39;circular&#39;` - circular convolution</span>
+<span class="sd">        * `&#39;reflect1&#39;` - reflect about the edge pixels</span>
+<span class="sd">        * `&#39;reflect2&#39;` - reflect, doubling the edge pixels</span>
+<span class="sd">        * `&#39;repeat&#39;` - repeat the edge pixels</span>
+<span class="sd">        * `&#39;zero&#39;` - assume values of zero outside image boundary</span>
+<span class="sd">        * `&#39;extend&#39;` - reflect and invert</span>
+<span class="sd">        * `&#39;dont-compute&#39;` - zero output when filter overhangs imput boundaries.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : `array_like`</span>
+<span class="sd">        The input image used to construct the pyramid.</span>
+<span class="sd">    image_size : `tuple`</span>
+<span class="sd">        The size of the input image.</span>
+<span class="sd">    pyr_type : `str` or `None`</span>
+<span class="sd">        Human-readable string specifying the type of pyramid. For base class, is None.</span>
+<span class="sd">    edge_type : `str`</span>
+<span class="sd">        Specifies how edges were handled.</span>
+<span class="sd">    pyr_coeffs : `dict`</span>
+<span class="sd">        Dictionary containing the coefficients of the pyramid. Keys are `(level, band)` tuples and</span>
+<span class="sd">        values are 1d or 2d numpy arrays (same number of dimensions as the input image)</span>
+<span class="sd">    pyr_size : `dict`</span>
+<span class="sd">        Dictionary containing the sizes of the pyramid coefficients. Keys are `(level, band)`</span>
+<span class="sd">        tuples and values are tuples.</span>
+<span class="sd">    is_complex : `bool`</span>
+<span class="sd">        Whether the coefficients are complex- or real-valued. Only `SteerablePyramidFreq` can have</span>
+<span class="sd">        a value of True, all others must be False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Error: Input signal must be 1D or 2D.&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;pyr_type&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pyr_type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_type</span> <span class="o">=</span> <span class="n">edge_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pyr_size</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_complex</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_parse_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the name of the filter and return filter</span>
+
+<span class="sd">        Used during pyramid construction, user should not call this directly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filter_name : `str`.</span>
+<span class="sd">            Name of the filter, as accepted by `named_filter`. See that function for acceptable</span>
+<span class="sd">            names.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        filt : `array` or `dict`</span>
+<span class="sd">            If `filter_name` was one of the steerable pyramids, then this will be a dictionary</span>
+<span class="sd">            containing the various steerable pyramid filters. Else, it will be an array containing</span>
+<span class="sd">            the specified filter.</span>
+
+<span class="sd">        See also</span>
+<span class="sd">        --------</span>
+<span class="sd">        named_filter : function that converts `filter_name` str into an array or dict of arrays.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">filt</span> <span class="o">=</span> <span class="n">named_filter</span><span class="p">(</span><span class="n">filter_name</span><span class="p">)</span>
+
+        <span class="c1"># the steerable pyramid filters are returned as a dictionary and we don&#39;t need to do this</span>
+        <span class="c1"># check for them</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">filt</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">filt</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Error: filter should be 1D (i.e., a vector)&quot;</span><span class="p">)</span>
+
+            <span class="c1"># when the first dimension of the image is 1, we need the filter to have shape (1, x)</span>
+            <span class="c1"># instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That&#39;s</span>
+            <span class="c1"># because we need to match the filter to the image dimensions</span>
+            <span class="k">if</span> <span class="n">filt</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">filt</span> <span class="o">=</span> <span class="n">filt</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filt</span>
+
+    <span class="k">def</span> <span class="nf">_set_num_scales</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">extra_height</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Figure out the number of scales (height) of the pyramid</span>
+
+<span class="sd">        The user should not call this directly. This is called during construction of a pyramid,</span>
+<span class="sd">        and is based on the size of the filters (thus, should be called after instantiating the</span>
+<span class="sd">        filters) and the input image, as well as the `extra_height` parameter (which corresponds to</span>
+<span class="sd">        the residuals, which the Gaussian pyramid contains and others do not).</span>
+
+<span class="sd">        This sets `self.num_scales` directly instead of returning something, so be careful.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filter_name : `str`</span>
+<span class="sd">            Name of the filter in the `filters` dict that determines the height of the pyramid</span>
+<span class="sd">        height : `&#39;auto&#39;` or `int`</span>
+<span class="sd">            During construction, user can specify the number of scales (height) of the pyramid.</span>
+<span class="sd">            The pyramid will have this number of scales unless that&#39;s greater than the maximum</span>
+<span class="sd">            possible height.</span>
+<span class="sd">        extra_height : `int`, optional</span>
+<span class="sd">            The automatically calculated maximum number of scales is based on the size of the input</span>
+<span class="sd">            image and filter size. The Gaussian pyramid also contains the final residuals and so we</span>
+<span class="sd">            need to add one more to this number.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># the Gaussian and Laplacian pyramids can go one higher than the value returned here, so we</span>
+        <span class="c1"># use the extra_height argument to allow for that</span>
+        <span class="n">max_ht</span> <span class="o">=</span> <span class="n">max_pyr_height</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="n">filter_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="n">extra_height</span>
+        <span class="k">if</span> <span class="n">height</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span> <span class="o">=</span> <span class="n">max_ht</span>
+        <span class="k">elif</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="n">max_ht</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Cannot build pyramid higher than </span><span class="si">%d</span><span class="s2"> levels.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">max_ht</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_recon_levels_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether levels arg is valid for reconstruction and return valid version</span>
+
+<span class="sd">        When reconstructing the input image (i.e., when calling `recon_pyr()`), the user specifies</span>
+<span class="sd">        which levels to include. This makes sure those levels are valid and gets them in the form</span>
+<span class="sd">        we expect for the rest of the reconstruction. If the user passes `&#39;all&#39;`, this constructs</span>
+<span class="sd">        the appropriate list (based on the values of `self.pyr_coeffs`).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        levels : `list`, `int`,  or {`&#39;all&#39;`, `&#39;residual_highpass&#39;`, or `&#39;residual_lowpass&#39;`}</span>
+<span class="sd">            If `list` should contain some subset of integers from `0` to `self.num_scales-1`</span>
+<span class="sd">            (inclusive) and `&#39;residual_highpass&#39;` and `&#39;residual_lowpass&#39;` (if appropriate for the</span>
+<span class="sd">            pyramid). If `&#39;all&#39;`, returned value will contain all valid levels. Otherwise, must be</span>
+<span class="sd">            one of the valid levels.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        levels : `list`</span>
+<span class="sd">            List containing the valid levels for reconstruction.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">levels</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;residual_highpass&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;residual_lowpass&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="c1"># then it&#39;s a single int or string</span>
+                <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span><span class="n">levels</span><span class="p">]</span>
+            <span class="n">levs_nums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">levels</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">i</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()])</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">levs_nums</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s2">&quot;Level numbers must be non-negative.&quot;</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">levs_nums</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s2">&quot;Level numbers must be in the range [0, </span><span class="si">%d</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">levs_tmp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">levs_nums</span><span class="p">))</span>  <span class="c1"># we want smallest first</span>
+            <span class="k">if</span> <span class="s1">&#39;residual_highpass&#39;</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+                <span class="n">levs_tmp</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;residual_highpass&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">levs_tmp</span>
+            <span class="k">if</span> <span class="s1">&#39;residual_lowpass&#39;</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+                <span class="n">levs_tmp</span> <span class="o">=</span> <span class="n">levs_tmp</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;residual_lowpass&#39;</span><span class="p">]</span>
+            <span class="n">levels</span> <span class="o">=</span> <span class="n">levs_tmp</span>
+        <span class="c1"># not all pyramids have residual highpass / lowpass, but it&#39;s easier to construct the list</span>
+        <span class="c1"># including them, then remove them if necessary.</span>
+        <span class="k">if</span> <span class="s1">&#39;residual_lowpass&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;residual_lowpass&#39;</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+            <span class="n">levels</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;residual_highpass&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;residual_highpass&#39;</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+            <span class="n">levels</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">levels</span>
+
+    <span class="k">def</span> <span class="nf">_recon_bands_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bands</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether bands arg is valid for reconstruction and return valid version</span>
+
+<span class="sd">        When reconstructing the input image (i.e., when calling `recon_pyr()`), the user specifies</span>
+<span class="sd">        which orientations to include. This makes sure those orientations are valid and gets them</span>
+<span class="sd">        in the form we expect for the rest of the reconstruction. If the user passes `&#39;all&#39;`, this</span>
+<span class="sd">        constructs the appropriate list (based on the values of `self.pyr_coeffs`).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bands : `list`, `int`, or `&#39;all&#39;`.</span>
+<span class="sd">            If list, should contain some subset of integers from `0` to `self.num_orientations-1`.</span>
+<span class="sd">            If `&#39;all&#39;`, returned value will contain all valid orientations. Otherwise, must be one</span>
+<span class="sd">            of the valid orientations.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bands: `list`</span>
+<span class="sd">            List containing the valid orientations for reconstruction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bands</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">bands</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+            <span class="n">bands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_orientations</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bands</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">bands</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s2">&quot;Error: band numbers must be larger than 0.&quot;</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">bands</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_orientations</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s2">&quot;Error: band numbers must be in the range [0, </span><span class="si">%d</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_orientations</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bands</span>
+
+    <span class="k">def</span> <span class="nf">_recon_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">max_orientations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a list of all the relevant keys from `pyr_coeffs` to use in pyramid reconstruction</span>
+
+<span class="sd">        When reconstructing the input image (i.e., when calling `recon_pyr()`), the user specifies</span>
+<span class="sd">        some subset of the pyramid coefficients to include in the reconstruction. This function</span>
+<span class="sd">        takes in those specifications, checks that they&#39;re valid, and returns a list of tuples</span>
+<span class="sd">        that are keys into the `pyr_coeffs` dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        levels : `list`, `int`,  or {`&#39;all&#39;`, `&#39;residual_highpass&#39;`, `&#39;residual_lowpass&#39;`}</span>
+<span class="sd">            If `list` should contain some subset of integers from `0` to `self.num_scales-1`</span>
+<span class="sd">            (inclusive) and `&#39;residual_highpass&#39;` and `&#39;residual_lowpass&#39;` (if appropriate for the</span>
+<span class="sd">            pyramid). If `&#39;all&#39;`, returned value will contain all valid levels. Otherwise, must be</span>
+<span class="sd">            one of the valid levels.</span>
+<span class="sd">        bands : `list`, `int`, or `&#39;all&#39;`.</span>
+<span class="sd">            If list, should contain some subset of integers from `0` to `self.num_orientations-1`.</span>
+<span class="sd">            If `&#39;all&#39;`, returned value will contain all valid orientations. Otherwise, must be one</span>
+<span class="sd">            of the valid orientations.</span>
+<span class="sd">        max_orientations: `None` or `int`.</span>
+<span class="sd">            The maximum number of orientations we allow in the reconstruction. when we determine</span>
+<span class="sd">            which ints are allowed for bands, we ignore all those greater than max_orientations.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        recon_keys : `list`</span>
+<span class="sd">            List of `tuples`, all of which are keys in `pyr_coeffs`. These are the coefficients to</span>
+<span class="sd">            include in the reconstruction of the image.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_levels_check</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_bands_check</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_orientations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bands</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">max_orientations</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">((</span><span class="s2">&quot;You wanted band </span><span class="si">%d</span><span class="s2"> in the reconstruction but max_orientation&quot;</span>
+                                   <span class="s2">&quot; is </span><span class="si">%d</span><span class="s2">, so we&#39;re ignoring that band&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">max_orientations</span><span class="p">)))</span>
+            <span class="n">bands</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bands</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">max_orientations</span><span class="p">]</span>
+        <span class="n">recon_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+            <span class="c1"># residual highpass and lowpass</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">recon_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+            <span class="c1"># else we have to get each of the (specified) bands at</span>
+            <span class="c1"># that level</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">recon_keys</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">level</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">bands</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">recon_keys</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">pyrtools</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

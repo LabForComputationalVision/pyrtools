@@ -13,10 +13,11 @@ Briefly, the tools include:
 
 # Installation
 
-It's recommended you install from pip: `pip install pyrtools`. The
-pip install only been tested on Linux, there is no guarantee that it
-will work on other systems. Installing from source (see below) should
-work on OSX as well, but Windows is NOT supported.
+It's recommended you install from pip: `pip install pyrtools`. The pip
+install has been tested on Linux and on OSX. Windowsis NOT supported
+because of issues with the C compiler (`gcc` isn't necessarily
+installed); if you have experience with C compilation on Windows,
+please open a pull request.
 
 
 ## Dependencies

@@ -5,15 +5,31 @@ from .image_stats import var
 
 
 def ramp(size, direction=0, slope=1, intercept=0, origin=None):
-    ''' make a ramp matrix
+    '''make a ramp matrix
 
-    Compute a matrix of dimension SIZE (a [Y X] 2-vector, or a scalar)
-    containing samples of a ramp function, with given gradient DIRECTION
-    (radians, CW from X-axis, default = 0), SLOPE (per pixel, default =
-    1), and a value of INTERCEPT (default = 0) at the ORIGIN (default =
-    (size+1)/2, (0, 0) = upper left)
+    Compute a matrix containing samples of a ramp function in a given direction.
+
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the ramp should be of dimensions `(size, size)`. if a tuple, must be a
+        2-tuple of ints specifying the dimensions
+    direction : `float`
+        the direction of the ramp's gradient direction, in radians, clockwise from the X-axis
+    slope : `float`
+        the slope of the ramp (per pixel)
+    intercept : `intercept`
+        the value of the ramp at the origin
+    origin : `int`, `tuple`, or None
+        the origin of the matrix. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size-1)/2`.
+
+    Returns
+    -------
+    res : `np.array`
+        the ramp matrix
     '''
-
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -38,10 +54,27 @@ def ramp(size, direction=0, slope=1, intercept=0, origin=None):
 def impulse(size, origin=None, amplitude=1):
     '''make an impulse matrix
 
-    create an image that is all zeros except for an impulse
-    of default amplitude 1 at default position origin
+    create an image that is all zeros except for an impulse of a given amplitude at the origin
 
     NOTE: the origin is rounded to the nearest int
+
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must
+        be a 2-tuple of ints specifying the dimensions
+    origin : `int`, `tuple`, or None
+        the location of the impulse. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)//2` (note: this
+        is rounded to the nearest int)
+    amplitude : `float`
+        the amplitude of the impulse
+
+    Returns
+    -------
+    res : `np.array`
+        the impulse matrix
     '''
 
     if not hasattr(size, '__iter__'):
@@ -61,13 +94,27 @@ def impulse(size, origin=None, amplitude=1):
 def polar_radius(size, exponent=1, origin=None):
     '''make distance-from-origin (r) matrix
 
-    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
-    containing samples of a radial ramp function, raised to power EXPONENT
-    (default = 1), with given ORIGIN (default = (size+1)//2, (0, 0) = upper left).
+    Compute a matrix of given size containing samples of a radial ramp function, raised to given
+    exponent, centered at given origin.
 
-    NOTE: the origin is not rounded to the nearest int
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    exponent : `float`
+        the exponent of the radial ramp function.
+    origin : `int`, `tuple`, or None
+        the center of the image. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
+
+    Returns
+    -------
+    res : `np.array`
+        the polar radius matrix
+
     '''
-
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -92,14 +139,27 @@ def polar_radius(size, exponent=1, origin=None):
 def polar_angle(size, phase=0, origin=None):
     '''make polar angle matrix (in radians)
 
-    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
-    containing samples of the polar angle (in radians, CW from the X-axis,
-    ranging from -pi to pi), relative to angle PHASE (default = 0), about ORIGIN
-    pixel (default = (size+1)/2).
+    Compute a matrix of given size containing samples of the polar angle (in radians, CW from the
+    X-axis, ranging from -pi to pi), relative to given phase, about the given origin pixel.
 
-    NOTE: the origin is not rounded to the nearest int
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    phase : `float`
+        the phase of the polar angle function (in radians, clockwise from the X-axis)
+    origin : `int`, `tuple`, or None
+        the center of the image. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
+
+    Returns
+    -------
+    res : `np.array`
+        the polar angle matrix
+
     '''
-
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -123,14 +183,28 @@ def polar_angle(size, phase=0, origin=None):
 def disk(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
     '''make a "disk" image
 
-    SIZE (a [Y X] list/tuple, or a scalar) specifies the matrix size
-    RADIUS (default = min(size)/4) specifies the radius of the disk
-    ORIGIN (default = (size+1)/2) specifies the location of the disk center
-    TWIDTH (in pixels, default = 2) specifies the width over which a soft
-    threshold transition is made. VALS (default = [0,1]) should be a 2-vector
-    containing the intensity value inside and outside the disk.
-    '''
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    radius : `float` or None
+        the radius of the disk (in pixels). If None, defaults to `min(size)/4`.
+    origin : `int`, `tuple`, or None
+        the center of the image. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
+    twidth : `float`
+        the width (in pixels) over which a soft threshold transition is made.
+    vals : `tuple`
+        2-tuple of floats containing the intensity value inside and outside the disk.
 
+    Returns
+    -------
+    res : `np.array`
+        the disk image matrix
+
+    '''
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -148,7 +222,7 @@ def disk(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
         res = vals[1] + (vals[0] - vals[1]) * (res <= radius)
     else:
         [Xtbl, Ytbl] = rcosFn(twidth, radius, [vals[0], vals[1]])
-        res = pointOp(res, Ytbl, Xtbl[0], Xtbl[1]-Xtbl[0], 0)
+        res = pointOp(res, Ytbl, Xtbl[0], Xtbl[1]-Xtbl[0])
 
     return np.array(res)
 
@@ -156,15 +230,34 @@ def disk(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
 def gaussian(size, covariance=None, origin=None, amplitude='norm'):
     '''make a two dimensional Gaussian
 
-    make a two dimensional Gaussian function of SIZE (a [Y X] list/tuple,
-    or a scalar), centered at pixel position specified by ORIGIN
-    (default = (size+1)/2), with given COVARIANCE (can be a scalar, 2-vector,
-    or 2x2 matrix -  Default = (min(size)/6)^2 ) AMPLITUDE='norm' (default)
-    will produce a probability-normalized function
+    make a two dimensional Gaussian function with specified `size`, centered at a given pixel
+    position, with given covariance and amplitude
 
     TODO - use built in scipy function
-    '''
 
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    covariance : `float`, `np.array`, or None
+        the covariance of the Gaussian. If a `float`, the covariance is [[covar, 0], [0, covar]].
+        If an array, must either be of shape (2,) (e.g., [1,2]) or (2,2) (e.g., [[1,0],[0,1]]). If
+        it's of shape (2,), we use [[covar[0], 0], [0, covar[1]]]. If it's of shape (2,2), we use
+        it as is. If None, defaults to `(min(size)/6)^2`
+    origin : `int`, `tuple`, or None
+        the center of the Gaussian. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
+    amplitude : `float` or 'norm'
+        the amplitude of the Gaussian. If 'norm', will return the probability-normalized Gaussian
+
+    Returns
+    -------
+    res : `np.array`
+        the 2d Gaussian
+
+    '''
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -220,11 +313,23 @@ def gaussian(size, covariance=None, origin=None, amplitude='norm'):
 def zone_plate(size, amplitude=1, phase=0):
     '''make a "zone plate" image
 
-    SIZE specifies the matrix size
-    AMPL * cos( r^2 + PHASE) (default = 1)
-    PHASE (default = 0) are optional
-    '''
+    zone plate is `amplitude` * cos( r^2 + `phase`)
 
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be a
+        2-tuple of ints specifying the dimensions
+    amplitude : `float`
+        the amplitude of the zone plate
+    phase : `float`
+        the phase of the zone plate (in radians, clockwise from the X-axis).
+
+    Returns
+    -------
+    res : `np.array`
+        the zone plate
+    '''
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -236,12 +341,31 @@ def zone_plate(size, amplitude=1, phase=0):
 def angular_sine(size, harmonic=1, amplitude=1, phase=0, origin=None):
     '''make an angular sinusoidal image:
 
-    AMPL * sin( HARMONIC*theta + PHASE),
-    where theta is the angle about the origin.
-    SIZE specifies the matrix size (a [Y X] list/tuple, or a scalar)
-    AMPL (default = 1) and PHASE (default = 0) are optional.
-    '''
+    the angular sinusoid is `amplitude` * sin(`harmonic`*theta + `phase`), where theta is the angle
+    about the origin (clockwise from the X-axis).
 
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    harmonic : `float`
+        the frequency of the angular sinusoid.
+    amplitude : `float`
+        the amplitude of the angular sinusoid.
+    phase : `float`
+        the phase of the angular sinusoid. (in radians, clockwise from the X-axis).
+    origin : `int`, `tuple`, or None
+        the center of the image. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
+
+    Returns
+    -------
+    res : `np.array`
+        the angular sinusoid
+
+    '''
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -257,21 +381,42 @@ def angular_sine(size, harmonic=1, amplitude=1, phase=0, origin=None):
 
 def sine(size, period=None, direction=None, frequency=None, amplitude=1,
          phase=0, origin=None):
-    ''' make a two dimensional sinusoid
+    '''make a two dimensional sinusoid
 
-    IM = sine(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN)
-              or
-    IM = sine(SIZE,      FREQ,         AMPLITUDE, PHASE, ORIGIN)
+    this uses either the period and direction or a 2-tuple of frequencies. So either frequency or
+    period and direction should be None, and the other should be set. If period is set, it takes
+    precedence over frequency. If neither are set, we default to (2*pi) / (log2(size[0])).
 
-    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
-    containing samples of a 2D sinusoid, with given PERIOD (in pixels),
-    DIRECTION (radians, ClockWise from X-axis, default = 0), AMPLITUDE (default
-    = 1), and PHASE (radians, relative to ORIGIN, default = 0).  ORIGIN
-    defaults to the center of the image.
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    period : `float` or None
+        the period of the two-dimensional sinusoid in pixels. If both `period` and `frequency` are
+        None, we set `frequency` to (2*pi) / (log2(size[0])). If `period` is set, we ignore
+        `frequency`
+    direction : `float` or None
+        the direction of the two-dimensional sinusoid, in radians, clockwise from the X-axis. If
+        `period` is set and this is None, set to 0.
+    frequency : `tuple` or None
+        (f_x, f_y), the x and y frequency of the sinusoid in cycles per pixel. If both `period`
+        and `frequency` are None, we set `frequency` to (2*pi) / (log2(size[0])).
+    amplitude : `float`
+        the amplitude of the sinusoid.
+    phase : `float`
+        the phase of the sinusoid (in radians, clockwise from the X-axis).
+    origin : `int`, `tuple`, or None
+        the center of the image. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
 
-    In the second form, FREQ is a 2-vector of frequencies (radians/pixel).
+    Returns
+    -------
+    res : `np.array`
+        the two-dimensional sinusoid
+
     '''
-
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -286,7 +431,7 @@ def sine(size, period=None, direction=None, frequency=None, amplitude=1,
         direction = np.arctan2(frequency[0], frequency[1])
         frequency = np.linalg.norm(frequency)
 
-    elif period is None and direction is None and frequency is None:
+    elif period is None and frequency is None:
         frequency = (2.0 * np.pi) / np.log2(size[0])
         direction = 0
 
@@ -308,22 +453,44 @@ def square_wave(size, period=None, direction=None, frequency=None, amplitude=1,
                 phase=0, origin=None, twidth=None):
     '''make a two dimensional square wave
 
-    IM = square_wave(SIZE, PERIOD, DIRECTION, AMPLITUDE, PHASE, ORIGIN, TWIDTH)
-            or
-    IM = square_wave(SIZE,      FREQ,         AMPLITUDE, PHASE, ORIGIN, TWIDTH)
+    this uses either the period and direction or a 2-tuple of frequencies. So either frequency or
+    period and direction should be None, and the other should be set. If period is set, it takes
+    precedence over frequency. If neither are set, we default to (2*pi) / (log2(size[0])).
 
-    Compute a matrix of dimension SIZE (a [Y X] list/tuple, or a scalar)
-    containing samples of a 2D square wave, with given PERIOD (in
-    pixels), DIRECTION (radians, CW from X-axis, default = 0), AMPLITUDE
-    (default = 1), and PHASE (radians, relative to ORIGIN, default = 0).
-    ORIGIN defaults to the center of the image.  TWIDTH specifies width
-    of raised-cosine edges on the bars of the grating (default =
-    min(2,period/3)).
-
-    In the second form, FREQ is a 2-vector of frequencies (radians/pixel).
     TODO: Add duty cycle
-    '''
 
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    period : `float` or None
+        the period of the square wave in pixels. If both `period` and `frequency` are None, we set
+        `frequency` to (2*pi) / (log2(size[0])). If `period` is set, we ignore
+        `frequency`
+    direction : `float` or None
+        the direction of the square wave, in radians, clockwise from the X-axis. If `period` is set
+        and this is None, set to 0.
+    frequency : `tuple` or None
+        (f_x, f_y), the x and y frequency of the square wave in cycles per pixel. If both `period`
+        and `frequency` are None, we set `frequency` to (2*pi) / (log2(size[0])).
+    amplitude : `float`
+        the amplitude of the sinusoid.
+    phase : `float`
+        the phase of the square wave (in radians, clockwise from the X-axis).
+    origin : `int`, `tuple`, or None
+        the center of the image. if an int, we assume the origin is at `(origin, origin)`. if a
+        tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
+        if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
+    twidth : `float` or None
+        the width of the raised-cosine edges on the bars of the grating. If None, default to
+        min(2, period/3)
+
+    Returns
+    -------
+    res : `np.array`
+        the two-dimensional square wave
+    '''
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -338,7 +505,7 @@ def square_wave(size, period=None, direction=None, frequency=None, amplitude=1,
         direction = np.arctan2(frequency[0], frequency[1])
         frequency = np.linalg.norm(frequency)
 
-    elif period is None and direction is None and frequency is None:
+    elif period is None and frequency is None:
         frequency = (2.0 * np.pi) / np.log2(size[0])
         direction = 0
 
@@ -359,7 +526,7 @@ def square_wave(size, period=None, direction=None, frequency=None, amplitude=1,
                           [-amplitude, amplitude])
 
     res = pointOp(abs(((res+np.pi) % (2.0*np.pi))-np.pi), Ytbl,
-                  Xtbl[0], Xtbl[1]-Xtbl[0], 0)
+                  Xtbl[0], Xtbl[1]-Xtbl[0])
 
     return res
 
@@ -367,15 +534,26 @@ def square_wave(size, period=None, direction=None, frequency=None, amplitude=1,
 def pink_noise(size, fract_dim=1):
     '''make pink noise
 
-    Make a matrix of dimensions SIZE (a [Y X] list/tuple, or a scalar)
-    containing fractal (pink) noise with power spectral density of the
-    form: 1/f^(5-2*FRACT_DIM).  Image variance is normalized to 1.0.
-    FRACT_DIM defaults to 1.0
+    Make a matrix of specified size containing fractal (pink) noise with power spectral density of
+    the form: 1/f^(5-2*`fract_dim`).  Image variance is normalized to 1.0.
 
     TODO: Verify that this  matches Mandelbrot defn of fractal dimension.
           Make this more efficient!
-    '''
 
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size, size)`. if a tuple, must be
+        a 2-tuple of ints specifying the dimensions
+    fract_dim : `float`
+        the fractal dimension of the pink noise
+
+    Returns
+    -------
+    res : `np.array`
+        the pink noise
+
+    '''
     if not hasattr(size, '__iter__'):
         size = (size, size)
 

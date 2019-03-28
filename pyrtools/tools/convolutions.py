@@ -9,8 +9,9 @@ import scipy.signal
 
 
 def rconv2(mtx1, mtx2, ctr=0):
-    '''Convolution of two matrices, with boundaries handled via reflection
-    about the edge pixels.  Result will be of size of LARGER matrix.
+    '''Convolution of two matrices, with boundaries handled via reflection about the edge pixels.
+
+    Result will be of size of LARGER matrix.
 
     The origin of the smaller matrix is assumed to be its center.
     For even dimensions, the origin is determined by the CTR (optional)
@@ -18,6 +19,10 @@ def rconv2(mtx1, mtx2, ctr=0):
          CTR   origin
           0     DIM/2      (default)
           1   (DIM/2)+1
+
+    In general, you should not use this function, since it will be slow. Instead, use `upConv` or
+    `corrDn`, which use the C code and so are much faster.
+
     '''
 
     if (mtx1.shape[0] >= mtx2.shape[0] and mtx1.shape[1] >= mtx2.shape[1]):

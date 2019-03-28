@@ -3,19 +3,26 @@ import warnings
 
 
 def steer_to_harmonics_mtx(harmonics, angles=None, even_phase=True):
-    ''' Compute a steering matrix (maps a directional basis set onto the
-        angular Fourier harmonics).
+    '''Compute a steering matrix
 
-        HARMONICS is a vector specifying the angular harmonics contained in the
-        steerable basis/filters.
-        ANGLES (optional) is a vector specifying the angular position of each
-        filter.
-        EVEN_PHASE (optional, default = True) specifies whether the harmonics
-        are cosine or sine phase aligned about those positions.
+    This maps a directional basis set onto the angular Fourier harmonics.
 
-        The result matrix is suitable for passing to the function STEER.
-        '''
+    Parameters
+    ----------
+    harmonics: `array_like`
+        array specifying the angular harmonics contained in the steerable basis/filters.
+    angles: `array_like` or None
+        vector specifying the angular position of each filter. If None, defaults to
+        `pi * np.arange(numh) / numh`, where `numh = harmonics.size + np.count_nonzero(harmonics)`
+    even_phase : `bool`
+        specifies whether the harmonics are cosine or sine phase aligned about those positions.
 
+    Returns
+    -------
+    imtx : `np.array`
+        This matrix is suitable for passing to the function `steer`.
+
+    '''
     # default parameter
     numh = harmonics.size + np.count_nonzero(harmonics)
     if angles is None:
@@ -49,19 +56,31 @@ def steer_to_harmonics_mtx(harmonics, angles=None, even_phase=True):
 def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, even_phase=True):
     '''Steer BASIS to the specfied ANGLE.
 
-    BASIS should be a matrix whose columns are vectorized rotated copies of a
-    steerable function, or the responses of a set of steerable filters.
+    Parameters
+    ----------
+    basis : `array_like`
+        array whose columns are vectorized rotated copies of a steerable function, or the responses
+        of a set of steerable filters.
+    angle : `array_like` or `int`
+        scalar or column vector the size of the basis. specifies the angle(s) to steer to
+    harmonics : `list` or None
+        a list of harmonic numbers indicating the angular harmonic content of the basis. if None
+        (default), N even or odd low frequencies, as for derivative filters
+    steermtx : `array_like` or None.
+        matrix which maps the filters onto Fourier series components (ordered [cos0 cos1 sin1 cos2
+        sin2 ... sinN]). See steer_to_harmonics_mtx function for more details. If None (default),
+        assumes cosine phase harmonic components, and filter positions at 2pi*n/N.
+    return_weights : `bool`
+        whether to return the weights or not.
+    even_phase : `bool`
+        specifies whether the harmonics are cosine or sine phase aligned about those positions.
 
-    ANGLE can be a scalar, or a column vector the size of the basis.
-
-    HARMONICS (optional, default is N even or odd low frequencies, as for
-    derivative filters) should be a list of harmonic numbers indicating the
-    angular harmonic content of the basis.
-
-    STEERMTX (optional, default assumes cosine phase harmonic components, and
-    filter positions at 2pi*n/N) should be a matrix which maps the filters onto
-    Fourier series components (ordered [cos0 cos1 sin1 cos2 sin2 ... sinN]).
-    See steer_to_harmonics_mtx function for more details.
+    Returns
+    -------
+    res : `np.array`
+        the resteered basis
+    steervect : `np.array`
+        the weights used to resteer the basis. only returned if `return_weights` is True
     '''
 
     num = basis.shape[1]

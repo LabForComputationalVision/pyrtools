@@ -1,0 +1,276 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyrtools.pyramids.LaplacianPyramid &#8212; pyrtools 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pyrtools.pyramids.LaplacianPyramid</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">.GaussianPyramid</span> <span class="k">import</span> <span class="n">GaussianPyramid</span>
+<span class="kn">from</span> <span class="nn">.c.wrapper</span> <span class="k">import</span> <span class="n">upConv</span>
+
+
+<div class="viewcode-block" id="LaplacianPyramid"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.LaplacianPyramid.LaplacianPyramid">[docs]</a><span class="k">class</span> <span class="nc">LaplacianPyramid</span><span class="p">(</span><span class="n">GaussianPyramid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Laplacian pyramid</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : `array_like`</span>
+<span class="sd">        1d or 2d image upon which to construct to the pyramid.</span>
+<span class="sd">    height : &#39;auto&#39; or `int`.</span>
+<span class="sd">        The height of the pyramid. If &#39;auto&#39;, will automatically determine based on the size of</span>
+<span class="sd">        `image`.</span>
+<span class="sd">    downsample_filter_name : {&#39;binomN&#39;, &#39;haar&#39;, &#39;qmf8&#39;, &#39;qmf12&#39;, &#39;qmf16&#39;, &#39;daub2&#39;, &#39;daub3&#39;,</span>
+<span class="sd">                              &#39;daub4&#39;, &#39;qmf5&#39;, &#39;qmf9&#39;, &#39;qmf13&#39;}</span>
+<span class="sd">        name of filter to use for (separable) convolution to downsample the image. All scaled so</span>
+<span class="sd">        L-2 norm is 1.0</span>
+<span class="sd">        * `&#39;binomN&#39;` (default: &#39;binom5&#39;) - binomial coefficient filter of order N-1</span>
+<span class="sd">        * `&#39;haar&#39;` - Haar wavelet</span>
+<span class="sd">        * `&#39;qmf8&#39;`, `&#39;qmf12&#39;`, `&#39;qmf16&#39;` - Symmetric Quadrature Mirror Filters [1]_</span>
+<span class="sd">        * `&#39;daub2&#39;`, `&#39;daub3&#39;`, `&#39;daub4&#39;` - Daubechies wavelet [2]_</span>
+<span class="sd">        * `&#39;qmf5&#39;`, `&#39;qmf9&#39;`, `&#39;qmf13&#39;`   - Symmetric Quadrature Mirror Filters [3]_, [4]_</span>
+<span class="sd">    upsample_filter_name : {None, &#39;binomN&#39;, &#39;haar&#39;, &#39;qmf8&#39;, &#39;qmf12&#39;, &#39;qmf16&#39;, &#39;daub2&#39;, &#39;daub3&#39;,</span>
+<span class="sd">                            &#39;daub4&#39;, &#39;qmf5&#39;, &#39;qmf9&#39;, &#39;qmf13&#39;}</span>
+<span class="sd">        name of filter to use as the &quot;expansion&quot; filter. All scaled so L-2 norm is 1.0</span>
+<span class="sd">        * None (default) - same as `downsample_filter_name`</span>
+<span class="sd">        * `&#39;binomN&#39;` - binomial coefficient filter of order N-1</span>
+<span class="sd">        * `&#39;haar&#39;` - Haar wavelet</span>
+<span class="sd">        * `&#39;qmf8&#39;`, `&#39;qmf12&#39;`, `&#39;qmf16&#39;` - Symmetric Quadrature Mirror Filters [1]_</span>
+<span class="sd">        * `&#39;daub2&#39;`, `&#39;daub3&#39;`, `&#39;daub4&#39;` - Daubechies wavelet [2]_</span>
+<span class="sd">        * `&#39;qmf5&#39;`, `&#39;qmf9&#39;`, `&#39;qmf13&#39;`   - Symmetric Quadrature Mirror Filters [3]_, [4]_</span>
+<span class="sd">    edge_type : {&#39;circular&#39;, &#39;reflect1&#39;, &#39;reflect2&#39;, &#39;repeat&#39;, &#39;zero&#39;, &#39;extend&#39;, &#39;dont-compute&#39;}</span>
+<span class="sd">        Specifies how to handle edges. Options are:</span>
+<span class="sd">        * `&#39;circular&#39;` - circular convolution</span>
+<span class="sd">        * `&#39;reflect1&#39;` - reflect about the edge pixels</span>
+<span class="sd">        * `&#39;reflect2&#39;` - reflect, doubling the edge pixels</span>
+<span class="sd">        * `&#39;repeat&#39;` - repeat the edge pixels</span>
+<span class="sd">        * `&#39;zero&#39;` - assume values of zero outside image boundary</span>
+<span class="sd">        * `&#39;extend&#39;` - reflect and invert</span>
+<span class="sd">        * `&#39;dont-compute&#39;` - zero output when filter overhangs imput boundaries.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : `array_like`</span>
+<span class="sd">        The input image used to construct the pyramid.</span>
+<span class="sd">    image_size : `tuple`</span>
+<span class="sd">        The size of the input image.</span>
+<span class="sd">    pyr_type : `str` or `None`</span>
+<span class="sd">        Human-readable string specifying the type of pyramid. For base class, is None.</span>
+<span class="sd">    edge_type : `str`</span>
+<span class="sd">        Specifies how edges were handled.</span>
+<span class="sd">    pyr_coeffs : `dict`</span>
+<span class="sd">        Dictionary containing the coefficients of the pyramid. Keys are `(level, band)` tuples and</span>
+<span class="sd">        values are 1d or 2d numpy arrays (same number of dimensions as the input image)</span>
+<span class="sd">    pyr_size : `dict`</span>
+<span class="sd">        Dictionary containing the sizes of the pyramid coefficients. Keys are `(level, band)`</span>
+<span class="sd">        tuples and values are tuples.</span>
+<span class="sd">    is_complex : `bool`</span>
+<span class="sd">        Whether the coefficients are complex- or real-valued. Only `SteerablePyramidFreq` can have</span>
+<span class="sd">        a value of True, all others must be False.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] J D Johnston, &quot;A filter family designed for use in quadrature mirror filter banks&quot;,</span>
+<span class="sd">       Proc. ICASSP, pp 291-294, 1980.</span>
+<span class="sd">    .. [2] I Daubechies, &quot;Orthonormal bases of compactly supported wavelets&quot;, Commun. Pure Appl.</span>
+<span class="sd">       Math, vol. 42, pp 909-996, 1988.</span>
+<span class="sd">    .. [3] E P Simoncelli,  &quot;Orthogonal sub-band image transforms&quot;, PhD Thesis, MIT Dept. of Elec.</span>
+<span class="sd">       Eng. and Comp. Sci. May 1988. Also available as: MIT Media Laboratory Vision and Modeling</span>
+<span class="sd">       Technical Report #100.</span>
+<span class="sd">    .. [4] E P Simoncelli and E H Adelson, &quot;Subband image coding&quot;, Subband Transforms, chapter 4,</span>
+<span class="sd">       ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143--192.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">downsample_filter_name</span><span class="o">=</span><span class="s1">&#39;binom5&#39;</span><span class="p">,</span>
+                 <span class="n">upsample_filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="s1">&#39;reflect1&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pyr_type</span> <span class="o">=</span> <span class="s1">&#39;Laplacian&#39;</span>
+        <span class="k">if</span> <span class="n">upsample_filter_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">upsample_filter_name</span> <span class="o">=</span> <span class="n">downsample_filter_name</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">downsample_filter_name</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">,</span>
+                         <span class="n">upsample_filter_name</span><span class="o">=</span><span class="n">upsample_filter_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_recon_prev</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">upsample_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reconstruct the previous level of the pyramid.</span>
+
+<span class="sd">        Should not be called by users directly, this is a helper function for reconstructing the</span>
+<span class="sd">        input image using pyramid coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">upsample_filter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">upsample_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s1">&#39;upsample_filter&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">upsample_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_filter</span><span class="p">(</span><span class="n">upsample_filter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">edge_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">edge_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_type</span>
+
+        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">upConv</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="n">upsample_filter</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="n">edge_type</span><span class="p">,</span>
+                         <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="p">(</span><span class="n">output_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">output_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">upConv</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="n">upsample_filter</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="n">edge_type</span><span class="p">,</span>
+                         <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="p">(</span><span class="n">output_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">output_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">upConv</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="n">upsample_filter</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="n">edge_type</span><span class="p">,</span>
+                         <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="p">(</span><span class="n">output_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">upConv</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="n">upsample_filter</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="n">edge_type</span><span class="p">,</span>
+                         <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="p">(</span><span class="n">output_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">output_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">_build_pyr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;build the pyramid</span>
+
+<span class="sd">        This should not be called directly by users, it&#39;s a helper function for constructing the</span>
+<span class="sd">        pyramid</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span>
+        <span class="k">for</span> <span class="n">lev</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">im_next</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_next</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+            <span class="n">im_recon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_prev</span><span class="p">(</span><span class="n">im_next</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">im_residual</span> <span class="o">=</span> <span class="n">im</span> <span class="o">-</span> <span class="n">im_recon</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="p">[(</span><span class="n">lev</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="n">im_residual</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pyr_size</span><span class="p">[(</span><span class="n">lev</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="n">im_residual</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">im</span> <span class="o">=</span> <span class="n">im_next</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="p">[(</span><span class="n">lev</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pyr_size</span><span class="p">[(</span><span class="n">lev</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">shape</span>
+
+<div class="viewcode-block" id="LaplacianPyramid.recon_pyr"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.LaplacianPyramid.LaplacianPyramid.recon_pyr">[docs]</a>    <span class="k">def</span> <span class="nf">recon_pyr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">upsample_filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reconstruct the input image using pyramid coefficients</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        upsample_filter_name : {None, &#39;binomN&#39;, &#39;haar&#39;, &#39;qmf8&#39;, &#39;qmf12&#39;, &#39;qmf16&#39;, &#39;daub2&#39;, &#39;daub3&#39;,</span>
+<span class="sd">                                &#39;daub4&#39;, &#39;qmf5&#39;, &#39;qmf9&#39;, &#39;qmf13&#39;}</span>
+<span class="sd">            name of filter to use as &quot;expansion&quot; filter. All scaled so L-2 norm is 1.0</span>
+<span class="sd">            * None (default) - use `self.upsample_filter_name`, the expansion filter set during</span>
+<span class="sd">                               initialization.</span>
+<span class="sd">            * `&#39;binomN&#39;` - binomial coefficient filter of order N-1</span>
+<span class="sd">            * `&#39;haar&#39;` - Haar wavelet</span>
+<span class="sd">            * `&#39;qmf8&#39;`, `&#39;qmf12&#39;`, `&#39;qmf16&#39;` - Symmetric Quadrature Mirror Filters [1]_</span>
+<span class="sd">            * `&#39;daub2&#39;`, `&#39;daub3&#39;`, `&#39;daub4&#39;` - Daubechies wavelet [2]_</span>
+<span class="sd">            * `&#39;qmf5&#39;`, `&#39;qmf9&#39;`, `&#39;qmf13&#39;`   - Symmetric Quadrature Mirror Filters [3]_, [4]_</span>
+<span class="sd">        edge_type : {None, &#39;circular&#39;, &#39;reflect1&#39;, &#39;reflect2&#39;, &#39;repeat&#39;, &#39;zero&#39;, &#39;extend&#39;,</span>
+<span class="sd">                     &#39;dont-compute&#39;}</span>
+<span class="sd">            Specifies how to handle edges. Options are:</span>
+<span class="sd">            * None (default) - use `self.edge_type`, the edge_type used to construct the pyramid</span>
+<span class="sd">            * `&#39;circular&#39;` - circular convolution</span>
+<span class="sd">            * `&#39;reflect1&#39;` - reflect about the edge pixels</span>
+<span class="sd">            * `&#39;reflect2&#39;` - reflect, doubling the edge pixels</span>
+<span class="sd">            * `&#39;repeat&#39;` - repeat the edge pixels</span>
+<span class="sd">            * `&#39;zero&#39;` - assume values of zero outside image boundary</span>
+<span class="sd">            * `&#39;extend&#39;` - reflect and invert</span>
+<span class="sd">            * `&#39;dont-compute&#39;` - zero output when filter overhangs imput boundaries.</span>
+<span class="sd">        levels : `list`, `int`,  or {`&#39;all&#39;`, `&#39;residual_highpass&#39;`}</span>
+<span class="sd">            If `list` should contain some subset of integers from `0` to `self.num_scales-1`</span>
+<span class="sd">            (inclusive) and `&#39;residual_lowpass&#39;`. If `&#39;all&#39;`, returned value will contain all</span>
+<span class="sd">            valid levels. Otherwise, must be one of the valid levels.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        recon : `np.array`</span>
+<span class="sd">            The reconstructed image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">recon_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_keys</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">)</span>
+        <span class="n">recon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">lev</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span><span class="p">)):</span>
+            <span class="c1"># upsample to generate higher reconolution image</span>
+            <span class="n">recon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_prev</span><span class="p">(</span><span class="n">recon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyr_size</span><span class="p">[(</span><span class="n">lev</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span> <span class="n">upsample_filter_name</span><span class="p">,</span>
+                                     <span class="n">edge_type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">lev</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">in</span> <span class="n">recon_keys</span><span class="p">:</span>
+                <span class="n">recon</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="p">[(</span><span class="n">lev</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">recon</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">pyrtools</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

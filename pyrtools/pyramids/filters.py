@@ -3,7 +3,7 @@ from scipy.signal import convolve
 
 
 def binomial_filter(order_plus_one):
-    ''' returns a vector of binomial coefficients of order (order_plus_one-1) '''
+    '''returns a vector of binomial coefficients of order (order_plus_one-1)'''
     if order_plus_one < 2:
         raise Exception("Error: order_plus_one argument must be at least 2")
 
@@ -14,31 +14,36 @@ def binomial_filter(order_plus_one):
 
 
 def named_filter(name):
-    ''' Some standard 1D filter kernels. These are scaled such that their
-        L2-norm is 1.0
+    '''Some standard 1D filter kernels.
 
-        binomN              - binomial coefficient filter of order N-1
-        haar                - Haar wavelet
-        qmf8, qmf12, qmf16  - Symmetric Quadrature Mirror Filters [Johnston80]
-        daub2, daub3, daub4 - Daubechies wavelet [Daubechies88]
-        qmf5, qmf9, qmf13   - Symmetric Quadrature Mirror Filters
-                              [Simoncelli88, Simoncelli90]
-        spN_filters - steerable pyramid filters of order N (N must be one of {0, 1, 3, 5})
+    These are scaled such that their L2-norm is 1.0
 
-        [Johnston80] - J D Johnston, "A filter family designed for use in
-                       quadrature mirror filter banks", Proc. ICASSP,
-                       pp 291-294, 1980.
-        [Daubechies88] - I Daubechies, "Orthonormal bases of compactly
-                         supported wavelets", Commun. Pure Appl. Math, vol. 42,
-                         pp 909-996, 1988.
-        [Simoncelli88] - E P Simoncelli,  "Orthogonal sub-band image
-                         transforms", PhD Thesis, MIT Dept. of Elec. Eng. and
-                         Comp. Sci. May 1988. Also available as: MIT Media
-                         Laboratory Vision and Modeling Technical Report #100.
-        [Simoncelli90] -  E P Simoncelli and E H Adelson, "Subband image
-                          coding", Subband Transforms, chapter 4, ed. John W
-                          Woods, Kluwer Academic Publishers,  Norwell, MA, 1990,
-                          pp 143--192.   '''
+    * `'binomN'` - binomial coefficient filter of order N-1
+    * `'haar'` - Haar wavelet
+    * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
+    * `'daub2'`, `'daub3'`, `'daub4'` - Daubechies wavelet [2]_
+    * `'qmf5'`, `'qmf9'`, `'qmf13'`   - Symmetric Quadrature Mirror Filters [3]_, [4]_
+    * `'spN_filters'` - steerable pyramid filters of order N (N must be one of {0, 1, 3, 5}) [5]_,
+                        [6]_
+
+    References
+    ----------
+    .. [1] J D Johnston, "A filter family designed for use in quadrature mirror filter banks",
+       Proc. ICASSP, pp 291-294, 1980.
+    .. [2] I Daubechies, "Orthonormal bases of compactly supported wavelets", Commun. Pure Appl.
+       Math, vol. 42, pp 909-996, 1988.
+    .. [3] E P Simoncelli,  "Orthogonal sub-band image transforms", PhD Thesis, MIT Dept. of Elec.
+       Eng. and Comp. Sci. May 1988. Also available as: MIT Media Laboratory Vision and Modeling
+       Technical Report #100.
+    .. [4] E P Simoncelli and E H Adelson, "Subband image coding", Subband Transforms, chapter 4,
+       ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143--192.
+    .. [5] E P Simoncelli and W T Freeman, "The Steerable Pyramid: A Flexible Architecture for
+       Multi-Scale Derivative Computation," Second Int'l Conf on Image Processing, Washington, DC,
+       Oct 1995.
+    .. [6] A Karasaridis and E P Simoncelli, "A Filter Design Technique for Steerable Pyramid
+       Image Transforms", ICASSP, Atlanta, GA, May 1996.
+
+    '''
 
     if name.startswith("binom"):
         # TODO: not sure why the normalization constant is independent of order?
@@ -97,39 +102,33 @@ def named_filter(name):
 
 
 def steerable_filters(filter_name):
-    ''' Steerable pyramid filters.  Transform described  in:
+    '''Steerable pyramid filters.
 
-        @INPROCEEDINGS{Simoncelli95b,
-            TITLE = "The Steerable Pyramid: A Flexible Architecture for
-                     Multi-Scale Derivative Computation",
-            AUTHOR = "E P Simoncelli and W T Freeman",
-            BOOKTITLE = "Second Int'l Conf on Image Processing",
-            ADDRESS = "Washington, DC", MONTH = "October", YEAR = 1995 }
+    Transform described in [1]_, filter kernel design described in [2]_.
 
-        Filter kernel design described in:
-
-        @INPROCEEDINGS{Karasaridis96,
-            TITLE = "A Filter Design Technique for
-                     Steerable Pyramid Image Transforms",
-            AUTHOR = "A Karasaridis and E P Simoncelli",
-            BOOKTITLE = "ICASSP",	ADDRESS = "Atlanta, GA",
-            MONTH = "May",	YEAR = 1996 }  '''
-
+    References
+    ----------
+    .. [1] E P Simoncelli and W T Freeman, "The Steerable Pyramid: A Flexible Architecture for
+       Multi-Scale Derivative Computation," Second Int'l Conf on Image Processing, Washington, DC,
+       Oct 1995.
+    .. [2] A Karasaridis and E P Simoncelli, "A Filter Design Technique for Steerable Pyramid
+       Image Transforms", ICASSP, Atlanta, GA, May 1996.
+    '''
     if filter_name == 'sp0_filters':
-        return sp0_filters()
+        return _sp0_filters()
     elif filter_name == 'sp1_filters':
-        return sp1_filters()
+        return _sp1_filters()
     elif filter_name == 'sp3_filters':
-        return sp3_filters()
+        return _sp3_filters()
     elif filter_name == 'sp5_filters':
-        return sp5_filters()
+        return _sp5_filters()
     # elif os.path.isfile(filter_name):
     #     raise Exception("Filter files not supported yet")
     else:
         raise Exception("filter parameters value %s not supported" % (filter_name))
 
 
-def sp0_filters():
+def _sp0_filters():
     filters = {}
     filters['harmonics'] = np.array([0])
     filters['lo0filt'] = (
@@ -255,7 +254,7 @@ def sp0_filters():
     return filters
 
 
-def sp1_filters():
+def _sp1_filters():
     filters = {}
     filters['harmonics'] = np.array([1])
     filters['mtx'] = np.eye(2)
@@ -448,7 +447,7 @@ def sp1_filters():
     return filters
 
 
-def sp3_filters():
+def _sp3_filters():
     filters = {}
     filters['harmonics'] = np.array([1, 3])
     filters['mtx'] = (
@@ -775,8 +774,7 @@ def sp3_filters():
     return filters
 
 
-def sp5_filters():
-
+def _sp5_filters():
     filters = {}
     filters['harmonics'] = np.array([1, 3, 5])
     filters['mtx'] = (

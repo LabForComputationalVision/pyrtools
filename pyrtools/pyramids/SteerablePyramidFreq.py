@@ -8,42 +8,66 @@ from ..tools.utils import rcosFn
 
 
 class SteerablePyramidFreq(Pyramid):
+    """Steerable frequency pyramid.
 
-    def __init__(self, image, height='auto', num_orientations=4, twidth=1, is_complex=False):
-        """Steerable frequency pyramid.
+    Construct a steerable pyramid on matrix IM, in the Fourier domain.
+    This is similar to Spyr, except that:
 
-        Construct a steerable pyramid on matrix IM, in the Fourier domain.
-        This is similar to Spyr, except that:
+        + Reconstruction is exact (within floating point errors)
+        + It can produce any number of orientation bands.
+        - Typically slower, especially for non-power-of-two sizes.
+        - Boundary-handling is circular.
 
-            + Reconstruction is exact (within floating point errors)
-            + It can produce any number of orientation bands.
-            - Typically slower, especially for non-power-of-two sizes.
-            - Boundary-handling is circular.
+    The squared radial functions tile the Fourier plane with a raised-cosine
+    falloff. Angular functions are cos(theta- k*pi/`order`+1)^(`order`).
 
-        The squared radial functions tile the Fourier plane with a raised-cosine
-        falloff. Angular functions are cos(theta- k*pi/`order`+1)^(`order`).
+    Notes
+    -----
+    Transform described in [1]_, filter kernel design described in [2]_.
 
-        Arguments
-        ================
-
-        - `image` - a 2D numpy array.
-
-        - `height` (optional) specifies the number of pyramid levels to build.
-        'auto' (default) is floor(log2(min(image.shape)))-2
-
-        - `num_orientations` (optional), int in range [1, 16]. Default
-          value is 4. The number of orientation bands. This is the
-          order of the steerable pyramid + 1.
-
-        - `twidth` (optional), int. Default value is 1.
+    Parameters
+    ----------
+    image : `array_like`
+        2d image upon which to construct to the pyramid.
+    height : 'auto' or `int`.
+        The height of the pyramid. If 'auto', will automatically determine based on the size of
+        `image`.
+    num_orientations : `int`.
+        the number of orientations you want in the steerable pyramid filters, must lie within
+        [1, 16]. Note that this is the order of the pyramid plus one.
+    twidth : `int`
         The width of the transition region of the radial lowpass function, in octaves
+    is_complex : `bool`
+        Whether the pyramid coefficients should be complex or not. If True, the real and imaginary
+        parts correspond to a pair of even and odd symmetric filters. If False, the coefficients
+        only include the real part / even symmetric filter.
 
-        - `is_complex` (optional), boolean. Default False. Whether the pyramid coefficients should
-        be complex or not. If True, the real and imaginary parts correspond to a pair of even and
-        odd symmetric filters. If False, the coefficients only include the real part / even
-        symmetric filter.
+    Attributes
+    ----------
+    image : `array_like`
+        The input image used to construct the pyramid.
+    image_size : `tuple`
+        The size of the input image.
+    pyr_type : `str` or `None`
+        Human-readable string specifying the type of pyramid. For base class, is None.
+    pyr_coeffs : `dict`
+        Dictionary containing the coefficients of the pyramid. Keys are `(level, band)` tuples and
+        values are 1d or 2d numpy arrays (same number of dimensions as the input image)
+    pyr_size : `dict`
+        Dictionary containing the sizes of the pyramid coefficients. Keys are `(level, band)`
+        tuples and values are tuples.
+    is_complex : `bool`
+        Whether the coefficients are complex- or real-valued.
 
-        """
+    References
+    ----------
+    .. [1] E P Simoncelli and W T Freeman, "The Steerable Pyramid: A Flexible Architecture for
+       Multi-Scale Derivative Computation," Second Int'l Conf on Image Processing, Washington, DC,
+       Oct 1995.
+    .. [2] A Karasaridis and E P Simoncelli, "A Filter Design Technique for Steerable Pyramid
+       Image Transforms", ICASSP, Atlanta, GA, May 1996.
+    """
+    def __init__(self, image, height='auto', num_orientations=4, twidth=1, is_complex=False):
         # in the Fourier domain, there's only one choice for how do edge-handling: circular. to
         # emphasize that thisisn'ta choice, we use None here.
         super().__init__(image=image, edge_type=None)
@@ -108,12 +132,12 @@ class SteerablePyramidFreq(Pyramid):
         Yrcos = np.sqrt(Yrcos)
 
         YIrcos = np.sqrt(1.0 - Yrcos**2)
-        lo0mask = pointOp(log_rad, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+        lo0mask = pointOp(log_rad, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
         self._lo0mask = lo0mask
 
         imdft = np.fft.fftshift(np.fft.fft2(self.image))
 
-        hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+        hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
         self._hi0mask = hi0mask
 
         hi0dft = imdft * hi0mask.reshape(imdft.shape[0], imdft.shape[1])
@@ -147,7 +171,7 @@ class SteerablePyramidFreq(Pyramid):
                 Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
 
             log_rad_test = np.reshape(log_rad, (1, log_rad.shape[0] * log_rad.shape[1]))
-            himask = pointOp(log_rad_test, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+            himask = pointOp(log_rad_test, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
             himask = himask.reshape((lodft.shape[0], lodft.shape[1]))
             self._himasks.append(himask)
 
@@ -155,7 +179,7 @@ class SteerablePyramidFreq(Pyramid):
             for b in range(self.num_orientations):
                 angle_tmp = np.reshape(angle, (1, angle.shape[0] * angle.shape[1]))
                 anglemask = pointOp(angle_tmp, Ycosn, Xcosn[0]+np.pi*b/self.num_orientations,
-                                    Xcosn[1]-Xcosn[0], 0)
+                                    Xcosn[1]-Xcosn[0])
 
                 anglemask = anglemask.reshape(lodft.shape[0], lodft.shape[1])
                 anglemasks.append(anglemask)
@@ -182,7 +206,7 @@ class SteerablePyramidFreq(Pyramid):
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
             YIrcos = np.abs(np.sqrt(1.0 - Yrcos**2))
             log_rad_tmp = np.reshape(log_rad, (1, log_rad.shape[0] * log_rad.shape[1]))
-            lomask = pointOp(log_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+            lomask = pointOp(log_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
             lomask = lomask.reshape(lodft.shape[0], lodft.shape[1])
             self._lomasks.append(lomask)
 
@@ -193,7 +217,27 @@ class SteerablePyramidFreq(Pyramid):
         self.pyr_size['residual_lowpass'] = lodft.shape
 
     def recon_pyr(self, levels='all', bands='all', twidth=1):
+        """Reconstruct the image, optionally using subset of pyramid coefficients.
 
+        Parameters
+        ----------
+        levels : `list`, `int`,  or {`'all'`, `'residual_highpass'`}
+            If `list` should contain some subset of integers from `0` to `self.num_scales-1`
+            (inclusive) and `'residual_lowpass'`. If `'all'`, returned value will contain all
+            valid levels. Otherwise, must be one of the valid levels.
+        bands : `list`, `int`, or `'all'`.
+            If list, should contain some subset of integers from `0` to `self.num_orientations-1`.
+            If `'all'`, returned value will contain all valid orientations. Otherwise, must be one
+            of the valid orientations.
+        twidth : `int`
+            The width of the transition region of the radial lowpass function, in octaves
+
+        Returns
+        -------
+        recon : `np.array`
+            The reconstructed image.
+
+        """
         if twidth <= 0:
             warnings.warn("twidth must be positive. Setting to 1.")
             twidth = 1
@@ -263,7 +307,7 @@ class SteerablePyramidFreq(Pyramid):
         nlog_rad = log_rad[bounds[0]:bounds[2], bounds[1]:bounds[3]]
 
         nlog_rad_tmp = np.reshape(nlog_rad, (1, nlog_rad.shape[0]*nlog_rad.shape[1]))
-        lomask = pointOp(nlog_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+        lomask = pointOp(nlog_rad_tmp, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
         lomask = lomask.reshape(nresdft.shape[0], nresdft.shape[1])
         lomask = lomask + 0j
         resdft[bound_list[1][0]:bound_list[1][2],
@@ -291,7 +335,7 @@ class SteerablePyramidFreq(Pyramid):
                 Xrcos += np.log2(2.0)
                 nlog_rad2_tmp = np.reshape(nlog_rad2, (1, nlog_rad2.shape[0]*nlog_rad2.shape[1]))
                 lomask = pointOp(nlog_rad2_tmp, YIrcos, Xrcos[0],
-                                 Xrcos[1]-Xrcos[0], 0)
+                                 Xrcos[1]-Xrcos[0])
                 lomask = lomask.reshape(bounds2[2]-bounds2[0],
                                         bounds2[3]-bounds2[1])
                 lomask = lomask + 0j
@@ -305,13 +349,13 @@ class SteerablePyramidFreq(Pyramid):
                 for b in range(self.num_orientations):
                     nlog_rad1_tmp = np.reshape(nlog_rad1,
                                                (1, nlog_rad1.shape[0]*nlog_rad1.shape[1]))
-                    himask = pointOp(nlog_rad1_tmp, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+                    himask = pointOp(nlog_rad1_tmp, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
 
                     himask = himask.reshape(nlog_rad1.shape)
                     nangle_tmp = np.reshape(nangle, (1, nangle.shape[0]*nangle.shape[1]))
                     anglemask = pointOp(nangle_tmp, Ycosn,
                                         Xcosn[0]+np.pi*b/self.num_orientations,
-                                        Xcosn[1]-Xcosn[0], 0)
+                                        Xcosn[1]-Xcosn[0])
 
                     anglemask = anglemask.reshape(nangle.shape)
                     # either the coefficients will already be real-valued (if
@@ -329,13 +373,13 @@ class SteerablePyramidFreq(Pyramid):
 
         # apply lo0mask
         Xrcos += np.log2(2.0)
-        lo0mask = pointOp(log_rad, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+        lo0mask = pointOp(log_rad, YIrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
 
         lo0mask = lo0mask.reshape(dims[0], dims[1])
         resdft = resdft * lo0mask
 
         # residual highpass subband
-        hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0], 0)
+        hi0mask = pointOp(log_rad, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
 
         hi0mask = hi0mask.reshape(resdft.shape[0], resdft.shape[1])
         if 'residual_highpass' in recon_keys:

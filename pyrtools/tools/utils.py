@@ -2,43 +2,64 @@ import numpy as np
 import warnings
 
 
-def matlab_round(np_array):
-    ''' round equivalent to matlab function, which rounds .5 away from zero
-        used in matlab_histo so we can unit test against matlab code.
-        But np.round() would rounds .5 to nearest even number
-        e.g. np.round(0.5) = 0, matlab_round(0.5) = 1
-        e.g. np.round(2.5) = 2, matlab_round(2.5) = 3
-        '''
-    (fracPart, intPart) = np.modf(np_array)
+def matlab_round(array):
+    '''round equivalent to matlab function, which rounds .5 away from zero
+
+    (used in matlab_histo so we can unit test against matlab code).
+
+    But np.round() would rounds .5 to nearest even number, e.g.:
+    - np.round(0.5) = 0, matlab_round(0.5) = 1
+    - np.round(2.5) = 2, matlab_round(2.5) = 3
+
+    Arguments
+    ---------
+    array : `np.array`
+        the array to round
+
+    Returns
+    -------
+    rounded_array : `np.array`
+        the rounded array
+    '''
+    (fracPart, intPart) = np.modf(array)
     return intPart + (np.abs(fracPart) >= 0.5) * np.sign(fracPart)
 
 
-def matlab_histo(np_array, nbins=101, binsize=None, center=None):
-    ''' [N,edges] = matlab_histo(np_array, nbins = 101, binsize = None, center = None)
-        Compute a histogram of np_array.
-        N contains the histogram counts,
-        edges is a vector containg the centers of the histogram bins.
+def matlab_histo(array, nbins=101, binsize=None, center=None):
+    '''Compute a histogram of array.
 
-        nbins (optional, default = 101) specifies the number of histogram bins.
-        binsize (optional) specifies the size of each bin.
-        binCenter (optional, default = mean2(MTX)) specifies a center position
-        for (any one of) the histogram bins.
+    How does this differ from MatLab's HIST function?  This function:
+      - allows uniformly spaced bins only.
+      +/- operates on all elements of MTX, instead of columnwise.
+      + is much faster (approximately a factor of 80 on my machine).
+      + allows specification of number of bins OR binsize.
+        Default=101 bins.
+      + allows (optional) specification of binCenter.
 
-        How does this differ from MatLab's HIST function?  This function:
-          - allows uniformly spaced bins only.
-          +/- operates on all elements of MTX, instead of columnwise.
-          + is much faster (approximately a factor of 80 on my machine).
-          + allows specification of number of bins OR binsize.
-            Default=101 bins.
-          + allows (optional) specification of binCenter.
+    Arguments
+    ---------
+    array : `np.array`
+        the array to bin
+    nbins : `int`
+        the number of histogram bins
+    binsize : `float` or None
+        the size of each bin. if None, we use nbins to determine it as:
+        `(array.max() - array.min()) / nbins`
+    center : `float` or None
+        the center position for the histogram bins. if None, this is `array.mean()`
 
-        Eero Simoncelli, 3/97.  ported to Python by Rob Young, 8/15.  '''
-
-    mini = np_array.min()
-    maxi = np_array.max()
+    Returns
+    -------
+    N : `np.array`
+        the histogram counts
+    edges : `np.array`
+        vector containing the centers of the histogram bins
+    '''
+    mini = array.min()
+    maxi = array.max()
 
     if center is None:
-        center = np_array.mean()
+        center = array.mean()
 
     if binsize is None:
         # use nbins to determine binsize
@@ -53,7 +74,7 @@ def matlab_histo(np_array, nbins=101, binsize=None, center=None):
     # compute bin edges (nbins + 1 of them)
     edge_left = center + binsize * (-0.499 + matlab_round((mini - center) / binsize))
     edges = edge_left + binsize * np.arange(nbins+1)
-    N, _ = np.histogram(np_array, edges)
+    N, _ = np.histogram(array, edges)
 
     # matlab version returns column vectors, so we will too.
     # to check: return edges or centers? edit comments.
@@ -61,17 +82,27 @@ def matlab_histo(np_array, nbins=101, binsize=None, center=None):
 
 
 def rcosFn(width=1, position=0, values=(0, 1)):
-    '''Return a lookup table (suitable for use by INTERP1)
-    containing a "raised cosine" soft threshold function:
+    '''Return a lookup table containing a "raised cosine" soft threshold function
 
-    Y =  VALUES(1) + (VALUES(2)-VALUES(1)) *
-         cos^2( PI/2 * (X - POSITION + WIDTH)/WIDTH )
+    Y =  VALUES(1) + (VALUES(2)-VALUES(1)) * cos^2( PI/2 * (X - POSITION + WIDTH)/WIDTH )
 
-    WIDTH is the width of the region over which the transition occurs
-    (default = 1). POSITION is the location of the center of the
-    threshold (default = 0).  VALUES (default = [0,1]) specifies the
-    values to the left and right of the transition.
-    [X, Y] = rcosFn(WIDTH, POSITION, VALUES)
+    this lookup table is suitable for use by `pointOp`
+
+    Arguments
+    ---------
+    width : `float`
+        the width of the region over which the transition occurs
+    position : `float`
+        the location of the center of the threshold
+    values : `tuple`
+        2-tuple specifying the values to the left and right of the transition.
+
+    Returns
+    -------
+    X : `np.array`
+        the x valuesof this raised cosine
+    Y : `np.array`
+        the y valuesof this raised cosine
     '''
 
     sz = 256   # arbitrary!

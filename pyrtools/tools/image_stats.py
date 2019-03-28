@@ -3,17 +3,26 @@ from .utils import matlab_histo
 
 
 def entropy(vec, binsize=None):
-    ''' E = entropy(vec, binsize=None):
+    '''Compute the first-order sample entropy of `vec`
 
-        Compute the first-order sample entropy of MTX.  Samples of VEC are
-        first discretized.  Optional argument BINSIZE controls the
-        discretization, and defaults to 256/(max(VEC)-min(VEC)).
+    Samples of `vec` are first discretized.  Optional argument `binsize` controls the
+    discretization, and defaults to 256/(max(`vec`)-min(`vec`)).
 
-        NOTE: This is a heavily  biased estimate of entropy when you
-        don't have much data.
+    NOTE: This is a heavily biased estimate of entropy when you don't have much data.
 
-        Eero Simoncelli, 6/96. Ported to Python by Rob Young, 10/15.  '''
+    Arguments
+    ---------
+    vec : `array_like`
+        the 2d or 2d array to calculate the entropy of
+    binsize : `float` or None
+        the size of the bins we discretize into. If None, will set to 256/(max(vec)-min(vec))
 
+    Returns
+    -------
+    entropy : `float`
+        estimate of entropy from the data
+
+    '''
     [bincount, _] = matlab_histo(vec, nbins=256, binsize=binsize)
 
     # Collect non-zero bins:
@@ -23,66 +32,146 @@ def entropy(vec, binsize=None):
     return -(H * np.log2(H)).sum()
 
 
-def range(np_array):
-    ''' compute minimum and maximum values of the input numpy array,
-        returning them as tuple
-        '''
-    if not np.isreal(np_array.all()):
-        print('Error: matrix must be real-valued')
+def range(array):
+    '''compute minimum and maximum values of the input array
 
-    return (np_array.min(), np_array.max())
+    `array` must be real-valued
+
+    Arguments
+    ---------
+    array : `np.array`
+        array to calculate the range of
+
+    Returns
+    -------
+    array_range : `tuple`
+        (min, max)
+    '''
+    if not np.isreal(array.all()):
+        raise Exception('array must be real-valued')
+
+    return (array.min(), array.max())
 
 
-def var(np_array, img_mean=None):
-    ''' Sample variance of the input numpy array.
-        Passing MEAN (optional) makes the calculation faster.  '''
+def var(array, array_mean=None):
+    '''Sample variance of the input numpy array.
 
-    if img_mean is None:
-        img_mean = np_array.mean()
+    Passing `mean` (optional) makes the calculation faster. This works equally well for real and
+    complex-valued `array`
 
-    if np.isreal(np_array).all():
-        return ((np_array - img_mean)**2).sum() / max(np_array.size - 1, 1)
+    Arguments
+    ---------
+    array : `np.array`
+        array to calculate the variance of
+    array_mean : `float` or None
+        the mean of `array`. If None, will calculate it.
+
+    Returns
+    -------
+    array_var : `float`
+        the variance of `array`
+    '''
+    if array_mean is None:
+        array_mean = array.mean()
+
+    if np.isreal(array).all():
+        return ((array - array_mean)**2).sum() / max(array.size - 1, 1)
     else:
-        return var(np_array.real, img_mean.real) + 1j * var(np_array.imag, img_mean.imag)
+        return var(array.real, array_mean.real) + 1j * var(array.imag, array_mean.imag)
 
 
-def skew(np_array, img_mean=None, img_var=None):
-    ''' Sample skew (third moment divided by variance^3/2) of the input numpy array.
-        MEAN (optional) and VAR (optional) make the computation faster.  '''
+def skew(array, array_mean=None, array_var=None):
+    '''Sample skew (third moment divided by variance^3/2) of the input array.
 
-    if img_mean is None:
-        img_mean = np_array.mean()
-    if img_var is None:
-        img_var = var(np_array, img_mean)
+    `mean` (optional) and `var` (optional) make the computation faster. This works equally well for
+    real and complex-valued `array`
 
-    if np.isreal(np_array).all():
-        return ((np_array - img_mean)**3).mean() / np.sqrt(img_var) ** 3
+    Arguments
+    ---------
+    array : `np.array`
+        array to calculate the variance of
+    array_mean : `float` or None
+        the mean of `array`. If None, will calculate it.
+    array_var : `float` or None
+        the variance of `array`. If None, will calculate it
+
+    Returns
+    -------
+    array_skew : `float`
+        the skew of `array`.
+
+    '''
+    if array_mean is None:
+        array_mean = array.mean()
+    if array_var is None:
+        array_var = var(array, array_mean)
+
+    if np.isreal(array).all():
+        return ((array - array_mean)**3).mean() / np.sqrt(array_var) ** 3
     else:
-        return (skew(np_array.real, img_mean.real, img_var.real) + 1j *
-                skew(np_array.imag, img_mean.imag, img_var.imag))
+        return (skew(array.real, array_mean.real, array_var.real) + 1j *
+                skew(array.imag, array_mean.imag, array_var.imag))
 
 
-def kurt(np_array, img_mean=None, img_var=None):
-    ''' Sample kurtosis (fourth moment divided by squared variance)
-        of the input numpy array.  Kurtosis of a Gaussian distribution is 3.
-        MEAN (optional) and VAR (optional) make the computation faster.  '''
+def kurt(array, array_mean=None, array_var=None):
+    '''Sample kurtosis (fourth moment divided by squared variance) of the input array.
 
-    if img_mean is None:
-        img_mean = np_array.mean()
-    if img_var is None:
-        img_var = var(np_array, img_mean)
+    For reference, kurtosis of a Gaussian distribution is 3.
 
-    if np.isreal(np_array).all():
-        return ((np_array - img_mean) ** 4).mean() / img_var ** 2
+    `mean` (optional) and `var` (optional) make the computation faster. This works equally well for
+    real and complex-valued `array`
+
+    Arguments
+    ---------
+    array : `np.array`
+        array to calculate the variance of
+    array_mean : `float` or None
+        the mean of `array`. If None, will calculate it.
+    array_var : `float` or None
+        the variance of `array`. If None, will calculate it
+
+    Returns
+    -------
+    array_kurt : `float`
+        the kurtosis of `array`.
+
+    '''
+    if array_mean is None:
+        array_mean = array.mean()
+    if array_var is None:
+        array_var = var(array, array_mean)
+
+    if np.isreal(array).all():
+        return ((array - array_mean) ** 4).mean() / array_var ** 2
     else:
-        return (kurt(np_array.real, img_mean.real, img_var.real) + 1j *
-                kurt(np_array.imag, img_mean.imag, img_var.imag))
+        return (kurt(array.real, array_mean.real, array_var.real) + 1j *
+                kurt(array.imag, array_mean.imag, array_var.imag))
 
 
 def image_compare(im_array0, im_array1):
-    ''' Report min, max, mean, stdev of the difference,
-        and SNR (relative to IM1).  '''
+    '''Prints and returns min, max, mean, stdev of the difference, and SNR (relative to im_array0).
 
+    Arguments
+    ---------
+    im_array0 : `np.array`
+        the first image to compare
+    im_array1 : `np.array`
+        the second image to compare
+
+    Returns
+    -------
+    min_diff : `float`
+        the minimum difference between `im_array0` and `im_array1`
+    max_diff : `float`
+        the maximum difference between `im_array0` and `im_array1`
+    mean_diff : `float`
+        the mean difference between `im_array0` and `im_array1`
+    std_diff : `float`
+        the standard deviation of the difference between `im_array0` and `im_array1`
+    snr : `float`
+        the signal-to-noise ratio of the difference between `im_array0` and `im_array0` (relative
+        to `im_array0`)
+    '''
     if not im_array0.size == im_array1.size:
         print('Error: input images must have the same size')
         return
@@ -102,21 +191,39 @@ def image_compare(im_array0, im_array1):
     print('Difference statistics:')
     print('  Range: [%d, %d]' % (min_diff, max_diff))
     print('  Mean: %f,  Stdev (rmse): %f,  SNR (dB): %f' % (mean_diff, np.sqrt(var_diff), snr))
+    return min_diff, max_diff, mean_diff, np.sqrt(var_diff), snr
 
 
 def image_stats(im_array):
-    ''' Report image (matrix) statistics: min, max, mean, stdev,
-        and kurtosis.
-        '''
+    '''Prints and returns image statistics: min, max, mean, stdev, and kurtosis.
 
+    Arguments
+    ---------
+    im_array : `np.array`
+        the image to summarize
+
+    Returns
+    -------
+    array_min : `float`
+        the minimum of `im_array`
+    array_max : `float`
+        the maximum of `im_array`
+    array_mean : `float`
+        the mean of `im_array`
+    array_std : `float`
+        the standard deviation of `im_array`
+    array_kurt : `float`
+        the kurtosis of `im_array`
+    '''
     if not np.isreal(im_array).all():
         print('Error: input images must be real-valued matrices')
         return
 
     (mini, maxi) = range(im_array)
-    img_mean = im_array.mean()
-    img_var = var(im_array, img_mean)
-    img_kurt = kurt(im_array, img_mean, img_var)
+    array_mean = im_array.mean()
+    array_var = var(im_array, array_mean)
+    array_kurt = kurt(im_array, array_mean, array_var)
     print('Image statistics:')
     print('  Range: [%f, %f]' % (mini, maxi))
-    print('  Mean: %f,  Stdev: %f,  Kurtosis: %f' % (img_mean, np.sqrt(img_var), img_kurt))
+    print('  Mean: %f,  Stdev: %f,  Kurtosis: %f' % (array_mean, np.sqrt(array_var), array_kurt))
+    return mini, maxi, array_mean, np.sqrt(array_var), array_kurt

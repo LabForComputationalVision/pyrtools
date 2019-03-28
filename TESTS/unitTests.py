@@ -393,7 +393,7 @@ class pointOpTests(unittest.TestCase):
         img = pt.synthetic_images.ramp((200,200))
         filt = np.array([0.2, 0.5, 1.0, 0.4, 0.1]);
         #foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
-        foo = pt.pointOp(img, filt, 0, 1, 0);
+        foo = pt.pointOp(img, filt, 0, 1);
         foo = np.reshape(foo,(200,200))
         self.assertTrue((matImg['foo'] == foo).all())
 

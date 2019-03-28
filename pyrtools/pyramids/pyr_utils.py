@@ -1,4 +1,3 @@
-import math
 import functools
 from operator import mul
 
@@ -6,10 +5,22 @@ from operator import mul
 def convert_pyr_coeffs_to_pyr(pyr_coeffs):
     """this function takes a 'new pyramid' and returns the coefficients as a list
 
-    returns the in original order, so 'residual highpass', all the
-    bands, 'residual low pass'
+    this is to enable backwards compatibility
 
-    this is to enable backwards compatibility, will be deprecated
+    Parameters
+    ----------
+    pyr_coeffs : `dict`
+        The `pyr_coeffs` attribute of a `pyramid`.
+
+    Returns
+    -------
+    coeffs : `list`
+        list of `np.array`, which contains the pyramid coefficients in each band, in order from
+        bottom of the pyramid to top (going through the orientations in order)
+    highpass : `np.array` or None
+        either the residual highpass from the pyramid or, if that doesn't exist, None
+    lowpass : `np.array` or None
+        either the residual lowpass from the pyramid or, if that doesn't exist, None
 
     """
     highpass = pyr_coeffs.pop('residual_highpass', None)
@@ -19,9 +30,23 @@ def convert_pyr_coeffs_to_pyr(pyr_coeffs):
 
 
 def max_pyr_height(imsz, filtsz):
-    ''' Compute maximum pyramid height for given image and filter sizes.
-        Specifically: the number of corrDn operations that can be sequentially
-        performed when subsampling by a factor of 2. '''
+    '''Compute maximum pyramid height for given image and filter sizes.
+
+    Specifically, this computes the number of corrDn operations that can be sequentially performed
+    when subsampling by a factor of 2.
+
+    Parameters
+    ----------
+    imsz : `tuple` or `int`
+        the size of the image (should be 2-tuple if image is 2d, `int` if it's 1d)
+    filtsz : `tuple` or `int`
+        the size of the filter (should be 2-tuple if image is 2d, `int` if it's 1d)
+
+    Returns
+    -------
+    max_pyr_height : `int`
+        The maximum height of the pyramid
+    '''
     # check if inputs are one of int, tuple and have consistent type
     assert (isinstance(imsz, int) and isinstance(filtsz, int)) or (
             isinstance(imsz, tuple) and isinstance(filtsz, tuple))

@@ -5,14 +5,14 @@ from .filters import named_filter
 
 
 class Pyramid:
-    """Base class for multiscle pyramids
+    """Base class for multiscale pyramids
 
     You should not instantiate this base class, it is instead inherited by the other classes found
     in this module.
 
     Parameters
     ----------
-    image : array_like
+    image : `array_like`
         1d or 2d image upon which to construct to the pyramid.
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
@@ -40,7 +40,7 @@ class Pyramid:
     pyr_size : `dict`
         Dictionary containing the sizes of the pyramid coefficients. Keys are `(level, band)`
         tuples and values are tuples.
-    is_complex : `boolean`
+    is_complex : `bool`
         Whether the coefficients are complex- or real-valued. Only `SteerablePyramidFreq` can have
         a value of True, all others must be False.
     """
@@ -218,7 +218,7 @@ class Pyramid:
 
         Parameters
         ----------
-        levels : `list`, `int`,  or {`'all'`, `'residual_highpass'`, or `'residual_lowpass'`}
+        levels : `list`, `int`,  or {`'all'`, `'residual_highpass'`, `'residual_lowpass'`}
             If `list` should contain some subset of integers from `0` to `self.num_scales-1`
             (inclusive) and `'residual_highpass'` and `'residual_lowpass'` (if appropriate for the
             pyramid). If `'all'`, returned value will contain all valid levels. Otherwise, must be
