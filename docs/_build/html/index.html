@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Welcome to pyrtools’s documentation! &#8212; pyrtools 1.0 documentation</title>
+    <title>pyrtools &#8212; pyrtools 1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -14,8 +14,11 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -23,51 +26,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="welcome-to-pyrtools-s-documentation">
-<h1>Welcome to pyrtools’s documentation!<a class="headerlink" href="#welcome-to-pyrtools-s-documentation" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
-</ul>
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
+  <div class="document">
+    
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <h1 class="logo"><a href="#">pyrtools</a></h1>
 
 
 
+<p class="blurb">Python tools for multi-scale image processing</p>
 
 
 
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=LabForComputationalVision&repo=pyrtools&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/LabForComputationalVision/pyrtools">
+    <img
+        alt="https://secure.travis-ci.org/LabForComputationalVision/pyrtools.svg?branch=master"
+        src="https://secure.travis-ci.org/LabForComputationalVision/pyrtools.svg?branch=master"
+    />
+</a>
+</p>
 
 
 <h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial1.html">Basic examples using the tools in pyrtools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial2.html">Image pyramid tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial3.html">Steerable pyramids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">pyrtools</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="installation.html" title="next chapter">Installation</a></li>
   </ul></li>
 </ul>
 </div>
@@ -93,8 +100,103 @@
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pyrtools">
+<h1>pyrtools<a class="headerlink" href="#pyrtools" title="Permalink to this headline">¶</a></h1>
+<p><img alt="license-shield" src="https://img.shields.io/badge/license-MIT-blue.svg" /> <img alt="python-version-shield" src="https://img.shields.io/badge/python-3.5%7C3.6%7C3.7-blue.svg" /></p>
+<p>Pyrtools is a python package for multi-scale image processing, adapted
+from Eero Simoncelli’s <a class="reference external" href="https://github.com/LabForComputationalVision/matlabPyrTools/">matlabPyrTools</a>.</p>
+<dl class="docutils">
+<dt>The tools include:</dt>
+<dd><ul class="first last simple">
+<li>Recursive multi-scale image decompositions (pyramids), including
+Laplacian pyramids, QMFs, Wavelets, and steerable pyramids.  These
+operate on 1D or 2D signals of arbitrary dimension.</li>
+<li>Fast 2D convolution routines, with subsampling and boundary-handling.</li>
+<li>Fast point-operations, histograms, histogram-matching.</li>
+<li>Fast synthetic image generation: sine gratings, zone plates, fractals, etc.</li>
+<li>Display routines for images and pyramids.  These include several
+auto-scaling options, rounding to integer zoom factors to avoid
+resampling artifacts, and useful labeling (dimensions and gray-range).</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<p>On Linux or macOS, open a shell and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyrtools</span>
+</pre></div>
+</div>
+<p>More instructions available at <a class="reference internal" href="installation.html#install"><span class="std std-ref">Installation</span></a>.</p>
+<p>In the python interpreter, then call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyrtools</span> <span class="k">as</span> <span class="nn">pt</span>
+</pre></div>
+</div>
+<p>which should run without errors if the install worked correctly.</p>
+<p>Method parameters mimic the matlab function parameters except that
+there’s no need to pass <cite>pyr</cite> or <cite>pind</cite>.</p>
+<p>Create pyramid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyr</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">pyramids</span><span class="o">.</span><span class="n">LaplacianPyramid</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Reconstruct image from pyramid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">recon_img</span> <span class="o">=</span> <span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For more details, see the jupyter notebooks included in the
+<cite>TUTORIALS/</cite> directory, static versions of which are linked in the
+navigation sidebar.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#recommended">Recommended</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-source">From source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developerguide.html#unit-tests">Unit tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developerguide.html#proposing-a-pull-request-pr">Proposing a Pull Request(PR)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial1.html">Basic examples using the tools in pyrtools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial1.html#Content">Content</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial1.html#Load-an-image,-and-downsample-to-a-size-appropriate-for-the-machine-speed">Load an image, and downsample to a size appropriate for the machine speed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial1.html#Statistics:">Statistics:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial1.html#Synthetic-images">Synthetic images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial1.html#Point-operations-(lookup-tables):">Point operations (lookup tables):</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial1.html#Convolution-routines:-Compare-speed-of-convolution/downsampling-routines">Convolution routines: Compare speed of convolution/downsampling routines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial1.html#Handling-of-left-and-top-boundaries:">Handling of left and top boundaries:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial2.html">Image pyramid tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial2.html#Content">Content</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial3.html">Steerable pyramids</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial3.html#Further-demonstrations-of-steerability">Further demonstrations of steerability</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">pyrtools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyrtools.html">pyrtools package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
       &copy;2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy.
       
@@ -107,6 +209,10 @@
           rel="nofollow">Page source</a>
     </div>
 
+    
+    <a href="https://github.com/LabForComputationalVision/pyrtools" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
     
 
     
