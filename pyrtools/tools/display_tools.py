@@ -481,7 +481,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         fig = ax.figure
         axes = [reshape_axis(ax,  zoom * max_shape)]
 
-    vrange_list = colormap_range(img=image, vrange=vrange)
+    vrange_list = colormap_range(image=image, vrange=vrange)
     # print('passed', vrange_list)
 
     for im, a, r, t, z in zip(image, axes, vrange_list, title, zooms):
