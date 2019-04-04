@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pyrtools.pyramids.c package &mdash; pyrtools 1.0 documentation</title>
+  <title>pyrtools.pyramids.c package &mdash; pyrtools 1.0.0 documentation</title>
   
 
   
@@ -84,9 +84,6 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial1.html">Basic examples using the tools in pyrtools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial2.html">Image pyramid tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial3.html">Steerable pyramids</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyrtools</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="pyrtools.html">pyrtools package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="pyrtools.html#subpackages">Subpackages</a><ul class="current">
@@ -99,6 +96,12 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial1.html">1. Basic examples using the tools in pyrtools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial2.html">2. Image pyramid tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial3.html">3. Steerable pyramids</a></li>
 </ul>
 
             
@@ -225,14 +228,17 @@ way to avoid that within this function (simply reshaping it does not work).</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d array containing the image to correlate and downsample.</li>
 <li><strong>filt</strong> (<cite>array_like</cite>) – 1d or 2d array containing the filter to use for correlation and downsampling.</li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 <li><strong>step</strong> (<cite>tuple</cite>) – 2-tuple (y, x) which determines the downsampling factor</li>
 <li><strong>start</strong> (<cite>tuple</cite> or None) – 2-tuple which specifies the start of the window over which we perform the convolution</li>
 <li><strong>start</strong> – 2-tuple which specifies the end of the window over which we perform the convolution. If
@@ -297,14 +303,17 @@ way to avoid that within this function (simply reshaping it does not work).</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>image</strong> (<cite>array_like</cite>) – 1d or 2d array containing the image to upsample and convolve.</li>
 <li><strong>filt</strong> (<cite>array_like</cite>) – 1d or 2d array containing the filter to use for upsampling and convolution.</li>
-<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – Specifies how to handle edges. Options are:
-* <cite>‘circular’</cite> - circular convolution
-* <cite>‘reflect1’</cite> - reflect about the edge pixels
-* <cite>‘reflect2’</cite> - reflect, doubling the edge pixels
-* <cite>‘repeat’</cite> - repeat the edge pixels
-* <cite>‘zero’</cite> - assume values of zero outside image boundary
-* <cite>‘extend’</cite> - reflect and invert
-* <cite>‘dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+<li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
+<ul>
+<li><cite>’circular’</cite> - circular convolution</li>
+<li><cite>’reflect1’</cite> - reflect about the edge pixels</li>
+<li><cite>’reflect2’</cite> - reflect, doubling the edge pixels</li>
+<li><cite>’repeat’</cite> - repeat the edge pixels</li>
+<li><cite>’zero’</cite> - assume values of zero outside image boundary</li>
+<li><cite>’extend’</cite> - reflect and invert</li>
+<li><cite>’dont-compute’</cite> - zero output when filter overhangs imput boundaries.</li>
+</ul>
+</li>
 <li><strong>step</strong> (<cite>tuple</cite>) – 2-tuple (y, x) which determines the upsampling factor</li>
 <li><strong>start</strong> (<cite>tuple</cite> or None) – 2-tuple which specifies the start of the window over which we perform the convolution.</li>
 <li><strong>start</strong> – 2-tuple which specifies the end of the window over which we perform the convolution. If

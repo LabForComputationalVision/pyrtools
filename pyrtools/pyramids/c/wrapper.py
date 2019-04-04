@@ -44,6 +44,7 @@ def corrDn(image, filt, edge_type='reflect1', step=(1, 1), start=(0, 0), stop=No
         1d or 2d array containing the filter to use for correlation and downsampling.
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
+
         * `'circular'` - circular convolution
         * `'reflect1'` - reflect about the edge pixels
         * `'reflect2'` - reflect, doubling the edge pixels
@@ -134,6 +135,7 @@ def upConv(image, filt, edge_type='reflect1', step=(1, 1), start=(0, 0), stop=No
         1d or 2d array containing the filter to use for upsampling and convolution.
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
+
         * `'circular'` - circular convolution
         * `'reflect1'` - reflect about the edge pixels
         * `'reflect2'` - reflect, doubling the edge pixels

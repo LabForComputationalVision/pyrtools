@@ -1,10 +1,18 @@
 #! /usr/bin/env python
 
 from setuptools import setup, Extension
+import importlib
+
+# copied from kymatio's setup.py: https://github.com/kymatio/kymatio/blob/master/setup.py
+pyrtools_version_spec = importlib.utils.spec_from_file_location('pyrtools_version',
+                                                                'pyrtools/version.py')
+pyrtools_version_module = importlib.util.module_from_spec(pyrtools_version_spec)
+pyrtools_version_spec.loader.exec_module(pyrtools_version_module)
+VERSION = pyrtools_version_module.version
 
 setup(
     name='pyrtools',
-    version='0.1',
+    version=VERSION,
     description='Python tools for multi-scale image processing, including Laplacian pyramids, Wavelets, and Steerable Pyramids',
     license='MIT',
     url='https://github.com/LabForComputationalVision/pyrtools',

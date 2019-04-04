@@ -38,3 +38,13 @@ The tools include:
    tutorial2
    tutorial3
    modules
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+   :numbered:
+
+   tutorials/tutorial1
+   tutorials/tutorial2
+   tutorials/tutorial3
+   

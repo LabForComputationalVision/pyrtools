@@ -13,3 +13,5 @@ from .tools.comparePyr import comparePyr
 from .tools.compareRecon import compareRecon
 
 from .tools.extra_tools import blurDn, blur, upBlur, image_gradient
+
+from .version import version as __version__

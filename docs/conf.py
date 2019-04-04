@@ -14,7 +14,9 @@
 #
 import os
 import sys
+import pyrtools
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('./tutorials/'))
 
 
 # -- Project information -----------------------------------------------------
@@ -26,7 +28,7 @@ author = 'Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet,
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '1.0'
+release = pyrtools.__version__
 
 
 # -- General configuration ---------------------------------------------------

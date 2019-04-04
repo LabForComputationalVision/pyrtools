@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pyrtools.tools.display_tools &mdash; pyrtools 1.0 documentation</title>
+  <title>pyrtools.tools.display_tools &mdash; pyrtools 1.0.0 documentation</title>
   
 
   
@@ -83,10 +83,13 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../developerguide.html">Information for developers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tutorial1.html">Basic examples using the tools in pyrtools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tutorial2.html">Image pyramid tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tutorial3.html">Steerable pyramids</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules.html">pyrtools</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorial1.html">1. Basic examples using the tools in pyrtools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorial2.html">2. Image pyramid tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorial3.html">3. Steerable pyramids</a></li>
 </ul>
 
             
@@ -633,7 +636,7 @@
         <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span>
         <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">reshape_axis</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span>  <span class="n">zoom</span> <span class="o">*</span> <span class="n">max_shape</span><span class="p">)]</span>
 
-    <span class="n">vrange_list</span> <span class="o">=</span> <span class="n">colormap_range</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">vrange</span><span class="o">=</span><span class="n">vrange</span><span class="p">)</span>
+    <span class="n">vrange_list</span> <span class="o">=</span> <span class="n">colormap_range</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">vrange</span><span class="o">=</span><span class="n">vrange</span><span class="p">)</span>
     <span class="c1"># print(&#39;passed&#39;, vrange_list)</span>
 
     <span class="k">for</span> <span class="n">im</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">vrange_list</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">zooms</span><span class="p">):</span>
