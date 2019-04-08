@@ -167,7 +167,7 @@
 <span class="sd">    harmonics: `array_like`</span>
 <span class="sd">        array specifying the angular harmonics contained in the steerable basis/filters.</span>
 <span class="sd">    angles: `array_like` or None</span>
-<span class="sd">        vector specifying the angular position of each filter. If None, defaults to</span>
+<span class="sd">        vector specifying the angular position of each filter (in radians). If None, defaults to</span>
 <span class="sd">        `pi * np.arange(numh) / numh`, where `numh = harmonics.size + np.count_nonzero(harmonics)`</span>
 <span class="sd">    even_phase : `bool`</span>
 <span class="sd">        specifies whether the harmonics are cosine or sine phase aligned about those positions.</span>
@@ -217,7 +217,8 @@
 <span class="sd">        array whose columns are vectorized rotated copies of a steerable function, or the responses</span>
 <span class="sd">        of a set of steerable filters.</span>
 <span class="sd">    angle : `array_like` or `int`</span>
-<span class="sd">        scalar or column vector the size of the basis. specifies the angle(s) to steer to</span>
+<span class="sd">        scalar or column vector the size of the basis. specifies the angle(s) (in radians) to</span>
+<span class="sd">        steer to</span>
 <span class="sd">    harmonics : `list` or None</span>
 <span class="sd">        a list of harmonic numbers indicating the angular harmonic content of the basis. if None</span>
 <span class="sd">        (default), N even or odd low frequencies, as for derivative filters</span>

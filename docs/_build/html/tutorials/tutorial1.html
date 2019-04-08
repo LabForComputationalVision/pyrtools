@@ -442,74 +442,13 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <p>ShowIm: 3 types of automatic graylevel scaling, 2 types of automatic sizing, with or without title and Range information.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="o">?</span> pt.imshow
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>[0;31mSignature:[0m
- [0mpt[0m[0;34m.[0m[0mimshow[0m[0;34m([0m[0;34m[0m
-[0;34m[0m    [0;34m[[0m[0;34m&#39;image&#39;[0m[0;34m,[0m [0;34m&quot;vrange=&#39;indep1&#39;&quot;[0m[0;34m,[0m [0;34m&#39;zoom=1&#39;[0m[0;34m,[0m [0;34m&quot;title=&#39;&#39;&quot;[0m[0;34m,[0m [0;34m&#39;col_wrap=None&#39;[0m[0;34m,[0m [0;34m&#39;ax=None&#39;[0m[0;34m,[0m [0;34m&#39;cmap=&lt;matplotlib.colors.LinearSegmentedColormap object at 0x7fa740350278&gt;&#39;[0m[0;34m,[0m [0;34m&quot;plot_complex=&#39;rectangular&#39;&quot;[0m[0;34m,[0m [0;34m&#39;**kwargs&#39;[0m[0;34m][0m[0;34m,[0m[0;34m[0m
-[0;34m[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
-[0;31mDocstring:[0m
-show image(s)
-
-Parameters
-----------
-img: 2d array (one image to display), 3d array (multiple images to display, images are indexed
-along the first dimension), or list of 2d arrays. the image(s) to be shown. all images will be
-automatically rescaled so they&#39;re displayed at the same size. thus, their sizes must be scalar
-multiples of each other.
-
-vrange: A list of two numbers, or a string. If two numbers, these specify the image values
-         vmin/vmax that are mapped to black/white, respectively. If a string:
-- auto/auto1: all images have same vmin/vmax, which are the minimum/maximum values across all
-              images
-- auto2: all images have same vmin/vmax, which are the mean (across all images) minus/plus 2
-         std dev (across all images)
-- auto3: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile values to
-         the 10th/90th percentile of the display intensity range. For example: vmin is the 10th
-         percentile image value minus 1/8 times the difference between the 90th and 10th percentile
-- indep1 (default): each image has an independent vmin/vmax, which are their minimum/maximum
-         values
-- indep2: each image has an independent vmin/vmax, which is their mean minus/plus 2 std dev
-- indep3: each image has an independent vmin/vmax, chosen so that the 10th/90th percentile values
-          map to the 10th/90th percentile intensities.
-
-zoom: float. ratio of display pixels to image pixels. if &gt;1, must be an integer.  If &lt;1, must be 1/d
-    where d is a a divisor of the size of the largest image.
-
-title: string , list of strings or None
-    - if string, will put the same title on every plot.
-    - if list of strings, must be the same length as img, assigning each title to corresponding image.
-    - if None (default), no title will be printed.
-
-col_wrap: int or None
-
-ax: matplotlib axis or None if None, make the appropriate figure. otherwise, we resize it
-    so that it&#39;s the appropriate number of pixels (done by shrinking the bbox - if the bbox
-    is already too small, this will throw an Exception!). first define a large
-    enough figure using either make_figure or plt.figure
-
-plot_complex: {&#39;rectangular&#39;, &#39;polar&#39;, &#39;logpolar&#39;}. specifies handling of complex values.
-options are to plot the real/imaginary parts as separate images (default), with same intensity scaling,
-or plot amplitude and phase. for any other value, we raise a warning and default to rectangular.
-
-Returns
--------
-
-fig : figure
-[0;31mFile:[0m      ~/Documents/pyrtools/pyrtools/tools/display_tools.py
-[0;31mType:[0m      function
-
+<span></span><span class="c1"># to see the documentation for a function, do:</span>
+<span class="c1"># ? pt.imshow</span>
 </pre></div>
 </div>
 </div>
@@ -719,7 +658,7 @@ Error: input images must have the same size
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>(2.3671652181583967e-14, 8.742642137616321e-05)
+<span></span>(6.9291148596934015e-15, 8.742642137616321e-05)
 </pre></div>
 </div>
 </div>
@@ -950,8 +889,8 @@ Error: input images must have the same size
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-CPU times: user 0 ns, sys: 15.1 ms, total: 15.1 ms
-Wall time: 4.85 ms
+CPU times: user 12.6 ms, sys: 7.96 ms, total: 20.5 ms
+Wall time: 6.68 ms
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -960,7 +899,7 @@ Wall time: 4.85 ms
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="o">%%time</span>
-<span class="n">ires</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">rconv2</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span><span class="n">filt</span><span class="p">)</span>
+<span class="n">ires</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">rconv2</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span><span class="n">filt</span><span class="p">)</span> <span class="c1"># this is using scipy.signal.convolve</span>
 <span class="n">res2</span> <span class="o">=</span> <span class="n">ires</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">size</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="n">size</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -970,8 +909,8 @@ Wall time: 4.85 ms
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-CPU times: user 30.7 ms, sys: 58.4 ms, total: 89.1 ms
-Wall time: 29.6 ms
+CPU times: user 34.2 ms, sys: 58.5 ms, total: 92.6 ms
+Wall time: 30.7 ms
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -990,7 +929,7 @@ Wall time: 29.6 ms
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: -0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 294.721265
+  Mean: -0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 294.234426
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1010,7 +949,7 @@ Difference statistics:
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: -0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 294.635852
+  Mean: -0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 294.288217
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -1090,44 +1029,8 @@ Difference statistics:
   Mean: 0.000000,  Stdev (rmse): 0.000000,  SNR (dB): inf
 </pre></div></div>
 </div>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># TODO explain the source of these small differences</span>
-</pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">diff</span> <span class="o">=</span> <span class="n">b</span><span class="o">-</span><span class="n">blurred</span>
-<span class="n">pt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">vrange</span><span class="o">=</span><span class="s1">&#39;auto3&#39;</span><span class="p">);</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/tutorials_tutorial1_46_0.png" src="../_images/tutorials_tutorial1_46_0.png" />
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/tutorials_tutorial1_46_1.png" src="../_images/tutorials_tutorial1_46_1.png" />
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1157,45 +1060,19 @@ Difference statistics:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/tutorials_tutorial1_47_1.png" src="../_images/tutorials_tutorial1_47_1.png" />
+<img alt="../_images/tutorials_tutorial1_45_1.png" src="../_images/tutorials_tutorial1_45_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># TODO</span>
-<span class="c1"># also compare to to scipy.signal solution</span>
-
-<span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="k">as</span> <span class="nn">sps</span>
-
-<span class="n">res4</span> <span class="o">=</span> <span class="n">sps</span><span class="o">.</span><span class="n">convolve2d</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s1">&#39;symm&#39;</span><span class="p">)</span>
-
-<span class="n">pt</span><span class="o">.</span><span class="n">image_compare</span><span class="p">(</span><span class="n">res4</span><span class="p">,</span> <span class="n">ires</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Difference statistics:
-  Range: [-2, 2]
-  Mean: -0.000676,  Stdev (rmse): 0.077196,  SNR (dB): 21.689682
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># TODO decide on subsampling depending on machine speed</span>
+<span></span><span class="c1"># NOTE: here is helper to decide on subsampling depending on machine speed</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">oim</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">edges</span><span class="o">=</span><span class="s1">&#39;reflect1&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">oim</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="s1">&#39;reflect1&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
 <span class="n">imSubSample</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">elapsed</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">3</span><span class="p">),</span><span class="mi">0</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">imSubSample</span>
@@ -1203,7 +1080,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1215,7 +1092,7 @@ Difference statistics:
 <div class="section" id="Handling-of-left-and-top-boundaries:">
 <h2>1.7. Handling of left and top boundaries:<a class="headerlink" href="#Handling-of-left-and-top-boundaries:" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1250,7 +1127,7 @@ Difference statistics:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/tutorials_tutorial1_51_0.png" src="../_images/tutorials_tutorial1_51_0.png" />
+<img alt="../_images/tutorials_tutorial1_48_0.png" src="../_images/tutorials_tutorial1_48_0.png" />
 </div>
 </div>
 </div>

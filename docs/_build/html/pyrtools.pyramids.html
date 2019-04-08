@@ -662,8 +662,8 @@ valid levels. Otherwise, must be one of the valid levels.</li>
 <span id="pyrtools-pyramids-steerablepyramidfreq-module"></span><h2>pyrtools.pyramids.SteerablePyramidFreq module<a class="headerlink" href="#module-pyrtools.pyramids.SteerablePyramidFreq" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq">
-<em class="property">class </em><code class="descclassname">pyrtools.pyramids.SteerablePyramidFreq.</code><code class="descname">SteerablePyramidFreq</code><span class="sig-paren">(</span><em>image</em>, <em>height='auto'</em>, <em>order=1</em>, <em>num_orientations=None</em>, <em>twidth=1</em>, <em>is_complex=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidFreq.html#SteerablePyramidFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#pyrtools.pyramids.pyramid.Pyramid" title="pyrtools.pyramids.pyramid.Pyramid"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrtools.pyramids.pyramid.Pyramid</span></code></a></p>
+<em class="property">class </em><code class="descclassname">pyrtools.pyramids.SteerablePyramidFreq.</code><code class="descname">SteerablePyramidFreq</code><span class="sig-paren">(</span><em>image</em>, <em>height='auto'</em>, <em>order=3</em>, <em>twidth=1</em>, <em>is_complex=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidFreq.html#SteerablePyramidFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrtools.pyramids.pyramid.SteerablePyramidBase" title="pyrtools.pyramids.pyramid.SteerablePyramidBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrtools.pyramids.pyramid.SteerablePyramidBase</span></code></a></p>
 <p>Steerable frequency pyramid.</p>
 <p>Construct a steerable pyramid on matrix IM, in the Fourier domain.
 This is similar to Spyr, except that:</p>
@@ -689,12 +689,9 @@ falloff. Angular functions are cos(theta- k*pi/order+1)^(order).</p>
 <li><strong>image</strong> (<cite>array_like</cite>) – 2d image upon which to construct to the pyramid.</li>
 <li><strong>height</strong> (‘auto’ or <cite>int</cite>.) – The height of the pyramid. If ‘auto’, will automatically determine based on the size of
 <cite>image</cite>.</li>
-<li><strong>order</strong> (<cite>int</cite>.) – The derivative order used for the gaussian filters. Default value is 3.
-Note that to achieve steerability the minimum number of orientation is <cite>order</cite> + 1.</li>
-<li><strong>num_orientations</strong> (<cite>int</cite>.) – The number of orientations you want in the steerable pyramid filters. Default is <cite>order</cite> + 1.
-Note: The number of orientation must be larger or equal to <cite>order</cite> + 1,
-and it must lie within [1, 16]. If it is larger than <cite>order</cite> + 1, the extra bands are
-computed using the interpolation code :</li>
+<li><strong>order</strong> (<cite>int</cite>.) – The Gaussian derivative order used for the steerable filters. Default value is 3.
+Note that to achieve steerability the minimum number of orientation is <cite>order</cite> + 1,
+and is used here. To get more orientations at the same order, use the method <cite>steer_coeffs</cite></li>
 <li><strong>twidth</strong> (<cite>int</cite>) – The width of the transition region of the radial lowpass function, in octaves</li>
 <li><strong>is_complex</strong> (<cite>bool</cite>) – Whether the pyramid coefficients should be complex or not. If True, the real and imaginary
 parts correspond to a pair of even and odd symmetric filters. If False, the coefficients
@@ -816,6 +813,9 @@ Image Transforms”, ICASSP, Atlanta, GA, May 1996.</td></tr>
 <tr class="row-odd"><td><a class="reference internal" href="#pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq.recon_pyr" title="pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq.recon_pyr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recon_pyr</span></code></a>([levels,&nbsp;bands,&nbsp;twidth])</td>
 <td>Reconstruct the image, optionally using subset of pyramid coefficients.</td>
 </tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">steer_coeffs</span></code>(angles[,&nbsp;even_phase])</td>
+<td>Steer pyramid coefficients to the specified angles</td>
+</tr>
 </tbody>
 </table>
 <dl class="method">
@@ -854,8 +854,8 @@ of the valid orientations.</li>
 <span id="pyrtools-pyramids-steerablepyramidspace-module"></span><h2>pyrtools.pyramids.SteerablePyramidSpace module<a class="headerlink" href="#module-pyrtools.pyramids.SteerablePyramidSpace" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace">
-<em class="property">class </em><code class="descclassname">pyrtools.pyramids.SteerablePyramidSpace.</code><code class="descname">SteerablePyramidSpace</code><span class="sig-paren">(</span><em>image</em>, <em>height='auto'</em>, <em>num_orientations=2</em>, <em>edge_type='reflect1'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidSpace.html#SteerablePyramidSpace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#pyrtools.pyramids.pyramid.Pyramid" title="pyrtools.pyramids.pyramid.Pyramid"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrtools.pyramids.pyramid.Pyramid</span></code></a></p>
+<em class="property">class </em><code class="descclassname">pyrtools.pyramids.SteerablePyramidSpace.</code><code class="descname">SteerablePyramidSpace</code><span class="sig-paren">(</span><em>image</em>, <em>height='auto'</em>, <em>order=1</em>, <em>edge_type='reflect1'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidSpace.html#SteerablePyramidSpace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrtools.pyramids.pyramid.SteerablePyramidBase" title="pyrtools.pyramids.pyramid.SteerablePyramidBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrtools.pyramids.pyramid.SteerablePyramidBase</span></code></a></p>
 <p>Steerable pyramid (using spatial convolutions)</p>
 <p class="rubric">Notes</p>
 <p>Transform described in <a class="reference internal" href="#r957404e86b8b-1" id="id19">[1]</a>, filter kernel design described in <a class="reference internal" href="#r957404e86b8b-2" id="id20">[2]</a>.</p>
@@ -867,9 +867,10 @@ of the valid orientations.</li>
 <li><strong>image</strong> (<cite>array_like</cite>) – 2d image upon which to construct to the pyramid.</li>
 <li><strong>height</strong> (‘auto’ or <cite>int</cite>.) – The height of the pyramid. If ‘auto’, will automatically determine based on the size of
 <cite>image</cite>.</li>
-<li><strong>num_orientations</strong> (<em>{1</em><em>, </em><em>2</em><em>, </em><em>4</em><em>, </em><em>6}.</em>) – the number of orientations you want in the steerable pyramid filters. If you want a
-different value, see SteerablePyramidFreq. Note that this is the order of the pyramid plus
-one.</li>
+<li><strong>order</strong> (<em>{0</em><em>, </em><em>1</em><em>, </em><em>3</em><em>, </em><em>5}.</em>) – The Gaussian derivative order used for the steerable filters. If you want a different
+value, see SteerablePyramidFreq. Note that to achieve steerability the minimum number
+of orientation is <cite>order</cite> + 1, and is used here. To get more orientations at the same
+order, use the method <cite>steer_coeffs</cite></li>
 <li><strong>edge_type</strong> (<em>{'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>, </em><em>'dont-compute'}</em>) – <p>Specifies how to handle edges. Options are:</p>
 <ul>
 <li><cite>’circular’</cite> - circular convolution</li>
@@ -1010,23 +1011,26 @@ Image Transforms”, ICASSP, Atlanta, GA, May 1996.</td></tr>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr" title="pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recon_pyr</span></code></a>([num_orientations,&nbsp;edge_type,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr" title="pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recon_pyr</span></code></a>([order,&nbsp;edge_type,&nbsp;levels,&nbsp;bands])</td>
 <td>Reconstruct the image, optionally using subset of pyramid coefficients.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">steer_coeffs</span></code>(angles[,&nbsp;even_phase])</td>
+<td>Steer pyramid coefficients to the specified angles</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr">
-<code class="descname">recon_pyr</code><span class="sig-paren">(</span><em>num_orientations=None</em>, <em>edge_type=None</em>, <em>levels='all'</em>, <em>bands='all'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidSpace.html#SteerablePyramidSpace.recon_pyr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">recon_pyr</code><span class="sig-paren">(</span><em>order=None</em>, <em>edge_type=None</em>, <em>levels='all'</em>, <em>bands='all'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidSpace.html#SteerablePyramidSpace.recon_pyr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reconstruct the image, optionally using subset of pyramid coefficients.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>num_orientations</strong> (<em>{None</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>4</em><em>, </em><em>6}.</em>) – the number of orientations you want in the steerable pyramid filters used to
-reconstruct the pyramid. If None, uses the same number of orientations as used to
-construct the pyramid.</li>
+<li><strong>order</strong> (<em>{None</em><em>, </em><em>0</em><em>, </em><em>1</em><em>, </em><em>3</em><em>, </em><em>5}.</em>) – the Gaussian derivative order you want to use for the steerable pyramid filters used to
+reconstruct the pyramid. If None, uses the same order as that used to construct the
+pyramid.</li>
 <li><strong>edge_type</strong> (<em>{None</em><em>, </em><em>'circular'</em><em>, </em><em>'reflect1'</em><em>, </em><em>'reflect2'</em><em>, </em><em>'repeat'</em><em>, </em><em>'zero'</em><em>, </em><em>'extend'</em><em>,</em>) – <p>‘dont-compute’}
 Specifies how to handle edges. Options are:</p>
 <ul>
@@ -1584,6 +1588,58 @@ a value of True, all others must be False.</p>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="pyrtools.pyramids.pyramid.SteerablePyramidBase">
+<em class="property">class </em><code class="descclassname">pyrtools.pyramids.pyramid.</code><code class="descname">SteerablePyramidBase</code><span class="sig-paren">(</span><em>image</em>, <em>edge_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/pyramid.html#SteerablePyramidBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.pyramid.SteerablePyramidBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrtools.pyramids.pyramid.Pyramid" title="pyrtools.pyramids.pyramid.Pyramid"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrtools.pyramids.pyramid.Pyramid</span></code></a></p>
+<p>base class for steerable pyramid</p>
+<p>should not be called directly, we just use it so we can make both SteerablePyramidFreq and
+SteerablePyramidSpace inherit the steer_coeffs function</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#pyrtools.pyramids.pyramid.SteerablePyramidBase.steer_coeffs" title="pyrtools.pyramids.pyramid.SteerablePyramidBase.steer_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">steer_coeffs</span></code></a>(angles[,&nbsp;even_phase])</td>
+<td>Steer pyramid coefficients to the specified angles</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pyrtools.pyramids.pyramid.SteerablePyramidBase.steer_coeffs">
+<code class="descname">steer_coeffs</code><span class="sig-paren">(</span><em>angles</em>, <em>even_phase=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/pyramid.html#SteerablePyramidBase.steer_coeffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.pyramid.SteerablePyramidBase.steer_coeffs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Steer pyramid coefficients to the specified angles</p>
+<p>This allows you to have filters that have the Gaussian derivative order specified in
+construction, but arbitrary angles or number of orientations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>angles</strong> (<cite>list</cite>) – list of angles (in radians) to steer the pyramid coefficients to</li>
+<li><strong>even_phase</strong> (<cite>bool</cite>) – specifies whether the harmonics are cosine or sine phase aligned about those positions.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>resteered_coeffs</strong> (<cite>dict</cite>) – dictionary of re-steered pyramid coefficients. will have the same number of scales as
+the original pyramid (though it will not contain the residual highpass or lowpass).
+like <cite>self.pyr_coeffs</cite>, keys are 2-tuples of ints indexing the scale and orientation,
+but now we’re indexing <cite>angles</cite> instead of <cite>self.num_orientations</cite>.</li>
+<li><strong>resteering_weights</strong> (<cite>dict</cite>) – dictionary of weights used to re-steer the pyramid coefficients. will have the same
+keys as <cite>resteered_coeffs</cite>.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-pyrtools.pyramids.steer">
 <span id="pyrtools-pyramids-steer-module"></span><h2>pyrtools.pyramids.steer module<a class="headerlink" href="#module-pyrtools.pyramids.steer" title="Permalink to this headline">¶</a></h2>
@@ -1598,7 +1654,8 @@ a value of True, all others must be False.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>basis</strong> (<cite>array_like</cite>) – array whose columns are vectorized rotated copies of a steerable function, or the responses
 of a set of steerable filters.</li>
-<li><strong>angle</strong> (<cite>array_like</cite> or <cite>int</cite>) – scalar or column vector the size of the basis. specifies the angle(s) to steer to</li>
+<li><strong>angle</strong> (<cite>array_like</cite> or <cite>int</cite>) – scalar or column vector the size of the basis. specifies the angle(s) (in radians) to
+steer to</li>
 <li><strong>harmonics</strong> (<cite>list</cite> or None) – a list of harmonic numbers indicating the angular harmonic content of the basis. if None
 (default), N even or odd low frequencies, as for derivative filters</li>
 <li><strong>steermtx</strong> (<cite>array_like</cite> or None.) – matrix which maps the filters onto Fourier series components (ordered [cos0 cos1 sin1 cos2
@@ -1631,7 +1688,7 @@ assumes cosine phase harmonic components, and filter positions at 2pi*n/N.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>harmonics</strong> (<cite>array_like</cite>) – array specifying the angular harmonics contained in the steerable basis/filters.</li>
-<li><strong>angles</strong> (<cite>array_like</cite> or None) – vector specifying the angular position of each filter. If None, defaults to
+<li><strong>angles</strong> (<cite>array_like</cite> or None) – vector specifying the angular position of each filter (in radians). If None, defaults to
 <cite>pi * np.arange(numh) / numh</cite>, where <cite>numh = harmonics.size + np.count_nonzero(harmonics)</cite></li>
 <li><strong>even_phase</strong> (<cite>bool</cite>) – specifies whether the harmonics are cosine or sine phase aligned about those positions.</li>
 </ul>

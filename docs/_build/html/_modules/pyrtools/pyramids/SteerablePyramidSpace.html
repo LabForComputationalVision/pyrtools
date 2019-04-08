@@ -154,11 +154,11 @@
             
   <h1>Source code for pyrtools.pyramids.SteerablePyramidSpace</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">.pyramid</span> <span class="k">import</span> <span class="n">Pyramid</span>
+<span class="kn">from</span> <span class="nn">.pyramid</span> <span class="k">import</span> <span class="n">SteerablePyramidBase</span>
 <span class="kn">from</span> <span class="nn">.c.wrapper</span> <span class="k">import</span> <span class="n">corrDn</span><span class="p">,</span> <span class="n">upConv</span>
 
 
-<div class="viewcode-block" id="SteerablePyramidSpace"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace">[docs]</a><span class="k">class</span> <span class="nc">SteerablePyramidSpace</span><span class="p">(</span><span class="n">Pyramid</span><span class="p">):</span>
+<div class="viewcode-block" id="SteerablePyramidSpace"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace">[docs]</a><span class="k">class</span> <span class="nc">SteerablePyramidSpace</span><span class="p">(</span><span class="n">SteerablePyramidBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Steerable pyramid (using spatial convolutions)</span>
 
 <span class="sd">    Notes</span>
@@ -172,10 +172,11 @@
 <span class="sd">    height : &#39;auto&#39; or `int`.</span>
 <span class="sd">        The height of the pyramid. If &#39;auto&#39;, will automatically determine based on the size of</span>
 <span class="sd">        `image`.</span>
-<span class="sd">    num_orientations: {1, 2, 4, 6}.</span>
-<span class="sd">        the number of orientations you want in the steerable pyramid filters. If you want a</span>
-<span class="sd">        different value, see SteerablePyramidFreq. Note that this is the order of the pyramid plus</span>
-<span class="sd">        one.</span>
+<span class="sd">    order : {0, 1, 3, 5}.</span>
+<span class="sd">        The Gaussian derivative order used for the steerable filters. If you want a different</span>
+<span class="sd">        value, see SteerablePyramidFreq. Note that to achieve steerability the minimum number</span>
+<span class="sd">        of orientation is `order` + 1, and is used here. To get more orientations at the same</span>
+<span class="sd">        order, use the method `steer_coeffs`</span>
 <span class="sd">    edge_type : {&#39;circular&#39;, &#39;reflect1&#39;, &#39;reflect2&#39;, &#39;repeat&#39;, &#39;zero&#39;, &#39;extend&#39;, &#39;dont-compute&#39;}</span>
 <span class="sd">        Specifies how to handle edges. Options are:</span>
 
@@ -216,11 +217,12 @@
 <span class="sd">       Image Transforms&quot;, ICASSP, Atlanta, GA, May 1996.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">num_orientations</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="s1">&#39;reflect1&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="s1">&#39;reflect1&#39;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="n">edge_type</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_orientations</span> <span class="o">=</span> <span class="n">num_orientations</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_filter</span><span class="p">(</span><span class="s2">&quot;sp</span><span class="si">{:d}</span><span class="s2">_filters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_orientations</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_orientations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_filter</span><span class="p">(</span><span class="s2">&quot;sp</span><span class="si">{:d}</span><span class="s2">_filters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_orientations</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pyr_type</span> <span class="o">=</span> <span class="s1">&#39;SteerableSpace&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_num_scales</span><span class="p">(</span><span class="s1">&#39;lofilt&#39;</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
 
@@ -245,15 +247,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="p">[</span><span class="s1">&#39;residual_lowpass&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pyr_size</span><span class="p">[</span><span class="s1">&#39;residual_lowpass&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lo</span><span class="o">.</span><span class="n">shape</span>
 
-<div class="viewcode-block" id="SteerablePyramidSpace.recon_pyr"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr">[docs]</a>    <span class="k">def</span> <span class="nf">recon_pyr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_orientations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="SteerablePyramidSpace.recon_pyr"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.SteerablePyramidSpace.SteerablePyramidSpace.recon_pyr">[docs]</a>    <span class="k">def</span> <span class="nf">recon_pyr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reconstruct the image, optionally using subset of pyramid coefficients.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        num_orientations: {None, 1, 2, 4, 6}.</span>
-<span class="sd">            the number of orientations you want in the steerable pyramid filters used to</span>
-<span class="sd">            reconstruct the pyramid. If None, uses the same number of orientations as used to</span>
-<span class="sd">            construct the pyramid.</span>
+<span class="sd">        order : {None, 0, 1, 3, 5}.</span>
+<span class="sd">            the Gaussian derivative order you want to use for the steerable pyramid filters used to</span>
+<span class="sd">            reconstruct the pyramid. If None, uses the same order as that used to construct the</span>
+<span class="sd">            pyramid.</span>
 <span class="sd">        edge_type : {None, &#39;circular&#39;, &#39;reflect1&#39;, &#39;reflect2&#39;, &#39;repeat&#39;, &#39;zero&#39;, &#39;extend&#39;,</span>
 <span class="sd">                     &#39;dont-compute&#39;}</span>
 <span class="sd">            Specifies how to handle edges. Options are:</span>
@@ -281,10 +283,12 @@
 <span class="sd">            The reconstructed image.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">num_orientations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filters</span>
+            <span class="n">recon_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_keys</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="n">bands</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_filter</span><span class="p">(</span><span class="s2">&quot;sp</span><span class="si">{:d}</span><span class="s2">_filters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_orientations</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_filter</span><span class="p">(</span><span class="s2">&quot;sp</span><span class="si">{:d}</span><span class="s2">_filters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">order</span><span class="p">))</span>
+            <span class="n">recon_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_keys</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">order</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># assume square filters  -- start of buildSpyrLevs</span>
         <span class="n">bfiltsz</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="s1">&#39;bfilts&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
@@ -294,7 +298,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">edges</span> <span class="o">=</span> <span class="n">edge_type</span>
 
-        <span class="n">recon_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recon_keys</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">num_orientations</span><span class="p">)</span>
 
         <span class="c1"># initialize reconstruction</span>
         <span class="k">if</span> <span class="s1">&#39;residual_lowpass&#39;</span> <span class="ow">in</span> <span class="n">recon_keys</span><span class="p">:</span>

@@ -157,6 +157,7 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">.pyr_utils</span> <span class="k">import</span> <span class="n">max_pyr_height</span>
 <span class="kn">from</span> <span class="nn">.filters</span> <span class="k">import</span> <span class="n">named_filter</span>
+<span class="kn">from</span> <span class="nn">.steer</span> <span class="k">import</span> <span class="n">steer</span>
 
 
 <div class="viewcode-block" id="Pyramid"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.pyramid.Pyramid">[docs]</a><span class="k">class</span> <span class="nc">Pyramid</span><span class="p">:</span>
@@ -216,21 +217,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pyr_size</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_complex</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_parse_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_parse_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Parse the name of the filter and return filter</span>
 
 <span class="sd">        Used during pyramid construction, user should not call this directly.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        filter_name : `str`.</span>
-<span class="sd">            Name of the filter, as accepted by `named_filter`. See that function for acceptable</span>
-<span class="sd">            names.</span>
+<span class="sd">        filt : `str` or `array_like`.</span>
+<span class="sd">            Name of the filter, as accepted by `named_filter`, or array to use as a filter. See that function for acceptable names.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        filt : `array` or `dict`</span>
-<span class="sd">            If `filter_name` was one of the steerable pyramids, then this will be a dictionary</span>
+<span class="sd">            If `filt` was one of the steerable pyramids, then this will be a dictionary</span>
 <span class="sd">            containing the various steerable pyramid filters. Else, it will be an array containing</span>
 <span class="sd">            the specified filter.</span>
 
@@ -238,8 +238,8 @@
 <span class="sd">        --------</span>
 <span class="sd">        named_filter : function that converts `filter_name` str into an array or dict of arrays.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">filt</span> <span class="o">=</span> <span class="n">named_filter</span><span class="p">(</span><span class="n">filter_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">filt</span> <span class="o">=</span> <span class="n">named_filter</span><span class="p">(</span><span class="n">filt</span><span class="p">)</span>
 
         <span class="c1"># the steerable pyramid filters are returned as a dictionary and we don&#39;t need to do this</span>
         <span class="c1"># check for them</span>
@@ -412,6 +412,54 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">recon_keys</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">level</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">bands</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">recon_keys</span></div>
+
+
+<div class="viewcode-block" id="SteerablePyramidBase"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.pyramid.SteerablePyramidBase">[docs]</a><span class="k">class</span> <span class="nc">SteerablePyramidBase</span><span class="p">(</span><span class="n">Pyramid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;base class for steerable pyramid</span>
+
+<span class="sd">    should not be called directly, we just use it so we can make both SteerablePyramidFreq and</span>
+<span class="sd">    SteerablePyramidSpace inherit the steer_coeffs function</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="n">edge_type</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SteerablePyramidBase.steer_coeffs"><a class="viewcode-back" href="../../../pyrtools.pyramids.html#pyrtools.pyramids.pyramid.SteerablePyramidBase.steer_coeffs">[docs]</a>    <span class="k">def</span> <span class="nf">steer_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">even_phase</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Steer pyramid coefficients to the specified angles</span>
+
+<span class="sd">        This allows you to have filters that have the Gaussian derivative order specified in</span>
+<span class="sd">        construction, but arbitrary angles or number of orientations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angles : `list`</span>
+<span class="sd">            list of angles (in radians) to steer the pyramid coefficients to</span>
+<span class="sd">        even_phase : `bool`</span>
+<span class="sd">            specifies whether the harmonics are cosine or sine phase aligned about those positions.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        resteered_coeffs : `dict`</span>
+<span class="sd">            dictionary of re-steered pyramid coefficients. will have the same number of scales as</span>
+<span class="sd">            the original pyramid (though it will not contain the residual highpass or lowpass).</span>
+<span class="sd">            like `self.pyr_coeffs`, keys are 2-tuples of ints indexing the scale and orientation,</span>
+<span class="sd">            but now we&#39;re indexing `angles` instead of `self.num_orientations`.</span>
+<span class="sd">        resteering_weights : `dict`</span>
+<span class="sd">            dictionary of weights used to re-steer the pyramid coefficients. will have the same</span>
+<span class="sd">            keys as `resteered_coeffs`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resteered_coeffs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">resteering_weights</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span><span class="p">):</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span>
+                               <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_orientations</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
+                <span class="n">res</span><span class="p">,</span> <span class="n">steervect</span> <span class="o">=</span> <span class="n">steer</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">return_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">even_phase</span><span class="o">=</span><span class="n">even_phase</span><span class="p">)</span>
+                <span class="n">resteered_coeffs</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">resteering_weights</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="n">steervect</span>
+
+        <span class="k">return</span> <span class="n">resteered_coeffs</span><span class="p">,</span> <span class="n">resteering_weights</span></div></div>
 </pre></div>
 
            </div>

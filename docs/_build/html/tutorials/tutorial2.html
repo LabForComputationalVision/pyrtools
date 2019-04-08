@@ -394,7 +394,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Content">
 <h2>2.1. Content<a class="headerlink" href="#Content" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>Laplacian pyraids<ul>
+<li>Laplacian pyramids<ul>
 <li>functions for constructing / manipulating Laplacian pyramids</li>
 <li>aliasing in the Gaussian and Laplacian pyramids</li>
 <li>Projection and Basis functions</li>
@@ -412,8 +412,8 @@ div.rendered_html tbody tr:hover {
 <div class="line">for basic tools see <code class="docutils literal notranslate"><span class="pre">TUTORIALS/01_tools.ipynb</span></code></div>
 <div class="line">for multi-scale steerable pyramids see <code class="docutils literal notranslate"><span class="pre">TUTORIALS/03_steerable.ipynb</span></code></div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -427,17 +427,8 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-The autoreload extension is already loaded. To reload it, use:
-  %reload_ext autoreload
-</pre></div></div>
-</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -458,7 +449,7 @@ The autoreload extension is already loaded. To reload it, use:
 <h3>2.1.1. Laplacian Pyramids:<a class="headerlink" href="#Laplacian-Pyramids:" title="Permalink to this headline">¶</a></h3>
 <p>Images may be decomposed into information at different scales.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -481,7 +472,7 @@ The autoreload extension is already loaded. To reload it, use:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -500,7 +491,7 @@ The autoreload extension is already loaded. To reload it, use:
 </div>
 <p>The blurred and fine images contain all the information found in the original image. Trivially, adding the blurred image to the fine scale detail will reconstruct the original. We can compare the original image to the sum of blurred and fine using the “image_stats” function, which reports on the statistics of the difference between it’s arguments:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -522,7 +513,7 @@ Difference statistics:
 <p>Since the filter is a lowpass filter, we might want to <strong>subsample</strong> the blurred image. This may cause some aliasing (depends on the filter), but the decomposition structure given above will still be possible. The corrDn function correlates (same as convolution, but flipped filter) and downsamples in a single operation (for efficiency). The string ‘reflect1’ tells the function to handle boundaries by reflecting the image about the edge pixels. Notice that the blurred1 image is half the size
 (in each dimension) of the original image.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -542,7 +533,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -561,7 +552,7 @@ Difference statistics:
 </div>
 <p>We now have a technique that takes an image, computes two new images (blurred1 and fine1) containing the coarse scale information and the fine scale information. We can also (trivially) reconstruct the original from these two (even if the subsampling of the blurred1 image caused aliasing):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -593,7 +584,7 @@ Difference statistics:
    ---------------> subtract: (FINE1) ---------------------
 </pre><p>Note that the number of samples in the representation (i.e., total samples in BLURRED1 and FINE1) is 1.5 times the number of samples in the original IM. Thus, this representation is OVERCOMPLETE.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -610,7 +601,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -628,7 +619,7 @@ Difference statistics:
 </div>
 <p>Since blurred2 and fine2 can be used to reconstruct blurred1, and blurred1 and fine1 can be used to reconstruct the original image, the set of THREE images (also known as “subbands”) {blurred2, fine2, fine1} constitute a complete representation of the original image. Note that the three subbands are displayed at the same size, but they are actually three different sizes.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -646,7 +637,7 @@ Difference statistics:
 <p>It is useful to consider exactly what information is stored in each of the pyramid subbands. The reconstruction process involves recursively interpolating these images and then adding them to the image at the next finer scale. To see the contribution of ONE of the representation images (say blurred2) to the reconstruction, we imagine filling all the other subbands with zeros and then following our reconstruction procedure. For the blurred2 subband, this is equivalent to simply calling upConv
 twice:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -664,7 +655,7 @@ twice:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -682,7 +673,7 @@ twice:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -704,7 +695,7 @@ Difference statistics:
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -723,7 +714,7 @@ Difference statistics:
 </h2><p>We can continue this process, recursively splitting off finer and finer details from the blurred image (like peeling off the outer layers of an onion). The resulting data structure is known as a “Laplacian Pyramid”. To make things easier, we have written a function called Lpyr to construct this object. The function returns a long vector containing the subbands of the pyramid. The display routine showLpyr shows all the subbands of the pyramid, at their correct relative sizes. It should now be
 clearer why these data structures are called “pyramids”.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -740,7 +731,7 @@ clearer why these data structures are called “pyramids”.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -757,7 +748,7 @@ clearer why these data structures are called “pyramids”.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -776,7 +767,7 @@ clearer why these data structures are called “pyramids”.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -804,7 +795,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -843,7 +834,7 @@ Difference statistics:
 <p>Here we build a “Laplacian” pyramid using <strong>random filters</strong>. filt1 is used with the downsampling operations and filt2 is used with the upsampling operations. We normalize the filters for display purposes. Of course, these filters are (almost certainly) not very “Gaussian”, and the subbands of such a pyramid will be garbage! Nevertheless, it is a simple property of the Laplacian pyramid that we can use ANY filters and we will still be able to reconstruct perfectly. <em>Indeed fine bands are
 produced by subtracting the parent from blurred, so adding them back gives the parent back.</em></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -867,11 +858,13 @@ produced by subtracting the parent from blurred, so adding them back gives the p
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pyrr</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">pyramids</span><span class="o">.</span><span class="n">LaplacianPyramid</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">downsample_filter_name</span><span class="o">=</span><span class="n">filt1</span><span class="p">,</span> <span class="n">upsample_filter_name</span><span class="o">=</span><span class="n">filt2</span><span class="p">)</span>
+<span></span><span class="n">pyrr</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">pyramids</span><span class="o">.</span><span class="n">LaplacianPyramid</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+                                    <span class="n">downsample_filter_name</span><span class="o">=</span><span class="n">filt1</span><span class="p">,</span>
+                                    <span class="n">upsample_filter_name</span><span class="o">=</span><span class="n">filt2</span><span class="p">)</span>
 <span class="n">pt</span><span class="o">.</span><span class="n">pyrshow</span><span class="p">(</span><span class="n">pyrr</span><span class="p">)</span>
 
 <span class="n">fullresr</span> <span class="o">=</span> <span class="n">pyrr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">filt2</span><span class="p">)</span>
@@ -888,7 +881,7 @@ produced by subtracting the parent from blurred, so adding them back gives the p
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: -0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 310.712589
+  Mean: 0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 306.125393
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -910,7 +903,7 @@ Difference statistics:
 <p><p>One way to see the consequences of the aliasing artifacts is by examining variations that occur when the input is shifted. We choose an image and shift it by some number of pixels. Then blur (filter-downsample-upsample-filter) the original image and blur the shifted image. If there’s no aliasing, then the blur and shift operations should commute (i.e., shift-filter-downsample-upsample-filter is the same as filter-downsample-upsample-filter-shift). Try this for 2 different filters (by replacing
 ‘binom3’ with ‘binom5’ or ‘binom7’ below), and you’ll see that the aliasing is much worse for the 3 tap filter.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -953,8 +946,8 @@ Difference statistics:
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Difference statistics:
-  Range: [-33, 50]
-  Mean: -0.000000,  Stdev (rmse): 24.973617,  SNR (dB): 1.431418
+  Range: [-72, 59]
+  Mean: 0.000000,  Stdev (rmse): 45.501988,  SNR (dB): -0.043168
 </pre></div></div>
 </div>
 </div>
@@ -972,7 +965,7 @@ Difference statistics:
 <p>Since the Laplacian pyramid is a linear transform, we can ask: what are its BASIS functions? We consider these in one dimension for simplicity. The BASIS function corresponding to a given coefficient tells us how much that coefficient contributes to each pixel in the reconstructed image. We can construct a single basis function by setting one sample of one subband equal to 1.0 (and all others to zero) and reconstructing. To build the entire matrix, we have to do this for every sample of every
 subband:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -981,7 +974,7 @@ subband:</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -990,7 +983,7 @@ subband:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -999,16 +992,16 @@ subband:</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>-34.34149768777916
+<span></span>-81.80649656106047
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1044,7 +1037,7 @@ subband:</p>
 <p><em>So the first pixel of the reconstructed image, out of the 36 pixels, receives constributions from the first, 37th, 38th, 55th, 56th, 64th and 65th dimensions of the pyramid representation.</em></p>
 <p>The columns of the basis matrix are the basis functions. The matrix is short and fat, corresponding to the fact that the representation is <strong>OVERCOMPLETE</strong>. Below, we plot the middle one from each subband, starting with the finest scale. Note that all of these basis functions are lowpass (Gaussian-like) functions.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1066,9 +1059,9 @@ subband:</p>
 <img alt="../_images/tutorials_tutorial2_41_0.png" src="../_images/tutorials_tutorial2_41_0.png" />
 </div>
 </div>
-<p>Now, we’d also like see the inverse (we’ll call them PROJECTION) functions. We need to ask <em>how much of each sample of the input image contributes to a given pyramid coefficient *. Thus, the matrix is constructed by building pyramids on the set of images with impulses at each possible location. The **rows*</em> of this matrix are the projection functions.</p>
+<p>Now, we’d also like see the inverse (we’ll call them PROJECTION) functions. We need to ask <em>how much of each sample of the input image contributes to a given pyramid coefficient</em>. Thus, the matrix is constructed by building pyramids on the set of images with impulses at each possible location. The <strong>rows</strong> of this matrix are the projection functions.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1091,7 +1084,7 @@ subband:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1123,7 +1116,7 @@ subband:</p>
 </div>
 <p>Building a pyramid corresponds to multiplication by the projection matrix. Reconstructing from this pyramid corresponds to multiplication by the basis matrix. Thus, the product of the two matrices (in this order) should be the identity matrix:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1140,7 +1133,7 @@ subband:</p>
 </div>
 <p>We can plot a few example projection functions at different scales. Note that all of the projection functions are bandpass functions, except for the coarsest subband which is lowpass.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1174,7 +1167,7 @@ mean:  0.0786
 </div>
 <p>Now consider the frequency response of these functions, plotted over the range [-pi,pi]:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1210,7 +1203,7 @@ mean:  0.0786
 <p>Try to convince yourself that the resulting filters will always be orthogonal to each other (i.e., their inner products will be zero) when shifted by any multiple of two.</p>
 <p>The function modulateFlip performs the first two of these operations. The third (spatial shifting) step is built into the convolution code.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1242,7 +1235,7 @@ mean:  0.0786
 </div>
 <p>In the Fourier domain, these filters are (approximately) “power-complementary”: the sum of their squared power spectra is (approximately) a constant. But note that neither is a perfect bandlimiter (i.e., a sinc function), and thus subsampling by a factor of 2 will cause aliasing in each of the subbands. See below for a discussion of the effect of this aliasing.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1272,7 +1265,7 @@ mean:  0.0786
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1304,7 +1297,7 @@ mean:  0.0786
 <div class="line">We’ve used the ‘reflect1’ to handle boundaries, which works properly for symmetric odd-length QMFs.</div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1334,7 +1327,7 @@ mean:  0.0786
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: 0.000080,  Stdev (rmse): 0.001188,  SNR (dB): 58.502314
+  Mean: -0.000025,  Stdev (rmse): 0.000663,  SNR (dB): 63.572830
 </pre></div></div>
 </div>
 <p>We have described an <strong>INVERTIBLE</strong> linear transform that maps an input image to the two images lo1 and hi1. The inverse transformation maps these two images to the result. This is depicted graphically with a system diagram:</p>
@@ -1348,12 +1341,12 @@ IM ---> flo/down2 --> LO1 --> up2/flo --> add --> RECON
 <p>So we’ve fixed one of the problems that we had with Laplacian pyramid. But the system diagram above places strong constraints on the filters. In particular, for these filters the reconstruction is no longer perfect. Turns out there are NO perfect-reconstruction symmetric filters that are power-complementary, except for the trivial case <code class="docutils literal notranslate"><span class="pre">[1]</span></code> and the nearly-trivial case <code class="docutils literal notranslate"><span class="pre">[1</span> <span class="pre">1]/sqrt(2)</span></code>.</p>
 <p>Let’s consider the projection functions of this 2-band splitting operation. We can construct these by applying the transform to impulse input signals, for all possible impulse locations. The rows of the following matrix are the projection functions for each coefficient in the transform.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">flo</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
-                    <span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">fhi</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span></span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">flo</span><span class="p">,</span> <span class="n">edge_type</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                    <span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">fhi</span><span class="p">,</span> <span class="n">edge_type</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
                                <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))))</span>
 <span class="n">pt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">vrange</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;M&quot;</span><span class="p">);</span>
 </pre></div>
@@ -1368,7 +1361,7 @@ IM ---> flo/down2 --> LO1 --> up2/flo --> add --> RECON
 </div>
 <p>The transform matrix is composed of two sub-matrices. The top half contains the lowpass kernel, shifted by increments of 2 samples. The bottom half contains the highpass. Now we compute the inverse of this matrix:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1385,7 +1378,7 @@ IM ---> flo/down2 --> LO1 --> up2/flo --> add --> RECON
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1421,14 +1414,14 @@ Difference statistics:
 </div>
 <blockquote>
 <div><div class="line-block">
-<div class="line">Multiplying the coefficient vector, which consists of concatenation of low pass and high pass coefficients, with the inverse (=transpose) matrix is the same as upsampling and convolving (i.e. UpConv) with the same decomposition filters. But WHY?</div>
+<div class="line">Multiplying the coefficient vector, which consists of concatenation of low pass and high pass coefficients, with the inverse (=transpose) matrix is the same as upsampling and convolving (i.e.&nbsp;UpConv) with the same decomposition filters. But WHY?</div>
 <div class="line">This equivalency becomes clear by looking at the rows of the inverse matrix. A given row consists of subsampled shifted copies of low and high pass filters. When this is multiplied by the vector of coefficients, it is equivalent to upsampling the vector of coeffs (by inserting zeros) and convolving the first half (low pass) with low pass filter and the second half with the high pass filter and then sum them up. This makes sense, because in order to go back to the original signal, we need a
 weightd sum of the low pass and high pass coeffs.</div>
 </div>
 </div></blockquote>
 <p>As in the Laplacian pyramid, we can <strong>recursively</strong> apply this QMF band-splitting operation to the lowpass band:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1439,7 +1432,7 @@ weightd sum of the low pass and high pass coeffs.</div>
 </div>
 <p>The representation of the original signal is now comprised of the three subbands {hi1, hi2, lo2} (we don’t hold onto lo1, because it can be reconstructed from lo2 and hi2). Note that hi1 is at 1/2 resolution, and hi2 and lo2 are at 1/4 resolution: The total number of samples in these three subbands is thus equal to the number of samples in the original signal.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1474,7 +1467,7 @@ weightd sum of the low pass and high pass coeffs.</div>
 </div>
 <p>Reconstruction proceeds as with the Laplacian pyramid: combine lo2 and hi2 to reconstruct lo1, which is then combined with hi1 to reconstruct the original signal:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1493,7 +1486,7 @@ weightd sum of the low pass and high pass coeffs.</div>
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: 0.000188,  Stdev (rmse): 0.001236,  SNR (dB): 58.158502
+  Mean: -0.000022,  Stdev (rmse): 0.001284,  SNR (dB): 57.830521
 </pre></div></div>
 </div>
 </div>
@@ -1501,7 +1494,7 @@ Difference statistics:
 <h3>2.1.4. FUNCTIONS for CONSTRUCTING/MANIPULATING QMF/Wavelet PYRAMIDS<a class="headerlink" href="#FUNCTIONS-for-CONSTRUCTING/MANIPULATING-QMF/Wavelet-PYRAMIDS" title="Permalink to this headline">¶</a></h3>
 <p>To make things easier, we have bundled these qmf operations and data structures into an object in Python.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1514,7 +1507,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1531,7 +1524,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1554,7 +1547,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1570,7 +1563,7 @@ Difference statistics:
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: 0.000202,  Stdev (rmse): 0.001873,  SNR (dB): 54.549345
+  Mean: 0.000108,  Stdev (rmse): 0.001252,  SNR (dB): 58.046477
 </pre></div></div>
 </div>
 <p>Now for <strong>2D</strong>, we use <strong>separable</strong> filters. There are 4 ways to apply the two filters to the input image (followed by the relavent subsampling operation):</p>
@@ -1580,7 +1573,7 @@ Difference statistics:
 <li><p>highpass in both x and y.</p>
 </ol><p>The pyramid is built by recursively subdividing the first of these bands into four new subbands.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1588,13 +1581,13 @@ Difference statistics:
 <span class="n">sz</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">zim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sz</span><span class="p">,</span><span class="n">sz</span><span class="p">))</span>
 <span class="n">flo</span> <span class="o">=</span> <span class="s1">&#39;qmf9&#39;</span>
-<span class="n">edges</span> <span class="o">=</span> <span class="s1">&#39;reflect1&#39;</span>
+<span class="n">edge_type</span> <span class="o">=</span> <span class="s1">&#39;reflect1&#39;</span>
 <span class="n">pyr</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">pyramids</span><span class="o">.</span><span class="n">WaveletPyramid</span><span class="p">(</span><span class="n">zim</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1607,7 +1600,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1615,9 +1608,9 @@ Difference statistics:
 <span class="n">reconList</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pyr</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="n">reconList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">reconList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">,</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">reconList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
+        <span class="n">reconList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
 <span class="n">pt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">reconList</span><span class="p">,</span> <span class="n">vrange</span><span class="o">=</span><span class="s1">&#39;indep1&#39;</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">3</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -1632,7 +1625,7 @@ Difference statistics:
 <p>Note that the first column contains horizontally oriented basis functions at different scales. The second contains vertically oriented basis functions. The third contains both diagonals (a checkerboard pattern). The bottom row shows a lowpass basis function.</p>
 <p>Now look at the corresponding Fourier transform magnitudes (these are plotted over the frequency range [-pi, pi] ):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1640,9 +1633,9 @@ Difference statistics:
 <span class="n">imgList</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pyr</span><span class="o">.</span><span class="n">pyr_coeffs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="n">basisFn</span> <span class="o">=</span> <span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">basisFn</span> <span class="o">=</span> <span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">,</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">basisFn</span> <span class="o">=</span> <span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="n">basisFn</span> <span class="o">=</span> <span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
     <span class="n">basisFmag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">basisFn</span><span class="p">,(</span><span class="n">sz</span><span class="p">,</span><span class="n">sz</span><span class="p">))))</span>
     <span class="n">imgList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">basisFmag</span><span class="p">)</span>
 
@@ -1658,7 +1651,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1666,7 +1659,7 @@ Difference statistics:
 <span class="n">sumSpectra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sz</span><span class="p">,</span><span class="n">sz</span><span class="p">))</span>
 <span class="n">lnum</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
 <span class="k">for</span> <span class="n">bnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">basisFn</span> <span class="o">=</span> <span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="p">[</span><span class="n">lnum</span><span class="p">],</span> <span class="p">[</span><span class="n">bnum</span><span class="p">])</span>
+    <span class="n">basisFn</span> <span class="o">=</span> <span class="n">pyr</span><span class="o">.</span><span class="n">recon_pyr</span><span class="p">(</span><span class="n">flo</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">,</span> <span class="p">[</span><span class="n">lnum</span><span class="p">],</span> <span class="p">[</span><span class="n">bnum</span><span class="p">])</span>
     <span class="n">basisFmag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">basisFn</span><span class="p">,(</span><span class="n">sz</span><span class="p">,</span><span class="n">sz</span><span class="p">))))</span>
     <span class="n">sumSpectra</span> <span class="o">=</span> <span class="n">basisFmag</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">sumSpectra</span><span class="p">;</span>
 <span class="n">pt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sumSpectra</span><span class="p">,</span> <span class="n">vrange</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;one scale&#39;</span><span class="p">);</span>
@@ -1681,7 +1674,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1691,7 +1684,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1709,7 +1702,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1738,7 +1731,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1770,7 +1763,7 @@ Difference statistics:
 <p>However, one can easily create wavelet filters of length 2 that will do the job. This is the oldest known wavelet, known as the “Haar”. The two kernels are <code class="docutils literal notranslate"><span class="pre">[1,1]/sqrt(2)</span></code> and <code class="docutils literal notranslate"><span class="pre">[1,-1]/sqrt(2)</span></code>. These are trivially seen to be orthogonal to each other, and shifts by multiples of two are also trivially orthogonal. The projection functions of the Haar transform are in the rows of the following matrix, constructed by applying the transform to impulse input signals, for all possible impulse
 locations:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1797,7 +1790,7 @@ locations:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1823,7 +1816,7 @@ locations:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1861,7 +1854,7 @@ locations:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1880,7 +1873,7 @@ locations:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1901,7 +1894,7 @@ locations:</p>
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: 0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 298.814256
+  Mean: 0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 304.048722
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1913,7 +1906,7 @@ Difference statistics:
 </div>
 <p>If you want perfect reconstruction, but don’t like the Haar transform, there’s another option: drop the symmetry requirement. Ingrid Daubechies developed one of the earliest sets of such perfect-reconstruction wavelets. The simplest of these is of length 4:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1923,8 +1916,8 @@ Difference statistics:
 <span class="c1"># copy of itself.  For example:</span>
 <span class="nb">print</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">daub_lo</span><span class="p">,[[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]]))</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]],</span><span class="n">daub_lo</span><span class="p">))))</span>
 
-<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">daub_lo</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
-                    <span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">daub_hi</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))))</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">daub_lo</span><span class="p">,</span> <span class="n">edge_type</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+                    <span class="n">pt</span><span class="o">.</span><span class="n">corrDn</span><span class="p">(</span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span> <span class="n">filt</span> <span class="o">=</span> <span class="n">daub_hi</span><span class="p">,</span> <span class="n">edge_type</span> <span class="o">=</span> <span class="s1">&#39;circular&#39;</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))))</span>
 <span class="n">pt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">pt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
 </pre></div>
@@ -1953,7 +1946,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1962,7 +1955,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1978,7 +1971,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2013,7 +2006,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2033,7 +2026,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2053,7 +2046,7 @@ Difference statistics:
 <div class="highlight"><pre>
 Difference statistics:
   Range: [0, 0]
-  Mean: -0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 228.209585
+  Mean: -0.000000,  Stdev (rmse): 0.000000,  SNR (dB): 227.127309
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -2069,7 +2062,7 @@ Difference statistics:
 <p><strong>aka. what’s wrong with wavelets</strong></p>
 <p>All of these orthonormal pyramid/wavelet transforms have a lot of aliasing in the subbands. You can see that in the frequency response plots since the frequency response of each filter covers well more than half the frequency domain. The aliasing can have serious consequences…</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2096,7 +2089,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2122,7 +2115,7 @@ Difference statistics:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
