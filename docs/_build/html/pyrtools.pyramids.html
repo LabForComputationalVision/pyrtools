@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial1.html">1. Basic examples using the tools in pyrtools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial2.html">2. Image pyramid tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial3.html">3. Steerable pyramids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial3.html">3. The “STEERABLE PYRAMID”</a></li>
 </ul>
 
             
@@ -662,7 +662,7 @@ valid levels. Otherwise, must be one of the valid levels.</li>
 <span id="pyrtools-pyramids-steerablepyramidfreq-module"></span><h2>pyrtools.pyramids.SteerablePyramidFreq module<a class="headerlink" href="#module-pyrtools.pyramids.SteerablePyramidFreq" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq">
-<em class="property">class </em><code class="descclassname">pyrtools.pyramids.SteerablePyramidFreq.</code><code class="descname">SteerablePyramidFreq</code><span class="sig-paren">(</span><em>image</em>, <em>height='auto'</em>, <em>num_orientations=4</em>, <em>twidth=1</em>, <em>is_complex=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidFreq.html#SteerablePyramidFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyrtools.pyramids.SteerablePyramidFreq.</code><code class="descname">SteerablePyramidFreq</code><span class="sig-paren">(</span><em>image</em>, <em>height='auto'</em>, <em>order=1</em>, <em>num_orientations=None</em>, <em>twidth=1</em>, <em>is_complex=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyrtools/pyramids/SteerablePyramidFreq.html#SteerablePyramidFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrtools.pyramids.SteerablePyramidFreq.SteerablePyramidFreq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyrtools.pyramids.pyramid.Pyramid" title="pyrtools.pyramids.pyramid.Pyramid"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrtools.pyramids.pyramid.Pyramid</span></code></a></p>
 <p>Steerable frequency pyramid.</p>
 <p>Construct a steerable pyramid on matrix IM, in the Fourier domain.
@@ -689,8 +689,12 @@ falloff. Angular functions are cos(theta- k*pi/order+1)^(order).</p>
 <li><strong>image</strong> (<cite>array_like</cite>) – 2d image upon which to construct to the pyramid.</li>
 <li><strong>height</strong> (‘auto’ or <cite>int</cite>.) – The height of the pyramid. If ‘auto’, will automatically determine based on the size of
 <cite>image</cite>.</li>
-<li><strong>num_orientations</strong> (<cite>int</cite>.) – the number of orientations you want in the steerable pyramid filters, must lie within
-[1, 16]. Note that this is the order of the pyramid plus one.</li>
+<li><strong>order</strong> (<cite>int</cite>.) – The derivative order used for the gaussian filters. Default value is 3.
+Note that to achieve steerability the minimum number of orientation is <cite>order</cite> + 1.</li>
+<li><strong>num_orientations</strong> (<cite>int</cite>.) – The number of orientations you want in the steerable pyramid filters. Default is <cite>order</cite> + 1.
+Note: The number of orientation must be larger or equal to <cite>order</cite> + 1,
+and it must lie within [1, 16]. If it is larger than <cite>order</cite> + 1, the extra bands are
+computed using the interpolation code :</li>
 <li><strong>twidth</strong> (<cite>int</cite>) – The width of the transition region of the radial lowpass function, in octaves</li>
 <li><strong>is_complex</strong> (<cite>bool</cite>) – Whether the pyramid coefficients should be complex or not. If True, the real and imaginary
 parts correspond to a pair of even and odd symmetric filters. If False, the coefficients

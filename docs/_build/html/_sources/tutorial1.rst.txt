@@ -1,4 +1,0 @@
-Tutorial 1: Tools
-**********************************
-
-.. include:: ../TUTORIALS/01_tools

@@ -1,4 +1,0 @@
-Tutorial 2: Pyramids
-**********************************
-
-.. include:: ../TUTORIALS/02_pyramids

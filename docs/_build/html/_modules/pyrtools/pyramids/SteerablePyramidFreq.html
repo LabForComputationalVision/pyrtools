@@ -89,7 +89,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorial1.html">1. Basic examples using the tools in pyrtools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorial2.html">2. Image pyramid tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorial3.html">3. Steerable pyramids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorial3.html">3. The “STEERABLE PYRAMID”</a></li>
 </ul>
 
             
@@ -187,9 +187,14 @@
 <span class="sd">    height : &#39;auto&#39; or `int`.</span>
 <span class="sd">        The height of the pyramid. If &#39;auto&#39;, will automatically determine based on the size of</span>
 <span class="sd">        `image`.</span>
+<span class="sd">    order : `int`.</span>
+<span class="sd">        The derivative order used for the gaussian filters. Default value is 3.</span>
+<span class="sd">        Note that to achieve steerability the minimum number of orientation is `order` + 1.</span>
 <span class="sd">    num_orientations : `int`.</span>
-<span class="sd">        the number of orientations you want in the steerable pyramid filters, must lie within</span>
-<span class="sd">        [1, 16]. Note that this is the order of the pyramid plus one.</span>
+<span class="sd">        The number of orientations you want in the steerable pyramid filters. Default is `order` + 1.</span>
+<span class="sd">        Note: The number of orientation must be larger or equal to `order` + 1,</span>
+<span class="sd">        and it must lie within [1, 16]. If it is larger than `order` + 1, the extra bands are</span>
+<span class="sd">        computed using the interpolation code :</span>
 <span class="sd">    twidth : `int`</span>
 <span class="sd">        The width of the transition region of the radial lowpass function, in octaves</span>
 <span class="sd">    is_complex : `bool`</span>
@@ -222,7 +227,7 @@
 <span class="sd">    .. [2] A Karasaridis and E P Simoncelli, &quot;A Filter Design Technique for Steerable Pyramid</span>
 <span class="sd">       Image Transforms&quot;, ICASSP, Atlanta, GA, May 1996.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">num_orientations</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">twidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">is_complex</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_orientations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">is_complex</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="c1"># in the Fourier domain, there&#39;s only one choice for how do edge-handling: circular. to</span>
         <span class="c1"># emphasize that thisisn&#39;ta choice, we use None here.</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">edge_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -242,6 +247,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">num_orientations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">num_orientations</span> <span class="o">=</span> <span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">num_orientations</span> <span class="o">&lt;</span> <span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;num_orientations must be larger or equal to order + 1 in order to retain steerability. Enforcing default&quot;</span><span class="p">)</span>
+            <span class="n">num_orientations</span> <span class="o">=</span> <span class="n">order</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">num_orientations</span> <span class="o">&gt;</span> <span class="mi">16</span> <span class="ow">or</span> <span class="n">num_orientations</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;num_orientations must be an integer in the range [1,16]. Truncating.&quot;</span><span class="p">)</span>
             <span class="n">num_orientations</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">num_orientations</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">16</span><span class="p">)</span>

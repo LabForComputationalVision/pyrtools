@@ -15,12 +15,12 @@ Recommended
 In a shell, please run::
 
     pip install pyrtools
-    
+
 
 From source
 ===========
 
-Obtain the latest version of Kymatio::
+Obtain the latest version of pyrtools::
 
     git clone https://github.com/LabForComputationalVision/pyrtools
 

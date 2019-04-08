@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="3. Steerable pyramids" href="tutorial3.html" />
+    <link rel="next" title="3. The “STEERABLE PYRAMID”" href="tutorial3.html" />
     <link rel="prev" title="1. Basic examples using the tools in pyrtools" href="tutorial1.html" /> 
 </head>
 
@@ -97,11 +97,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#QMF/WAVELET-PYRAMIDS.">2.1.3. QMF/WAVELET PYRAMIDS.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#FUNCTIONS-for-CONSTRUCTING/MANIPULATING-QMF/Wavelet-PYRAMIDS">2.1.4. FUNCTIONS for CONSTRUCTING/MANIPULATING QMF/Wavelet PYRAMIDS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#PERFECT-RECONSTRUCTION:-HAAR-AND-DEBAUCHIES-WAVELETS">2.1.5. PERFECT RECONSTRUCTION: HAAR AND DEBAUCHIES WAVELETS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ALIASING-IN-WAVELET-TRANSFORMS">2.1.6. ALIASING IN WAVELET TRANSFORMS</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial3.html">3. Steerable pyramids</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial3.html">3. The “STEERABLE PYRAMID”</a></li>
 </ul>
 
             
@@ -1065,7 +1066,7 @@ subband:</p>
 <img alt="../_images/tutorials_tutorial2_41_0.png" src="../_images/tutorials_tutorial2_41_0.png" />
 </div>
 </div>
-<p>Now, we’d also like see the inverse (we’ll call them PROJECTION) functions. We need to ask <em>how much of each sample of the input image contributes to a given pyramid coefficient</em>. Thus, the matrix is constructed by building pyramids on the set of images with impulses at each possible location. The <strong>rows</strong> of this matrix are the projection functions.</p>
+<p>Now, we’d also like see the inverse (we’ll call them PROJECTION) functions. We need to ask <em>how much of each sample of the input image contributes to a given pyramid coefficient *. Thus, the matrix is constructed by building pyramids on the set of images with impulses at each possible location. The **rows*</em> of this matrix are the projection functions.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
@@ -1420,7 +1421,7 @@ Difference statistics:
 </div>
 <blockquote>
 <div><div class="line-block">
-<div class="line">Multiplying the coefficient vector, which consists of concatenation of low pass and high pass coefficients, with the inverse (=transpose) matrix is the same as upsampling and convolving (i.e.&nbsp;UpConv) with the same decomposition filters. But WHY?</div>
+<div class="line">Multiplying the coefficient vector, which consists of concatenation of low pass and high pass coefficients, with the inverse (=transpose) matrix is the same as upsampling and convolving (i.e. UpConv) with the same decomposition filters. But WHY?</div>
 <div class="line">This equivalency becomes clear by looking at the rows of the inverse matrix. A given row consists of subsampled shifted copies of low and high pass filters. When this is multiplied by the vector of coefficients, it is equivalent to upsampling the vector of coeffs (by inserting zeros) and convolving the first half (low pass) with low pass filter and the second half with the high pass filter and then sum them up. This makes sense, because in order to go back to the original signal, we need a
 weightd sum of the low pass and high pass coeffs.</div>
 </div>
@@ -2062,8 +2063,10 @@ Difference statistics:
 <img alt="../_images/tutorials_tutorial2_101_1.png" src="../_images/tutorials_tutorial2_101_1.png" />
 </div>
 </div>
-<h2><p>ALIASING IN WAVELET TRANSFORMS</p>
-</h2><p><strong>aka. what’s wrong with wavelets</strong></p>
+</div>
+<div class="section" id="ALIASING-IN-WAVELET-TRANSFORMS">
+<h3>2.1.6. ALIASING IN WAVELET TRANSFORMS<a class="headerlink" href="#ALIASING-IN-WAVELET-TRANSFORMS" title="Permalink to this headline">¶</a></h3>
+<p><strong>aka. what’s wrong with wavelets</strong></p>
 <p>All of these orthonormal pyramid/wavelet transforms have a lot of aliasing in the subbands. You can see that in the frequency response plots since the frequency response of each filter covers well more than half the frequency domain. The aliasing can have serious consequences…</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
@@ -2161,7 +2164,7 @@ Difference statistics:
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tutorial3.html" class="btn btn-neutral float-right" title="3. Steerable pyramids" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tutorial3.html" class="btn btn-neutral float-right" title="3. The “STEERABLE PYRAMID”" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tutorial1.html" class="btn btn-neutral float-left" title="1. Basic examples using the tools in pyrtools" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

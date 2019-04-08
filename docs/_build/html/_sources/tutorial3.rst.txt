@@ -1,4 +1,0 @@
-Tutorial 3: Steerable Pyramids
-**********************************
-
-.. include:: ../TUTORIALS/03_steerable_pyramids

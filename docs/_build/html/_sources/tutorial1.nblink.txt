@@ -1,3 +1,0 @@
-{
-	"path": "../TUTORIALS/01_tools.ipynb"
-}
