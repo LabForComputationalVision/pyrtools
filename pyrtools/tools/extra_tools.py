@@ -256,7 +256,7 @@ def upBlur(image, n_levels=1, filt='binom5'):
     return res
 
 
-def image_gradient(image, edges="dont-compute"):
+def image_gradient(image, edge_type="dont-compute"):
     '''Compute the gradient of the image using smooth derivative filters
 
     Compute the gradient of the image using smooth derivative filters optimized for accurate
@@ -296,7 +296,7 @@ def image_gradient(image, edges="dont-compute"):
     gp = np.array([0.037659,  0.249153, 0.426375, 0.249153, 0.037659]).reshape(5, 1)
     gd = np.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5, 1)
 
-    dx = corrDn(corrDn(image, gp, edges), gd.T, edges)
-    dy = corrDn(corrDn(image, gd, edges), gp.T, edges)
+    dx = corrDn(corrDn(image, gp, edge_type), gd.T, edge_type)
+    dy = corrDn(corrDn(image, gd, edge_type), gp.T, edge_type)
 
     return (dx, dy)
