@@ -32,9 +32,14 @@ class SteerablePyramidFreq(Pyramid):
     height : 'auto' or `int`.
         The height of the pyramid. If 'auto', will automatically determine based on the size of
         `image`.
+    order : `int`.
+        The derivative order used for the gaussian filters. Default value is 3.
+        Note that to achieve steerability the minimum number of orientation is `order` + 1.
     num_orientations : `int`.
-        the number of orientations you want in the steerable pyramid filters, must lie within
-        [1, 16]. Note that this is the order of the pyramid plus one.
+        The number of orientations you want in the steerable pyramid filters. Default is `order` + 1.
+        Note: The number of orientation must be larger or equal to `order` + 1,
+        and it must lie within [1, 16]. If it is larger than `order` + 1, the extra bands are
+        computed using the interpolation code :
     twidth : `int`
         The width of the transition region of the radial lowpass function, in octaves
     is_complex : `bool`
@@ -67,7 +72,7 @@ class SteerablePyramidFreq(Pyramid):
     .. [2] A Karasaridis and E P Simoncelli, "A Filter Design Technique for Steerable Pyramid
        Image Transforms", ICASSP, Atlanta, GA, May 1996.
     """
-    def __init__(self, image, height='auto', num_orientations=4, twidth=1, is_complex=False):
+    def __init__(self, image, height='auto', order=1, num_orientations=None, twidth=1, is_complex=False):
         # in the Fourier domain, there's only one choice for how do edge-handling: circular. to
         # emphasize that thisisn'ta choice, we use None here.
         super().__init__(image=image, edge_type=None)
@@ -87,6 +92,11 @@ class SteerablePyramidFreq(Pyramid):
         else:
             self.num_scales = int(height)
 
+        if num_orientations is None:
+            num_orientations = order + 1
+        if num_orientations < order + 1:
+            warnings.warn("num_orientations must be larger or equal to order + 1 in order to retain steerability. Enforcing default")
+            num_orientations = order + 1
         if num_orientations > 16 or num_orientations < 1:
             warnings.warn("num_orientations must be an integer in the range [1,16]. Truncating.")
             num_orientations = min(max(num_orientations, 1), 16)
