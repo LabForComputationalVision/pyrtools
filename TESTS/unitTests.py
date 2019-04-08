@@ -164,6 +164,15 @@ class LpyrTests(unittest.TestCase):
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         recon = pyPyr.recon_pyr(levels=[0, 2, 4])
         self.assertTrue((matPyr['recon'] == recon).all())
+    def test13(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        filt1 = np.random.rand(5,)
+        filt1 = np.sqrt(2)*filt1/sum(filt1)
+        filt2 = np.random.rand(3,)
+        filt2 = np.sqrt(2)*filt2/sum(filt2)
+        pyrr = pt.pyramids.LaplacianPyramid(im, height=7,
+                                    downsample_filter_name=filt1,
+                                    upsample_filter_name=filt2)
 
 class spFilterTests(unittest.TestCase):
     def test1(self):
@@ -485,7 +494,7 @@ class SteerablePyramidFreqpyrTests(unittest.TestCase):
     # we initially had a bug with odd orientations, since fixed
     def testRecon2(self):
         img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.SteerablePyramidFreq(img, num_orientations=3)
+        pyr = pt.pyramids.SteerablePyramidFreq(img, order=2)
         recon = pyr.recon_pyr()
         self.assertTrue(np.allclose(img, recon, atol=5e-3))
 
@@ -559,7 +568,7 @@ class SteerablePyramidComplexTests(unittest.TestCase):
     # we initially had a bug with odd orientations, since fixed
     def testRecon2(self):
         img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.SteerablePyramidFreq(img, num_orientations=3, is_complex=True)
+        pyr = pt.pyramids.SteerablePyramidFreq(img, order=2, is_complex=True)
         recon = pyr.recon_pyr()
         self.assertTrue(np.allclose(img, recon, atol=5e-3))
 
@@ -672,11 +681,13 @@ class WpyrTests(unittest.TestCase):
         pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def testRecon1(self):
+        np.random.seed(0)
         im = pt.synthetic_images.pink_noise((1, 64))
         pyr = pt.pyramids.WaveletPyramid(im)
         res = pyr.recon_pyr()
         self.assertTrue(np.allclose(res, im, atol=5e-3))
     def testRecon2(self):
+        np.random.seed(0)
         im = pt.synthetic_images.pink_noise((64, 1))
         pyr = pt.pyramids.WaveletPyramid(im)
         res = pyr.recon_pyr()
