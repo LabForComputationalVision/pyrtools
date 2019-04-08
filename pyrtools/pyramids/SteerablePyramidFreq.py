@@ -34,12 +34,8 @@ class SteerablePyramidFreq(Pyramid):
         `image`.
     order : `int`.
         The derivative order used for the gaussian filters. Default value is 3.
-        Note that to achieve steerability the minimum number of orientation is `order` + 1.
-    num_orientations : `int`.
-        The number of orientations you want in the steerable pyramid filters. Default is `order` + 1.
-        Note: The number of orientation must be larger or equal to `order` + 1,
-        and it must lie within [1, 16]. If it is larger than `order` + 1, the extra bands are
-        computed using the interpolation code :
+        Note that to achieve steerability the minimum number of orientation is `order` + 1,
+        and is used here. To get more orientations at the same order, use the method `steer_coeffs`.
     twidth : `int`
         The width of the transition region of the radial lowpass function, in octaves
     is_complex : `bool`
@@ -72,7 +68,7 @@ class SteerablePyramidFreq(Pyramid):
     .. [2] A Karasaridis and E P Simoncelli, "A Filter Design Technique for Steerable Pyramid
        Image Transforms", ICASSP, Atlanta, GA, May 1996.
     """
-    def __init__(self, image, height='auto', order=1, num_orientations=None, twidth=1, is_complex=False):
+    def __init__(self, image, height='auto', order=3, twidth=1, is_complex=False):
         # in the Fourier domain, there's only one choice for how do edge-handling: circular. to
         # emphasize that thisisn'ta choice, we use None here.
         super().__init__(image=image, edge_type=None)
@@ -81,6 +77,7 @@ class SteerablePyramidFreq(Pyramid):
         self.is_complex = is_complex
         # SteerablePyramidFreq doesn't have filters, they're constructed in the frequency space
         self.filters = {}
+        self.order = int(order)
 
         # we can't use the base class's _set_num_scales method because the max height is calculated
         # slightly differently
@@ -92,39 +89,16 @@ class SteerablePyramidFreq(Pyramid):
         else:
             self.num_scales = int(height)
 
-        if num_orientations is None:
-            num_orientations = order + 1
-        if num_orientations < order + 1:
-            warnings.warn("num_orientations must be larger or equal to order + 1 in order to retain steerability. Enforcing default")
-            num_orientations = order + 1
-        if num_orientations > 16 or num_orientations < 1:
-            warnings.warn("num_orientations must be an integer in the range [1,16]. Truncating.")
-            num_orientations = min(max(num_orientations, 1), 16)
-        self.num_orientations = int(num_orientations)
+        if self.order > 15 or self.order < 0:
+            raise Exception("order must be an integer in the range [0,15]. Truncating.")
+
+        self.num_orientations = int(order + 1)
 
         if twidth <= 0:
             warnings.warn("twidth must be positive. Setting to 1.")
             twidth = 1
         twidth = int(twidth)
 
-        # ------------------------------------------------------
-        # steering stuff:
-
-        if self.num_orientations % 2 == 0:
-            harmonics = np.arange(self.num_orientations // 2) * 2 + 1
-        else:
-            harmonics = np.arange((self.num_orientations-1) // 2) * 2
-        if harmonics.size == 0:
-            # in this case, harmonics is an empty matrix. This happens when
-            # self.num_orientations=0 and (based on how the matlab code acts), in that situation,
-            # we actually want harmonics to be 0.
-            harmonics = np.array([0])
-        self.harmonics = harmonics
-
-        angles = np.pi * np.arange(self.num_orientations)/self.num_orientations
-        self.steermtx = steer_to_harmonics_mtx(harmonics, angles, even_phase=True)
-
-        # ------------------------------------------------------
 
         dims = np.array(self.image.shape)
         ctr = np.ceil((np.array(dims)+0.5)/2).astype(int)
@@ -169,16 +143,16 @@ class SteerablePyramidFreq(Pyramid):
             lutsize = 1024
             Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
-            order = self.num_orientations - 1
-            const = (2**(2*order))*(factorial(order, exact=True)**2)/ float(self.num_orientations*factorial(2*order, exact=True))
+            # order = self.num_orientations - 1
+            const = (2**(2*self.order))*(factorial(self.order, exact=True)**2)/ float(self.num_orientations*factorial(2*self.order, exact=True))
 
             if self.is_complex:
                 # TODO clean that up and give comments
                 alfa = ((np.pi+Xcosn) % (2.0*np.pi)) - np.pi
-                Ycosn = (2.0 * np.sqrt(const) * (np.cos(Xcosn) ** order) *
+                Ycosn = (2.0 * np.sqrt(const) * (np.cos(Xcosn) ** self.order) *
                          (np.abs(alfa) < np.pi/2.0).astype(int))
             else:
-                Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
+                Ycosn = np.sqrt(const) * (np.cos(Xcosn))**self.order
 
             log_rad_test = np.reshape(log_rad, (1, log_rad.shape[0] * log_rad.shape[1]))
             himask = pointOp(log_rad_test, Yrcos, Xrcos[0], Xrcos[1]-Xrcos[0])
@@ -195,7 +169,7 @@ class SteerablePyramidFreq(Pyramid):
                 anglemasks.append(anglemask)
                 # that (-1j)**order term in the beginning will be 1, -j, -1, j for order 0, 1, 2,
                 # 3, and will then loop again
-                banddft = (-1j) ** order * lodft * anglemask * himask
+                banddft = (-1j) ** self.order * lodft * anglemask * himask
                 band = np.fft.ifft2(np.fft.ifftshift(banddft))
                 if not self.is_complex:
                     self.pyr_coeffs[(i, b)] = np.real(band.copy())
@@ -294,9 +268,9 @@ class SteerablePyramidFreq(Pyramid):
 
         Xcosn = np.pi * np.arange(-(2*lutsize+1), (lutsize+2)) / lutsize
 
-        order = self.num_orientations - 1
-        const = (2**(2*order))*(factorial(order, exact=True)**2) / float(self.num_orientations*factorial(2*order, exact=True))
-        Ycosn = np.sqrt(const) * (np.cos(Xcosn))**order
+        # order = self.num_orientations - 1
+        const = (2**(2*self.order))*(factorial(self.order, exact=True)**2) / float(self.num_orientations*factorial(2*self.order, exact=True))
+        Ycosn = np.sqrt(const) * (np.cos(Xcosn))**self.order
 
         # lowest band
         # initialize reconstruction
@@ -401,3 +375,36 @@ class SteerablePyramidFreq(Pyramid):
         outresdft = np.real(np.fft.ifft2(np.fft.ifftshift(resdft)))
 
         return outresdft
+
+    def steer_coeffs():
+
+                # ------------------------------------------------------
+                # steering stuff:
+
+
+                        # if num_orientations is None:
+                        #     num_orientations = self.order + 1
+                        # if num_orientations < self.order + 1:
+                        #     warnings.warn("num_orientations must be larger or equal to order + 1 in order to retain steerability. Enforcing default")
+                        #     num_orientations = self.order + 1
+                        #     num_orientations : `int`.
+                                # The number of orientations you want in the steerable pyramid filters. Default is `order` + 1.
+                                # Note: The number of orientation must be larger or equal to `order` + 1,
+                                # and it must lie within [1, 16]. If it is larger than `order` + 1, the extra bands are
+                                # computed using the interpolation code :
+
+                if self.num_orientations % 2 == 0:
+                    harmonics = np.arange(self.num_orientations // 2) * 2 + 1
+                else:
+                    harmonics = np.arange((self.num_orientations-1) // 2) * 2
+                if harmonics.size == 0:
+                    # in this case, harmonics is an empty matrix. This happens when
+                    # self.num_orientations=0 and (based on how the matlab code acts), in that situation,
+                    # we actually want harmonics to be 0.
+                    harmonics = np.array([0])
+                self.harmonics = harmonics
+
+                angles = np.pi * np.arange(self.num_orientations)/self.num_orientations
+                self.steermtx = steer_to_harmonics_mtx(harmonics, angles, even_phase=True)
+
+                # ------------------------------------------------------
