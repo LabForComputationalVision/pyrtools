@@ -1,9 +1,9 @@
 import numpy as np
-from .pyramid import Pyramid
+from .pyramid import SteerablePyramidBase
 from .c.wrapper import corrDn, upConv
 
 
-class SteerablePyramidSpace(Pyramid):
+class SteerablePyramidSpace(SteerablePyramidBase):
     """Steerable pyramid (using spatial convolutions)
 
     Notes
@@ -17,10 +17,11 @@ class SteerablePyramidSpace(Pyramid):
     height : 'auto' or `int`.
         The height of the pyramid. If 'auto', will automatically determine based on the size of
         `image`.
-    num_orientations: {1, 2, 4, 6}.
-        the number of orientations you want in the steerable pyramid filters. If you want a
-        different value, see SteerablePyramidFreq. Note that this is the order of the pyramid plus
-        one.
+    order : {0, 1, 3, 5}.
+        The Gaussian derivative order used for the steerable filters. If you want a different
+        value, see SteerablePyramidFreq. Note that to achieve steerability the minimum number
+        of orientation is `order` + 1, and is used here. To get more orientations at the same
+        order, use the method `steer_coeffs`
     edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
         Specifies how to handle edges. Options are:
 
@@ -61,11 +62,12 @@ class SteerablePyramidSpace(Pyramid):
        Image Transforms", ICASSP, Atlanta, GA, May 1996.
     """
 
-    def __init__(self, image, height='auto', num_orientations=2, edge_type='reflect1'):
+    def __init__(self, image, height='auto', order=1, edge_type='reflect1'):
         super().__init__(image=image, edge_type=edge_type)
 
-        self.num_orientations = num_orientations
-        self.filters = self._parse_filter("sp{:d}_filters".format(num_orientations-1))
+        self.order = order
+        self.num_orientations = self.order + 1
+        self.filters = self._parse_filter("sp{:d}_filters".format(self.num_orientations-1))
         self.pyr_type = 'SteerableSpace'
         self._set_num_scales('lofilt', height)
 
@@ -90,15 +92,15 @@ class SteerablePyramidSpace(Pyramid):
         self.pyr_coeffs['residual_lowpass'] = lo
         self.pyr_size['residual_lowpass'] = lo.shape
 
-    def recon_pyr(self, num_orientations=None, edge_type=None, levels='all', bands='all'):
+    def recon_pyr(self, order=None, edge_type=None, levels='all', bands='all'):
         """Reconstruct the image, optionally using subset of pyramid coefficients.
 
         Parameters
         ----------
-        num_orientations: {None, 1, 2, 4, 6}.
-            the number of orientations you want in the steerable pyramid filters used to
-            reconstruct the pyramid. If None, uses the same number of orientations as used to
-            construct the pyramid.
+        order : {None, 0, 1, 3, 5}.
+            the Gaussian derivative order you want to use for the steerable pyramid filters used to
+            reconstruct the pyramid. If None, uses the same order as that used to construct the
+            pyramid.
         edge_type : {None, 'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
                      'dont-compute'}
             Specifies how to handle edges. Options are:
@@ -126,10 +128,12 @@ class SteerablePyramidSpace(Pyramid):
             The reconstructed image.
         """
 
-        if num_orientations is None:
+        if order is None:
             filters = self.filters
+            recon_keys = self._recon_keys(levels, bands)
         else:
-            filters = self._parse_filter("sp{:d}_filters".format(num_orientations-1))
+            filters = self._parse_filter("sp{:d}_filters".format(order))
+            recon_keys = self._recon_keys(levels, bands, order+1)
 
         # assume square filters  -- start of buildSpyrLevs
         bfiltsz = int(np.floor(np.sqrt(filters['bfilts'].shape[0])))
@@ -139,7 +143,6 @@ class SteerablePyramidSpace(Pyramid):
         else:
             edges = edge_type
 
-        recon_keys = self._recon_keys(levels, bands, num_orientations)
 
         # initialize reconstruction
         if 'residual_lowpass' in recon_keys:

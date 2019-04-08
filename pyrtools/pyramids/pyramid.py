@@ -2,6 +2,7 @@ import numpy as np
 import warnings
 from .pyr_utils import max_pyr_height
 from .filters import named_filter
+from .steer import steer
 
 
 class Pyramid:
@@ -256,3 +257,51 @@ class Pyramid:
             else:
                 recon_keys.extend([(level, band) for band in bands])
         return recon_keys
+
+
+class SteerablePyramidBase(Pyramid):
+    """base class for steerable pyramid
+
+    should not be called directly, we just use it so we can make both SteerablePyramidFreq and
+    SteerablePyramidSpace inherit the steer_coeffs function
+
+    """
+    def __init__(self, image, edge_type):
+        super().__init__(image=image, edge_type=edge_type)
+
+    def steer_coeffs(self, angles, even_phase=True):
+        """Steer pyramid coefficients to the specified angles
+
+        This allows you to have filters that have the Gaussian derivative order specified in
+        construction, but arbitrary angles or number of orientations.
+
+        Parameters
+        ----------
+        angles : `list`
+            list of angles (in radians) to steer the pyramid coefficients to
+        even_phase : `bool`
+            specifies whether the harmonics are cosine or sine phase aligned about those positions.
+
+        Returns
+        -------
+        resteered_coeffs : `dict`
+            dictionary of re-steered pyramid coefficients. will have the same number of scales as
+            the original pyramid (though it will not contain the residual highpass or lowpass).
+            like `self.pyr_coeffs`, keys are 2-tuples of ints indexing the scale and orientation,
+            but now we're indexing `angles` instead of `self.num_orientations`.
+        resteering_weights : `dict`
+            dictionary of weights used to re-steer the pyramid coefficients. will have the same
+            keys as `resteered_coeffs`.
+
+        """
+        resteered_coeffs = {}
+        resteering_weights = {}
+        for i in range(self.num_scales):
+            basis = np.vstack([self.pyr_coeffs[(i, j)].flatten() for j in
+                               range(self.num_orientations)]).T
+            for j, a in enumerate(angles):
+                res, steervect = steer(basis, a, return_weights=True, even_phase=even_phase)
+                resteered_coeffs[(i, j)] = res.reshape(self.pyr_coeffs[(i, 0)].shape)
+                resteering_weights[(i, j)] = steervect
+
+        return resteered_coeffs, resteering_weights

@@ -12,7 +12,7 @@ def steer_to_harmonics_mtx(harmonics, angles=None, even_phase=True):
     harmonics: `array_like`
         array specifying the angular harmonics contained in the steerable basis/filters.
     angles: `array_like` or None
-        vector specifying the angular position of each filter. If None, defaults to
+        vector specifying the angular position of each filter (in radians). If None, defaults to
         `pi * np.arange(numh) / numh`, where `numh = harmonics.size + np.count_nonzero(harmonics)`
     even_phase : `bool`
         specifies whether the harmonics are cosine or sine phase aligned about those positions.
@@ -62,7 +62,8 @@ def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, eve
         array whose columns are vectorized rotated copies of a steerable function, or the responses
         of a set of steerable filters.
     angle : `array_like` or `int`
-        scalar or column vector the size of the basis. specifies the angle(s) to steer to
+        scalar or column vector the size of the basis. specifies the angle(s) (in radians) to
+        steer to
     harmonics : `list` or None
         a list of harmonic numbers indicating the angular harmonic content of the basis. if None
         (default), N even or odd low frequencies, as for derivative filters
