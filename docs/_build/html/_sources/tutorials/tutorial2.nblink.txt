@@ -1,3 +1,0 @@
-{
-	"path": "../../TUTORIALS/02_pyramids.ipynb"
-}
