@@ -1,5 +1,15 @@
 # pyrtools: tools for multi-scale image processing
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/LabForComputationalVision/pyrtools/blob/master/LICENSE)
+
+![Python version](https://img.shields.io/badge/python-3.5%7C3.6%7C3.7-blue.svg)
+
+[![Build Status](https://travis-ci.com/LabForComputationalVision/pyrtools.svg?branch=master)](https://travis-ci.com/LabForComputationalVision/pyrtools)
+
+[![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/master?filepath=TUTORIALS%2F)
+
 Briefly, the tools include:
   - Recursive multi-scale image decompositions (pyramids), including
     Laplacian pyramids, QMFs, Wavelets, and steerable pyramids.  These
@@ -50,16 +60,6 @@ IPython is optional. If it's not installed,
 `pyrtools.display_tools.animshow` must be called with `as_html5=False`
 (but since this is for displaying the animated image in a Jupyter /
 IPython notebook, you probably won't need that functionality).
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/LabForComputationalVision/pyrtools/blob/master/LICENSE)
-
-[![Python version](https://img.shields.io/badge/python-3.5%7C3.6%7C3.7-blue.svg)]
-
-[![Build Status](https://travis-ci.com/LabForComputationalVision/pyrtools.svg?branch=master)](https://travis-ci.com/LabForComputationalVision/pyrtools)
-
-[![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/master?filepath=TUTORIALS%2F)
 
 # Authors
 
