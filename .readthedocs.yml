@@ -18,7 +18,7 @@ formats: all
 
 # Optionally set the version of Python and requirements required to build your docs
 conda:
-  file: docs/environment.yml
+  environment: docs/environment.yml
 python:
   version: 3.7
   install:
