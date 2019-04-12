@@ -1,0 +1,15 @@
+name: pyrtools_docs
+
+channels:
+  - conda-forge
+
+dependencies:
+  - cython
+  - sphinx
+  - sphinx_rtd_theme
+  - numpydoc
+  - numpy
+  - python
+  - pip:
+    - nbsphinx
+    - nbsphinx_link

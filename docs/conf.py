@@ -39,10 +39,6 @@ extensions = [
     'nbsphinx_link',
 ]
 
-# need to use this because readthedocs can't handle the C modules in our package:
-# https://docs.readthedocs.io/en/stable/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
-autodoc_mock_imports = ['pyrtools']
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
