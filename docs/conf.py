@@ -15,20 +15,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-from pyrtools import __version__ as pyrtools_version
 sys.path.insert(0, os.path.abspath('./tutorials/'))
-
-
-# -- Project information -----------------------------------------------------
-
-project = 'pyrtools'
-copyright = '2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy'
-author = 'Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy'
-
-# The short X.Y version
-version = ''
-# The full version, including alpha/beta/rc tags
-release = pyrtools_version
 
 
 # -- General configuration ---------------------------------------------------
@@ -51,6 +38,10 @@ extensions = [
     'nbsphinx',
     'nbsphinx_link',
 ]
+
+# need to use this because readthedocs can't handle the C modules in our package:
+# https://docs.readthedocs.io/en/stable/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
+autodoc_mock_imports = ['pyrtools.pyramids.c']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -78,6 +69,19 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+
+# -- Project information -----------------------------------------------------
+
+project = 'pyrtools'
+copyright = '2019, Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy'
+author = 'Eero Simoncelli, Rob Young, William Broderick, Pierre-Étienne Fiquet, Zhuo Wang, Zahra Kadkhodaie, Nikhil Parthasarathy'
+
+# The short X.Y version
+version = ''
+# The full version, including alpha/beta/rc tags
+import pyrtools
+release = pyrtools.__version__
 
 
 # -- Options for HTML output -------------------------------------------------
