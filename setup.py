@@ -11,18 +11,6 @@ pyrtools_version_module = importlib.util.module_from_spec(pyrtools_version_spec)
 pyrtools_version_spec.loader.exec_module(pyrtools_version_module)
 VERSION = pyrtools_version_module.version
 
-ext_modules = [Extension('pyrtools.pyramids.c.wrapConv',
-                         sources=['pyrtools/pyramids/c/convolve.c',
-                                  'pyrtools/pyramids/c/edges.c',
-                                  'pyrtools/pyramids/c/wrap.c',
-                                  'pyrtools/pyramids/c/internal_pointOp.c'],
-                         depends=['pyrtools/pyramids/c/convolve.h',
-                                  'pyrtools/pyramids/c/internal_pointOp.h'],
-                         extra_compile_args=['-fPIC', '-shared'])]
-if os.environ.get("READTHEDOCS") == "True":
-    print(" ON READ THE DOCS")
-from Cython.Build import cythonize
-ext_modules = cythonize(ext_modules)
 
 setup(
     name='pyrtools',
@@ -42,6 +30,13 @@ setup(
                       'Pillow>=3.4',
                       'tqdm>=4.29',
                       'requests>=2.21'],
-    ext_modules=ext_modules,
+    ext_modules=[Extension('pyrtools.pyramids.c.wrapConv',
+                           sources=['pyrtools/pyramids/c/convolve.c',
+                                    'pyrtools/pyramids/c/edges.c',
+                                    'pyrtools/pyramids/c/wrap.c',
+                                    'pyrtools/pyramids/c/internal_pointOp.c'],
+                           depends=['pyrtools/pyramids/c/convolve.h',
+                                    'pyrtools/pyramids/c/internal_pointOp.h'],
+                           extra_compile_args=['-fPIC', '-shared'])],
     tests='TESTS',
     )

@@ -4,7 +4,6 @@ channels:
   - conda-forge
 
 dependencies:
-  - cython
   - sphinx
   - sphinx_rtd_theme
   - numpydoc

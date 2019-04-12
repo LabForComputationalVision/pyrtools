@@ -2,6 +2,7 @@
 """functions that interact with the C code, for handling convolutions mostly.
 """
 import ctypes
+import warnings
 import os
 import glob
 import numpy as np
@@ -12,7 +13,10 @@ libpath = glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'w
 # print(libpath)
 
 # load the c library
-lib = ctypes.cdll.LoadLibrary(libpath[0])
+if len(libpath) > 0:
+    lib = ctypes.cdll.LoadLibrary(libpath[0])
+else:
+    warnings.warn("Can't load in C code, something went wrong in your install!")
 
 
 def corrDn(image, filt, edge_type='reflect1', step=(1, 1), start=(0, 0), stop=None):
