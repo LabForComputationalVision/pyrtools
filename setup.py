@@ -20,8 +20,9 @@ ext_modules = [Extension('pyrtools.pyramids.c.wrapConv',
                                   'pyrtools/pyramids/c/internal_pointOp.h'],
                          extra_compile_args=['-fPIC', '-shared'])]
 if os.environ.get("READTHEDOCS") == "True":
-    from Cython.Build import cythonize
-    ext_modules = cythonize(ext_modules)
+    print(" ON READ THE DOCS")
+from Cython.Build import cythonize
+ext_modules = cythonize(ext_modules)
 
 setup(
     name='pyrtools',
@@ -33,7 +34,7 @@ setup(
     author='Eero Simoncelli',
     author_email='eero.simoncelli@nyu.edu',
     keywords='multi-scale image-processing',
-    packages=['pyrtools'],
+    packages=['pyrtools', 'pyrtools.pyramids', 'pyrtools.tools', 'pyrtools.pyramids.c'],
     package_data={'': ['*.h', 'LICENSE']},
     install_requires=['numpy>=1.1',
                       'scipy>=0.18',
