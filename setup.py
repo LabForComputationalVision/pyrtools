@@ -2,6 +2,7 @@
 
 from setuptools import setup, Extension
 import importlib
+import os
 
 # copied from kymatio's setup.py: https://github.com/kymatio/kymatio/blob/master/setup.py
 pyrtools_version_spec = importlib.util.spec_from_file_location('pyrtools_version',
@@ -9,6 +10,16 @@ pyrtools_version_spec = importlib.util.spec_from_file_location('pyrtools_version
 pyrtools_version_module = importlib.util.module_from_spec(pyrtools_version_spec)
 pyrtools_version_spec.loader.exec_module(pyrtools_version_module)
 VERSION = pyrtools_version_module.version
+
+if os.environ.get("READTHEDOCS") == "True":
+    try:
+        environ = os.environb
+    except AttributeError:
+        environ = os.environ
+
+    environ[b"CC"] = b"x86_64-linux-gnu-gcc"
+    environ[b"LD"] = b"x86_64-linux-gnu-ld"
+    environ[b"AR"] = b"x86_64-linux-gnu-ar"
 
 setup(
     name='pyrtools',
