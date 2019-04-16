@@ -58,6 +58,22 @@ IPython is optional. If it's not installed,
 (but since this is for displaying the animated image in a Jupyter /
 IPython notebook, you probably won't need that functionality).
 
+# Pyramid resources
+
+If you would like to learn more about pyramids and why they're helpful
+for image processing, here are some resources to get you started:
+
+ - Brian Wandell's [Foundations of
+   Vision](https://foundationsofvision.stanford.edu/chapter-8-multiresolution-image-representations/),
+   chapter 8 (the rest of the book is helpful if you want to
+   understand the basics of the visual system).
+ - [Adelson et al, 1984, "Pyramid methods in image
+   processing".](http://persci.mit.edu/pub_pdfs/RCA84.pdf)
+ - Notes from David Heeger on [steerable
+   filters](http://www.cns.nyu.edu/~david/handouts/steerable.pdf)
+ - Notes from Eero Simoncelli on [the Steerable
+   Pyramid](http://www.cns.nyu.edu/~eero/STEERPYR/)
+
 # Authors
 
 Rob Young and Eero Simoncelli, 7/13
@@ -108,16 +124,24 @@ unit tests.
 
 # Build the documentation
 
-Documentation is built automatically on readthedocs, but can be built
-locally as well. The virtual environment required to do so is defined
-in `docs/environment.yml`, so to create that environment and build the
-docs, do the following from the project's root directory:
+NOTE: If you just want to read the documentation, you do not need to
+do this; documentation is built automatically on
+[readthedocs](https://pyrtools.readthedocs.io/en/latest/).
+
+However, it can be built locally as well. You would do this if you've
+made changes locally to the documentation (or the docstrings) that you
+would like to examine before pushing. The virtual environment required
+to do so is defined in `docs/environment.yml`, so to create that
+environment and build the docs, do the following from the project's
+root directory:
 
 ```
 # install sphinx and required packages to build documentation
 conda env create -f docs/environment.yml
+# activate the environment
+conda activate pyrtools_docs
 # install pyrtools
-pip install .
+pip install -e .
 # build documentation
 cd docs/
 make html
@@ -126,3 +150,10 @@ make html
 The index page of the documentation will then be located at
 `docs/_build/html/index.html`, open it in your browser to navigate
 around.
+
+The `pyrtools_docs` environment you're creating contains the package
+`sphinx` and several extensions for it that are required to build the
+documentation. You also need to install `pyrtools` from your local
+version so that `sphinx` can import the library and grab all of the
+docstrings (you're installing the local version so you can see all the
+changes you've made).

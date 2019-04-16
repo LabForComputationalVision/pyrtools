@@ -38,7 +38,25 @@ The tools include:
     resampling artifacts, and useful labeling (dimensions and gray-range).
 
 .. include:: quickstart.rst
-    
+
+Pyramid resources
+------------------
+
+If you would like to learn more about pyramids and why they're helpful
+for image processing, here are some resources to get you started:
+
+ - Brian Wandell's `Foundations of Vision
+   <https://foundationsofvision.stanford.edu/chapter-8-multiresolution-image-representations/>`_,
+   chapter 8 (the rest of the book is helpful if you want to
+   understand the basics of the visual system).
+ - `Adelson et al, 1984, "Pyramid methods in image
+   processing". <http://persci.mit.edu/pub_pdfs/RCA84.pdf>`_
+ - Notes from David Heeger on `steerable filters
+   <http://www.cns.nyu.edu/~david/handouts/steerable.pdf>`_
+ - Notes from Eero Simoncelli on `the Steerable Pyramid
+   <http://www.cns.nyu.edu/~eero/STEERPYR/>`_
+
+	     
 .. toctree::
    :maxdepth: 2
 
