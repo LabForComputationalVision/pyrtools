@@ -67,7 +67,7 @@ def blur(image, n_levels=1, filt='binom5'):
         if len(image.shape) == 1 or image.shape[0] == 1 or image.shape[1] == 1:
             # 1D image
             if len(filt) == 2 and (np.asarray(filt.shape) != 1).any():
-                raise Exception('Error: can not apply 2D filterer to 1D signal')
+                raise Exception('Cannot apply 2D filterer to 1D signal')
 
             imIn = corrDn(image, filt, 'reflect1', len(image))
             out = blur(imIn, n_levels-1, filt)
@@ -152,7 +152,7 @@ def blurDn(image, n_levels=1, filt='binom5'):
             # 1D image
             if len(filt.shape) > 1 and (filt.shape[1] != 1 and filt.shape[2] != 1):
                 # >1D filter
-                raise Exception('Error: Cannot apply 2D filter to 1D signal')
+                raise Exception('Cannot apply 2D filter to 1D signal')
 
             # orient filter and image correctly
             if image.shape[0] == 1:

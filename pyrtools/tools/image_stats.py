@@ -173,12 +173,10 @@ def image_compare(im_array0, im_array1):
         to `im_array0`)
     '''
     if not im_array0.size == im_array1.size:
-        print('Error: input images must have the same size')
-        return
+        raise Exception('Input images must have the same size')
 
     if not np.isreal(im_array0).all() or not np.isreal(im_array1).all():
-        print('Error: input images must be real-valued matrices')
-        return
+        raise Exception('Input images must be real-valued matrices')
 
     difference = im_array0 - im_array1
     (min_diff, max_diff) = range(difference)
@@ -216,8 +214,7 @@ def image_stats(im_array):
         the kurtosis of `im_array`
     '''
     if not np.isreal(im_array).all():
-        print('Error: input images must be real-valued matrices')
-        return
+        raise Exception('Input images must be real-valued matrices')
 
     (mini, maxi) = range(im_array)
     array_mean = im_array.mean()
