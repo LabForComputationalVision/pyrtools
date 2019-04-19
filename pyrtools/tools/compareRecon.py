@@ -2,7 +2,7 @@ import numpy
 import math
 
 
-def compareRecon(recon1, recon2, rtol=1e-5, atol=1e-8):
+def compareRecon(recon1, recon2, rtol=1e-5, atol=1e-10):
     '''compare two arrays
 
     returns True is they are the same within specified precision and False if not.  function was
