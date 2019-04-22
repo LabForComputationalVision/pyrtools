@@ -1,5 +1,337 @@
 import numpy as np
+from ..pyramids.filters import named_filter
+from ..pyramids.c.wrapper import corrDn, upConv
 import scipy.signal
+
+
+def _init_filt(filt, image_shape, normalize=True):
+    """Parse 'filt' and return in appropriate shape and normalize
+
+    TODO:
+    - mostly redundant with '_parse_filter' in 'Pyramid'
+    - move to 'filters.py'
+    """
+
+    if isinstance(filt, str):
+        # get the filter in column shape [N, 1]
+        filt = named_filter(filt)
+    else:
+        filt = np.array(filt)
+
+        # for 1D filter, reshape into column [N, 1]
+        if len(filt.shape) == 1:
+            filt = np.reshape(filt, (filt.shape[0], 1))
+        elif len(filt.shape) == 2 and filt.shape[0] == 1:
+            filt = np.reshape(filt, (-1, 1))
+
+    if image_shape[0] == 1:
+        # for 1D signal in row shape [1, N], the filter needs to be transposed
+        filt = filt.T
+
+    if normalize:
+        filt = filt / filt.sum()
+
+    # TODO: decide how to handle that
+    if image_shape[0] < filt.shape[0] or image_shape[1] < filt.shape[1]:
+        print("DANGER signal smaller than filter in corresponding dimension: ", image_shape, filt.shape)
+        # raise Warning("shape mismatch")
+
+    return filt
+
+
+def blur(image, n_levels=1, filt='binom5'):
+    '''blur an image by filtering and downsampling then by upsampling and filtering
+
+    Blur an image, by filtering and downsampling N_LEVELS times (default=1), followed by upsampling
+    and filtering LEVELS times.  The blurring is done with filter kernel specified by FILT (default
+    = 'binom5'), which can be a string (to be passed to named_filter), a vector (applied separably
+    as a 1D convolution kernel in X and Y), or a matrix (applied as a 2D convolution kernel).  The
+    downsampling is always by 2 in each direction.
+
+    This differs from blurDn in that here we upsample afterwards.
+
+    Arguments
+    ---------
+    image : `array_like`
+        1d or 2d image to blur
+    n_levels : `int`
+        the number of times to filter and downsample. the higher this is, the more blurred the
+        resulting image will be
+    filt : {`array_like`, 'binomN', 'haar', 'qmf8', 'qmf12', 'qmf16', 'daub2', 'daub3', 'daub4',
+            'qmf5', 'qmf9', 'qmf13'}
+        filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
+        is 1.0
+
+        * `'binomN'` - binomial coefficient filter of order N-1
+        * `'haar'` - Haar wavelet
+        * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
+        * `'daub2'`, `'daub3'`, `'daub4'` - Daubechies wavelet [2]_
+        * `'qmf5'`, `'qmf9'`, `'qmf13'`   - Symmetric Quadrature Mirror Filters [3]_, [4]_
+
+    Returns
+    -------
+    image : `array_like`
+        the blurred image
+
+    References
+    ----------
+    .. [1] J D Johnston, "A filter family designed for use in quadrature mirror filter banks",
+       Proc. ICASSP, pp 291-294, 1980.
+    .. [2] I Daubechies, "Orthonormal bases of compactly supported wavelets", Commun. Pure Appl.
+       Math, vol. 42, pp 909-996, 1988.
+    .. [3] E P Simoncelli,  "Orthogonal sub-band image transforms", PhD Thesis, MIT Dept. of Elec.
+       Eng. and Comp. Sci. May 1988. Also available as: MIT Media Laboratory Vision and Modeling
+       Technical Report #100.
+    .. [4] E P Simoncelli and E H Adelson, "Subband image coding", Subband Transforms, chapter 4,
+       ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143--192.
+    '''
+
+    if len(image.shape) == 1:
+        image = np.reshape(image, (image.shape, 1))
+
+    filt = _init_filt(filt, image.shape)
+
+    if n_levels > 0:
+        if image.shape[1] == 1:
+            # 1D image [N, 1] 1D filter [N, 1]
+            imIn = corrDn(image=image, filt=filt, step=(2, 1))
+            out = blur(imIn, n_levels-1, filt)
+            res = upConv(image=out, filt=filt, step=(2, 1), stop=image.shape)
+            return res
+
+        elif image.shape[1] == 1:
+            # 1D image [1, N] 1D filter [1, N]
+            imIn = corrDn(image=image, filt=filt, step=(1, 2))
+            out = blur(imIn, n_levels-1, filt)
+            res = upConv(image=out, filt=filt, step=(1, 2), stop=image.shape)
+            return res
+
+        elif filt.shape[1] == 1:
+            # 2D image 1D filter [N, 1]
+            imIn = corrDn(image=image, filt=filt, step=(2, 1))
+            imIn = corrDn(image=imIn, filt=filt.T, step=(1, 2))
+            out = blur(imIn, n_levels-1, filt)
+            res = upConv(image=out, filt=filt.T, step=(1, 2), start=(0, 0), stop=[out.shape[0], image.shape[1]])
+            res = upConv(image=res, filt=filt, step=(2, 1), start=(0, 0), stop=image.shape)
+            return res
+
+        else:
+            # 2D image 2D filter
+            imIn = corrDn(image=image, filt=filt, step=(2, 2))
+            out = blur(imIn, n_levels-1, filt)
+            res = upConv(image=out, filt=filt, step=(2, 2), stop=image.shape)
+            return res
+
+    else:
+        return image
+
+
+def blurDn(image, n_levels=1, filt='binom5'):
+    '''blur and downsample an image
+
+    Blur and downsample an image.  The blurring is done with filter kernel specified by FILT
+    (default = 'binom5'), which can be a string (to be passed to named_filter), a vector (applied
+    separably as a 1D convolution kernel in X and Y), or a matrix (applied as a 2D convolution
+    kernel).  The downsampling is always by 2 in each direction.
+
+    The procedure is applied recursively `n_levels` times (default=1).
+
+    This differs from blur in that we do NOT upsample afterwards.
+
+    Arguments
+    ---------
+    image : `array_like`
+        1d or 2d image to blur and downsample
+    n_levels : `int`
+        the number of times to filter and downsample. the higher this is, the blurrier and smaller
+        the resulting image will be
+    filt : {`array_like`, 'binomN', 'haar', 'qmf8', 'qmf12', 'qmf16', 'daub2', 'daub3', 'daub4',
+            'qmf5', 'qmf9', 'qmf13'}
+        filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
+        is 1.0
+
+        * `'binomN'` - binomial coefficient filter of order N-1
+        * `'haar'` - Haar wavelet
+        * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
+        * `'daub2'`, `'daub3'`, `'daub4'` - Daubechies wavelet [2]_
+        * `'qmf5'`, `'qmf9'`, `'qmf13'`   - Symmetric Quadrature Mirror Filters [3]_, [4]_
+
+    Returns
+    -------
+    image : `array_like`
+        the blurred and downsampled image
+
+    References
+    ----------
+    .. [1] J D Johnston, "A filter family designed for use in quadrature mirror filter banks",
+       Proc. ICASSP, pp 291-294, 1980.
+    .. [2] I Daubechies, "Orthonormal bases of compactly supported wavelets", Commun. Pure Appl.
+       Math, vol. 42, pp 909-996, 1988.
+    .. [3] E P Simoncelli,  "Orthogonal sub-band image transforms", PhD Thesis, MIT Dept. of Elec.
+       Eng. and Comp. Sci. May 1988. Also available as: MIT Media Laboratory Vision and Modeling
+       Technical Report #100.
+    .. [4] E P Simoncelli and E H Adelson, "Subband image coding", Subband Transforms, chapter 4,
+       ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143--192.
+    '''
+
+    if len(image.shape) == 1:
+        image = np.reshape(image, (image.shape, 1))
+
+    filt = _init_filt(filt, image.shape)
+
+    if n_levels > 1:
+        image = blurDn(image, n_levels-1, filt)
+
+    if n_levels >= 1:
+        if image.shape[1] == 1:
+            # 1D image [N, 1] and 1D filter [N, 1]
+            res = corrDn(image=image, filt=filt, step=(2, 1))
+
+        elif image.shape[0] == 1:
+            # 1D image [1, N] and 1D filter [1, N]
+            res = corrDn(image=image, filt=filt, step=(1, 2))
+
+        elif filt.shape[1] == 1:
+            # 2D image and 1D filter [N, 1]
+            res = corrDn(image=image, filt=filt, step=(2, 1))
+            res = corrDn(image=res, filt=filt.T, step=(1, 2))
+
+        else:
+            # 2D image and 2D filter
+            res = corrDn(image=image, filt=filt, step=(2, 2))
+
+    else:
+        res = image
+
+    return res
+
+
+def upBlur(image, n_levels=1, filt='binom5'):
+    '''upsample and blur an image.
+
+    Upsample and blur an image.  The blurring is done with filter kernel specified by FILT (default
+    = 'binom5'), which can be a string (to be passed to named_filter), a vector (applied separably
+    as a 1D convolution kernel in X and Y), or a matrix (applied as a 2D convolution kernel).  The
+    downsampling is always by 2 in each direction.
+
+    The procedure is applied recursively n_levels times (default=1).
+
+    Arguments
+    ---------
+    image : `array_like`
+        1d or 2d image to upsample and blur
+    n_levels : `int`
+        the number of times to filter and downsample. the higher this is, the blurrier and larger
+        the resulting image will be
+    filt : {`array_like`, 'binomN', 'haar', 'qmf8', 'qmf12', 'qmf16', 'daub2', 'daub3', 'daub4',
+            'qmf5', 'qmf9', 'qmf13'}
+        filter to use for filtering image. If array_like, can be 1d or 2d. All scaled so L-1 norm
+        is 1.0
+
+        * `'binomN'` - binomial coefficient filter of order N-1
+        * `'haar'` - Haar wavelet
+        * `'qmf8'`, `'qmf12'`, `'qmf16'` - Symmetric Quadrature Mirror Filters [1]_
+        * `'daub2'`, `'daub3'`, `'daub4'` - Daubechies wavelet [2]_
+        * `'qmf5'`, `'qmf9'`, `'qmf13'`   - Symmetric Quadrature Mirror Filters [3]_, [4]_
+
+    Returns
+    -------
+    image : `array_like`
+        the upsampled and blurred image
+
+    References
+    ----------
+    .. [1] J D Johnston, "A filter family designed for use in quadrature mirror filter banks",
+       Proc. ICASSP, pp 291-294, 1980.
+    .. [2] I Daubechies, "Orthonormal bases of compactly supported wavelets", Commun. Pure Appl.
+       Math, vol. 42, pp 909-996, 1988.
+    .. [3] E P Simoncelli,  "Orthogonal sub-band image transforms", PhD Thesis, MIT Dept. of Elec.
+       Eng. and Comp. Sci. May 1988. Also available as: MIT Media Laboratory Vision and Modeling
+       Technical Report #100.
+    .. [4] E P Simoncelli and E H Adelson, "Subband image coding", Subband Transforms, chapter 4,
+       ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143--192.
+
+    '''
+
+    if len(image.shape) == 1:
+        image = np.reshape(image, (image.shape, 1))
+
+    # TODO: clarify this non normalization of the binomial_filter
+    # Why only in the upBlur function?
+    filt = _init_filt(filt, image.shape, normalize=False)
+
+    if n_levels > 1:
+        image = upBlur(image, n_levels-1, filt)
+
+    if n_levels >= 1:
+        if image.shape[1] == 1:
+            # 1D image [N, 1] and 1D filter [N, 1]
+            res = upConv(image=image, filt=filt, step=(2, 1))
+
+        elif image.shape[0] == 1:
+            # 1D image [1, N] and 1D filter [1, N]
+            res = upConv(image=image, filt=filt, step=(1, 2))
+
+        elif filt.shape[1] == 1:
+            # 2D image and 1D filter [N, 1]
+            res = upConv(image=image, filt=filt, step=(2, 1))
+            res = upConv(image=res, filt=filt.T, step=(1, 2))
+
+        else:
+            # 2D image and 2D filter
+            res = upConv(image=image, filt=filt, step=(2, 2))
+
+    else:
+        res = image
+
+    return res
+
+
+def image_gradient(image, edge_type="dont-compute"):
+    '''Compute the gradient of the image using smooth derivative filters
+
+    Compute the gradient of the image using smooth derivative filters optimized for accurate
+    direction estimation.  Coordinate system corresponds to standard pixel indexing: X axis points
+    rightward.  Y axis points downward.  `edges` specify boundary handling.
+
+    Notes
+    -----
+    original filters from Int'l Conf Image Processing, 1994.
+    updated filters 10/2003: see Farid & Simoncelli, IEEE Trans Image
+                             Processing, 13(4):496-508, April 2004.
+
+    Arguments
+    ---------
+    image : `array_like`
+        2d array to compute the gradients of
+    edge_type : {'circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute'}
+        Specifies how to handle edges. Options are:
+
+        * `'circular'` - circular convolution
+        * `'reflect1'` - reflect about the edge pixels
+        * `'reflect2'` - reflect, doubling the edge pixels
+        * `'repeat'` - repeat the edge pixels
+        * `'zero'` - assume values of zero outside image boundary
+        * `'extend'` - reflect and invert
+        * `'dont-compute'` - zero output when filter overhangs imput boundaries.
+
+    Returns
+    -------
+    dx, dy : `np.array`
+        the X derivative and the Y derivative
+
+    '''
+
+    # kernels from Farid & Simoncelli, IEEE Trans Image Processing,
+    #   13(4):496-508, April 2004.
+    gp = np.array([0.037659,  0.249153, 0.426375, 0.249153, 0.037659]).reshape(5, 1)
+    gd = np.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5, 1)
+
+    dx = corrDn(corrDn(image, gp, edge_type), gd.T, edge_type)
+    dy = corrDn(corrDn(image, gd, edge_type), gp.T, edge_type)
+
+    return (dx, dy)
+
 
 # ----------------------------------------------------------------
 # Below are (slow) scipy convolution functions
@@ -65,6 +397,8 @@ def rconv2(mtx1, mtx2, ctr=0):
 
     return scipy.signal.convolve(clarge, small, 'valid')
 
+
+# TODO: low priority
 
 # def cconv2(mtx1, mtx2, ctr=0):
 #     '''Circular convolution of two matrices.  Result will be of size of
