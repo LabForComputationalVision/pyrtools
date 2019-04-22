@@ -576,7 +576,7 @@ def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=F
     return anim
 
 
-def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, **kwargs):
+def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, **kwargs):
     """Display the coefficients of the pyramid in an orderly fashion
 
     NOTE: this currently only works for 2d signals. we still need to figure out how to handle 1D
@@ -584,7 +584,11 @@ def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, *
 
     Arguments
     ---------
-    pyr : the pyramid object to display
+    pyr_coeffs : `dict` 
+        from the pyramid object (i.e. pyr.pyr_coeffs)
+    is_complex : `bool` 
+        default False, indicates whether the pyramids is real or complex
+        indicating whether the pyramid is complex or real
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
@@ -629,15 +633,18 @@ def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, *
     # the axes in an orderly way and then passing them through to imshow somehow, rather than
     # pasting all coefficients into a giant array.
     # and the steerable pyramids have a num_orientations attribute
-    col_wrap_new = pyr.num_orientations
-    if pyr.is_complex:
+
+    num_scales, num_orientations = np.array(list(pyr_coeffs.keys())[-2]) + 1
+
+    col_wrap_new = num_orientations
+    if is_complex:
         col_wrap_new *= 2
     # not sure about scope here, so we make sure to copy the
     # pyr_coeffs dictionary.
-    imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr.pyr_coeffs.copy())
+    imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr_coeffs.copy())
     # we can similarly grab the labels for height and band
     # from the keys in this pyramid coefficients dictionary
-    pyr_coeffs_keys = [k for k in pyr.pyr_coeffs.keys() if isinstance(k, tuple)]
+    pyr_coeffs_keys = [k for k in pyr_coeffs.keys() if isinstance(k, tuple)]
     titles = ["height %02d, band %02d" % (h, b) for h, b in sorted(pyr_coeffs_keys)]
     if show_residuals:
         if highpass is not None:
@@ -656,13 +663,13 @@ def pyrshow(pyr, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, *
         if col_wrap is not None:
             warnings.warn("When the pyramid is 1d, we ignore col_wrap and just use "
                           "pyr.num_orientations to determine the number of columns!")
-        height = pyr.num_scales
+        height = num_scales
         if "residual highpass" in titles:
             height += 1
         if "residual lowpass" in titles:
             height += 1
-        fig, axes = plt.subplots(height, pyr.num_orientations,
-                                 figsize=(5*zoom, 5*zoom*pyr.num_orientations), **kwargs)
+        fig, axes = plt.subplots(height, num_orientations,
+                                 figsize=(5*zoom, 5*zoom*num_orientations), **kwargs)
         plt.subplots_adjust(hspace=1.2, wspace=1.2)
         for i, ax in enumerate(axes.flatten()):
             ax.plot(imgs[i])
