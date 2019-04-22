@@ -1,18 +1,218 @@
 import unittest
 import tarfile
 import tqdm
-import os
 import math
 import requests
+
 import numpy as np
-import scipy.io
 import matplotlib.pyplot as plt
-import os.path as op
+
 import pyrtools as pt
 from pyrtools.pyramids.pyramid import Pyramid
 
+import scipy.io
+import os
+import os.path as op
 matfiles_path = op.join(op.dirname(op.realpath(__file__)), 'matFiles')
 test_data_path = op.join(op.dirname(op.realpath(__file__)), '..', 'DATA')
+
+# TODO:
+# - explicitely handle dim mismatch
+# - create class upConvTests(unittest.TestCase):
+# - expand class corrDnTests(unittest.TestCase):
+# - expand class blurDnTests(unittest.TestCase):
+    # 8 by 8 image, binom5 5 by 1 filter
+
+class corrDnTests(unittest.TestCase):
+    def test1(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'corrDn1.mat'))
+        mres = matPyr['res']
+        ramp = pt.synthetic_images.ramp(20)
+        res = pt.corrDn(ramp, pt.named_filter('binom5'))
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test2(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'corrDn2.mat'))
+        mres = matPyr['res']
+        ramp = pt.synthetic_images.ramp(20)
+        res = pt.corrDn(ramp, pt.named_filter('qmf13'))
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test3(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'corrDn3.mat'))
+        mres = matPyr['res']
+        ramp = pt.synthetic_images.ramp(20)
+        res = pt.corrDn(ramp, pt.named_filter('qmf16'))
+        self.assertTrue(pt.compareRecon(mres, res))
+
+class blurTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur0.mat'))
+        res = pt.blur(pt.synthetic_images.ramp(20))
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur1.mat'))
+        res = pt.blur(pt.synthetic_images.ramp(20), 3)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur2.mat'))
+        res = pt.blur(pt.synthetic_images.ramp(20), 3, pt.named_filter('qmf5'))
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur3.mat'))
+        res = pt.blur(pt.synthetic_images.ramp((20,30)))
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur4.mat'))
+        res = pt.blur(pt.synthetic_images.ramp((20,30)), 3)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test5(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur5.mat'))
+        res = pt.blur(pt.synthetic_images.ramp((20,30)), 3, pt.named_filter('qmf5'))
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+
+
+class blurDnTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn0.mat'))
+        pyRamp = pt.synthetic_images.ramp((20,20))
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test1(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn1.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,256))
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test2(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn2.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,128))
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test3(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn3.mat'))
+        pyRamp = pt.synthetic_images.ramp((128,256))
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test4(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn4.mat'))
+        pyRamp = pt.synthetic_images.ramp((200, 100))
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test5(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn5.mat'))
+        pyRamp = pt.synthetic_images.ramp((100, 200))
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test6(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn6.mat'))
+        pyRamp = pt.synthetic_images.ramp((1, 256)).T
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    def test7(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn7.mat'))
+        pyRamp = pt.synthetic_images.ramp((1, 256))
+        res = pt.blurDn(pyRamp)
+        self.assertTrue(pt.compareRecon(matPyr['res'], res))
+    # def test8(self):#  need a 2D filter
+    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn8.mat'))
+    #    pyRamp = pt.synthetic_images.ramp((256, 256))
+    #    res = pt.blurDn(pyRamp, filt=2dfilt)
+    #    self.assertTrue(pt.compareRecon(matPyr['res'], res))
+
+class upBlurTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur0.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((1,20))
+        res = pt.upBlur(im)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test1(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur1.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((1,20))
+        res = pt.upBlur(im.T)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test2(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur2.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp(20)
+        res = pt.upBlur(im)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test3(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur3.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((1,20))
+        res = pt.upBlur(im, 3)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test4(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur4.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((1,20))
+        res = pt.upBlur(im.T, 3)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test5(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur5.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp(20)
+        res = pt.upBlur(im, 3)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test6(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur6.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((1,20))
+        filt = pt.named_filter('qmf9')
+        res = pt.upBlur(im, 3, filt)
+        self.assertTrue(pt.compareRecon(mres, res))
+    #def test7(self):   # fails in matlab and python because of dim mismatch
+    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur7.mat'))
+    #    mres = matPyr['res']
+    #    im = pt.synthetic_images.ramp((1,20))
+    #    filt = pt.named_filter('qmf9')
+    #    res = pt.upBlur(im, 3, filt.T)
+    #    self.assertTrue(pt.compareRecon(mres, res))
+    def test8(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur8.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((1,20))
+        filt = pt.named_filter('qmf9')
+        res = pt.upBlur(im.T, 3, filt)
+        self.assertTrue(pt.compareRecon(mres, res))
+    #def test9(self):  # fails in matlab and python because of dim mismatch
+    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur6.mat'))
+    #    mres = matPyr['res']
+    #    im = pt.synthetic_images.ramp((1,20))
+    #    filt = pt.named_filter('qmf9')
+    #    res = pt.upBlur(im.T, 3, filt.T)
+    #    self.assertTrue(pt.compareRecon(mres, res))
+    def test10(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur10.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp(20)
+        filt = pt.synthetic_images.disk(3)
+        res = pt.upBlur(im, 3, filt)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test11(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur11.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((20,10))
+        filt = pt.synthetic_images.disk((5,3))
+        res = pt.upBlur(im, 3, filt)
+        self.assertTrue(pt.compareRecon(mres, res))
+    def test12(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur12.mat'))
+        mres = matPyr['res']
+        im = pt.synthetic_images.ramp((10,20))
+        filt = pt.synthetic_images.disk((3,5))
+        res = pt.upBlur(im, 3, filt)
+        self.assertTrue(pt.compareRecon(mres, res))
+
+class pointOpTests(unittest.TestCase):
+    def test1(self):
+        matImg = scipy.io.loadmat(op.join(matfiles_path, 'pointOp1.mat'))
+        img = pt.synthetic_images.ramp((200,200))
+        filt = np.array([0.2, 0.5, 1.0, 0.4, 0.1]);
+        #foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
+        foo = pt.pointOp(img, filt, 0, 1);
+        foo = np.reshape(foo,(200,200))
+        self.assertTrue((matImg['foo'] == foo).all())
 
 class maxPyrHeightTests(unittest.TestCase):
     def test1(self):
@@ -173,6 +373,156 @@ class LpyrTests(unittest.TestCase):
         pyrr = pt.pyramids.LaplacianPyramid(im, height=7,
                                     downsample_filter_name=filt1,
                                     upsample_filter_name=filt2)
+
+class WpyrTests(unittest.TestCase):
+    def test0(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr0.mat'))
+        pyRamp = pt.synthetic_images.ramp((20,20))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def test1(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr1.mat'))
+        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyPyr = pt.pyramids.WaveletPyramid(img)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def test2(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr2.mat'))
+        pyRamp = pt.synthetic_images.ramp((200,200))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def test3(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr3.mat'))
+        pyRamp = pt.synthetic_images.ramp((100,200))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def test4(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr4.mat'))
+        pyRamp = pt.synthetic_images.ramp((200,100))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def test5(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr5.mat'))
+        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyPyr = pt.pyramids.WaveletPyramid(img)
+        recon = pyPyr.recon_pyr()
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test6(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr6.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,128))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr()
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test7(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr7.mat'))
+        pyRamp = pt.synthetic_images.ramp((128,256))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr()
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test8(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr8.mat'))
+        pyRamp = pt.synthetic_images.ramp((200,200))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr()
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test9(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr9.mat'))
+        pyRamp = pt.synthetic_images.ramp((200,100))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr()
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test10(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr10.mat'))
+        pyRamp = pt.synthetic_images.ramp((100,200))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr()
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test11(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr11.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,256))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr('qmf9', 'reflect1', [0])
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test12(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr12.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,256))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr('qmf9', 'reflect1', [0,2,4])
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test13(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr13.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,256))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr('qmf9', 'reflect1', [0,2,4], [1])
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test14(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr14.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,256))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr('qmf8')
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test15(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr15.mat'))
+        pyRamp = pt.synthetic_images.ramp((256,128))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr('qmf8')
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test16(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr16.mat'))
+        pyRamp = pt.synthetic_images.ramp((128,256))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        recon = pyPyr.recon_pyr('qmf8')
+        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
+    def test17(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr17.mat'))
+        pyRamp = pt.synthetic_images.ramp((1,200))
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def test18(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr18.mat'))
+        pyRamp = pt.synthetic_images.ramp((1,200)).T
+        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def testRecon1(self):
+        np.random.seed(0)
+        im = pt.synthetic_images.pink_noise((1, 64))
+        pyr = pt.pyramids.WaveletPyramid(im)
+        res = pyr.recon_pyr()
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon2(self):
+        np.random.seed(0)
+        im = pt.synthetic_images.pink_noise((64, 1))
+        pyr = pt.pyramids.WaveletPyramid(im)
+        res = pyr.recon_pyr()
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon3(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.WaveletPyramid(im)
+        res = pyr.recon_pyr()
+        # print("\n%s\n" % np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=1))
+    def testRecon4(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.WaveletPyramid(im, edge_type='circular')
+        res = pyr.recon_pyr()
+        # print("\n%s\n" % np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=1))
+    def testRecon5(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.WaveletPyramid(im, filter_name='daub2', edge_type='circular')
+        res = pyr.recon_pyr()
+        # print("\n%s\n" % np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=5e-3))
+    def testRecon6(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.WaveletPyramid(im, filter_name='qmf13', edge_type='circular')
+        res = pyr.recon_pyr()
+        # print("\n%s\n" % np.max(res-im))
+        self.assertTrue(np.allclose(res, im, atol=2))
+    def testRecon7(self):
+        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
+        pyr = pt.pyramids.WaveletPyramid(im, filter_name='haar', edge_type='circular')
+        res = pyr.recon_pyr()
+        self.assertTrue(np.allclose(res, im))
 
 class spFilterTests(unittest.TestCase):
     def test1(self):
@@ -395,17 +745,6 @@ class SteerablePyramidSpaceTests(unittest.TestCase):
         recon = pyPyr.recon_pyr(5,'reflect1', ['residual_highpass', 0, 1], [0]);
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
 
-
-class pointOpTests(unittest.TestCase):
-    def test1(self):
-        matImg = scipy.io.loadmat(op.join(matfiles_path, 'pointOp1.mat'))
-        img = pt.synthetic_images.ramp((200,200))
-        filt = np.array([0.2, 0.5, 1.0, 0.4, 0.1]);
-        #foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
-        foo = pt.pointOp(img, filt, 0, 1);
-        foo = np.reshape(foo,(200,200))
-        self.assertTrue((matImg['foo'] == foo).all())
-
 class SteerablePyramidFreqpyrTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSFpyr0.mat'))
@@ -572,203 +911,6 @@ class SteerablePyramidComplexTests(unittest.TestCase):
         recon = pyr.recon_pyr()
         self.assertTrue(np.allclose(img, recon, atol=5e-3))
 
-class WpyrTests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr0.mat'))
-        pyRamp = pt.synthetic_images.ramp((20,20))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
-    def test1(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr1.mat'))
-        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyPyr = pt.pyramids.WaveletPyramid(img)
-        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
-    def test2(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr2.mat'))
-        pyRamp = pt.synthetic_images.ramp((200,200))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
-    def test3(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr3.mat'))
-        pyRamp = pt.synthetic_images.ramp((100,200))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
-    def test4(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr4.mat'))
-        pyRamp = pt.synthetic_images.ramp((200,100))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
-    def test5(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr5.mat'))
-        img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyPyr = pt.pyramids.WaveletPyramid(img)
-        recon = pyPyr.recon_pyr()
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test6(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr6.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,128))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr()
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test7(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr7.mat'))
-        pyRamp = pt.synthetic_images.ramp((128,256))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr()
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test8(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr8.mat'))
-        pyRamp = pt.synthetic_images.ramp((200,200))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr()
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test9(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr9.mat'))
-        pyRamp = pt.synthetic_images.ramp((200,100))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr()
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test10(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr10.mat'))
-        pyRamp = pt.synthetic_images.ramp((100,200))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr()
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test11(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr11.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,256))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr('qmf9', 'reflect1', [0])
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test12(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr12.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,256))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr('qmf9', 'reflect1', [0,2,4])
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test13(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr13.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,256))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr('qmf9', 'reflect1', [0,2,4], [1])
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test14(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr14.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,256))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr('qmf8')
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test15(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr15.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,128))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr('qmf8')
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test16(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr16.mat'))
-        pyRamp = pt.synthetic_images.ramp((128,256))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        recon = pyPyr.recon_pyr('qmf8')
-        self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
-    def test17(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr17.mat'))
-        pyRamp = pt.synthetic_images.ramp((1,200))
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
-    def test18(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildWpyr18.mat'))
-        pyRamp = pt.synthetic_images.ramp((1,200)).T
-        pyPyr = pt.pyramids.WaveletPyramid(pyRamp)
-        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
-    def testRecon1(self):
-        np.random.seed(0)
-        im = pt.synthetic_images.pink_noise((1, 64))
-        pyr = pt.pyramids.WaveletPyramid(im)
-        res = pyr.recon_pyr()
-        self.assertTrue(np.allclose(res, im, atol=5e-3))
-    def testRecon2(self):
-        np.random.seed(0)
-        im = pt.synthetic_images.pink_noise((64, 1))
-        pyr = pt.pyramids.WaveletPyramid(im)
-        res = pyr.recon_pyr()
-        self.assertTrue(np.allclose(res, im, atol=5e-3))
-    def testRecon3(self):
-        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im)
-        res = pyr.recon_pyr()
-        # print("\n%s\n" % np.max(res-im))
-        self.assertTrue(np.allclose(res, im, atol=1))
-    def testRecon4(self):
-        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im, edge_type='circular')
-        res = pyr.recon_pyr()
-        # print("\n%s\n" % np.max(res-im))
-        self.assertTrue(np.allclose(res, im, atol=1))
-    def testRecon5(self):
-        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im, filter_name='daub2', edge_type='circular')
-        res = pyr.recon_pyr()
-        # print("\n%s\n" % np.max(res-im))
-        self.assertTrue(np.allclose(res, im, atol=5e-3))
-    def testRecon6(self):
-        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im, filter_name='qmf13', edge_type='circular')
-        res = pyr.recon_pyr()
-        # print("\n%s\n" % np.max(res-im))
-        self.assertTrue(np.allclose(res, im, atol=2))
-    def testRecon7(self):
-        im = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
-        pyr = pt.pyramids.WaveletPyramid(im, filter_name='haar', edge_type='circular')
-        res = pyr.recon_pyr()
-        self.assertTrue(np.allclose(res, im))
-
-class blurDnTests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn0.mat'))
-        pyRamp = pt.synthetic_images.ramp((20,20))
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test1(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn1.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,256))
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test2(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn2.mat'))
-        pyRamp = pt.synthetic_images.ramp((256,128))
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test3(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn3.mat'))
-        pyRamp = pt.synthetic_images.ramp((128,256))
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test4(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn4.mat'))
-        pyRamp = pt.synthetic_images.ramp((200, 100))
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test5(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn5.mat'))
-        pyRamp = pt.synthetic_images.ramp((100, 200))
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test6(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn6.mat'))
-        pyRamp = pt.synthetic_images.ramp((1, 256)).T
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test7(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn7.mat'))
-        pyRamp = pt.synthetic_images.ramp((1, 256))
-        res = pt.blurDn(pyRamp)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    # def test8(self):#  need a 2D filter
-    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blurDn8.mat'))
-    #    pyRamp = pt.synthetic_images.ramp((256, 256))
-    #    res = pt.blurDn(pyRamp, filt=2dfilt)
-    #    self.assertTrue(pt.compareRecon(matPyr['res'], res))
-
 class mkAngularSineTests(unittest.TestCase):
     def test0(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'mkAngularSine0.mat'))
@@ -933,67 +1075,7 @@ class mkSquareTests(unittest.TestCase):
         res = pt.synthetic_images.square_wave(20, frequency=(1,2), amplitude=3.2, phase=-2, origin=(2,3), twidth=.55)
         self.assertTrue(pt.compareRecon(matPyr['res'], res))
 
-class blurTests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur0.mat'))
-        res = pt.blur(pt.synthetic_images.ramp(20))
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test1(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur1.mat'))
-        res = pt.blur(pt.synthetic_images.ramp(20), 3)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test2(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur2.mat'))
-        res = pt.blur(pt.synthetic_images.ramp(20), 3, pt.named_filter('qmf5'))
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test3(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur3.mat'))
-        res = pt.blur(pt.synthetic_images.ramp((20,30)))
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test4(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur4.mat'))
-        res = pt.blur(pt.synthetic_images.ramp((20,30)), 3)
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-    def test5(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'blur5.mat'))
-        res = pt.blur(pt.synthetic_images.ramp((20,30)), 3, pt.named_filter('qmf5'))
-        self.assertTrue(pt.compareRecon(matPyr['res'], res))
-
-# class cconv2Tests(unittest.TestCase):
-#     def test0(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_0.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp(20), pt.synthetic_images.ramp(10))
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-#     def test1(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_1.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp(10), pt.synthetic_images.ramp(20))
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-#     def test2(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_2.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp(20), pt.synthetic_images.ramp(10), 3)
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-#     def test3(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_3.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp(10), pt.synthetic_images.ramp(20), 3)
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-#     def test4(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_4.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp((20,30)), pt.synthetic_images.ramp((10,20)))
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-#     def test5(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_5.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp((10,20)), pt.synthetic_images.ramp((20,30)))
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-#     def test6(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_6.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp((20,30)), pt.synthetic_images.ramp((10,20)), 5)
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-#     def test7(self):
-#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_7.mat'))
-#         res = pt.cconv2(pt.synthetic_images.ramp((10,20)), pt.synthetic_images.ramp((20,30)), 5)
-#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
-
-
+# TODO: sort this warning out
 # python version of histo
 # adding 0.7 to ramp to nullify rounding differences between Python and Matlab
 class histoTests(unittest.TestCase):
@@ -1085,92 +1167,39 @@ class skewTests(unittest.TestCase):
         res = pt.skew(disc, mn, v)
         self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
 
-class upBlurTests(unittest.TestCase):
-    def test0(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur0.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((1,20))
-        res = pt.upBlur(im)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test1(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur1.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((1,20))
-        res = pt.upBlur(im.T)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test2(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur2.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp(20)
-        res = pt.upBlur(im)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test3(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur3.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((1,20))
-        res = pt.upBlur(im, 3)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test4(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur4.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((1,20))
-        res = pt.upBlur(im.T, 3)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test5(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur5.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp(20)
-        res = pt.upBlur(im, 3)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test6(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur6.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((1,20))
-        filt = pt.named_filter('qmf9')
-        res = pt.upBlur(im, 3, filt)
-        self.assertTrue(pt.compareRecon(mres, res))
-    #def test7(self):   # fails in matlab and python because of dim mismatch
-    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur7.mat'))
-    #    mres = matPyr['res']
-    #    im = pt.synthetic_images.ramp((1,20))
-    #    filt = pt.named_filter('qmf9')
-    #    res = pt.upBlur(im, 3, filt.T)
-    #    self.assertTrue(pt.compareRecon(mres, res))
-    def test8(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur8.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((1,20))
-        filt = pt.named_filter('qmf9')
-        res = pt.upBlur(im.T, 3, filt)
-        self.assertTrue(pt.compareRecon(mres, res))
-    #def test9(self):  # fails in matlab and python because of dim mismatch
-    #    matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur6.mat'))
-    #    mres = matPyr['res']
-    #    im = pt.synthetic_images.ramp((1,20))
-    #    filt = pt.named_filter('qmf9')
-    #    res = pt.upBlur(im.T, 3, filt.T)
-    #    self.assertTrue(pt.compareRecon(mres, res))
-    def test10(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur10.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp(20)
-        filt = pt.synthetic_images.disk(3)
-        res = pt.upBlur(im, 3, filt)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test11(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur11.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((20,10))
-        filt = pt.synthetic_images.disk((5,3))
-        res = pt.upBlur(im, 3, filt)
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test12(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'upBlur12.mat'))
-        mres = matPyr['res']
-        im = pt.synthetic_images.ramp((10,20))
-        filt = pt.synthetic_images.disk((3,5))
-        res = pt.upBlur(im, 3, filt)
-        self.assertTrue(pt.compareRecon(mres, res))
+# class cconv2Tests(unittest.TestCase):
+#     def test0(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_0.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp(20), pt.synthetic_images.ramp(10))
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
+#     def test1(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_1.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp(10), pt.synthetic_images.ramp(20))
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
+#     def test2(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_2.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp(20), pt.synthetic_images.ramp(10), 3)
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
+#     def test3(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_3.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp(10), pt.synthetic_images.ramp(20), 3)
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
+#     def test4(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_4.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp((20,30)), pt.synthetic_images.ramp((10,20)))
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
+#     def test5(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_5.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp((10,20)), pt.synthetic_images.ramp((20,30)))
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
+#     def test6(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_6.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp((20,30)), pt.synthetic_images.ramp((10,20)), 5)
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
+#     def test7(self):
+#         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_7.mat'))
+#         res = pt.cconv2(pt.synthetic_images.ramp((10,20)), pt.synthetic_images.ramp((20,30)), 5)
+#         self.assertTrue(pt.compareRecon(matPyr['res'], res))
 
 # class zconv2Tests(unittest.TestCase):
 #     def test0(self):
@@ -1215,26 +1244,6 @@ class upBlurTests(unittest.TestCase):
 #         disc = pt.synthetic_images.disk((10,5))
 #         res = pt.zconv2(ramp, disc, 3)
 #         self.assertTrue(pt.compareRecon(mres, res))
-
-class corrDnTests(unittest.TestCase):
-    def test1(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'corrDn1.mat'))
-        mres = matPyr['res']
-        ramp = pt.synthetic_images.ramp(20)
-        res = pt.corrDn(ramp, pt.named_filter('binom5'))
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test2(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'corrDn2.mat'))
-        mres = matPyr['res']
-        ramp = pt.synthetic_images.ramp(20)
-        res = pt.corrDn(ramp, pt.named_filter('qmf13'))
-        self.assertTrue(pt.compareRecon(mres, res))
-    def test3(self):
-        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'corrDn3.mat'))
-        mres = matPyr['res']
-        ramp = pt.synthetic_images.ramp(20)
-        res = pt.corrDn(ramp, pt.named_filter('qmf16'))
-        self.assertTrue(pt.compareRecon(mres, res))
 
 def main():
     unittest.main()

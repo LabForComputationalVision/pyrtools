@@ -16,7 +16,7 @@ def binomial_filter(order_plus_one):
 def named_filter(name):
     '''Some standard 1D filter kernels.
 
-    These are scaled such that their L2-norm is 1.0
+    These are returned as column vectors (shape [N, 1]) and scaled such that their L2-norm is 1.0 (except for 'binomN')
 
     * `'binomN'` - binomial coefficient filter of order N-1
     * `'haar'` - Haar wavelet

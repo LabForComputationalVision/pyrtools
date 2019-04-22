@@ -271,7 +271,10 @@ def colormap_range(image, vrange='indep1'):
 
     if isinstance(vrange, str):
         if vrange[:4] == 'auto':
-            if vrange == 'auto1' or vrange == 'auto':
+            if vrange == 'auto0':
+                vrange_list = [np.min(flatimg), np.max(flatimg)]
+                
+            elif vrange == 'auto1' or vrange == 'auto':
                 vrange_list = [np.min(flatimg), np.max(flatimg)]
             elif vrange == 'auto2':
                 vrange_list = [flatimg.mean() - 2 * flatimg.std(),
