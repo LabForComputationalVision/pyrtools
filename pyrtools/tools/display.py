@@ -271,9 +271,10 @@ def colormap_range(image, vrange='indep1'):
 
     if isinstance(vrange, str):
         if vrange[:4] == 'auto':
+            # TODO auto0 / indep0: put 0 at mid grey
             if vrange == 'auto0':
                 vrange_list = [np.min(flatimg), np.max(flatimg)]
-                
+
             elif vrange == 'auto1' or vrange == 'auto':
                 vrange_list = [np.min(flatimg), np.max(flatimg)]
             elif vrange == 'auto2':
@@ -579,7 +580,7 @@ def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=F
     return anim
 
 
-def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1., show_residuals=True, **kwargs):
+def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
     """Display the coefficients of the pyramid in an orderly fashion
 
     NOTE: this currently only works for 2d signals. we still need to figure out how to handle 1D
@@ -587,9 +588,9 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
 
     Arguments
     ---------
-    pyr_coeffs : `dict` 
+    pyr_coeffs : `dict`
         from the pyramid object (i.e. pyr.pyr_coeffs)
-    is_complex : `bool` 
+    is_complex : `bool`
         default False, indicates whether the pyramids is real or complex
         indicating whether the pyramid is complex or real
     vrange : `tuple` or `str`
@@ -637,7 +638,11 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
     # pasting all coefficients into a giant array.
     # and the steerable pyramids have a num_orientations attribute
 
-    num_scales, num_orientations = np.array(list(pyr_coeffs.keys())[-2]) + 1
+    # TODO make list of different elements in each dim
+    # then only loop through those - see below line 655
+    num_scales = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,0]) + 1
+    num_orientations = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,1]) + 1
+    # print(num_scales, num_orientations, zoom)
 
     col_wrap_new = num_orientations
     if is_complex:

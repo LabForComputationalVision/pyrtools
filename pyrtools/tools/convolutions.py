@@ -256,9 +256,9 @@ def upBlur(image, n_levels=1, filt='binom5'):
     if len(image.shape) == 1:
         image = np.reshape(image, (image.shape, 1))
 
-    # TODO: clarify this non normalization of the binomial_filter
-    # Why only in the upBlur function?
-    filt = _init_filt(filt, image.shape, normalize=False)
+    # TODO: expand documentation
+    # clarify why the defaukt behavior of upBlur is to use non-normalized binom5 filter
+    filt = _init_filt(filt, np.array(image.shape) * (1 + n_levels), normalize=False) # TODO make sure shape are good
 
     if n_levels > 1:
         image = upBlur(image, n_levels-1, filt)
