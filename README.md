@@ -58,6 +58,10 @@ IPython is optional. If it's not installed,
 (but since this is for displaying the animated image in a Jupyter /
 IPython notebook, you probably won't need that functionality).
 
+For the C code to compile, we require `gcc` version >= 6, because of
+[this
+issue](https://stackoverflow.com/questions/46504700/gcc-compiler-not-recognizing-fno-plt-option)
+
 # Pyramid resources
 
 If you would like to learn more about pyramids and why they're helpful
