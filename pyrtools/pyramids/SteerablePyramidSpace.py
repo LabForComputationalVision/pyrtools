@@ -1,5 +1,6 @@
 import numpy as np
 from .pyramid import SteerablePyramidBase
+from .filters import parse_filter
 from .c.wrapper import corrDn, upConv
 
 
@@ -67,7 +68,7 @@ class SteerablePyramidSpace(SteerablePyramidBase):
 
         self.order = order
         self.num_orientations = self.order + 1
-        self.filters = self._parse_filter("sp{:d}_filters".format(self.num_orientations-1))
+        self.filters = parse_filter("sp{:d}_filters".format(self.num_orientations-1), normalize=False)
         self.pyr_type = 'SteerableSpace'
         self._set_num_scales('lofilt', height)
 
@@ -132,7 +133,7 @@ class SteerablePyramidSpace(SteerablePyramidBase):
             filters = self.filters
             recon_keys = self._recon_keys(levels, bands)
         else:
-            filters = self._parse_filter("sp{:d}_filters".format(order))
+            filters = parse_filter("sp{:d}_filters".format(order), normalize=False)
             recon_keys = self._recon_keys(levels, bands, order+1)
 
         # assume square filters  -- start of buildSpyrLevs

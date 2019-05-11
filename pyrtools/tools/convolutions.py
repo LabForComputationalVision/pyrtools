@@ -1,49 +1,14 @@
 import numpy as np
-from ..pyramids.filters import named_filter
+from ..pyramids.filters import parse_filter
 from ..pyramids.c.wrapper import corrDn, upConv
 import scipy.signal
 
 
-def _init_filt(filt, image_shape, normalize=True):
-    """Parse 'filt' and return in appropriate shape and normalize
-
-    TODO:
-    - mostly redundant with '_parse_filter' in 'Pyramid'
-    - move to 'filters.py'
-    """
-
-    if isinstance(filt, str):
-        # get the filter in column shape [N, 1]
-        filt = named_filter(filt)
-    else:
-        filt = np.array(filt)
-
-        # for 1D filter, reshape into column [N, 1]
-        if len(filt.shape) == 1:
-            filt = np.reshape(filt, (filt.shape[0], 1))
-        elif len(filt.shape) == 2 and filt.shape[0] == 1:
-            filt = np.reshape(filt, (-1, 1))
-
-    if image_shape[0] == 1:
-        # for 1D signal in row shape [1, N], the filter needs to be transposed
-        filt = filt.T
-
-    if normalize:
-        filt = filt / filt.sum()
-
-    # TODO: decide how to handle that
-    if image_shape[0] < filt.shape[0] or image_shape[1] < filt.shape[1]:
-        print("DANGER signal smaller than filter in corresponding dimension: ", image_shape, filt.shape)
-        # raise Warning("shape mismatch")
-
-    return filt
-
-
 def blur(image, n_levels=1, filt='binom5'):
-    '''blur an image by filtering and downsampling then by upsampling and filtering
+    '''blur an image by filtering-downsampling and then upsampling-filtering
 
-    Blur an image, by filtering and downsampling N_LEVELS times (default=1), followed by upsampling
-    and filtering LEVELS times.  The blurring is done with filter kernel specified by FILT (default
+    Blur an image, by filtering and downsampling `n_levels` times (default=1), followed by upsampling
+    and filtering `n_levels` times.  The blurring is done with filter kernel specified by `filt` (default
     = 'binom5'), which can be a string (to be passed to named_filter), a vector (applied separably
     as a 1D convolution kernel in X and Y), or a matrix (applied as a 2D convolution kernel).  The
     downsampling is always by 2 in each direction.
@@ -86,24 +51,24 @@ def blur(image, n_levels=1, filt='binom5'):
        ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143--192.
     '''
 
-    if len(image.shape) == 1:
+    if image.ndim == 1:
         image = np.reshape(image, (image.shape, 1))
 
-    filt = _init_filt(filt, image.shape)
+    filt = parse_filter(filt)
 
     if n_levels > 0:
         if image.shape[1] == 1:
-            # 1D image [N, 1] 1D filter [N, 1]
+            # 1D image [M, 1] 1D filter [N, 1]
             imIn = corrDn(image=image, filt=filt, step=(2, 1))
             out = blur(imIn, n_levels-1, filt)
             res = upConv(image=out, filt=filt, step=(2, 1), stop=image.shape)
             return res
 
         elif image.shape[1] == 1:
-            # 1D image [1, N] 1D filter [1, N]
-            imIn = corrDn(image=image, filt=filt, step=(1, 2))
+            # 1D image [1, M] 1D filter [N, 1]
+            imIn = corrDn(image=image, filt=filt.T, step=(1, 2))
             out = blur(imIn, n_levels-1, filt)
-            res = upConv(image=out, filt=filt, step=(1, 2), stop=image.shape)
+            res = upConv(image=out, filt=filt.T, step=(1, 2), stop=image.shape)
             return res
 
         elif filt.shape[1] == 1:
@@ -174,22 +139,22 @@ def blurDn(image, n_levels=1, filt='binom5'):
        ed. John W Woods, Kluwer Academic Publishers,  Norwell, MA, 1990, pp 143--192.
     '''
 
-    if len(image.shape) == 1:
+    if image.ndim == 1:
         image = np.reshape(image, (image.shape, 1))
 
-    filt = _init_filt(filt, image.shape)
+    filt = parse_filter(filt)
 
     if n_levels > 1:
         image = blurDn(image, n_levels-1, filt)
 
     if n_levels >= 1:
         if image.shape[1] == 1:
-            # 1D image [N, 1] and 1D filter [N, 1]
+            # 1D image [M, 1] and 1D filter [N, 1]
             res = corrDn(image=image, filt=filt, step=(2, 1))
 
         elif image.shape[0] == 1:
-            # 1D image [1, N] and 1D filter [1, N]
-            res = corrDn(image=image, filt=filt, step=(1, 2))
+            # 1D image [1, M] and 1D filter [N, 1]
+            res = corrDn(image=image, filt=filt.T, step=(1, 2))
 
         elif filt.shape[1] == 1:
             # 2D image and 1D filter [N, 1]
@@ -253,24 +218,22 @@ def upBlur(image, n_levels=1, filt='binom5'):
 
     '''
 
-    if len(image.shape) == 1:
+    if image.ndim == 1:
         image = np.reshape(image, (image.shape, 1))
 
-    # TODO: expand documentation
-    # clarify why the defaukt behavior of upBlur is to use non-normalized binom5 filter
-    filt = _init_filt(filt, np.array(image.shape) * (1 + n_levels), normalize=False) # TODO make sure shape are good
+    filt = parse_filter(filt, normalize=False)
 
     if n_levels > 1:
         image = upBlur(image, n_levels-1, filt)
 
     if n_levels >= 1:
         if image.shape[1] == 1:
-            # 1D image [N, 1] and 1D filter [N, 1]
+            # 1D image [M, 1] and 1D filter [N, 1]
             res = upConv(image=image, filt=filt, step=(2, 1))
 
         elif image.shape[0] == 1:
-            # 1D image [1, N] and 1D filter [1, N]
-            res = upConv(image=image, filt=filt, step=(1, 2))
+            # 1D image [1, M] and 1D filter [N, 1]
+            res = upConv(image=image, filt=filt.T, step=(1, 2))
 
         elif filt.shape[1] == 1:
             # 2D image and 1D filter [N, 1]

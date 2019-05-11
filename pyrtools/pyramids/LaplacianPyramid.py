@@ -1,5 +1,6 @@
 import numpy as np
 from .GaussianPyramid import GaussianPyramid
+from .filters import parse_filter
 from .c.wrapper import upConv
 
 
@@ -82,36 +83,8 @@ class LaplacianPyramid(GaussianPyramid):
         self.pyr_type = 'Laplacian'
         if upsample_filter_name is None:
             upsample_filter_name = downsample_filter_name
-        super().__init__(image, height, downsample_filter_name, edge_type,
-                         upsample_filter_name=upsample_filter_name)
+        super().__init__(image, height, downsample_filter_name, edge_type, upsample_filter_name=upsample_filter_name)
 
-    def _recon_prev(self, image, output_size, upsample_filter=None, edge_type=None):
-        """Reconstruct the previous level of the pyramid.
-
-        Should not be called by users directly, this is a helper function for reconstructing the
-        input image using pyramid coefficients.
-
-        """
-        if upsample_filter is None:
-            upsample_filter = self.filters['upsample_filter']
-        else:
-            upsample_filter = self._parse_filter(upsample_filter)
-
-        if edge_type is None:
-            edge_type = self.edge_type
-
-        if image.shape[1] == 1:
-            res = upConv(image=image, filt=upsample_filter.T, edge_type=edge_type,
-                         step=(1, 2), stop=(output_size[1], output_size[0])).T
-        elif image.shape[0] == 1:
-            res = upConv(image=image, filt=upsample_filter.T, edge_type=edge_type,
-                         step=(2, 1), stop=(output_size[1], output_size[0])).T
-        else:
-            tmp = upConv(image=image, filt=upsample_filter, edge_type=edge_type,
-                         step=(2, 1), stop=(output_size[0], image.shape[1]))
-            res = upConv(image=tmp, filt=upsample_filter.T, edge_type=edge_type,
-                         step=(1, 2), stop=(output_size[0], output_size[1]))
-        return res
 
     def _build_pyr(self):
         """build the pyramid
@@ -130,6 +103,32 @@ class LaplacianPyramid(GaussianPyramid):
             im = im_next
         self.pyr_coeffs[(lev+1, 0)] = im.copy()
         self.pyr_size[(lev+1, 0)] = im.shape
+
+
+    def _recon_prev(self, image, output_size, upsample_filter=None, edge_type=None):
+        """Reconstruct the previous level of the pyramid.
+
+        Should not be called by users directly, this is a helper function for reconstructing the
+        input image using pyramid coefficients.
+
+        """
+        if upsample_filter is None:
+            upsample_filter = self.filters['upsample_filter']
+        else:
+            upsample_filter = parse_filter(upsample_filter, normalize=False)
+
+        if edge_type is None:
+            edge_type = self.edge_type
+
+        if image.shape[0] == 1:
+            res = upConv(image=image, filt=upsample_filter.T, edge_type=edge_type, step=(1, 2), stop=(output_size[0], output_size[1]))
+        elif image.shape[1] == 1:
+            res = upConv(image=image, filt=upsample_filter, edge_type=edge_type, step=(2, 1), stop=(output_size[0], output_size[1]))
+        else:
+            tmp = upConv(image=image, filt=upsample_filter, edge_type=edge_type, step=(2, 1), stop=(output_size[0], image.shape[1]))
+            res = upConv(image=tmp, filt=upsample_filter.T, edge_type=edge_type, step=(1, 2), stop=(output_size[0], output_size[1]))
+        return res
+
 
     def recon_pyr(self, upsample_filter_name=None, edge_type=None, levels='all'):
         """Reconstruct the input image using pyramid coefficients
@@ -173,8 +172,7 @@ class LaplacianPyramid(GaussianPyramid):
         recon = np.zeros_like(self.pyr_coeffs[(self.num_scales-1, 0)])
         for lev in reversed(range(self.num_scales)):
             # upsample to generate higher reconolution image
-            recon = self._recon_prev(recon, self.pyr_size[(lev, 0)], upsample_filter_name,
-                                     edge_type)
+            recon = self._recon_prev(recon, self.pyr_size[(lev, 0)], upsample_filter_name, edge_type)
             if (lev, 0) in recon_keys:
                 recon += self.pyr_coeffs[(lev, 0)]
         return recon

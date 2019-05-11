@@ -1,4 +1,5 @@
 from .pyramid import Pyramid
+from .filters import parse_filter
 from .c.wrapper import corrDn
 
 
@@ -66,19 +67,18 @@ class GaussianPyramid(Pyramid):
 
     """
 
-    def __init__(self, image, height='auto', filter_name='binom5', edge_type='reflect1',
-                 **kwargs):
+    def __init__(self, image, height='auto', filter_name='binom5', edge_type='reflect1', **kwargs):
         super().__init__(image=image, edge_type=edge_type)
         if self.pyr_type is None:
             self.pyr_type = 'Gaussian'
         self.num_orientations = 1
 
-        self.filters = {'downsample_filter': self._parse_filter(filter_name)}
+        self.filters = {'downsample_filter': parse_filter(filter_name, normalize=False)}
         upsamp_filt = kwargs.pop('upsample_filter_name', None)
         if upsamp_filt is not None:
             if self.pyr_type != 'Laplacian':
                 raise Exception("upsample_filter should only be set for Laplacian pyramid!")
-            self.filters['upsample_filter'] = self._parse_filter(upsamp_filt)
+            self.filters['upsample_filter'] = parse_filter(upsamp_filt, normalize=False)
         self._set_num_scales('downsample_filter', height, 1)
 
         self._build_pyr()
@@ -91,16 +91,12 @@ class GaussianPyramid(Pyramid):
 
         """
         if image.shape[0] == 1:
-            res = corrDn(image=image, filt=self.filters['downsample_filter'],
-                         edge_type=self.edge_type, step=(1, 2))
+            res = corrDn(image=image, filt=self.filters['downsample_filter'].T, edge_type=self.edge_type, step=(1, 2))
         elif image.shape[1] == 1:
-            res = corrDn(image=image, filt=self.filters['downsample_filter'],
-                         edge_type=self.edge_type, step=(2, 1))
+            res = corrDn(image=image, filt=self.filters['downsample_filter'], edge_type=self.edge_type, step=(2, 1))
         else:
-            tmp = corrDn(image=image, filt=self.filters['downsample_filter'].T,
-                         edge_type=self.edge_type, step=(1, 2))
-            res = corrDn(image=tmp, filt=self.filters['downsample_filter'],
-                         edge_type=self.edge_type, step=(2, 1))
+            tmp = corrDn(image=image, filt=self.filters['downsample_filter'].T, edge_type=self.edge_type, step=(1, 2))
+            res = corrDn(image=tmp, filt=self.filters['downsample_filter'], edge_type=self.edge_type, step=(2, 1))
         return res
 
     def _build_pyr(self):

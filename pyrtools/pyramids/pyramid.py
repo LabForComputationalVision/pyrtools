@@ -62,42 +62,6 @@ class Pyramid:
         self.pyr_size = {}
         self.is_complex = False
 
-    def _parse_filter(self, filt):
-        """Parse the name of the filter and return filter
-
-        Used during pyramid construction, user should not call this directly.
-
-        Parameters
-        ----------
-        filt : `str` or `array_like`.
-            Name of the filter, as accepted by `named_filter`, or array to use as a filter. See that function for acceptable names.
-
-        Returns
-        -------
-        filt : `array` or `dict`
-            If `filt` was one of the steerable pyramids, then this will be a dictionary
-            containing the various steerable pyramid filters. Else, it will be an array containing
-            the specified filter.
-
-        See also
-        --------
-        named_filter : function that converts `filter_name` str into an array or dict of arrays.
-        """
-        if isinstance(filt, str):
-            filt = named_filter(filt)
-
-        # the steerable pyramid filters are returned as a dictionary and we don't need to do this
-        # check for them
-        if not isinstance(filt, dict):
-            if filt.size > max(filt.shape):
-                raise Exception("Error: filter should be 1D (i.e., a vector)")
-
-            # when the first dimension of the image is 1, we need the filter to have shape (1, x)
-            # instead of the normal (x, 1) or we get a segfault during corrDn / upConv. That's
-            # because we need to match the filter to the image dimensions
-            if filt.ndim == 1 or self.image.shape[0] == 1:
-                filt = filt.reshape(1, -1)
-        return filt
 
     def _set_num_scales(self, filter_name, height, extra_height=0):
         """Figure out the number of scales (height) of the pyramid

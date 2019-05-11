@@ -1,5 +1,6 @@
 import numpy as np
 from .pyramid import Pyramid
+from .filters import parse_filter
 from .c.wrapper import corrDn, upConv
 
 
@@ -71,12 +72,8 @@ class WaveletPyramid(Pyramid):
         self.pyr_type = 'Wavelet'
 
         self.filters = {}
-        self.filters['lo_filter'] = self._parse_filter(filter_name)
-        # if the image is 1D, parse_filter will
-        # match the filter to the image dimensions
+        self.filters['lo_filter'] = parse_filter(filter_name, normalize=False)
         self.filters["hi_filter"] = WaveletPyramid._modulate_flip(self.filters['lo_filter'])
-        # modulate_flip returns a filter that has
-        # the same size as its input filter
         assert self.filters['lo_filter'].shape == self.filters['hi_filter'].shape
 
         # Stagger sampling if filter is odd-length
@@ -90,14 +87,7 @@ class WaveletPyramid(Pyramid):
         else:
             self.num_orientations = 3
 
-        im = self.image
-        for lev in range(self.num_scales):
-            im, higher_bands = self._build_next(im)
-            for j, band in enumerate(higher_bands):
-                self.pyr_coeffs[(lev, j)] = band
-                self.pyr_size[(lev, j)] = band.shape
-        self.pyr_coeffs['residual_lowpass'] = im
-        self.pyr_size['residual_lowpass'] = im.shape
+        self._build_pyr()
 
     def _modulate_flip(lo_filter):
         '''construct QMF/Wavelet highpass filter from lowpass filter
@@ -109,13 +99,13 @@ class WaveletPyramid(Pyramid):
         Parameters
         ----------
         lo_filter : `array_like`
-            one-dimensional array (or effectively 1d array) containing the lowpass filter to 
+            one-dimensional array (or effectively 1d array) containing the lowpass filter to
             convert into the highpass filter.
 
         Returns
         -------
         hi_filter : `np.array`
-            The highpass filter constructed from the lowpass filter, same shape as the lowpass 
+            The highpass filter constructed from the lowpass filter, same shape as the lowpass
             filter.
         '''
         # check lo_filter is effectively 1D
@@ -125,15 +115,12 @@ class WaveletPyramid(Pyramid):
         ind = np.arange(lo_filter.size, 0, -1) - (lo_filter.size + 1) // 2
         hi_filter = lo_filter[::-1] * (-1.0) ** ind
 
-        # OLD: matlab version always returns a column vector
-        # NOW: same shape as input
         return hi_filter.reshape(lo_filter_shape)
 
     def _build_next(self, image):
         """Build the next level fo the Wavelet pyramid
 
-        Should not be called by users directly, this is a helper function to construct the
-        pyramid.
+        Should not be called by users directly, this is a helper function to construct the pyramid.
 
         Parameters
         ----------
@@ -152,31 +139,32 @@ class WaveletPyramid(Pyramid):
             downsampled by a factor of two from the original `image`.
         """
         if image.shape[1] == 1:
-            lolo = corrDn(image=image, filt=self.filters['lo_filter'], edge_type=self.edge_type,
-                          step=(2, 1), start=(self.stagger, 0))
-            hihi = corrDn(image=image, filt=self.filters['hi_filter'], edge_type=self.edge_type,
-                          step=(2, 1), start=(1, 0))
+            lolo = corrDn(image=image, filt=self.filters['lo_filter'], edge_type=self.edge_type, step=(2, 1), start=(self.stagger, 0))
+            hihi = corrDn(image=image, filt=self.filters['hi_filter'], edge_type=self.edge_type, step=(2, 1), start=(1, 0))
             return lolo, (hihi, )
         elif image.shape[0] == 1:
-            lolo = corrDn(image=image, filt=self.filters['lo_filter'], edge_type=self.edge_type,
-                          step=(1, 2), start=(0, self.stagger))
-            hihi = corrDn(image=image, filt=self.filters['hi_filter'], edge_type=self.edge_type,
-                          step=(1, 2), start=(0, 1))
+            lolo = corrDn(image=image, filt=self.filters['lo_filter'].T, edge_type=self.edge_type, step=(1, 2), start=(0, self.stagger))
+            hihi = corrDn(image=image, filt=self.filters['hi_filter'].T, edge_type=self.edge_type, step=(1, 2), start=(0, 1))
             return lolo, (hihi, )
         else:
-            lo = corrDn(image=image, filt=self.filters['lo_filter'], edge_type=self.edge_type,
-                        step=(2, 1), start=(self.stagger, 0))
-            hi = corrDn(image=image, filt=self.filters['hi_filter'], edge_type=self.edge_type,
-                        step=(2, 1), start=(1, 0))
-            lolo = corrDn(image=lo, filt=self.filters['lo_filter'].T, edge_type=self.edge_type,
-                          step=(1, 2), start=(0, self.stagger))
-            lohi = corrDn(image=hi, filt=self.filters['lo_filter'].T, edge_type=self.edge_type,
-                          step=(1, 2), start=(0, self.stagger))
-            hilo = corrDn(image=lo, filt=self.filters['hi_filter'].T, edge_type=self.edge_type,
-                          step=(1, 2), start=(0, 1))
-            hihi = corrDn(image=hi, filt=self.filters['hi_filter'].T, edge_type=self.edge_type,
-                          step=(1, 2), start=(0, 1))
+            lo = corrDn(image=image, filt=self.filters['lo_filter'], edge_type=self.edge_type, step=(2, 1), start=(self.stagger, 0))
+            hi = corrDn(image=image, filt=self.filters['hi_filter'], edge_type=self.edge_type, step=(2, 1), start=(1, 0))
+            lolo = corrDn(image=lo, filt=self.filters['lo_filter'].T, edge_type=self.edge_type, step=(1, 2), start=(0, self.stagger))
+            lohi = corrDn(image=hi, filt=self.filters['lo_filter'].T, edge_type=self.edge_type, step=(1, 2), start=(0, self.stagger))
+            hilo = corrDn(image=lo, filt=self.filters['hi_filter'].T, edge_type=self.edge_type, step=(1, 2), start=(0, 1))
+            hihi = corrDn(image=hi, filt=self.filters['hi_filter'].T, edge_type=self.edge_type, step=(1, 2), start=(0, 1))
             return lolo, (lohi, hilo, hihi)
+
+    def _build_pyr(self):
+        im = self.image
+        for lev in range(self.num_scales):
+            im, higher_bands = self._build_next(im)
+            for j, band in enumerate(higher_bands):
+                self.pyr_coeffs[(lev, j)] = band
+                self.pyr_size[(lev, j)] = band.shape
+        self.pyr_coeffs['residual_lowpass'] = im
+        self.pyr_size['residual_lowpass'] = im.shape
+
 
     def _recon_prev(self, image, lev, recon_keys, output_size, lo_filter, hi_filter, edge_type,
                     stagger):
@@ -188,25 +176,19 @@ class WaveletPyramid(Pyramid):
         """
         if self.num_orientations == 1:
             if output_size[0] == 1:
-                recon = upConv(image=image, filt=lo_filter, edge_type=edge_type,
-                               step=(1, 2), start=(0, stagger), stop=output_size)
+                recon = upConv(image=image, filt=lo_filter.T, edge_type=edge_type, step=(1, 2), start=(0, stagger), stop=output_size)
                 if (lev, 0) in recon_keys:
-                    recon += upConv(image=self.pyr_coeffs[(lev, 0)], filt=hi_filter,
-                                    edge_type=edge_type, step=(1, 2), start=(0, 1), stop=output_size)
+                    recon += upConv(image=self.pyr_coeffs[(lev, 0)], filt=hi_filter.T, edge_type=edge_type, step=(1, 2), start=(0, 1), stop=output_size)
             elif output_size[1] == 1:
-                recon = upConv(image=image, filt=lo_filter, edge_type=edge_type,
-                               step=(2, 1), start=(stagger, 0), stop=output_size)
+                recon = upConv(image=image, filt=lo_filter, edge_type=edge_type, step=(2, 1), start=(stagger, 0), stop=output_size)
                 if (lev, 0) in recon_keys:
-                    recon += upConv(image=self.pyr_coeffs[(lev, 0)], filt=hi_filter,
-                                    edge_type=edge_type, step=(2, 1), start=(1, 0), stop=output_size)
+                    recon += upConv(image=self.pyr_coeffs[(lev, 0)], filt=hi_filter, edge_type=edge_type, step=(2, 1), start=(1, 0), stop=output_size)
         else:
             lo_size = ([self.pyr_size[(lev, 1)][0], output_size[1]])
             hi_size = ([self.pyr_size[(lev, 0)][0], output_size[1]])
 
-            tmp_recon = upConv(image=image, filt=lo_filter.T, edge_type=edge_type,
-                               step=(1, 2), start=(0, stagger), stop=lo_size)
-            recon = upConv(image=tmp_recon, filt=lo_filter, edge_type=edge_type,
-                           step=(2, 1), start=(stagger, 0), stop=output_size)
+            tmp_recon = upConv(image=image, filt=lo_filter.T, edge_type=edge_type, step=(1, 2), start=(0, stagger), stop=lo_size)
+            recon = upConv(image=tmp_recon, filt=lo_filter, edge_type=edge_type, step=(2, 1), start=(stagger, 0), stop=output_size)
 
             bands_recon_dict = {
                 0: [{'filt': lo_filter.T, 'start': (0, stagger), 'stop': hi_size},
@@ -219,10 +201,8 @@ class WaveletPyramid(Pyramid):
 
             for band in range(self.num_orientations):
                 if (lev, band) in recon_keys:
-                    tmp_recon = upConv(image=self.pyr_coeffs[(lev, band)], edge_type=edge_type,
-                                       step=(1, 2), **bands_recon_dict[band][0])
-                    recon += upConv(image=tmp_recon, edge_type=edge_type, step=(2, 1),
-                                    stop=output_size, **bands_recon_dict[band][1])
+                    tmp_recon = upConv(image=self.pyr_coeffs[(lev, band)], edge_type=edge_type, step=(1, 2), **bands_recon_dict[band][0])
+                    recon += upConv(image=tmp_recon, edge_type=edge_type, step=(2, 1), stop=output_size, **bands_recon_dict[band][1])
 
         return recon
 
@@ -276,7 +256,7 @@ class WaveletPyramid(Pyramid):
             hi_filter = self.filters['hi_filter']
             stagger = self.stagger
         else:
-            lo_filter = self._parse_filter(filter_name)
+            lo_filter = parse_filter(filter_name, normalize=False)
             hi_filter = WaveletPyramid._modulate_flip(lo_filter)
             stagger = (lo_filter.size + 1) % 2
 

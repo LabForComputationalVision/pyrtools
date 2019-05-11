@@ -81,7 +81,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         # we can't use the base class's _set_num_scales method because the max height is calculated
         # slightly differently
         max_ht = np.floor(np.log2(min(self.image.shape))) - 2
-        if height == 'auto':
+        if height == 'auto' or height is None:
             self.num_scales = int(max_ht)
         elif height > max_ht:
             raise Exception("Cannot build pyramid higher than %d levels." % (max_ht))

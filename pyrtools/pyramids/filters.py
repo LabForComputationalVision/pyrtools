@@ -2,6 +2,46 @@ import numpy as np
 from scipy.signal import convolve
 
 
+def parse_filter(filt, normalize=True):
+    """Parse the name or array like, and return a column shaped filter (which is normalized by default)
+
+    Used during pyramid construction.
+
+    Parameters
+    ----------
+    filt : `str` or `array_like`.
+        Name of the filter, as accepted by `named_filter`, or array to use as a filter. See that function for acceptable names.
+
+    Returns
+    -------
+    filt : `array` or `dict`
+        If `filt` was one of the steerable pyramids, then this will be a dictionary
+        containing the various steerable pyramid filters. Else, it will be an array containing
+        the specified filter.
+
+    See also
+    --------
+    named_filter : function that converts `filter_name` str into an array or dict of arrays.
+
+    TODO
+    expand normalization options
+    """
+
+    if isinstance(filt, str):
+        filt = named_filter(filt)
+
+    elif isinstance(filt, np.ndarray) or isinstance(filt, list) or isinstance(filt, tuple):
+        filt = np.array(filt)
+        if filt.ndim == 1:
+            filt = np.reshape(filt, (filt.shape[0], 1))
+        elif filt.ndim == 2 and filt.shape[0] == 1:
+            filt = np.reshape(filt, (-1, 1))
+
+    if normalize:
+        filt = filt / filt.sum()
+
+    return filt
+
 def binomial_filter(order_plus_one):
     '''returns a vector of binomial coefficients of order (order_plus_one-1)'''
     if order_plus_one < 2:
@@ -46,16 +86,11 @@ def named_filter(name):
     '''
 
     if name.startswith("binom"):
-        # TODO: not sure why the normalization constant is independent of order?
-        # this may affect LaplacianPyramid method
-        # original code:
         kernel = np.sqrt(2) * binomial_filter(int(name[5:]))
-        # proposed code:
-        # kernel = binomial_filter(int(name[5:]))
-        # kernel = kernel / np.sqrt(np.sum((kernel ** 2)))
 
     elif name.startswith('sp'):
         kernel = steerable_filters(name)
+
     elif name is "qmf5":
         kernel = np.array([[-0.076103], [0.3535534], [0.8593118], [0.3535534], [-0.076103]])
     elif name is "qmf9":
