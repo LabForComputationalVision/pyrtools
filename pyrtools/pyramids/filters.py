@@ -22,9 +22,6 @@ def parse_filter(filt, normalize=True):
     See also
     --------
     named_filter : function that converts `filter_name` str into an array or dict of arrays.
-
-    TODO
-    expand normalization options
     """
 
     if isinstance(filt, str):
@@ -37,6 +34,7 @@ def parse_filter(filt, normalize=True):
         elif filt.ndim == 2 and filt.shape[0] == 1:
             filt = np.reshape(filt, (-1, 1))
 
+    # TODO expand normalization options
     if normalize:
         filt = filt / filt.sum()
 
