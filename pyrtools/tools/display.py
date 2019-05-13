@@ -229,7 +229,7 @@ def reshape_axis(ax, axis_size_pix):
     return ax
 
 
-def colormap_range(image, vrange='indep1'):
+def colormap_range(image, vrange='indep1', cmap=None):
     """Find the appropriate ranges for colormaps of provided images
 
     Arguments
@@ -271,10 +271,9 @@ def colormap_range(image, vrange='indep1'):
 
     if isinstance(vrange, str):
         if vrange[:4] == 'auto':
-            # TODO auto0 / indep0: put 0 at mid grey
             if vrange == 'auto0':
-                vrange_list = [np.min(flatimg), np.max(flatimg)]
-
+                M = np.max([np.abs(np.min(flatimg)), np.abs(np.max(flatimg))])
+                vrange_list = [-M, M]
             elif vrange == 'auto1' or vrange == 'auto':
                 vrange_list = [np.min(flatimg), np.max(flatimg)]
             elif vrange == 'auto2':
@@ -290,9 +289,9 @@ def colormap_range(image, vrange='indep1'):
 
         elif vrange[:5] == 'indep':
             # get independent vrange by calling this function one image at a time
-            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0] for im in image]
+            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0][0] for im in image]
         else:
-            vrange_list = colormap_range(image, vrange='auto1')
+            vrange_list, _ = colormap_range(image, vrange='auto1')
             warnings.warn('Unknown vrange argument, using auto1 instead')
     else:
         # in this case, we've been passed two numbers, either as a list or tuple
@@ -303,7 +302,13 @@ def colormap_range(image, vrange='indep1'):
     # double check that we're returning the right number of vranges
     assert len(image) == len(vrange_list)
 
-    return vrange_list
+    if cmap is None:
+        if '0' in vrange:
+            cmap = cm.RdBu
+        else:
+            cmap = cm.gray
+
+    return vrange_list, cmap
 
 
 def find_zooms(images):
@@ -352,7 +357,7 @@ def find_zooms(images):
 
 
 def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-           cmap=cm.gray, plot_complex='rectangular', **kwargs):
+           cmap=None, plot_complex='rectangular', **kwargs):
     '''show image(s)
 
     Arguments
@@ -485,7 +490,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         fig = ax.figure
         axes = [reshape_axis(ax,  zoom * max_shape)]
 
-    vrange_list = colormap_range(image=image, vrange=vrange)
+    vrange_list, cmap = colormap_range(image=image, vrange=vrange, cmap=cmap)
     # print('passed', vrange_list)
 
     for im, a, r, t, z in zip(image, axes, vrange_list, title, zooms):
@@ -540,20 +545,15 @@ def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=F
 
     """
 
-    vrange_list = colormap_range(movie, vrange=vrange)
-    kwargs.setdefault("vmin", vrange_list[0][0])
-    kwargs.setdefault("vmax", vrange_list[0][1])
+    vrange_list, cmap = colormap_range(movie, vrange=vrange, cmap=kwargs.pop('cmap', None))
 
     _, max_shape = find_zooms(movie)
     max_shape = np.array(max_shape)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
         raise Exception("zoom * movie.shape[1:] must result in integers!")
     # Initialize the figure and an empty array for the frames
-    f = make_figure(1, 1, zoom*max_shape, vert_pct=1)
-    ax = f.axes[0]
-
-    kwargs.setdefault("cmap", "gray")
-    array = ax.imshow(np.zeros(max_shape), **kwargs)
+    f = imshow(np.zeros(max_shape), zoom=zoom, vrange=vrange_list[0], cmap=cmap, title=None, **kwargs)
+    array = f.axes[0].images[0]
 
     # Define animation functions
     def init_movie():
@@ -562,6 +562,7 @@ def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=F
     def animate_movie(i):
         frame = movie[i].astype(np.float)
         array.set_data(frame)
+        array.set_clim(vrange_list[i])
         return array,
 
     # Produce the animation

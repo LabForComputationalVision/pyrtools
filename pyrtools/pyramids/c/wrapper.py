@@ -74,7 +74,7 @@ def corrDn(image, filt, edge_type='reflect1', step=(1, 1), start=(0, 0), stop=No
     filt = filt.copy().astype(float)
 
     if image.shape[0] < filt.shape[0] or image.shape[1] < filt.shape[1]:
-        print("DANGER signal smaller than filter in corresponding dimension: ", image.shape, filt.shape)
+        raise Exception("Signal smaller than filter in corresponding dimension: ", image.shape, filt.shape, " see parse filter")
 
     if edge_type not in ['circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend', 'dont-compute']:
         raise Exception("Don't know how to do convolution with edge_type %s!" % edge_type)
@@ -172,7 +172,7 @@ def upConv(image, filt, edge_type='reflect1', step=(1, 1), start=(0, 0), stop=No
     image_shape = (image.shape[0] * step[0], image.shape[1] * step[1])
 
     if image_shape[0] < filt.shape[0] or image_shape[1] < filt.shape[1]:
-        print("DANGER signal smaller than filter in corresponding dimension: ", image_shape, filt.shape)
+        raise Exception("Signal smaller than filter in corresponding dimension: ", image_shape, filt.shape, " see parse filter")
 
     if edge_type not in ['circular', 'reflect1', 'reflect2', 'repeat', 'zero', 'extend',
                          'dont-compute']:
