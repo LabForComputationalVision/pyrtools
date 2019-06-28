@@ -272,16 +272,16 @@ def colormap_range(image, vrange='indep1', cmap=None):
     if isinstance(vrange, str):
         if vrange[:4] == 'auto':
             if vrange == 'auto0':
-                M = np.max([np.abs(np.min(flatimg)), np.abs(np.max(flatimg))])
+                M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
                 vrange_list = [-M, M]
             elif vrange == 'auto1' or vrange == 'auto':
-                vrange_list = [np.min(flatimg), np.max(flatimg)]
+                vrange_list = [np.nanmin(flatimg), np.nanmax(flatimg)]
             elif vrange == 'auto2':
-                vrange_list = [flatimg.mean() - 2 * flatimg.std(),
-                               flatimg.mean() + 2 * flatimg.std()]
+                vrange_list = [flatimg.nanmean() - 2 * flatimg.nanstd(),
+                               flatimg.nanmean() + 2 * flatimg.nanstd()]
             elif vrange == 'auto3':
-                p1 = np.percentile(flatimg, 10)
-                p2 = np.percentile(flatimg, 90)
+                p1 = np.nanpercentile(flatimg, 10)
+                p2 = np.nanpercentile(flatimg, 90)
                 vrange_list = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
 
             # make sure to return as many ranges as there are images
