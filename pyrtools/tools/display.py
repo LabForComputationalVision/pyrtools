@@ -243,6 +243,9 @@ def colormap_range(image, vrange='indep1', cmap=None):
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
 
+        * `'auto0'`: all images have same vmin/vmax, which have the same absolute value, and come
+                     from the minimum or maximum across all images, whichever has the larger
+                    absolute value
         * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
                           across all images
         * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
@@ -251,6 +254,9 @@ def colormap_range(image, vrange='indep1', cmap=None):
                      values to the 10th/90th percentile of the display intensity range. For
                      example: vmin is the 10th percentile image value minus 1/8 times the
                      difference between the 90th and 10th percentile
+        * `'indep0'`: each image has an independent vmin/vmax, which have the same absolute value,
+                      which comes from either their minimum or maximum value, whichever has the
+                      larger absolute value.
         * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
                       values
         * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
@@ -262,6 +268,7 @@ def colormap_range(image, vrange='indep1', cmap=None):
     -------
     vrange_list : `list`
         list of tuples, same length as `image`. contains the (vmin, vmax) tuple for each image.
+
     """
     # this will clip the colormap
 
@@ -371,6 +378,9 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
 
+        * `'auto0'`: all images have same vmin/vmax, which have the same absolute value, and come
+                     from the minimum or maximum across all images, whichever has the larger
+                    absolute value
         * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
                           across all images
         * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
@@ -379,6 +389,9 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
                      values to the 10th/90th percentile of the display intensity range. For
                      example: vmin is the 10th percentile image value minus 1/8 times the
                      difference between the 90th and 10th percentile
+        * `'indep0'`: each image has an independent vmin/vmax, which have the same absolute value,
+                      which comes from either their minimum or maximum value, whichever has the
+                      larger absolute value.
         * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
                       values
         * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
