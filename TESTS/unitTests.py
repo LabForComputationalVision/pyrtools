@@ -1160,6 +1160,19 @@ class skewTests(unittest.TestCase):
         res = pt.skew(disc, mn, v)
         self.assertTrue(np.absolute(res - mres) <= np.power(10.0,-11))
 
+
+class ProjectPolarTests(unittest.TestCase):
+    def test0(self):
+        # check that it runs, even though here the output will be nonsensical
+        img = pt.synthetic_images.disk(256)
+        proj_img = pt.project_polar_to_cartesian(img)
+    def test1(self):
+        # currently only works for square images
+        img = pt.synthetic_images.disk((256, 512))
+        with self.assertRaises(Exception):
+            pt.project_polar_to_cartesian(img)
+
+
 # class cconv2Tests(unittest.TestCase):
 #     def test0(self):
 #         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'cconv2_0.mat'))
