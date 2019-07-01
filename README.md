@@ -5,7 +5,7 @@
 ![Python version](https://img.shields.io/badge/python-3.5%7C3.6%7C3.7-blue.svg)
 [![Build Status](https://travis-ci.com/LabForComputationalVision/pyrtools.svg?branch=master)](https://travis-ci.com/LabForComputationalVision/pyrtools)
 [![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v0.9.0?filepath=TUTORIALS%2F)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v0.9.1?filepath=TUTORIALS%2F)
 
 Briefly, the tools include:
   - Recursive multi-scale image decompositions (pyramids), including
