@@ -575,3 +575,51 @@ def pink_noise(size, fract_dim=1):
         res = res / np.sqrt(var(res))
 
     return res
+
+
+def blue_noise(size, fract_dim=1):
+    '''make blue noise
+
+    Make a matrix of specified size containing blue noise with power
+    spectral density of the form: f^(5-2*`fract_dim`).  Image variance
+    is normalized to 1.0.
+
+    Note that the power spectrum here is the reciprocal of the pink
+    noises's power spectrum
+
+    Arguments
+    ---------
+    size : `int` or `tuple`
+        if an int, we assume the image should be of dimensions `(size,
+        size)`. if a tuple, must be a 2-tuple of ints specifying the
+        dimensions
+    fract_dim : `float`
+        the fractal dimension of the blue noise
+
+    Returns
+    -------
+    res : `np.array`
+        the blue noise
+
+    '''
+    if not hasattr(size, '__iter__'):
+        size = (size, size)
+
+    res = np.random.randn(size[0], size[1])
+    fres = np.fft.fft2(res)
+
+    exp = 2.5-fract_dim
+    ctr = np.ceil((res.shape + np.ones(2))/2.)
+    sh = np.fft.ifftshift(polar_radius(size, exp, ctr))
+    sh[0, 0] = 1  # DC term
+
+    fres = sh * fres
+    fres = np.fft.ifft2(fres)
+
+    if abs(fres.imag).max() > 1e-10:
+        print('Symmetry error in creating fractal')
+    else:
+        res = np.real(fres)
+        res = res / np.sqrt(var(res))
+
+    return res
