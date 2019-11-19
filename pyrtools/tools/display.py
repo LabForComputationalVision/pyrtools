@@ -443,6 +443,15 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     except AttributeError:
         # then this is a list and we don't do anything
         pass
+    # want to do this check before converting title to a list (at which
+    # point `title is None` will always be False). we do it here instad
+    # of checking whether the first item of title is None because it's
+    # conceivable that the user passed `title=[None, 'important
+    # title']`, and in that case we do want the space for the title
+    if title is None:
+        vert_pct = 1
+    else:
+        vert_pct = .8
     if not isinstance(title, list):
         title = len(image) * [title]
     else:
@@ -493,10 +502,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         else:
             n_cols = col_wrap
             n_rows = int(np.ceil(image.shape[0] / n_cols))
-        if title is None:
-            vert_pct = 1
-        else:
-            vert_pct = .8
         fig = make_figure(n_rows, n_cols, zoom * max_shape, vert_pct=vert_pct)
         axes = fig.axes
     else:
