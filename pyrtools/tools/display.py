@@ -311,7 +311,7 @@ def colormap_range(image, vrange='indep1', cmap=None):
 
     if cmap is None:
         if '0' in vrange:
-            cmap = cm.RdBu
+            cmap = cm.RdBu_r
         else:
             cmap = cm.gray
 
@@ -457,7 +457,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     else:
         assert len(image) == len(title), "Must have same number of titles and images!"
 
-    # making sure plotting works for (list of) arrays / torch.tensor
+    # making sure plotting works for (list of) arrays
     image_tmp = []
     title_tmp = []
     for img, t in zip(image, title):
@@ -518,17 +518,17 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     return fig
 
 
-def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=False, **kwargs):
-    """Turn a 3D movie array into a matplotlib animation or HTML movie.
+def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True, repeat=False, **kwargs):
+    """Display one or more videos (3d array) as a matplotlib animation or an HTML video.
 
     Arguments
     ---------
-    movie : `np.array` or `list`
-        Array with time on the first axis or, equivalently, a list of 2d arrays. these 2d arrays
-        don't have to all be the same size, but, if they're not, there must exist an integer such
-        that all of them can be zoomed in by an integer up to the biggest image.
+    video : `np.array` or `list`
+        3d array (one video to display), 4d array (multiple videos to display, videos
+        are indexed along the first dimension), or list of 3d arrays (the height, resp. width,
+        of all videos must be integer multiples)
     framerate : `float`
-        Temporal resolution of the movie, in Hz (frames per second).
+        Temporal resolution of the video, in Hz (frames per second).
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
@@ -548,8 +548,15 @@ def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=F
         * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
                       percentile values map to the 10th/90th percentile intensities.
     zoom : `float`
-        amount we zoom the movie frames (must result in an integer when multiplied by
-        movie.shape[1:])
+        amount we zoom the video frames (must result in an integer when multiplied by
+        video.shape[1:])
+    title : `str` , `list` or None
+        Title for the plot:
+
+        * if `str`, will put the same title on every plot.
+        * if `list`, all values must be `str`, must be the same length as img, assigning each
+          title to corresponding image.
+        * if None, no title will be printed.
     as_html : `bool`
         If True, return an HTML5 video; otherwise return the underying matplotlib animation object
         (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
@@ -561,32 +568,39 @@ def animshow(movie, framerate=2., vrange='auto', zoom=1, as_html5=True, repeat=F
     anim : HTML object or FuncAnimation object
         Animation, format depends on `as_html`.
 
+    TODO
+    ----
+    handle complex arrays
+    example use code
     """
 
-    vrange_list, cmap = colormap_range(movie, vrange=vrange, cmap=kwargs.pop('cmap', None))
+    if isinstance(video, list):
+        pass
+        # assert np.prod(np.array([video[0].shape == v.shape for v in video]))
+    elif video.ndim == 3:
+        video = [video]
+    elif video.ndim == 4:
+        video = [v for v in video]
 
-    _, max_shape = find_zooms(movie)
-    max_shape = np.array(max_shape)
-    if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
-        raise Exception("zoom * movie.shape[1:] must result in integers!")
+    vrange_list, cmap = colormap_range(video, vrange=vrange, cmap=kwargs.pop('cmap', None))
+
     # Initialize the figure and an empty array for the frames
-    f = imshow(np.zeros(max_shape), zoom=zoom, vrange=vrange_list[0], cmap=cmap, title=None, **kwargs)
-    array = f.axes[0].images[0]
+    f = imshow([v[0] for v in video], zoom=zoom, cmap=cmap, title=title, **kwargs)
 
-    # Define animation functions
-    def init_movie():
-        return array,
+    artists = [f.axes[i].images[0] for i in range(len(f.axes))]
 
-    def animate_movie(i):
-        frame = movie[i].astype(np.float)
-        array.set_data(frame)
-        array.set_clim(vrange_list[i])
-        return array,
+    for i, a in enumerate(artists):
+        a.set_clim(vrange_list[i])
+
+    def animate_video(t):
+        for i, a in enumerate(artists):
+            frame = video[i][t].astype(np.float)
+            a.set_data(frame)
+        return artists
 
     # Produce the animation
-    anim = animation.FuncAnimation(f, frames=len(movie), interval=1000/framerate, blit=True,
-                                   func=animate_movie, init_func=init_movie, repeat=repeat,
-                                   repeat_delay=500)
+    anim = animation.FuncAnimation(f, frames=len(video[0]), interval=1000/framerate, blit=True,
+                                   func=animate_video, repeat=repeat, repeat_delay=500)
 
     plt.close(f)
 
