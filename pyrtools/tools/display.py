@@ -318,7 +318,7 @@ def colormap_range(image, vrange='indep1', cmap=None):
     return vrange_list, cmap
 
 
-def find_zooms(images):
+def find_zooms(images, as_rgb=True):
     """find the zooms necessary to display a list of images
 
     this convenience function takes a list of images and finds out if they can all be displayed at
@@ -330,6 +330,13 @@ def find_zooms(images):
     images : `list`
         list of numpy arrays to check the size of. In practice, these are 1d or 2d, but can in
         principle be any number of dimensions
+    as_rgb : bool
+        RGB(A) images are special: a single RGB(A) image is 3d (instead of 2d),
+        with the RGB (and, optionally, A) values along the last dimension. If
+        this is True, we ignore that final dimension if it looks like we have
+        RGB(A) images (i.e., if the numpy arrays in `images` are 3d and the
+        last dimension has 3 or 4 elements). Setting this to False will force
+        us to consider all dimensions.
 
     Returns
     -------
@@ -337,6 +344,7 @@ def find_zooms(images):
         list of integers showing how much each image needs to be zoomed
     max_shape : `tuple`
         2-tuple of integers, showing the shape of the largest image in the list
+
     """
     def check_shape_1d(shapes):
         max_shape = np.max(shapes)
@@ -351,29 +359,40 @@ def find_zooms(images):
     max_shape = []
     for i, _ in enumerate(images[0].shape):
         max_shape.append(check_shape_1d([img.shape[i] for img in images]))
+    if len(max_shape) > 2 and as_rgb and max_shape[-1] in [3, 4]:
+        # then we have some color images here, so let's not consider the final
+        # dimension (which is RGB(A))
+        max_shape = max_shape[:-1]
     zooms = []
     for img in images:
-        # this checks that there's only one unique value in the list max_shape[i] // img.shape[i],
-        # where i indexes through the dimensions; that is, that we zoom each dimension by the same
-        # amount. this should then work with an arbitrary number of dimensions (in practice, 1 or
-        # 2)
-        if len(set([max_shape[i] // img.shape[i] for i in range(img.ndim)])) > 1:
-            raise Exception("Both height and width must be multiplied by same amount!")
+        # this checks that there's only one unique value in the list
+        # max_shape[i] // img.shape[i], where i indexes through the dimensions;
+        # that is, that we zoom each dimension by the same amount. this should
+        # then work with an arbitrary number of dimensions (in practice, 1 or
+        # 2). by using max_shape instead of img.shape, we will stop when it has
+        # fewer values (as in the case a bit above when `as_rgb` is True)
+        if len(set([s // img.shape[i] for i, s in enumerate(max_shape)])) > 1:
+            raise Exception("Both height and width must be multiplied by same amount but got "
+                            f"image shape {img.shape} and max_shape {max_shape}!")
         zooms.append(max_shape[0] // img.shape[0])
     return zooms, max_shape
 
 
 def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-           cmap=None, plot_complex='rectangular', **kwargs):
-    '''show image(s)
+           cmap=None, plot_complex='rectangular', as_rgb=True, **kwargs):
+    """Show image(s).
 
     Arguments
     ---------
     image : `np.array` or `list`
-        should be a 2d array (one image to display), 3d array (multiple images to display, images
-        are indexed along the first dimension), or list of 2d arrays. the image(s) to be shown.
-        all images will be automatically rescaled so they're displayed at the same size. thus,
-        their sizes must be scalar multiples of each other.
+        should be a 2d array (one image to display), 3d array (multiple
+        grayscale images to display, images are indexed along the first
+        dimension, or a single RGB(A) image, with RGB(A) along the final
+        dimension), list of 2d or 3d arrays (grayscale or RGB(A) images,
+        respectively), or 4d array (multiple RGB(A) images). the image(s) to be
+        shown. all images will be automatically rescaled so they're displayed
+        at the same size. thus, their sizes must be scalar multiples of each
+        other.
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
@@ -424,13 +443,20 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         * `'polar'`: plot amplitude and phase as separate images
         * `'logpolar'`: plot log_2 amplitude and phase as separate images
         for any other value, we raise a warning and default to rectangular.
+    as_rgb : bool, optional
+        When passing a 3d array, it can sometimes be ambiguous whether we have
+        a single RGB(A) image or multiple grayscale images (this should only
+        come up when the `image.shape[-1] in [3, 4]`). By setting this to
+        False, we will always consider them multiple grayscale images. If we
+        can't find a way to do that reasonably (i.e., you passed a 4d array),
+        we'll raise an Exception.
 
     Returns
     -------
     fig : `PyrFigure`
         figure containing the plotted images
-    '''
 
+    """
     if plot_complex not in ['rectangular', 'polar', 'logpolar']:
         warnings.warn("Don't know how to handle plot_complex value %s, defaulting to "
                       "'rectangular'" % plot_complex)
@@ -482,14 +508,20 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     if image.ndim == 1:
         # in this case, the two images were different sizes and so numpy can't combine them
         # correctly
-        zooms, max_shape = find_zooms(image)
+        zooms, max_shape = find_zooms(image, as_rgb)
     elif image.ndim == 2:
         image = image.reshape((1, image.shape[0], image.shape[1]))
         max_shape = image.shape[1:]
         zooms = [1]
     else:
+        if image.shape[-1] in [3, 4] and as_rgb and image.ndim == 3:
+            # then this is a single color image and so we add an extra
+            # dimension at the beginning
+            image = image[None]
         zooms = [1 for i in image]
         max_shape = image.shape[1:]
+        if image.ndim == 4 and not as_rgb:
+            raise Exception("image is 4d but you don't want to plot it as RGB(A)!")
     max_shape = np.array(max_shape)
     zooms = zoom * np.array(zooms)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
@@ -509,10 +541,8 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         axes = [reshape_axis(ax,  zoom * max_shape)]
 
     vrange_list, cmap = colormap_range(image=image, vrange=vrange, cmap=cmap)
-    # print('passed', vrange_list)
 
     for im, a, r, t, z in zip(image, axes, vrange_list, title, zooms):
-        # z in zooms
         _showIm(im, a, r, z, t, cmap, **kwargs)
 
     return fig
