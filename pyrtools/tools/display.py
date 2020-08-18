@@ -373,7 +373,7 @@ def find_zooms(images, as_rgb=True):
         # fewer values (as in the case a bit above when `as_rgb` is True)
         if len(set([s // img.shape[i] for i, s in enumerate(max_shape)])) > 1:
             raise Exception("Both height and width must be multiplied by same amount but got "
-                            f"image shape {img.shape} and max_shape {max_shape}!")
+                            "image shape {} and max_shape {}!".format(img.shape, max_shape))
         zooms.append(max_shape[0] // img.shape[0])
     return zooms, max_shape
 
