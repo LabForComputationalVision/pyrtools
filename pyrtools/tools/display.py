@@ -394,47 +394,55 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         at the same size. thus, their sizes must be scalar multiples of each
         other.
     vrange : `tuple` or `str`
-        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-        maximum value of the colormap, respectively. If a string:
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
+        the minimum and maximum value of the colormap, respectively. If a
+        string:
 
-        * `'auto0'`: all images have same vmin/vmax, which have the same absolute value, and come
-                     from the minimum or maximum across all images, whichever has the larger
-                    absolute value
-        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
-                          across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
-                     plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
-                     values to the 10th/90th percentile of the display intensity range. For
-                     example: vmin is the 10th percentile image value minus 1/8 times the
-                     difference between the 90th and 10th percentile
-        * `'indep0'`: each image has an independent vmin/vmax, which have the same absolute value,
-                      which comes from either their minimum or maximum value, whichever has the
-                      larger absolute value.
-        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
-                      values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
-                      std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
-                      percentile values map to the 10th/90th percentile intensities.
+        * `'auto0'`: all images have same vmin/vmax, which have the same absolute
+                     value, and come from the minimum or maximum across all
+                     images, whichever has the larger absolute value
+        * `'auto/auto1'`: all images have same vmin/vmax, which are the
+                          minimum/maximum values across all images
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across
+                     all images) minus/ plus 2 std dev (across all images)
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the
+                     10th/90th percentile values to the 10th/90th percentile of
+                     the display intensity range. For example: vmin is the 10th
+                     percentile image value minus 1/8 times the difference
+                     between the 90th and 10th percentile
+        * `'indep0'`: each image has an independent vmin/vmax, which have the
+                      same absolute value, which comes from either their
+                      minimum or maximum value, whichever has the larger
+                      absolute value.
+        * `'indep1'`: each image has an independent vmin/vmax, which are their
+                      minimum/maximum values
+        * `'indep2'`: each image has an independent vmin/vmax, which is their
+                      mean minus/plus 2 std dev
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that
+                      the 10th/90th percentile values map to the 10th/90th
+                      percentile intensities.
     zoom : `float`
-        ratio of display pixels to image pixels. if >1, must be an integer.  If <1, must be 1/d
-        where d is a a divisor of the size of the largest image.
-    title : `str` , `list` or None
-        Title for the plot:
-
+        ratio of display pixels to image pixels. if >1, must be an integer. If
+        <1, must be 1/d where d is a a divisor of the size of the largest
+        image.
+    title : `str`, `list`, or None, optional
+        Title for the plot. In addition to the specified title, we add a
+        subtitle giving the plotted range and dimensionality (with zoom)
         * if `str`, will put the same title on every plot.
-        * if `list`, all values must be `str`, must be the same length as img, assigning each
-          title to corresponding image.
-        * if None, no title will be printed.
-    col_wrap : `int` or None
-        number of axes to have in each row. If None, will fit all axes in a single row.
-    ax : `matplotlib.pyplot.axis` or None
-        if None, make the appropriate figure. otherwise, we resize it so that it's the appropriate
-        number of pixels (done by shrinking the bbox - if the bbox is already too small, this will
-        throw an Exception!, so first define a large enough figure using either make_figure or
+        * if `list`, all values must be `str`, must be the same length as img,
+          assigning each title to corresponding image.
+        * if None, no title will be printed (and subtitle will be removed;
+          unsupported for complex tensors).
+    col_wrap : `int` or None, optional
+        number of axes to have in each row. If None, will fit all axes in a
+        single row.
+    ax : `matplotlib.pyplot.axis` or None, optional
+        if None, we make the appropriate figure. otherwise, we resize the axes
+        so that it's the appropriate number of pixels (done by shrinking the
+        bbox - if the bbox is already too small, this will throw an Exception!,
+        so first define a large enough figure using either make_figure or
         plt.figure)
-    cmap : matplotlib colormap
+    cmap : matplotlib colormap, optional
         colormap to use when showing these images
     plot_complex : {'rectangular', 'polar', 'logpolar'}
         specifies handling of complex values.
