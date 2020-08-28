@@ -429,10 +429,11 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     title : `str`, `list`, or None, optional
         Title for the plot. In addition to the specified title, we add a
         subtitle giving the plotted range and dimensionality (with zoom)
+    
         * if `str`, will put the same title on every plot.
         * if `list`, all values must be `str`, must be the same length as img,
           assigning each title to corresponding image.
-        * if None, no title will be printed (and subtitle will be removed;
+        * if `None`, no title will be printed (and subtitle will be removed;
           unsupported for complex tensors).
     col_wrap : `int` or None, optional
         number of axes to have in each row. If None, will fit all axes in a
@@ -445,19 +446,16 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         plt.figure)
     cmap : matplotlib colormap, optional
         colormap to use when showing these images
-    plot_complex : {'rectangular', 'polar', 'logpolar'}
+    plot_complex : {'rectangular', 'polar', 'logpolar'}, optional
         specifies handling of complex values.
 
         * `'rectangular'`: plot real and imaginary components as separate images
         * `'polar'`: plot amplitude and phase as separate images
         * `'logpolar'`: plot log_2 amplitude and phase as separate images
     as_rgb : bool, optional
-        When passing a 3d array, it can sometimes be ambiguous whether we have
-        a single RGB(A) image or multiple grayscale images (this should only
-        come up when the `image.shape[-1] in [3, 4]`). By setting this to
-        False, we will always consider them multiple grayscale images. If we
-        can't find a way to do that reasonably (i.e., you passed a 4d array),
-        we'll raise an Exception.
+        Whether to plot the image(s) as a grayscale or RGB(A) images. See the
+        `images` for description of what's necessary. Will raise Exception if
+        can't figure out how to plot as specified.
     kwargs :
         Passed to `ax.imshow`
 

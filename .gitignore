@@ -32,5 +32,6 @@ test_jimmy.py
 TESTS/matFiles*
 
 docs/_build
+docs/api
 
 .idea

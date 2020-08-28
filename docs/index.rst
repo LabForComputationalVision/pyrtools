@@ -65,7 +65,7 @@ for image processing, here are some resources to get you started:
    tutorial1
    tutorial2
    tutorial3
-   modules
+   api/modules
 
 .. toctree::
    :maxdepth: 2
