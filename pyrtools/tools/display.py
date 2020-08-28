@@ -458,6 +458,8 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         False, we will always consider them multiple grayscale images. If we
         can't find a way to do that reasonably (i.e., you passed a 4d array),
         we'll raise an Exception.
+    kwargs :
+        Passed to `ax.imshow`
 
     Returns
     -------
