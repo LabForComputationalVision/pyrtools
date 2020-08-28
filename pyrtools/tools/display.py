@@ -378,6 +378,205 @@ def find_zooms(images, as_rgb=True):
     return zooms, max_shape
 
 
+def _convert_signal_to_list(signal, allowable_dims=[2, 3]):
+    """Convert signal to list.
+
+    signal can be an array with certain dimensionality (by default, 2 or 3d) or
+    a list of such arrays. this guarantees it's a list, raises an Exception if
+    it's an array with a different dimensionality.
+
+    if it's an already a list, we don't check whether each value is a
+    properly-shaped array. that happens in _
+
+    Parameters
+    ----------
+    signal : np.ndarray or list
+        the array or list of arrays to convert
+    allowable_dims : list, optional
+        list of ints giving the allowable dimensions. the default (2 and 3) is
+        for images
+
+    Returns
+    -------
+    signal : list
+
+    """
+    try:
+        if signal.ndim in allowable_dims:
+            # then this is a single signal
+            signal = [signal]
+        else:
+            text = 'd or '.join([str(i) for i in allowable_dims]) + "d"
+            raise Exception("Only %s arrays or lists of them are "
+                            "supported!" % text)
+    except AttributeError:
+        # then this is a list and we don't do anything
+        pass
+    return signal
+
+
+def _convert_title_to_list(title, signal):
+    """Convert title to list and get vert_pct.
+
+    This function makes sure that title is a list with the right number of
+    elements, and sets vert_pct based on whether title is None or not
+
+    Parameters
+    ----------
+    title : str, list, or None
+        the title to check
+    signal : list
+        the signal (e.g., images) that will be plotted. must already have gone
+        through _convert_signal_to_list
+
+    Returns
+    -------
+    title : list
+        list of title
+    vert_pct : float
+        how much of the axis should contain the image
+
+    """
+    if title is None:
+        vert_pct = 1
+    else:
+        vert_pct = .8
+    if not isinstance(title, list):
+        title = len(signal) * [title]
+    else:
+        assert len(signal) == len(title), "Must have same number of titles and images!"
+    return title, vert_pct
+
+
+def _process_signal(image, title, as_rgb, plot_complex):
+    """Process signal and title for plotting.
+
+    Two goals of this function:
+
+    1. Make sure `image.shape` and `as_rgb` agree, so that we know how to
+       properly plot them. Raise Exception if we can't make it work.
+
+    2. Process complex images for proper plotting, splitting them up
+       as specified by `plot_complex`
+
+    Parameters
+    ----------
+    image : list
+        list of arrays to examine
+    title : list
+        list containing strs or Nones, for accompanying the images
+    as_rgb : bool
+        whether to plot RGB(A) or grayscale images
+    plot_complex : {'rectangular', 'polar', 'logpolar'}
+        how to plot complex arrays
+
+    Returns
+    -------
+    image : np.ndarray
+        array containing the images, ready to plot
+    title : list
+        list of titles, ready to plot
+
+    """
+    image_tmp = []
+    title_tmp = []
+    for img, t in zip(image, title):
+        if as_rgb and (img.ndim == 2 or img.shape[-1] not in [3, 4]):
+            raise Exception(
+                "Can't figure out how to plot image with shape "
+                f"{img.shape} as RGB(A) image! RGB(A) images should"
+                " be 3d with 3 or 4 elements in their final "
+                "dimension.")
+        elif not as_rgb and img.ndim == 3:
+            raise Exception("Can't figure out how to plot image with "
+                            f"shape {img.shape} as grayscale image! "
+                            "Grayscale images should be 2d")
+        if np.iscomplex(img).any():
+            if plot_complex == 'rectangular':
+                image_tmp.extend([np.real(img), np.imag(img)])
+                title_tmp.extend([t + " real", t + " imaginary"])
+            elif plot_complex == 'polar':
+                image_tmp.extend([np.abs(img), np.angle(img)])
+                title_tmp.extend([t + " amplitude", t + " phase"])
+            elif plot_complex == 'logpolar':
+                image_tmp.extend([np.log2(np.abs(img)), np.angle(img)])
+                title_tmp.extend([t + " log amplitude", t + " phase"])
+        else:
+            image_tmp.append(np.array(img))
+            title_tmp.append(t)
+    return np.array(image_tmp), title_tmp
+
+
+def _check_zooms(image, zoom, as_rgb):
+    """Check that all images can be zoomed correctly.
+
+    Make sure that all images can be zoomed so they end up the same size, and
+    figure out how to do that
+
+    Parameters
+    ----------
+    image : np.ndarray
+        array of images to plot
+    zoom : float
+        how we're going to zoom the image
+    as_rgb : bool
+        whether these images are RGB(A) or grayscale
+
+    Returns
+    -------
+    zooms : np.ndarray
+        how much to zoom each image
+    max_shape : np.ndarray
+        contains 2 ints, giving the max image size in pixels
+    image : np.ndarray
+        3d array of images to plot (extra dimension may have been added)
+
+    """
+    if hasattr(zoom, '__iter__'):
+        raise Exception("zoom must be a single number!")
+    if image.ndim == 1:
+        # in this case, the two images were different sizes and so numpy can't
+        # combine them correctly
+        zooms, max_shape = find_zooms(image, as_rgb)
+    elif image.ndim == 2:
+        image = image.reshape((1, image.shape[0], image.shape[1]))
+        max_shape = image.shape[1:]
+        zooms = [1]
+    else:
+        if image.shape[-1] in [3, 4] and as_rgb and image.ndim == 3:
+            # then this is a single color image and so we add an extra
+            # dimension at the beginning
+            image = image[None]
+        zooms = [1 for i in image]
+        max_shape = image.shape[1:]
+    max_shape = np.array(max_shape)
+    zooms = zoom * np.array(zooms)
+    if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
+        raise Exception("zoom * image.shape must result in integers!")
+    return zooms, max_shape, image
+
+
+def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
+    """Create figure with appropriate arrangement and size of axes
+
+    Creates (or tries to resize) set of axes for the appropriate arguments
+
+    """
+    if ax is None:
+        if col_wrap is None:
+            n_cols = image.shape[0]
+            n_rows = 1
+        else:
+            n_cols = col_wrap
+            n_rows = int(np.ceil(image.shape[0] / n_cols))
+        fig = make_figure(n_rows, n_cols, zoom * max_shape, vert_pct=vert_pct)
+        axes = fig.axes
+    else:
+        fig = ax.figure
+        axes = [reshape_axis(ax,  zoom * max_shape)]
+    return fig, axes
+
+
 def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
            cmap=None, plot_complex='rectangular', as_rgb=False, **kwargs):
     """Show image(s).
@@ -469,94 +668,25 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         raise Exception("Don't know how to handle plot_complex value "
                         f"{plot_complex}!")
 
-    try:
-        if image.ndim == 2 or image.ndim == 3:
-            # then this is a single image
-            image = [image]
-        else:
-            raise Exception("Only 2d or 3d arrays or lists of them are "
-                            "supported!")
-    except AttributeError:
-        # then this is a list and we don't do anything
-        pass
+    # Make sure image is a list, do some preliminary checks
+    image = _convert_signal_to_list(image, [2, 3])
+
     # want to do this check before converting title to a list (at which
     # point `title is None` will always be False). we do it here instad
     # of checking whether the first item of title is None because it's
     # conceivable that the user passed `title=[None, 'important
     # title']`, and in that case we do want the space for the title
-    if title is None:
-        vert_pct = 1
-    else:
-        vert_pct = .8
-    if not isinstance(title, list):
-        title = len(image) * [title]
-    else:
-        assert len(image) == len(title), "Must have same number of titles and images!"
+    title, vert_pct = _convert_title_to_list(title, image)
 
-    # making sure plotting works for (list of) arrays
-    image_tmp = []
-    title_tmp = []
-    for img, t in zip(image, title):
-        if as_rgb and (img.ndim == 2 or img.shape[-1] not in [3, 4]):
-            raise Exception(
-                "Can't figure out how to plot image with shape "
-                f"{img.shape} as RGB(A) image! RGB(A) images should"
-                " be 3d with 3 or 4 elements in their final "
-                "dimension.")
-        elif not as_rgb and img.ndim == 3:
-            raise Exception("Can't figure out how to plot image with "
-                            f"shape {img.shape} as grayscale image! "
-                            "Grayscale images should be 2d")
-        if np.iscomplex(img).any():
-            if plot_complex == 'rectangular':
-                image_tmp.extend([np.real(img), np.imag(img)])
-                title_tmp.extend([t + " real", t + " imaginary"])
-            elif plot_complex == 'polar':
-                image_tmp.extend([np.abs(img), np.angle(img)])
-                title_tmp.extend([t + " amplitude", t + " phase"])
-            elif plot_complex == 'logpolar':
-                image_tmp.extend([np.log2(np.abs(img)), np.angle(img)])
-                title_tmp.extend([t + " log amplitude", t + " phase"])
-        else:
-            image_tmp.append(np.array(img))
-            title_tmp.append(t)
-    image = np.array(image_tmp)
-    title = title_tmp
+    # Check whether as_rgb and image shape conflict, process complex arrays for
+    # plotting
+    image, title = _process_signal(image, title, as_rgb, plot_complex)
 
-    if hasattr(zoom, '__iter__'):
-        raise Exception("zoom must be a single number!")
-    if image.ndim == 1:
-        # in this case, the two images were different sizes and so numpy can't
-        # combine them correctly
-        zooms, max_shape = find_zooms(image, as_rgb)
-    elif image.ndim == 2:
-        image = image.reshape((1, image.shape[0], image.shape[1]))
-        max_shape = image.shape[1:]
-        zooms = [1]
-    else:
-        if image.shape[-1] in [3, 4] and as_rgb and image.ndim == 3:
-            # then this is a single color image and so we add an extra
-            # dimension at the beginning
-            image = image[None]
-        zooms = [1 for i in image]
-        max_shape = image.shape[1:]
-    max_shape = np.array(max_shape)
-    zooms = zoom * np.array(zooms)
-    if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
-        raise Exception("zoom * image.shape must result in integers!")
+    # make sure we can properly zoom all images
+    zooms, max_shape, image = _check_zooms(image, zoom, as_rgb)
 
-    if ax is None:
-        if col_wrap is None:
-            n_cols = image.shape[0]
-            n_rows = 1
-        else:
-            n_cols = col_wrap
-            n_rows = int(np.ceil(image.shape[0] / n_cols))
-        fig = make_figure(n_rows, n_cols, zoom * max_shape, vert_pct=vert_pct)
-        axes = fig.axes
-    else:
-        fig = ax.figure
-        axes = [reshape_axis(ax,  zoom * max_shape)]
+    # get the figure and axes created
+    fig, axes = _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct)
 
     vrange_list, cmap = colormap_range(image=image, vrange=vrange, cmap=cmap)
 
