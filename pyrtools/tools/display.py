@@ -379,20 +379,21 @@ def find_zooms(images, as_rgb=True):
 
 
 def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-           cmap=None, plot_complex='rectangular', as_rgb=True, **kwargs):
+           cmap=None, plot_complex='rectangular', as_rgb=False, **kwargs):
     """Show image(s).
 
     Arguments
     ---------
     image : `np.array` or `list`
-        should be a 2d array (one image to display), 3d array (multiple
-        grayscale images to display, images are indexed along the first
-        dimension, or a single RGB(A) image, with RGB(A) along the final
-        dimension), list of 2d or 3d arrays (grayscale or RGB(A) images,
-        respectively), or 4d array (multiple RGB(A) images). the image(s) to be
-        shown. all images will be automatically rescaled so they're displayed
-        at the same size. thus, their sizes must be scalar multiples of each
-        other.
+        the image(s) to plot. Images can be either grayscale, in which case
+        they must be 2d arrays of shape `(h,w)` and `as_rgb` must be `False`,
+        or RGB(A), in which case they must be 3d arrays of shape `(h,w,c)`
+        where `c` is 3 (for RGB) or 4 (to also plot the alpha channel) and
+        `as_rgb` must be `True`. If multiple images, must be a list of such
+        arrays (note this means we do not support an array of shape `(n,h,w)`
+        for multiple grayscale images). all images will be automatically
+        rescaled so they're displayed at the same size. thus, their sizes must
+        be scalar multiples of each other.
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to
         the minimum and maximum value of the colormap, respectively. If a
@@ -467,12 +468,16 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
     """
     if plot_complex not in ['rectangular', 'polar', 'logpolar']:
-        raise Exception(f"Don't know how to handle plot_complex value {plot_complex}!")
+        raise Exception("Don't know how to handle plot_complex value "
+                        f"{plot_complex}!")
 
     try:
-        if image.ndim == 2:
+        if image.ndim == 2 or image.ndim == 3:
             # then this is a single image
             image = [image]
+        else:
+            raise Exception("Only 2d or 3d arrays or lists of them are "
+                            "supported!")
     except AttributeError:
         # then this is a list and we don't do anything
         pass
@@ -494,6 +499,16 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     image_tmp = []
     title_tmp = []
     for img, t in zip(image, title):
+        if as_rgb and (img.ndim == 2 or img.shape[-1] not in [3, 4]):
+            raise Exception(
+                "Can't figure out how to plot image with shape "
+                f"{img.shape} as RGB(A) image! RGB(A) images should"
+                " be 3d with 3 or 4 elements in their final "
+                "dimension.")
+        elif not as_rgb and img.ndim == 3:
+            raise Exception("Can't figure out how to plot image with "
+                            f"shape {img.shape} as grayscale image! "
+                            "Grayscale images should be 2d")
         if np.iscomplex(img).any():
             if plot_complex == 'rectangular':
                 image_tmp.extend([np.real(img), np.imag(img)])
@@ -513,8 +528,8 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
     if image.ndim == 1:
-        # in this case, the two images were different sizes and so numpy can't combine them
-        # correctly
+        # in this case, the two images were different sizes and so numpy can't
+        # combine them correctly
         zooms, max_shape = find_zooms(image, as_rgb)
     elif image.ndim == 2:
         image = image.reshape((1, image.shape[0], image.shape[1]))
@@ -527,8 +542,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
             image = image[None]
         zooms = [1 for i in image]
         max_shape = image.shape[1:]
-        if image.ndim == 4 and not as_rgb:
-            raise Exception("image is 4d but you don't want to plot it as RGB(A)!")
     max_shape = np.array(max_shape)
     zooms = zoom * np.array(zooms)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
