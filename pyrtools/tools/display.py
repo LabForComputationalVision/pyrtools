@@ -450,7 +450,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         * `'rectangular'`: plot real and imaginary components as separate images
         * `'polar'`: plot amplitude and phase as separate images
         * `'logpolar'`: plot log_2 amplitude and phase as separate images
-        for any other value, we raise a warning and default to rectangular.
     as_rgb : bool, optional
         When passing a 3d array, it can sometimes be ambiguous whether we have
         a single RGB(A) image or multiple grayscale images (this should only
@@ -468,9 +467,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
     """
     if plot_complex not in ['rectangular', 'polar', 'logpolar']:
-        warnings.warn("Don't know how to handle plot_complex value %s, defaulting to "
-                      "'rectangular'" % plot_complex)
-        plot_complex = 'rectangular'
+        raise Exception(f"Don't know how to handle plot_complex value {plot_complex}!")
 
     try:
         if image.ndim == 2:
