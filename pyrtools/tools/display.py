@@ -318,7 +318,7 @@ def colormap_range(image, vrange='indep1', cmap=None):
     return vrange_list, cmap
 
 
-def find_zooms(images, as_rgb=True):
+def find_zooms(images):
     """find the zooms necessary to display a list of images
 
     this convenience function takes a list of images and finds out if they can all be displayed at
@@ -330,13 +330,6 @@ def find_zooms(images, as_rgb=True):
     images : `list`
         list of numpy arrays to check the size of. In practice, these are 1d or 2d, but can in
         principle be any number of dimensions
-    as_rgb : bool
-        RGB(A) images are special: a single RGB(A) image is 3d (instead of 2d),
-        with the RGB (and, optionally, A) values along the last dimension. If
-        this is True, we ignore that final dimension if it looks like we have
-        RGB(A) images (i.e., if the numpy arrays in `images` are 3d and the
-        last dimension has 3 or 4 elements). Setting this to False will force
-        us to consider all dimensions.
 
     Returns
     -------
@@ -357,20 +350,17 @@ def find_zooms(images, as_rgb=True):
     # in this case, the two images were different sizes and so numpy can't combine them
     # correctly
     max_shape = []
-    for i, _ in enumerate(images[0].shape):
+    for i in range(2):
         max_shape.append(check_shape_1d([img.shape[i] for img in images]))
-    if len(max_shape) > 2 and as_rgb and max_shape[-1] in [3, 4]:
-        # then we have some color images here, so let's not consider the final
-        # dimension (which is RGB(A))
-        max_shape = max_shape[:-1]
     zooms = []
     for img in images:
         # this checks that there's only one unique value in the list
         # max_shape[i] // img.shape[i], where i indexes through the dimensions;
         # that is, that we zoom each dimension by the same amount. this should
         # then work with an arbitrary number of dimensions (in practice, 1 or
-        # 2). by using max_shape instead of img.shape, we will stop when it has
-        # fewer values (as in the case a bit above when `as_rgb` is True)
+        # 2). by using max_shape instead of img.shape, we will only ever check
+        # the first two dimensions (so we'll ignore the RGBA channel if any
+        # image has that)
         if len(set([s // img.shape[i] for i, s in enumerate(max_shape)])) > 1:
             raise Exception("Both height and width must be multiplied by same amount but got "
                             "image shape {} and max_shape {}!".format(img.shape, max_shape))
@@ -448,13 +438,13 @@ def _convert_title_to_list(title, signal):
     return title, vert_pct
 
 
-def _process_signal(image, title, as_rgb, plot_complex):
+def _process_signal(image, title, plot_complex):
     """Process signal and title for plotting.
 
     Two goals of this function:
 
-    1. Make sure `image.shape` and `as_rgb` agree, so that we know how to
-       properly plot them. Raise Exception if we can't make it work.
+    1. Check the shape of each image to make sure they look like either
+       grayscale or RGB(A) images and raise an Exception if they don't
 
     2. Process complex images for proper plotting, splitting them up
        as specified by `plot_complex`
@@ -465,8 +455,6 @@ def _process_signal(image, title, as_rgb, plot_complex):
         list of arrays to examine
     title : list
         list containing strs or Nones, for accompanying the images
-    as_rgb : bool
-        whether to plot RGB(A) or grayscale images
     plot_complex : {'rectangular', 'polar', 'logpolar'}
         how to plot complex arrays
 
@@ -476,21 +464,28 @@ def _process_signal(image, title, as_rgb, plot_complex):
         array containing the images, ready to plot
     title : list
         list of titles, ready to plot
+    contains_rgb : bool
+        if at least one of the images is 3d (and thus RGB), this will be True.
 
     """
     image_tmp = []
     title_tmp = []
+    contains_rgb = False
     for img, t in zip(image, title):
-        if as_rgb and (img.ndim == 2 or img.shape[-1] not in [3, 4]):
+        if img.ndim == 3:
+            if img.shape[-1] not in [3, 4]:
+                raise Exception(
+                    "Can't figure out how to plot image with shape "
+                    f"{img.shape} as RGB(A) image! RGB(A) images should"
+                    " be 3d with 3 or 4 elements in their final "
+                    "dimension.")
+            contains_rgb = True
+        elif img.ndim != 2:
             raise Exception(
-                "Can't figure out how to plot image with shape "
-                f"{img.shape} as RGB(A) image! RGB(A) images should"
-                " be 3d with 3 or 4 elements in their final "
-                "dimension.")
-        elif not as_rgb and img.ndim == 3:
-            raise Exception("Can't figure out how to plot image with "
-                            f"shape {img.shape} as grayscale image! "
-                            "Grayscale images should be 2d")
+                "Can't figure out how to plot image with "
+                f"shape {img.shape}! Images should be be either 2d "
+                "(grayscale) or 3d (RGB(A), last dimension with 3 or"
+                " 4 elements).")
         if np.iscomplex(img).any():
             if plot_complex == 'rectangular':
                 image_tmp.extend([np.real(img), np.imag(img)])
@@ -504,10 +499,28 @@ def _process_signal(image, title, as_rgb, plot_complex):
         else:
             image_tmp.append(np.array(img))
             title_tmp.append(t)
-    return np.array(image_tmp), title_tmp
+    try:
+        image_tmp = np.array(image_tmp)
+    except ValueError:
+        # this happens when the images are the same shape but at least one is
+        # RGB(A) and at least one is grayscale, e.g., image_tmp[0].shape = (10,
+        # 10) and image_tmp[1].shape = (10, 10, 4). Strangely enough, it's not
+        # a problem if, in the above example, image_tmp[1].shape = (5, 5, 4).
+        # So in this case, we need to add extra dims, adding the RGB and/or A
+        # channels.
+        for i, img in enumerate(image_tmp):
+            if img.ndim == 2:
+                # make all of the RGB channels identical so it's grayscale
+                img = np.dstack([img, img, img])
+            if img.shape[-1] == 3:
+                # add an alpha channel of all 1s
+                img = np.dstack([img, np.ones_like(img[..., 0])])
+            image_tmp[i] = img
+        image_tmp = np.array(image_tmp)
+    return image_tmp, title_tmp, contains_rgb
 
 
-def _check_zooms(image, zoom, as_rgb):
+def _check_zooms(image, zoom, contains_rgb):
     """Check that all images can be zoomed correctly.
 
     Make sure that all images can be zoomed so they end up the same size, and
@@ -519,8 +532,10 @@ def _check_zooms(image, zoom, as_rgb):
         array of images to plot
     zoom : float
         how we're going to zoom the image
-    as_rgb : bool
-        whether these images are RGB(A) or grayscale
+    contains_rgb : bool
+        whether image contains at least one image to plot as RGB. This only
+        matters when we're given a 3d array and we want to know whether it was
+        supposed to be a single RGB image or multiple grayscale ones
 
     Returns
     -------
@@ -537,13 +552,13 @@ def _check_zooms(image, zoom, as_rgb):
     if image.ndim == 1:
         # in this case, the two images were different sizes and so numpy can't
         # combine them correctly
-        zooms, max_shape = find_zooms(image, as_rgb)
+        zooms, max_shape = find_zooms(image)
     elif image.ndim == 2:
         image = image.reshape((1, image.shape[0], image.shape[1]))
         max_shape = image.shape[1:]
         zooms = [1]
     else:
-        if image.shape[-1] in [3, 4] and as_rgb and image.ndim == 3:
+        if image.shape[-1] in [3, 4] and image.ndim == 3 and contains_rgb:
             # then this is a single color image and so we add an extra
             # dimension at the beginning
             image = image[None]
@@ -578,21 +593,20 @@ def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
 
 
 def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-           cmap=None, plot_complex='rectangular', as_rgb=False, **kwargs):
+           cmap=None, plot_complex='rectangular', **kwargs):
     """Show image(s).
 
     Arguments
     ---------
     image : `np.array` or `list`
         the image(s) to plot. Images can be either grayscale, in which case
-        they must be 2d arrays of shape `(h,w)` and `as_rgb` must be `False`,
-        or RGB(A), in which case they must be 3d arrays of shape `(h,w,c)`
-        where `c` is 3 (for RGB) or 4 (to also plot the alpha channel) and
-        `as_rgb` must be `True`. If multiple images, must be a list of such
-        arrays (note this means we do not support an array of shape `(n,h,w)`
-        for multiple grayscale images). all images will be automatically
-        rescaled so they're displayed at the same size. thus, their sizes must
-        be scalar multiples of each other.
+        they must be 2d arrays of shape `(h,w)`, or RGB(A), in which case they
+        must be 3d arrays of shape `(h,w,c)` where `c` is 3 (for RGB) or 4 (to
+        also plot the alpha channel). If multiple images, must be a list of
+        such arrays (note this means we do not support an array of shape
+        `(n,h,w)` for multiple grayscale images). all images will be
+        automatically rescaled so they're displayed at the same size. thus,
+        their sizes must be scalar multiples of each other.
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to
         the minimum and maximum value of the colormap, respectively. If a
@@ -628,7 +642,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     title : `str`, `list`, or None, optional
         Title for the plot. In addition to the specified title, we add a
         subtitle giving the plotted range and dimensionality (with zoom)
-    
+
         * if `str`, will put the same title on every plot.
         * if `list`, all values must be `str`, must be the same length as img,
           assigning each title to corresponding image.
@@ -651,10 +665,6 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         * `'rectangular'`: plot real and imaginary components as separate images
         * `'polar'`: plot amplitude and phase as separate images
         * `'logpolar'`: plot log_2 amplitude and phase as separate images
-    as_rgb : bool, optional
-        Whether to plot the image(s) as a grayscale or RGB(A) images. See the
-        `images` for description of what's necessary. Will raise Exception if
-        can't figure out how to plot as specified.
     kwargs :
         Passed to `ax.imshow`
 
@@ -678,12 +688,12 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     # title']`, and in that case we do want the space for the title
     title, vert_pct = _convert_title_to_list(title, image)
 
-    # Check whether as_rgb and image shape conflict, process complex arrays for
-    # plotting
-    image, title = _process_signal(image, title, as_rgb, plot_complex)
+    # Process complex images for plotting, double-check image size to see if we
+    # have RGB(A) images
+    image, title, contains_rgb = _process_signal(image, title, plot_complex)
 
     # make sure we can properly zoom all images
-    zooms, max_shape, image = _check_zooms(image, zoom, as_rgb)
+    zooms, max_shape, image = _check_zooms(image, zoom, contains_rgb)
 
     # get the figure and axes created
     fig, axes = _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct)
