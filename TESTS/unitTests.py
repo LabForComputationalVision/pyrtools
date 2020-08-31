@@ -1347,6 +1347,18 @@ class TestImshow(unittest.TestCase):
         fig = pt.imshow([im, im2])
         assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
 
+    def test_imshow15(self):
+        # don't support 1d arrays
+        im = np.random.rand(10)
+        with self.assertRaises(Exception):
+            fig = pt.imshow(im)
+
+    def test_imshow16(self):
+        # must be an array or list of them
+        im = 10
+        with self.assertRaises(TypeError):
+            fig = pt.imshow(im)
+
 def main():
     unittest.main()
 

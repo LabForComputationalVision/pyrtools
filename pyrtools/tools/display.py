@@ -368,23 +368,20 @@ def find_zooms(images):
     return zooms, max_shape
 
 
-def _convert_signal_to_list(signal, allowable_dims=[2, 3]):
+def _convert_signal_to_list(signal):
     """Convert signal to list.
 
-    signal can be an array with certain dimensionality (by default, 2 or 3d) or
-    a list of such arrays. this guarantees it's a list, raises an Exception if
-    it's an array with a different dimensionality.
+    signal can be an array or a list of arrays. this guarantees it's a list,
+    and raises an Exception if it's not an array or list.
 
     if it's an already a list, we don't check whether each value is a
-    properly-shaped array. that happens in _
+    properly-shaped array, nor do we check the shape or dimensionality of a
+    single array. these both happen in _process_signal
 
     Parameters
     ----------
     signal : np.ndarray or list
         the array or list of arrays to convert
-    allowable_dims : list, optional
-        list of ints giving the allowable dimensions. the default (2 and 3) is
-        for images
 
     Returns
     -------
@@ -392,16 +389,14 @@ def _convert_signal_to_list(signal, allowable_dims=[2, 3]):
 
     """
     try:
-        if signal.ndim in allowable_dims:
+        if isinstance(signal, np.ndarray):
             # then this is a single signal
             signal = [signal]
-        else:
-            text = 'd or '.join([str(i) for i in allowable_dims]) + "d"
-            raise Exception("Only %s arrays or lists of them are "
-                            "supported!" % text)
     except AttributeError:
         # then this is a list and we don't do anything
         pass
+    if not isinstance(signal, list):
+        raise TypeError(f"image must be a np.ndarray or a list! {type(signal)} is unsupported")
     return signal
 
 
