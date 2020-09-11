@@ -674,7 +674,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
                         f"{plot_complex}!")
 
     # Make sure image is a list, do some preliminary checks
-    image = _convert_signal_to_list(image, [2, 3])
+    image = _convert_signal_to_list(image)
 
     # want to do this check before converting title to a list (at which
     # point `title is None` will always be False). we do it here instad
