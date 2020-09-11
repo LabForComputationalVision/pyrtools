@@ -396,7 +396,7 @@ def _convert_signal_to_list(signal):
         # then this is a list and we don't do anything
         pass
     if not isinstance(signal, list):
-        raise TypeError(f"image must be a np.ndarray or a list! {type(signal)} is unsupported")
+        raise TypeError("image must be a np.ndarray or a list! {} is unsupported".format(type(signal)))
     return signal
 
 
@@ -471,16 +471,16 @@ def _process_signal(image, title, plot_complex):
             if img.shape[-1] not in [3, 4]:
                 raise Exception(
                     "Can't figure out how to plot image with shape "
-                    f"{img.shape} as RGB(A) image! RGB(A) images should"
+                    "{} as RGB(A) image! RGB(A) images should"
                     " be 3d with 3 or 4 elements in their final "
-                    "dimension.")
+                    "dimension.".format(img.shape))
             contains_rgb = True
         elif img.ndim != 2:
             raise Exception(
                 "Can't figure out how to plot image with "
-                f"shape {img.shape}! Images should be be either 2d "
+                "shape {}! Images should be be either 2d "
                 "(grayscale) or 3d (RGB(A), last dimension with 3 or"
-                " 4 elements).")
+                " 4 elements).".format(img.shape))
         if np.iscomplex(img).any():
             if plot_complex == 'rectangular':
                 image_tmp.extend([np.real(img), np.imag(img)])
@@ -671,7 +671,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     """
     if plot_complex not in ['rectangular', 'polar', 'logpolar']:
         raise Exception("Don't know how to handle plot_complex value "
-                        f"{plot_complex}!")
+                        "{}!".format(plot_complex))
 
     # Make sure image is a list, do some preliminary checks
     image = _convert_signal_to_list(image)
