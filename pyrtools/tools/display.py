@@ -173,6 +173,7 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
     rel_axis_height = axis_size_pix[0] / fig_height
     rel_col_margin = col_margin_pix / fig_width
     rel_row_margin = row_margin_pix / fig_height
+
     for i in range(n_rows):
         for j in range(n_cols):
             fig.add_axes([j*(rel_axis_width+rel_col_margin),
@@ -433,7 +434,7 @@ def _convert_title_to_list(title, signal):
     return title, vert_pct
 
 
-def _process_signal(image, title, plot_complex):
+def _process_signal(signal, title, plot_complex, video=False):
     """Process signal and title for plotting.
 
     Two goals of this function:
@@ -446,76 +447,84 @@ def _process_signal(image, title, plot_complex):
 
     Parameters
     ----------
-    image : list
+    signal : list
         list of arrays to examine
     title : list
         list containing strs or Nones, for accompanying the images
     plot_complex : {'rectangular', 'polar', 'logpolar'}
         how to plot complex arrays
+    video: boolean, optional (default False)
+        handling signals in both space and time or only space.
 
     Returns
     -------
-    image : np.ndarray
-        array containing the images, ready to plot
+    signal : np.ndarray
+        array containing the signal, ready to plot
     title : list
         list of titles, ready to plot
     contains_rgb : bool
         if at least one of the images is 3d (and thus RGB), this will be True.
 
     """
-    image_tmp = []
+    if video:
+        time_dim = 1
+        sigtype = 'video'
+    else:
+        time_dim = 0
+        sigtype = 'image'
+    signal_tmp = []
     title_tmp = []
     contains_rgb = False
-    for img, t in zip(image, title):
-        if img.ndim == 3:
-            if img.shape[-1] not in [3, 4]:
+    for sig, t in zip(signal, title):
+        if sig.ndim == (3 + time_dim):
+            if sig.shape[-1] not in [3, 4]:
                 raise Exception(
-                    "Can't figure out how to plot image with shape "
-                    "{} as RGB(A) image! RGB(A) images should"
-                    " be 3d with 3 or 4 elements in their final "
-                    "dimension.".format(img.shape))
+                    f"Can't figure out how to plot {sigtype} with shape "\
+                    f"should {sig.shape} as RGB(A) {sigtype}! RGB(A) "\
+                    f"{sigtype}s should be {3 + time_dim}d with their "\
+                    "final dimension of shape 3 or 4.")
             contains_rgb = True
-        elif img.ndim != 2:
+        elif sig.ndim != (2 + time_dim):
             raise Exception(
                 "Can't figure out how to plot image with "
                 "shape {}! Images should be be either 2d "
                 "(grayscale) or 3d (RGB(A), last dimension with 3 or"
-                " 4 elements).".format(img.shape))
-        if np.iscomplexobj(img):
+                " 4 elements).".format(sig.shape))
+        if np.iscomplexobj(sig):
             if plot_complex == 'rectangular':
-                image_tmp.extend([np.real(img), np.imag(img)])
+                signal_tmp.extend([np.real(sig), np.imag(sig)])
                 title_tmp.extend([t + " real", t + " imaginary"])
             elif plot_complex == 'polar':
-                image_tmp.extend([np.abs(img), np.angle(img)])
+                signal_tmp.extend([np.abs(sig), np.angle(sig)])
                 title_tmp.extend([t + " amplitude", t + " phase"])
             elif plot_complex == 'logpolar':
-                image_tmp.extend([np.log(1 + np.abs(img)), np.angle(img)])
+                signal_tmp.extend([np.log(1 + np.abs(sig)), np.angle(sig)])
                 title_tmp.extend([t + " log(1+amplitude)", t + " phase"])
         else:
-            image_tmp.append(np.array(img))
+            signal_tmp.append(np.array(sig))
             title_tmp.append(t)
     try:
-        image_tmp = np.array(image_tmp)
+        signal_tmp = np.array(signal_tmp)
     except ValueError:
         # this happens when the images are the same shape but at least one is
-        # RGB(A) and at least one is grayscale, e.g., image_tmp[0].shape = (10,
-        # 10) and image_tmp[1].shape = (10, 10, 4). Strangely enough, it's not
+        # RGB(A) and at least one is grayscale, e.g., signal_tmp[0].shape = (10,
+        # 10) and signal_tmp[1].shape = (10, 10, 4). Strangely enough, it's not
         # a problem if, in the above example, image_tmp[1].shape = (5, 5, 4).
         # So in this case, we need to add extra dims, adding the RGB and/or A
         # channels.
-        for i, img in enumerate(image_tmp):
-            if img.ndim == 2:
+        for i, sig in enumerate(signal_tmp):
+            if sig.ndim == (2 + time_dim):
                 # make all of the RGB channels identical so it's grayscale
-                img = np.dstack([img, img, img])
-            if img.shape[-1] == 3:
+                sig = np.dstack([sig, sig, sig])
+            if sig.shape[-1] == 3:
                 # add an alpha channel of all 1s
-                img = np.dstack([img, np.ones_like(img[..., 0])])
-            image_tmp[i] = img
-        image_tmp = np.array(image_tmp)
-    return image_tmp, title_tmp, contains_rgb
+                sig = np.dstack([sig, np.ones_like(sig[..., 0])])
+            signal_tmp[i] = sig
+        signal_tmp = np.array(signal_tmp)
+    return signal_tmp, title_tmp, contains_rgb
 
 
-def _check_zooms(image, zoom, contains_rgb):
+def _check_zooms(signal, zoom, contains_rgb, video=False):
     """Check that all images can be zoomed correctly.
 
     Make sure that all images can be zoomed so they end up the same size, and
@@ -523,14 +532,16 @@ def _check_zooms(image, zoom, contains_rgb):
 
     Parameters
     ----------
-    image : np.ndarray
-        array of images to plot
+    signal : np.ndarray
+        array of signal to plot
     zoom : float
         how we're going to zoom the image
     contains_rgb : bool
         whether image contains at least one image to plot as RGB. This only
         matters when we're given a 3d array and we want to know whether it was
         supposed to be a single RGB image or multiple grayscale ones
+    video: bool, optional (default False)
+        handling signals in both space and time or just space.
 
     Returns
     -------
@@ -542,28 +553,38 @@ def _check_zooms(image, zoom, contains_rgb):
         3d array of images to plot (extra dimension may have been added)
 
     """
+    if video:
+        time_dim = 1
+        sigtype = 'video'
+    else:
+        time_dim = 0
+        sigtype = 'image'
+
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
-    if image.ndim == 1:
-        # in this case, the two images were different sizes and so numpy can't
+    if signal.ndim == 1:
+        # in this case, the two signal were different sizes and so numpy can't
         # combine them correctly
-        zooms, max_shape = find_zooms(image)
-    elif image.ndim == 2:
-        image = image.reshape((1, image.shape[0], image.shape[1]))
-        max_shape = image.shape[1:]
+        zooms, max_shape = find_zooms(signal)
+    elif signal.ndim == (2 + time_dim):
+        signal = signal.reshape((1, signal.shape[0], signal.shape[1]))
+        max_shape = signal.shape[-2:]
         zooms = [1]
     else:
-        if image.shape[-1] in [3, 4] and image.ndim == 3 and contains_rgb:
+        if signal.shape[-1] in [3, 4] and signal.ndim == (3 + time_dim) and contains_rgb:
             # then this is a single color image and so we add an extra
             # dimension at the beginning
-            image = image[None]
-        zooms = [1 for i in image]
-        max_shape = image.shape[1:]
+            signal = signal[None]
+        zooms = [1 for i in signal]
+        if contains_rgb:
+            max_shape = signal.shape[-3:-1]
+        else:
+            max_shape = signal.shape[-2:]
     max_shape = np.array(max_shape)
     zooms = zoom * np.array(zooms)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
-        raise Exception("zoom * image.shape must result in integers!")
-    return zooms, max_shape, image
+        raise Exception("zoom * signal.shape must result in integers!")
+    return zooms, max_shape, signal
 
 
 def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
@@ -701,7 +722,9 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     return fig
 
 
-def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True, repeat=False, **kwargs):
+def animshow(video, framerate=2., as_html5=True, repeat=False,
+             vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
+             cmap=None, plot_complex='rectangular', **kwargs):
     """Display one or more videos (3d array) as a matplotlib animation or an HTML video.
 
     Arguments
@@ -712,6 +735,11 @@ def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True
         of all videos must be integer multiples)
     framerate : `float`
         Temporal resolution of the video, in Hz (frames per second).
+    as_html : `bool`
+        If True, return an HTML5 video; otherwise return the underying matplotlib animation object
+        (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
+    repeat : `bool`
+        whether to loop the animation or just play it once
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
@@ -740,37 +768,45 @@ def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True
         * if `list`, all values must be `str`, must be the same length as img, assigning each
           title to corresponding image.
         * if None, no title will be printed.
-    as_html : `bool`
-        If True, return an HTML5 video; otherwise return the underying matplotlib animation object
-        (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
-    repeat : `bool`
-        whether to loop the animation or just play it once
+    col_wrap : `int` or None, optional
+        number of axes to have in each row. If None, will fit all axes in a
+        single row.
+    ax : `matplotlib.pyplot.axis` or None, optional
+        if None, we make the appropriate figure. otherwise, we resize the axes
+        so that it's the appropriate number of pixels (done by shrinking the
+        bbox - if the bbox is already too small, this will throw an Exception!,
+        so first define a large enough figure using either make_figure or
+        plt.figure)
+    cmap : matplotlib colormap, optional
+        colormap to use when showing these images
+    plot_complex : {'rectangular', 'polar', 'logpolar'}, optional
+        specifies handling of complex values.
+
+        * `'rectangular'`: plot real and imaginary components as separate images
+        * `'polar'`: plot amplitude and phase as separate images
+        * `'logpolar'`: plot log_2 amplitude and phase as separate images
+    kwargs :
+        Passed to `ax.imshow`
 
     Returns
     -------
     anim : HTML object or FuncAnimation object
         Animation, format depends on `as_html`.
-
-    TODO
-    ----
-    handle complex arrays
-    example use code
     """
 
-    if isinstance(video, list):
-        pass
-        # assert np.prod(np.array([video[0].shape == v.shape for v in video]))
-    elif video.ndim == 3:
-        video = [video]
-    elif video.ndim == 4:
-        video = [v for v in video]
+    video = _convert_signal_to_list(video)
+    title, vert_pct = _convert_title_to_list(title, video)
+    video, title, contains_rgb = _process_signal(video, title, plot_complex, video=True)
+    zooms, max_shape, video = _check_zooms(video, zoom, contains_rgb, video=True)
+    fig, axes = _setup_figure(ax, col_wrap, video, zoom, max_shape, vert_pct)
+    vrange_list, cmap = colormap_range(image=video, vrange=vrange, cmap=cmap)
 
-    vrange_list, cmap = colormap_range(video, vrange=vrange, cmap=kwargs.pop('cmap', None))
+    first_image = [v[0] for v in video]
+    for im, a, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
+        _showIm(im, a, r, z, t, cmap, **kwargs)
 
-    # Initialize the figure and an empty array for the frames
-    f = imshow([v[0] for v in video], zoom=zoom, cmap=cmap, title=title, **kwargs)
-
-    artists = [f.axes[i].images[0] for i in range(len(f.axes))]
+    return fig
+    artists = [fig.axes[i].images[0] for i in range(len(fig.axes))]
 
     for i, a in enumerate(artists):
         a.set_clim(vrange_list[i])
@@ -782,10 +818,12 @@ def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True
         return artists
 
     # Produce the animation
-    anim = animation.FuncAnimation(f, frames=len(video[0]), interval=1000/framerate, blit=True,
-                                   func=animate_video, repeat=repeat, repeat_delay=500)
+    anim = animation.FuncAnimation(fig, frames=len(video[0]),
+                                   interval=1000/framerate, blit=True,
+                                   func=animate_video, repeat=repeat,
+                                   repeat_delay=500)
 
-    plt.close(f)
+    plt.close(fig)
 
     if as_html5:
         # to_html5_video will call savefig with a dpi kwarg, so our custom figure class will raise
