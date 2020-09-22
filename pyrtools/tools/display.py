@@ -481,7 +481,7 @@ def _process_signal(image, title, plot_complex):
                 "shape {}! Images should be be either 2d "
                 "(grayscale) or 3d (RGB(A), last dimension with 3 or"
                 " 4 elements).".format(img.shape))
-        if np.iscomplex(img).any():
+        if np.iscomplexobj(img):
             if plot_complex == 'rectangular':
                 image_tmp.extend([np.real(img), np.imag(img)])
                 title_tmp.extend([t + " real", t + " imaginary"])
@@ -489,8 +489,8 @@ def _process_signal(image, title, plot_complex):
                 image_tmp.extend([np.abs(img), np.angle(img)])
                 title_tmp.extend([t + " amplitude", t + " phase"])
             elif plot_complex == 'logpolar':
-                image_tmp.extend([np.log2(np.abs(img)), np.angle(img)])
-                title_tmp.extend([t + " log amplitude", t + " phase"])
+                image_tmp.extend([np.log(1 + np.abs(img)), np.angle(img)])
+                title_tmp.extend([t + " log(1+amplitude)", t + " phase"])
         else:
             image_tmp.append(np.array(img))
             title_tmp.append(t)
