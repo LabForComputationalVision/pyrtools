@@ -453,7 +453,7 @@ def _process_signal(signal, title, plot_complex, video=False):
         list containing strs or Nones, for accompanying the images
     plot_complex : {'rectangular', 'polar', 'logpolar'}
         how to plot complex arrays
-    video: boolean, optional (default False)
+    video: bool, optional (default False)
         handling signals in both space and time or only space.
 
     Returns
@@ -493,13 +493,22 @@ def _process_signal(signal, title, plot_complex, video=False):
         if np.iscomplexobj(sig):
             if plot_complex == 'rectangular':
                 signal_tmp.extend([np.real(sig), np.imag(sig)])
-                title_tmp.extend([t + " real", t + " imaginary"])
+                if t is not None:
+                    title_tmp.extend([t + " real", t + " imaginary"])
+                else:
+                    title_tmp.extend([None, None])
             elif plot_complex == 'polar':
                 signal_tmp.extend([np.abs(sig), np.angle(sig)])
-                title_tmp.extend([t + " amplitude", t + " phase"])
+                if t is not None:
+                    title_tmp.extend([t + " amplitude", t + " phase"])
+                else:
+                    title_tmp.extend([None, None])
             elif plot_complex == 'logpolar':
                 signal_tmp.extend([np.log(1 + np.abs(sig)), np.angle(sig)])
-                title_tmp.extend([t + " log(1+amplitude)", t + " phase"])
+                if t is not None:
+                    title_tmp.extend([t + " log(1+amplitude)", t + " phase"])
+                else:
+                    title_tmp.extend([None, None])
         else:
             signal_tmp.append(np.array(sig))
             title_tmp.append(t)
@@ -724,7 +733,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
 def animshow(video, framerate=2., as_html5=True, repeat=False,
              vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-             cmap=None, plot_complex='rectangular', **kwargs):
+             cmap=None, plot_complex='rectangular', as_fig=False, **kwargs):
     """Display one or more videos (3d array) as a matplotlib animation or an HTML video.
 
     Arguments
@@ -785,6 +794,8 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
         * `'rectangular'`: plot real and imaginary components as separate images
         * `'polar'`: plot amplitude and phase as separate images
         * `'logpolar'`: plot log_2 amplitude and phase as separate images
+    as_fig : `bool`, optional (default False)
+        If True, return the figure - used for development and testing purposes.
     kwargs :
         Passed to `ax.imshow`
 
@@ -805,7 +816,6 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     for im, a, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
         _showIm(im, a, r, z, t, cmap, **kwargs)
 
-    return fig
     artists = [fig.axes[i].images[0] for i in range(len(fig.axes))]
 
     for i, a in enumerate(artists):
@@ -823,6 +833,8 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
                                    func=animate_video, repeat=repeat,
                                    repeat_delay=500)
 
+    if as_fig:
+        return fig
     plt.close(fig)
 
     if as_html5:
