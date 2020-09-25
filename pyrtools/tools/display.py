@@ -688,7 +688,10 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
         * `'rectangular'`: plot real and imaginary components as separate images
         * `'polar'`: plot amplitude and phase as separate images
-        * `'logpolar'`: plot log_2 amplitude and phase as separate images
+        * `'logpolar'`: plot `ln(1+ amplitude)` and phase as separate images.
+        The compressive non-linear contrast function applied to amplitude is
+        intended as a visualization step to avoid the large intensity
+        components from dominating.
     kwargs :
         Passed to `ax.imshow`
 
