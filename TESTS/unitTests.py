@@ -1359,6 +1359,16 @@ class TestImshow(unittest.TestCase):
         with self.assertRaises(TypeError):
             fig = pt.imshow(im)
 
+    def test_imshow17(self):
+        im = np.random.rand(256, 256) + 1j * np.random.rand(256, 256)
+        fig = pt.imshow(im)
+        assert len(fig.axes) == 2, "Created wrong number of axes!"
+
+    def test_imshow18(self):
+        im = np.random.rand(2, 256, 256, 3) + 1j * np.random.rand(2, 256, 256, 3)
+        for c in ['rectangular', 'polar', 'logpolar']:
+            fig = pt.imshow([i for i in im], plot_complex=c)
+            assert len(fig.axes) == 4, "Created wrong number of axes!"
 
 class TestAnimshow(unittest.TestCase):
 
