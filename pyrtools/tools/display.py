@@ -479,10 +479,9 @@ def _process_signal(signal, title, plot_complex, video=False):
         if sig.ndim == (3 + time_dim):
             if sig.shape[-1] not in [3, 4]:
                 raise Exception(
-                    f"Can't figure out how to plot {sigtype} with shape "\
-                    f"should {sig.shape} as RGB(A) {sigtype}! RGB(A) "\
-                    f"{sigtype}s should be {3 + time_dim}d with their "\
-                    "final dimension of shape 3 or 4.")
+                    "Can't figure out how to plot {} with shape {}"
+                    "as RGB(A)! RGB(A) signals should have their final"
+                    "dimension of shape 3 or 4.".format(sigtype, sig.shape))
             contains_rgb = True
         elif sig.ndim != (2 + time_dim):
             raise Exception(
