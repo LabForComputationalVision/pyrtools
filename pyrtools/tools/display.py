@@ -512,7 +512,13 @@ def _process_signal(signal, title, plot_complex, video=False):
             signal_tmp.append(np.array(sig))
             title_tmp.append(t)
     try:
-        signal_tmp = np.array(signal_tmp)
+        if all([sig.shape == signal_tmp[0].shape for sig in signal_tmp]):
+            # then they're all the same shape
+            signal_tmp = np.array(signal_tmp)
+        else:
+            # then at least one is a different shape, so we need to set the
+            # dtype to object, explicitly
+            signal_tmp = np.array(signal_tmp, dtype=np.object)
     except ValueError:
         # this happens when the images are the same shape but at least one is
         # RGB(A) and at least one is grayscale, e.g., signal_tmp[0].shape = (10,
@@ -528,7 +534,13 @@ def _process_signal(signal, title, plot_complex, video=False):
                 # add an alpha channel of all 1s
                 sig = np.dstack([sig, np.ones_like(sig[..., 0])])
             signal_tmp[i] = sig
-        signal_tmp = np.array(signal_tmp)
+        if all([sig.shape == signal_tmp[0].shape for sig in signal_tmp]):
+            # then they're all the same shape
+            signal_tmp = np.array(signal_tmp)
+        else:
+            # then at least one is a different shape, so we need to set the
+            # dtype to object, explicitly
+            signal_tmp = np.array(signal_tmp, dtype=np.object)
     return signal_tmp, title_tmp, contains_rgb
 
 
