@@ -37,6 +37,7 @@ extensions = [
     'numpydoc',
     'nbsphinx',
     'nbsphinx_link',
+    'sphinxcontrib.apidoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -204,3 +205,4 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+apidoc_module_dir = "../pyrtools"

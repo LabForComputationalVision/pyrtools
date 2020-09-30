@@ -173,6 +173,7 @@ def make_figure(n_rows, n_cols, axis_size_pix, col_margin_pix=10, row_margin_pix
     rel_axis_height = axis_size_pix[0] / fig_height
     rel_col_margin = col_margin_pix / fig_width
     rel_row_margin = row_margin_pix / fig_height
+
     for i in range(n_rows):
         for j in range(n_cols):
             fig.add_axes([j*(rel_axis_width+rel_col_margin),
@@ -235,43 +236,46 @@ def colormap_range(image, vrange='indep1', cmap=None):
     Arguments
     ---------
     image : `np.array` or `list`
-        should be a 2d array (one image to display), 3d array (multiple images to display, images
-        are indexed along the first dimension), or list of 2d arrays. the image(s) to be shown.
-        all images will be automatically rescaled so they're displayed at the same size. thus,
-        their sizes must be scalar multiples of each other.
+        the image(s) to be shown. should be a 2d array (one image to display),
+        3d array (multiple images to display, images are indexed along the first
+        dimension), or list of 2d arrays. all images will be automatically
+        rescaled so they're displayed at the same size. thus, their sizes must
+        be scalar multiples of each other.
     vrange : `tuple` or `str`
-        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-        maximum value of the colormap, respectively. If a string:
-
-        * `'auto0'`: all images have same vmin/vmax, which have the same absolute value, and come
-                     from the minimum or maximum across all images, whichever has the larger
-                    absolute value
-        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
-                          across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
-                     plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
-                     values to the 10th/90th percentile of the display intensity range. For
-                     example: vmin is the 10th percentile image value minus 1/8 times the
-                     difference between the 90th and 10th percentile
-        * `'indep0'`: each image has an independent vmin/vmax, which have the same absolute value,
-                      which comes from either their minimum or maximum value, whichever has the
-                      larger absolute value.
-        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
-                      values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
-                      std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
-                      percentile values map to the 10th/90th percentile intensities.
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
+        (ie. clipped to) the minimum and maximum value of the colormap,
+        respectively.
+        If a string:
+        * `'auto0'`: all images have same vmin/vmax, which have the same
+                     absolute value, and come from the minimum or maximum across
+                     all images, whichever has the larger absolute value
+        * `'auto1'`: all images have same vmin/vmax, which are the minimum/
+                     maximum values across all images
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across
+                     all images) minus/plus 2 std dev (across all images)
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the
+                     10th/90th percentile values to the 10th/90th percentile of
+                     the display intensity range. For example: vmin is the 10th
+                     percentile image value minus 1/8 times the difference
+                     between the 90th and 10th percentile
+        * `'indep0'`: each image has an independent vmin/vmax, which have the
+                     same absolute value, which comes from either their minimum
+                     or maximum value, whichever has the larger absolute value.
+        * `'indep1'`: each image has an independent vmin/vmax, which are their
+                     minimum/maximum values
+        * `'indep2'`: each image has an independent vmin/vmax, which is their
+                     mean minus/plus 2 std dev
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that
+                     the 10th/90th percentile values map to the 10th/90th
+                     percentile intensities.
 
     Returns
     -------
     vrange_list : `list`
-        list of tuples, same length as `image`. contains the (vmin, vmax) tuple for each image.
+        list of tuples, same length as `image`. contains the (vmin, vmax) tuple
+        for each image.
 
     """
-    # this will clip the colormap
-
     # flatimg is one long 1d array, which enables the min, max, mean, std, and percentile calls to
     # operate on the values from each of the images simultaneously.
     flatimg = np.concatenate([i.flatten() for i in image]).flatten()
@@ -284,8 +288,8 @@ def colormap_range(image, vrange='indep1', cmap=None):
             elif vrange == 'auto1' or vrange == 'auto':
                 vrange_list = [np.nanmin(flatimg), np.nanmax(flatimg)]
             elif vrange == 'auto2':
-                vrange_list = [flatimg.nanmean() - 2 * flatimg.nanstd(),
-                               flatimg.nanmean() + 2 * flatimg.nanstd()]
+                vrange_list = [np.nanmean(flatimg) - 2 * np.nanstd(flatimg),
+                               np.nanmean(flatimg) + 2 * np.nanstd(flatimg)]
             elif vrange == 'auto3':
                 p1 = np.nanpercentile(flatimg, 10)
                 p2 = np.nanpercentile(flatimg, 90)
@@ -295,15 +299,17 @@ def colormap_range(image, vrange='indep1', cmap=None):
             vrange_list = [vrange_list] * len(image)
 
         elif vrange[:5] == 'indep':
-            # get independent vrange by calling this function one image at a time
-            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0][0] for im in image]
+            # independent vrange from recursive calls of this function per image
+            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto')
+                           )[0][0] for im in image]
         else:
             vrange_list, _ = colormap_range(image, vrange='auto1')
             warnings.warn('Unknown vrange argument, using auto1 instead')
     else:
-        # in this case, we've been passed two numbers, either as a list or tuple
+        # two numbers were passed, either as a list or tuple
         if len(vrange) != 2:
-            raise Exception("If you're passing numbers to vrange, there must be 2 of them!")
+            raise Exception("If you're passing numbers to vrange,"
+                            "there must be 2 of them!")
         vrange_list = [tuple(vrange)] * len(image)
 
     # double check that we're returning the right number of vranges
@@ -337,6 +343,7 @@ def find_zooms(images):
         list of integers showing how much each image needs to be zoomed
     max_shape : `tuple`
         2-tuple of integers, showing the shape of the largest image in the list
+
     """
     def check_shape_1d(shapes):
         max_shape = np.max(shapes)
@@ -349,152 +356,268 @@ def find_zooms(images):
     # in this case, the two images were different sizes and so numpy can't combine them
     # correctly
     max_shape = []
-    for i, _ in enumerate(images[0].shape):
+    for i in range(2):
         max_shape.append(check_shape_1d([img.shape[i] for img in images]))
     zooms = []
     for img in images:
-        # this checks that there's only one unique value in the list max_shape[i] // img.shape[i],
-        # where i indexes through the dimensions; that is, that we zoom each dimension by the same
-        # amount. this should then work with an arbitrary number of dimensions (in practice, 1 or
-        # 2)
-        if len(set([max_shape[i] // img.shape[i] for i in range(img.ndim)])) > 1:
-            raise Exception("Both height and width must be multiplied by same amount!")
+        # this checks that there's only one unique value in the list
+        # max_shape[i] // img.shape[i], where i indexes through the dimensions;
+        # that is, that we zoom each dimension by the same amount. this should
+        # then work with an arbitrary number of dimensions (in practice, 1 or
+        # 2). by using max_shape instead of img.shape, we will only ever check
+        # the first two dimensions (so we'll ignore the RGBA channel if any
+        # image has that)
+        if len(set([s // img.shape[i] for i, s in enumerate(max_shape)])) > 1:
+            raise Exception("Both height and width must be multiplied by same amount but got "
+                            "image shape {} and max_shape {}!".format(img.shape, max_shape))
         zooms.append(max_shape[0] // img.shape[0])
     return zooms, max_shape
 
 
-def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-           cmap=None, plot_complex='rectangular', **kwargs):
-    '''show image(s)
+def _convert_signal_to_list(signal):
+    """Convert signal to list.
 
-    Arguments
-    ---------
-    image : `np.array` or `list`
-        should be a 2d array (one image to display), 3d array (multiple images to display, images
-        are indexed along the first dimension), or list of 2d arrays. the image(s) to be shown.
-        all images will be automatically rescaled so they're displayed at the same size. thus,
-        their sizes must be scalar multiples of each other.
-    vrange : `tuple` or `str`
-        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-        maximum value of the colormap, respectively. If a string:
+    signal can be an array or a list of arrays. this guarantees it's a list,
+    and raises an Exception if it's not an array or list.
 
-        * `'auto0'`: all images have same vmin/vmax, which have the same absolute value, and come
-                     from the minimum or maximum across all images, whichever has the larger
-                    absolute value
-        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
-                          across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
-                     plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
-                     values to the 10th/90th percentile of the display intensity range. For
-                     example: vmin is the 10th percentile image value minus 1/8 times the
-                     difference between the 90th and 10th percentile
-        * `'indep0'`: each image has an independent vmin/vmax, which have the same absolute value,
-                      which comes from either their minimum or maximum value, whichever has the
-                      larger absolute value.
-        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
-                      values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
-                      std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
-                      percentile values map to the 10th/90th percentile intensities.
-    zoom : `float`
-        ratio of display pixels to image pixels. if >1, must be an integer.  If <1, must be 1/d
-        where d is a a divisor of the size of the largest image.
-    title : `str` , `list` or None
-        Title for the plot:
+    if it's an already a list, we don't check whether each value is a
+    properly-shaped array, nor do we check the shape or dimensionality of a
+    single array. these both happen in _process_signal
 
-        * if `str`, will put the same title on every plot.
-        * if `list`, all values must be `str`, must be the same length as img, assigning each
-          title to corresponding image.
-        * if None, no title will be printed.
-    col_wrap : `int` or None
-        number of axes to have in each row. If None, will fit all axes in a single row.
-    ax : `matplotlib.pyplot.axis` or None
-        if None, make the appropriate figure. otherwise, we resize it so that it's the appropriate
-        number of pixels (done by shrinking the bbox - if the bbox is already too small, this will
-        throw an Exception!, so first define a large enough figure using either make_figure or
-        plt.figure)
-    cmap : matplotlib colormap
-        colormap to use when showing these images
-    plot_complex : {'rectangular', 'polar', 'logpolar'}
-        specifies handling of complex values.
-
-        * `'rectangular'`: plot real and imaginary components as separate images
-        * `'polar'`: plot amplitude and phase as separate images
-        * `'logpolar'`: plot log_2 amplitude and phase as separate images
-        for any other value, we raise a warning and default to rectangular.
+    Parameters
+    ----------
+    signal : np.ndarray or list
+        the array or list of arrays to convert
 
     Returns
     -------
-    fig : `PyrFigure`
-        figure containing the plotted images
-    '''
+    signal : list
 
-    if plot_complex not in ['rectangular', 'polar', 'logpolar']:
-        warnings.warn("Don't know how to handle plot_complex value %s, defaulting to "
-                      "'rectangular'" % plot_complex)
-        plot_complex = 'rectangular'
-
+    """
     try:
-        if image.ndim == 2:
-            # then this is a single image
-            image = [image]
+        if isinstance(signal, np.ndarray):
+            # then this is a single signal
+            signal = [signal]
     except AttributeError:
         # then this is a list and we don't do anything
         pass
-    # want to do this check before converting title to a list (at which
-    # point `title is None` will always be False). we do it here instad
-    # of checking whether the first item of title is None because it's
-    # conceivable that the user passed `title=[None, 'important
-    # title']`, and in that case we do want the space for the title
+    if not isinstance(signal, list):
+        raise TypeError("image must be a np.ndarray or a list! {} is unsupported".format(type(signal)))
+    return signal
+
+
+def _convert_title_to_list(title, signal):
+    """Convert title to list and get vert_pct.
+
+    This function makes sure that title is a list with the right number of
+    elements, and sets vert_pct based on whether title is None or not
+
+    Parameters
+    ----------
+    title : str, list, or None
+        the title to check
+    signal : list
+        the signal (e.g., images) that will be plotted. must already have gone
+        through _convert_signal_to_list
+
+    Returns
+    -------
+    title : list
+        list of title
+    vert_pct : float
+        how much of the axis should contain the image
+
+    """
     if title is None:
         vert_pct = 1
     else:
         vert_pct = .8
     if not isinstance(title, list):
-        title = len(image) * [title]
+        title = len(signal) * [title]
     else:
-        assert len(image) == len(title), "Must have same number of titles and images!"
+        assert len(signal) == len(title), "Must have same number of titles and images!"
+    return title, vert_pct
 
-    # making sure plotting works for (list of) arrays
-    image_tmp = []
+
+def _process_signal(signal, title, plot_complex, video=False):
+    """Process signal and title for plotting.
+
+    Two goals of this function:
+
+    1. Check the shape of each image to make sure they look like either
+       grayscale or RGB(A) images and raise an Exception if they don't
+
+    2. Process complex images for proper plotting, splitting them up
+       as specified by `plot_complex`
+
+    Parameters
+    ----------
+    signal : list
+        list of arrays to examine
+    title : list
+        list containing strs or Nones, for accompanying the images
+    plot_complex : {'rectangular', 'polar', 'logpolar'}
+        how to plot complex arrays
+    video: bool, optional (default False)
+        handling signals in both space and time or only space.
+
+    Returns
+    -------
+    signal : np.ndarray
+        array containing the signal, ready to plot
+    title : list
+        list of titles, ready to plot
+    contains_rgb : bool
+        if at least one of the images is 3d (and thus RGB), this will be True.
+
+    """
+    if video:
+        time_dim = 1
+        sigtype = 'video'
+    else:
+        time_dim = 0
+        sigtype = 'image'
+    signal_tmp = []
     title_tmp = []
-    for img, t in zip(image, title):
-        if np.iscomplex(img).any():
+    contains_rgb = False
+    for sig, t in zip(signal, title):
+        if sig.ndim == (3 + time_dim):
+            if sig.shape[-1] not in [3, 4]:
+                raise Exception(
+                    "Can't figure out how to plot {} with shape {}"
+                    "as RGB(A)! RGB(A) signals should have their final"
+                    "dimension of shape 3 or 4.".format(sigtype, sig.shape))
+            contains_rgb = True
+        elif sig.ndim != (2 + time_dim):
+            raise Exception(
+                "Can't figure out how to plot image with "
+                "shape {}! Images should be be either 2d "
+                "(grayscale) or 3d (RGB(A), last dimension with 3 or"
+                " 4 elements).".format(sig.shape))
+        if np.iscomplexobj(sig):
             if plot_complex == 'rectangular':
-                image_tmp.extend([np.real(img), np.imag(img)])
-                title_tmp.extend([t + " real", t + " imaginary"])
+                signal_tmp.extend([np.real(sig), np.imag(sig)])
+                if t is not None:
+                    title_tmp.extend([t + " real", t + " imaginary"])
+                else:
+                    title_tmp.extend([None, None])
             elif plot_complex == 'polar':
-                image_tmp.extend([np.abs(img), np.angle(img)])
-                title_tmp.extend([t + " amplitude", t + " phase"])
+                signal_tmp.extend([np.abs(sig), np.angle(sig)])
+                if t is not None:
+                    title_tmp.extend([t + " amplitude", t + " phase"])
+                else:
+                    title_tmp.extend([None, None])
             elif plot_complex == 'logpolar':
-                image_tmp.extend([np.log2(np.abs(img)), np.angle(img)])
-                title_tmp.extend([t + " log amplitude", t + " phase"])
+                signal_tmp.extend([np.log(1 + np.abs(sig)), np.angle(sig)])
+                if t is not None:
+                    title_tmp.extend([t + " log(1+amplitude)", t + " phase"])
+                else:
+                    title_tmp.extend([None, None])
         else:
-            image_tmp.append(np.array(img))
+            signal_tmp.append(np.array(sig))
             title_tmp.append(t)
-    image = np.array(image_tmp)
-    title = title_tmp
+    try:
+        if all([sig.shape == signal_tmp[0].shape for sig in signal_tmp]):
+            # then they're all the same shape
+            signal_tmp = np.array(signal_tmp)
+        else:
+            # then at least one is a different shape, so we need to set the
+            # dtype to object, explicitly
+            signal_tmp = np.array(signal_tmp, dtype=np.object)
+    except ValueError:
+        # this happens when the images are the same shape but at least one is
+        # RGB(A) and at least one is grayscale, e.g., signal_tmp[0].shape = (10,
+        # 10) and signal_tmp[1].shape = (10, 10, 4). Strangely enough, it's not
+        # a problem if, in the above example, image_tmp[1].shape = (5, 5, 4).
+        # So in this case, we need to add extra dims, adding the RGB and/or A
+        # channels.
+        for i, sig in enumerate(signal_tmp):
+            if sig.ndim == (2 + time_dim):
+                # make all of the RGB channels identical so it's grayscale
+                sig = np.dstack([sig, sig, sig])
+            if sig.shape[-1] == 3:
+                # add an alpha channel of all 1s
+                sig = np.dstack([sig, np.ones_like(sig[..., 0])])
+            signal_tmp[i] = sig
+        if all([sig.shape == signal_tmp[0].shape for sig in signal_tmp]):
+            # then they're all the same shape
+            signal_tmp = np.array(signal_tmp)
+        else:
+            # then at least one is a different shape, so we need to set the
+            # dtype to object, explicitly
+            signal_tmp = np.array(signal_tmp, dtype=np.object)
+    return signal_tmp, title_tmp, contains_rgb
+
+
+def _check_zooms(signal, zoom, contains_rgb, video=False):
+    """Check that all images can be zoomed correctly.
+
+    Make sure that all images can be zoomed so they end up the same size, and
+    figure out how to do that
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        array of signal to plot
+    zoom : float
+        how we're going to zoom the image
+    contains_rgb : bool
+        whether image contains at least one image to plot as RGB. This only
+        matters when we're given a 3d array and we want to know whether it was
+        supposed to be a single RGB image or multiple grayscale ones
+    video: bool, optional (default False)
+        handling signals in both space and time or just space.
+
+    Returns
+    -------
+    zooms : np.ndarray
+        how much to zoom each image
+    max_shape : np.ndarray
+        contains 2 ints, giving the max image size in pixels
+    image : np.ndarray
+        3d array of images to plot (extra dimension may have been added)
+
+    """
+    if video:
+        time_dim = 1
+        sigtype = 'video'
+    else:
+        time_dim = 0
+        sigtype = 'image'
 
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
-    if image.ndim == 1:
-        # in this case, the two images were different sizes and so numpy can't combine them
-        # correctly
-        zooms, max_shape = find_zooms(image)
-    elif image.ndim == 2:
-        image = image.reshape((1, image.shape[0], image.shape[1]))
-        max_shape = image.shape[1:]
+    if signal.ndim == 1:
+        # in this case, the two signal were different sizes and so numpy can't
+        # combine them correctly
+        zooms, max_shape = find_zooms(signal)
+    elif signal.ndim == (2 + time_dim):
+        signal = signal.reshape((1, signal.shape[0], signal.shape[1]))
+        max_shape = signal.shape[-2:]
         zooms = [1]
     else:
-        zooms = [1 for i in image]
-        max_shape = image.shape[1:]
+        if signal.shape[-1] in [3, 4] and signal.ndim == (3 + time_dim) and contains_rgb:
+            # then this is a single color image and so we add an extra
+            # dimension at the beginning
+            signal = signal[None]
+        zooms = [1 for i in signal]
+        if contains_rgb:
+            max_shape = signal.shape[-3:-1]
+        else:
+            max_shape = signal.shape[-2:]
     max_shape = np.array(max_shape)
     zooms = zoom * np.array(zooms)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
-        raise Exception("zoom * image.shape must result in integers!")
+        raise Exception("zoom * signal.shape must result in integers!")
+    return zooms, max_shape, signal
 
+
+def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
+    """Create figure with appropriate arrangement and size of axes
+
+    Creates (or tries to resize) set of axes for the appropriate arguments
+
+    """
     if ax is None:
         if col_wrap is None:
             n_cols = image.shape[0]
@@ -507,18 +630,129 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     else:
         fig = ax.figure
         axes = [reshape_axis(ax,  zoom * max_shape)]
+    return fig, axes
+
+
+def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
+           cmap=None, plot_complex='rectangular', **kwargs):
+    """Show image(s).
+
+    Arguments
+    ---------
+    image : `np.array` or `list`
+        the image(s) to plot. Images can be either grayscale, in which case
+        they must be 2d arrays of shape `(h,w)`, or RGB(A), in which case they
+        must be 3d arrays of shape `(h,w,c)` where `c` is 3 (for RGB) or 4 (to
+        also plot the alpha channel). If multiple images, must be a list of
+        such arrays (note this means we do not support an array of shape
+        `(n,h,w)` for multiple grayscale images). all images will be
+        automatically rescaled so they're displayed at the same size. thus,
+        their sizes must be scalar multiples of each other.
+    vrange : `tuple` or `str`
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
+        the minimum and maximum value of the colormap, respectively. If a
+        string:
+
+        * `'auto0'`: all images have same vmin/vmax, which have the same absolute
+                     value, and come from the minimum or maximum across all
+                     images, whichever has the larger absolute value
+        * `'auto/auto1'`: all images have same vmin/vmax, which are the
+                          minimum/maximum values across all images
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across
+                     all images) minus/ plus 2 std dev (across all images)
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the
+                     10th/90th percentile values to the 10th/90th percentile of
+                     the display intensity range. For example: vmin is the 10th
+                     percentile image value minus 1/8 times the difference
+                     between the 90th and 10th percentile
+        * `'indep0'`: each image has an independent vmin/vmax, which have the
+                      same absolute value, which comes from either their
+                      minimum or maximum value, whichever has the larger
+                      absolute value.
+        * `'indep1'`: each image has an independent vmin/vmax, which are their
+                      minimum/maximum values
+        * `'indep2'`: each image has an independent vmin/vmax, which is their
+                      mean minus/plus 2 std dev
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that
+                      the 10th/90th percentile values map to the 10th/90th
+                      percentile intensities.
+    zoom : `float`
+        ratio of display pixels to image pixels. if >1, must be an integer. If
+        <1, must be 1/d where d is a a divisor of the size of the largest
+        image.
+    title : `str`, `list`, or None, optional
+        Title for the plot. In addition to the specified title, we add a
+        subtitle giving the plotted range and dimensionality (with zoom)
+
+        * if `str`, will put the same title on every plot.
+        * if `list`, all values must be `str`, must be the same length as img,
+          assigning each title to corresponding image.
+        * if `None`, no title will be printed (and subtitle will be removed;
+          unsupported for complex tensors).
+    col_wrap : `int` or None, optional
+        number of axes to have in each row. If None, will fit all axes in a
+        single row.
+    ax : `matplotlib.pyplot.axis` or None, optional
+        if None, we make the appropriate figure. otherwise, we resize the axes
+        so that it's the appropriate number of pixels (done by shrinking the
+        bbox - if the bbox is already too small, this will throw an Exception!,
+        so first define a large enough figure using either make_figure or
+        plt.figure)
+    cmap : matplotlib colormap, optional
+        colormap to use when showing these images
+    plot_complex : {'rectangular', 'polar', 'logpolar'}, optional
+        specifies handling of complex values.
+
+        * `'rectangular'`: plot real and imaginary components as separate images
+        * `'polar'`: plot amplitude and phase as separate images
+        * `'logpolar'`: plot `ln(1+ amplitude)` and phase as separate images.
+        The compressive non-linear contrast function applied to amplitude is
+        intended as a visualization step to avoid the large intensity
+        components from dominating.
+    kwargs :
+        Passed to `ax.imshow`
+
+    Returns
+    -------
+    fig : `PyrFigure`
+        figure containing the plotted images
+
+    """
+    if plot_complex not in ['rectangular', 'polar', 'logpolar']:
+        raise Exception("Don't know how to handle plot_complex value "
+                        "{}!".format(plot_complex))
+
+    # Make sure image is a list, do some preliminary checks
+    image = _convert_signal_to_list(image)
+
+    # want to do this check before converting title to a list (at which
+    # point `title is None` will always be False). we do it here instad
+    # of checking whether the first item of title is None because it's
+    # conceivable that the user passed `title=[None, 'important
+    # title']`, and in that case we do want the space for the title
+    title, vert_pct = _convert_title_to_list(title, image)
+
+    # Process complex images for plotting, double-check image size to see if we
+    # have RGB(A) images
+    image, title, contains_rgb = _process_signal(image, title, plot_complex)
+
+    # make sure we can properly zoom all images
+    zooms, max_shape, image = _check_zooms(image, zoom, contains_rgb)
+
+    # get the figure and axes created
+    fig, axes = _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct)
 
     vrange_list, cmap = colormap_range(image=image, vrange=vrange, cmap=cmap)
-    # print('passed', vrange_list)
 
     for im, a, r, t, z in zip(image, axes, vrange_list, title, zooms):
-        # z in zooms
         _showIm(im, a, r, z, t, cmap, **kwargs)
 
     return fig
 
 
-def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True, repeat=False, **kwargs):
+def animshow(video, framerate=2., as_html5=True, repeat=False,
+             vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
+             cmap=None, plot_complex='rectangular', as_fig=False, **kwargs):
     """Display one or more videos (3d array) as a matplotlib animation or an HTML video.
 
     Arguments
@@ -529,6 +763,11 @@ def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True
         of all videos must be integer multiples)
     framerate : `float`
         Temporal resolution of the video, in Hz (frames per second).
+    as_html : `bool`
+        If True, return an HTML5 video; otherwise return the underying matplotlib animation object
+        (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
+    repeat : `bool`
+        whether to loop the animation or just play it once
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
         maximum value of the colormap, respectively. If a string:
@@ -557,37 +796,46 @@ def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True
         * if `list`, all values must be `str`, must be the same length as img, assigning each
           title to corresponding image.
         * if None, no title will be printed.
-    as_html : `bool`
-        If True, return an HTML5 video; otherwise return the underying matplotlib animation object
-        (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
-    repeat : `bool`
-        whether to loop the animation or just play it once
+    col_wrap : `int` or None, optional
+        number of axes to have in each row. If None, will fit all axes in a
+        single row.
+    ax : `matplotlib.pyplot.axis` or None, optional
+        if None, we make the appropriate figure. otherwise, we resize the axes
+        so that it's the appropriate number of pixels (done by shrinking the
+        bbox - if the bbox is already too small, this will throw an Exception!,
+        so first define a large enough figure using either make_figure or
+        plt.figure)
+    cmap : matplotlib colormap, optional
+        colormap to use when showing these images
+    plot_complex : {'rectangular', 'polar', 'logpolar'}, optional
+        specifies handling of complex values.
+
+        * `'rectangular'`: plot real and imaginary components as separate images
+        * `'polar'`: plot amplitude and phase as separate images
+        * `'logpolar'`: plot log_2 amplitude and phase as separate images
+    as_fig : `bool`, optional (default False)
+        If True, return the figure - used for development and testing purposes.
+    kwargs :
+        Passed to `ax.imshow`
 
     Returns
     -------
     anim : HTML object or FuncAnimation object
         Animation, format depends on `as_html`.
-
-    TODO
-    ----
-    handle complex arrays
-    example use code
     """
 
-    if isinstance(video, list):
-        pass
-        # assert np.prod(np.array([video[0].shape == v.shape for v in video]))
-    elif video.ndim == 3:
-        video = [video]
-    elif video.ndim == 4:
-        video = [v for v in video]
+    video = _convert_signal_to_list(video)
+    title, vert_pct = _convert_title_to_list(title, video)
+    video, title, contains_rgb = _process_signal(video, title, plot_complex, video=True)
+    zooms, max_shape, video = _check_zooms(video, zoom, contains_rgb, video=True)
+    fig, axes = _setup_figure(ax, col_wrap, video, zoom, max_shape, vert_pct)
+    vrange_list, cmap = colormap_range(image=video, vrange=vrange, cmap=cmap)
 
-    vrange_list, cmap = colormap_range(video, vrange=vrange, cmap=kwargs.pop('cmap', None))
+    first_image = [v[0] for v in video]
+    for im, a, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
+        _showIm(im, a, r, z, t, cmap, **kwargs)
 
-    # Initialize the figure and an empty array for the frames
-    f = imshow([v[0] for v in video], zoom=zoom, cmap=cmap, title=title, **kwargs)
-
-    artists = [f.axes[i].images[0] for i in range(len(f.axes))]
+    artists = [fig.axes[i].images[0] for i in range(len(fig.axes))]
 
     for i, a in enumerate(artists):
         a.set_clim(vrange_list[i])
@@ -599,10 +847,14 @@ def animshow(video, framerate=2., vrange='auto', zoom=1, title='', as_html5=True
         return artists
 
     # Produce the animation
-    anim = animation.FuncAnimation(f, frames=len(video[0]), interval=1000/framerate, blit=True,
-                                   func=animate_video, repeat=repeat, repeat_delay=500)
+    anim = animation.FuncAnimation(fig, frames=len(video[0]),
+                                   interval=1000/framerate, blit=True,
+                                   func=animate_video, repeat=repeat,
+                                   repeat_delay=500)
 
-    plt.close(f)
+    if as_fig:
+        return fig
+    plt.close(fig)
 
     if as_html5:
         # to_html5_video will call savefig with a dpi kwarg, so our custom figure class will raise

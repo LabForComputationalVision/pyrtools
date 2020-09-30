@@ -1251,6 +1251,171 @@ class ProjectPolarTests(unittest.TestCase):
 #         res = pt.zconv2(ramp, disc, 3)
 #         self.assertTrue(pt.compareRecon(mres, res))
 
+class TestImshow(unittest.TestCase):
+
+    def test_imshow0(self):
+        im = np.random.rand(3, 10, 10)
+        fig = pt.imshow([i for i in im])
+        assert len(fig.axes) == 3, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow0_fail(self):
+        im = np.random.rand(3, 10, 10)
+        with self.assertRaises(Exception):
+            # because we now need to pass a list of arrays for multiple images
+            fig = pt.imshow(im)
+
+    def test_imshow1(self):
+        im = np.random.rand(3, 10, 10, 4)
+        fig = pt.imshow([i for i in im])
+        assert len(fig.axes) == 3, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow1_fails0(self):
+        im = np.random.rand(3, 10, 10, 4)
+        with self.assertRaises(Exception):
+            # because we now need to pass a list of arrays for multiple images
+            fig = pt.imshow(im)
+
+    def test_imshow2(self):
+        im = np.random.rand(3, 10, 10, 4)
+        fig = pt.imshow(im[0])
+        assert len(fig.axes) == 1, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow3(self):
+        im = np.random.rand(3, 10, 10, 4)
+        fig = pt.imshow([im[0, 0], im[0, 1]])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow4(self):
+        im = np.random.rand(10, 10, 4)
+        im2 = np.random.rand(5, 5, 4)
+        fig = pt.imshow([im, im2])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow5(self):
+        im = np.random.rand(2, 10, 10, 4)
+        fig = pt.imshow([im[0], im[1]])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow6(self):
+        im = np.random.rand(10, 10, 4)
+        fig = pt.imshow([i for i in im])
+        assert len(fig.axes) == 10, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow7(self):
+        im = np.random.rand(10, 10)
+        im2 = np.random.rand(10, 10, 4)
+        fig = pt.imshow([im, im2])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow8(self):
+        im = np.random.rand(2, 10, 10, 4)
+        fig = pt.imshow([im[0,...,0], im[0,...,1]])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow9(self):
+        im = np.random.rand(2, 10, 10, 4)
+        fig = pt.imshow([im[0,...,0], im[0,...,1]])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow10(self):
+        im = np.random.rand(10, 10)
+        im2 = np.random.rand(5, 5, 4)
+        fig = pt.imshow([im, im2])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow11(self):
+        im = np.random.rand(5, 5)
+        im2 = np.random.rand(10, 10, 4)
+        fig = pt.imshow([im, im2])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow12(self):
+        im = np.random.rand(3, 10, 10, 4)
+        with self.assertRaises(Exception):
+            # no longer support 4d arrays
+            fig = pt.imshow(im)
+
+    def test_imshow13(self):
+        im = np.random.rand(10, 10, 3)
+        im2 = np.random.rand(10, 10, 4)
+        fig = pt.imshow([im, im2])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow14(self):
+        im = np.random.rand(5, 5, 3)
+        im2 = np.random.rand(10, 10, 4)
+        fig = pt.imshow([im, im2])
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_imshow15(self):
+        # don't support 1d arrays
+        im = np.random.rand(10)
+        with self.assertRaises(Exception):
+            fig = pt.imshow(im)
+
+    def test_imshow16(self):
+        # must be an array or list of them
+        im = 10
+        with self.assertRaises(TypeError):
+            fig = pt.imshow(im)
+
+    def test_imshow17(self):
+        im = np.random.rand(256, 256) + 1j * np.random.rand(256, 256)
+        fig = pt.imshow(im)
+        assert len(fig.axes) == 2, "Created wrong number of axes!"
+
+    def test_imshow18(self):
+        im = np.random.rand(2, 256, 256, 3) + 1j * np.random.rand(2, 256, 256, 3)
+        for c in ['rectangular', 'polar', 'logpolar']:
+            fig = pt.imshow([i for i in im], plot_complex=c)
+            assert len(fig.axes) == 4, "Created wrong number of axes!"
+
+    def test_imshow19(self):
+        im = np.random.randn(2, 32, 32)
+        for rng in ['auto', 'indep']:
+            for i in range(4):
+                vrange = rng + str(i)
+                pt.imshow(list(im), vrange=vrange)
+
+class TestAnimshow(unittest.TestCase):
+
+    def test_animshow0(self):
+        vid = np.random.randn(3, 10, 10, 10)
+        fig = pt.animshow([i for i in vid], as_fig=True)
+        assert len(fig.axes) == 3, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_animshow2(self):
+        vid = np.random.rand(3, 10, 10, 10, 4)
+        fig = pt.animshow(vid[0], as_fig=True)
+        assert len(fig.axes) == 1, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_animshow4(self):
+        vid1 = np.random.rand(10, 10, 10, 4)
+        vid2 = np.random.rand(5, 5, 5, 4)
+        fig = pt.animshow([vid1, vid2], as_fig=True)
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_animshow5(self):
+        vid = np.random.rand(6, 10, 10, 10, 4)
+        fig = pt.animshow([v for v in vid], col_wrap=3, as_fig=True)
+        assert len(fig.axes) == 6, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_animshow6(self):
+        vid = np.random.randn(2, 10, 10, 10) +\
+              1j * np.random.randn(2, 10, 10, 10)
+        fig = pt.animshow([v for v in vid], plot_complex='polar', col_wrap=2,
+                          as_fig=True)
+        assert len(fig.axes) == 4, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_animshow7(self):
+        vid = np.random.randn(2, 32, 32, 32, 4) +\
+              1j * np.random.randn(2, 32, 32, 32, 4)
+        fig = pt.animshow([v for v in vid], framerate=24,
+                    plot_complex='logpolar', col_wrap=2, zoom=8,
+                    title=[None, 'hello'], as_fig=True)
+        assert len(fig.axes) == 4, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+
 def main():
     unittest.main()
 
