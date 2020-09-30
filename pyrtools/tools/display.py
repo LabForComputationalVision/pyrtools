@@ -236,43 +236,46 @@ def colormap_range(image, vrange='indep1', cmap=None):
     Arguments
     ---------
     image : `np.array` or `list`
-        should be a 2d array (one image to display), 3d array (multiple images to display, images
-        are indexed along the first dimension), or list of 2d arrays. the image(s) to be shown.
-        all images will be automatically rescaled so they're displayed at the same size. thus,
-        their sizes must be scalar multiples of each other.
+        the image(s) to be shown. should be a 2d array (one image to display),
+        3d array (multiple images to display, images are indexed along the first
+        dimension), or list of 2d arrays. all images will be automatically
+        rescaled so they're displayed at the same size. thus, their sizes must
+        be scalar multiples of each other.
     vrange : `tuple` or `str`
-        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-        maximum value of the colormap, respectively. If a string:
-
-        * `'auto0'`: all images have same vmin/vmax, which have the same absolute value, and come
-                     from the minimum or maximum across all images, whichever has the larger
-                    absolute value
-        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
-                          across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
-                     plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
-                     values to the 10th/90th percentile of the display intensity range. For
-                     example: vmin is the 10th percentile image value minus 1/8 times the
-                     difference between the 90th and 10th percentile
-        * `'indep0'`: each image has an independent vmin/vmax, which have the same absolute value,
-                      which comes from either their minimum or maximum value, whichever has the
-                      larger absolute value.
-        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
-                      values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
-                      std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
-                      percentile values map to the 10th/90th percentile intensities.
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
+        (ie. clipped to) the minimum and maximum value of the colormap,
+        respectively.
+        If a string:
+        * `'auto0'`: all images have same vmin/vmax, which have the same
+                     absolute value, and come from the minimum or maximum across
+                     all images, whichever has the larger absolute value
+        * `'auto1'`: all images have same vmin/vmax, which are the minimum/
+                     maximum values across all images
+        * `'auto2'`: all images have same vmin/vmax, which are the mean (across
+                     all images) minus/plus 2 std dev (across all images)
+        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the
+                     10th/90th percentile values to the 10th/90th percentile of
+                     the display intensity range. For example: vmin is the 10th
+                     percentile image value minus 1/8 times the difference
+                     between the 90th and 10th percentile
+        * `'indep0'`: each image has an independent vmin/vmax, which have the
+                     same absolute value, which comes from either their minimum
+                     or maximum value, whichever has the larger absolute value.
+        * `'indep1'`: each image has an independent vmin/vmax, which are their
+                     minimum/maximum values
+        * `'indep2'`: each image has an independent vmin/vmax, which is their
+                     mean minus/plus 2 std dev
+        * `'indep3'`: each image has an independent vmin/vmax, chosen so that
+                     the 10th/90th percentile values map to the 10th/90th
+                     percentile intensities.
 
     Returns
     -------
     vrange_list : `list`
-        list of tuples, same length as `image`. contains the (vmin, vmax) tuple for each image.
+        list of tuples, same length as `image`. contains the (vmin, vmax) tuple
+        for each image.
 
     """
-    # this will clip the colormap
-
     # flatimg is one long 1d array, which enables the min, max, mean, std, and percentile calls to
     # operate on the values from each of the images simultaneously.
     flatimg = np.concatenate([i.flatten() for i in image]).flatten()
@@ -285,8 +288,8 @@ def colormap_range(image, vrange='indep1', cmap=None):
             elif vrange == 'auto1' or vrange == 'auto':
                 vrange_list = [np.nanmin(flatimg), np.nanmax(flatimg)]
             elif vrange == 'auto2':
-                vrange_list = [flatimg.nanmean() - 2 * flatimg.nanstd(),
-                               flatimg.nanmean() + 2 * flatimg.nanstd()]
+                vrange_list = [np.nanmean(flatimg) - 2 * np.nanstd(flatimg),
+                               np.nanmean(flatimg) + 2 * np.nanstd(flatimg)]
             elif vrange == 'auto3':
                 p1 = np.nanpercentile(flatimg, 10)
                 p2 = np.nanpercentile(flatimg, 90)
@@ -296,15 +299,17 @@ def colormap_range(image, vrange='indep1', cmap=None):
             vrange_list = [vrange_list] * len(image)
 
         elif vrange[:5] == 'indep':
-            # get independent vrange by calling this function one image at a time
-            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto'))[0][0] for im in image]
+            # independent vrange from recursive calls of this function per image
+            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto')
+                           )[0][0] for im in image]
         else:
             vrange_list, _ = colormap_range(image, vrange='auto1')
             warnings.warn('Unknown vrange argument, using auto1 instead')
     else:
-        # in this case, we've been passed two numbers, either as a list or tuple
+        # two numbers were passed, either as a list or tuple
         if len(vrange) != 2:
-            raise Exception("If you're passing numbers to vrange, there must be 2 of them!")
+            raise Exception("If you're passing numbers to vrange,"
+                            "there must be 2 of them!")
         vrange_list = [tuple(vrange)] * len(image)
 
     # double check that we're returning the right number of vranges

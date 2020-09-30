@@ -1370,6 +1370,13 @@ class TestImshow(unittest.TestCase):
             fig = pt.imshow([i for i in im], plot_complex=c)
             assert len(fig.axes) == 4, "Created wrong number of axes!"
 
+    def test_imshow19(self):
+        im = np.random.randn(2, 32, 32)
+        for rng in ['auto', 'indep']:
+            for i in range(4):
+                vrange = rng + str(i)
+                pt.imshow(list(im), vrange=vrange)
+
 class TestAnimshow(unittest.TestCase):
 
     def test_animshow0(self):
