@@ -1384,10 +1384,22 @@ class TestAnimshow(unittest.TestCase):
         fig = pt.animshow([i for i in vid], as_html5=False)._fig
         assert len(fig.axes) == 3, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
 
-    def test_animshow2(self):
+    def test_animshow1(self):
         vid = np.random.rand(3, 10, 10, 10, 4)
         fig = pt.animshow(vid[0], as_html5=False)._fig
         assert len(fig.axes) == 1, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_animshow2(self):
+        vid1 = np.random.rand(10, 10, 10)
+        vid2 = np.random.rand(10, 5, 5)
+        fig = pt.animshow([vid1, vid2], as_html5=False)._fig
+        assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
+
+    def test_animshow3(self):
+        vid1 = np.random.rand(3, 10, 10, 10)
+        vid2 = np.random.rand(2, 10, 5, 5)
+        fig = pt.animshow([v for v in vid1] + [v for v in vid2], as_html5=False)._fig
+        assert len(fig.axes) == 5, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
 
     def test_animshow4(self):
         vid1 = np.random.rand(10, 10, 10, 4)
