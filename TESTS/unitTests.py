@@ -1391,7 +1391,7 @@ class TestAnimshow(unittest.TestCase):
 
     def test_animshow4(self):
         vid1 = np.random.rand(10, 10, 10, 4)
-        vid2 = np.random.rand(5, 5, 5, 4)
+        vid2 = np.random.rand(10, 5, 5, 4)
         fig = pt.animshow([vid1, vid2], as_html5=False)._fig
         assert len(fig.axes) == 2, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
 
@@ -1415,6 +1415,12 @@ class TestAnimshow(unittest.TestCase):
                           title=[None, 'hello'], as_html5=False)._fig
         assert len(fig.axes) == 4, "Created wrong number of axes! Probably plotting color as grayscale or vice versa"
 
+    def test_animshow_fail_n_frames(self):
+        # raises exception because two videos have different numbers of frames
+        vid1 = np.random.rand(10, 10, 10)
+        vid2 = np.random.rand(5, 10, 10)
+        with self.assertRaises(Exception):
+            fig = pt.animshow([vid1, vid2], as_html5=False)._fig
 
 def main():
     unittest.main()

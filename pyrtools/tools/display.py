@@ -758,9 +758,16 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     Arguments
     ---------
     video : `np.array` or `list`
-        3d array (one video to display), 4d array (multiple videos to display, videos
-        are indexed along the first dimension), or list of 3d arrays (the height, resp. width,
-        of all videos must be integer multiples)
+        the videos(s) to show. Videos can be either grayscale, in which case
+        they must be 3d arrays of shape `(f,h,w)`, or RGB(A), in which case
+        they must be 4d arrays of shape `(f,h,w,c)` where `c` is 3 (for RGB) or
+        4 (to also plot the alpha channel) and `f` indexes frames. If multiple
+        videos, must be a list of such arrays (note this means we do not
+        support an array of shape `(n,f,h,w)` for multiple grayscale videos).
+        all videos will be automatically rescaled so they're displayed at the
+        same size. thus, their sizes must be scalar multiples of each other. If
+        multiple videos, all must have the same number of frames (first
+        dimension).
     framerate : `float`
         Temporal resolution of the video, in Hz (frames per second).
     as_html : `bool`
@@ -820,9 +827,14 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     -------
     anim : HTML object or FuncAnimation object
         Animation, format depends on `as_html`.
+
     """
 
     video = _convert_signal_to_list(video)
+    video_n_frames = np.array([v.shape[0] for v in video])
+    if (video_n_frames != video_n_frames[0]).any():
+        raise Exception("All videos must have the same number of frames! But you "
+                        "passed videos with {} frames".format(video_n_frames))
     title, vert_pct = _convert_title_to_list(title, video)
     video, title, contains_rgb = _process_signal(video, title, plot_complex, video=True)
     zooms, max_shape, video = _check_zooms(video, zoom, contains_rgb, video=True)
