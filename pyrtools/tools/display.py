@@ -752,7 +752,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
 def animshow(video, framerate=2., as_html5=True, repeat=False,
              vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-             cmap=None, plot_complex='rectangular', as_fig=False, **kwargs):
+             cmap=None, plot_complex='rectangular', **kwargs):
     """Display one or more videos (3d array) as a matplotlib animation or an HTML video.
 
     Arguments
@@ -813,8 +813,6 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
         * `'rectangular'`: plot real and imaginary components as separate images
         * `'polar'`: plot amplitude and phase as separate images
         * `'logpolar'`: plot log_2 amplitude and phase as separate images
-    as_fig : `bool`, optional (default False)
-        If True, return the figure - used for development and testing purposes.
     kwargs :
         Passed to `ax.imshow`
 
@@ -852,8 +850,6 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
                                    func=animate_video, repeat=repeat,
                                    repeat_delay=500)
 
-    if as_fig:
-        return fig
     plt.close(fig)
 
     if as_html5:
