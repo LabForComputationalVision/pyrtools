@@ -927,7 +927,6 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
     # then only loop through those - see below line 655
     num_scales = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,0]) + 1
     num_orientations = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,1]) + 1
-    # print(num_scales, num_orientations, zoom)
 
     col_wrap_new = num_orientations
     if is_complex:
