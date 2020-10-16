@@ -324,7 +324,7 @@ def colormap_range(image, vrange='indep1', cmap=None):
     return vrange_list, cmap
 
 
-def find_zooms(images):
+def find_zooms(images, video=False):
     """find the zooms necessary to display a list of images
 
     this convenience function takes a list of images and finds out if they can all be displayed at
@@ -336,6 +336,8 @@ def find_zooms(images):
     images : `list`
         list of numpy arrays to check the size of. In practice, these are 1d or 2d, but can in
         principle be any number of dimensions
+    video: bool, optional (default False)
+        handling signals in both space and time or only space.
 
     Returns
     -------
@@ -353,11 +355,14 @@ def find_zooms(images):
                                 "That is, the largest image must be a scalar multiple of all "
                                 "images.")
         return max_shape
-    # in this case, the two images were different sizes and so numpy can't combine them
-    # correctly
+
+    if video:
+        time_dim = 1
+    else:
+        time_dim = 0
     max_shape = []
     for i in range(2):
-        max_shape.append(check_shape_1d([img.shape[i] for img in images]))
+        max_shape.append(check_shape_1d([img.shape[i+time_dim] for img in images]))
     zooms = []
     for img in images:
         # this checks that there's only one unique value in the list
@@ -365,9 +370,9 @@ def find_zooms(images):
         # that is, that we zoom each dimension by the same amount. this should
         # then work with an arbitrary number of dimensions (in practice, 1 or
         # 2). by using max_shape instead of img.shape, we will only ever check
-        # the first two dimensions (so we'll ignore the RGBA channel if any
-        # image has that)
-        if len(set([s // img.shape[i] for i, s in enumerate(max_shape)])) > 1:
+        # the first two non-time dimensions (so we'll ignore the RGBA channel
+        # if any image has that)
+        if len(set([s // img.shape[i+time_dim] for i, s in enumerate(max_shape)])) > 1:
             raise Exception("Both height and width must be multiplied by same amount but got "
                             "image shape {} and max_shape {}!".format(img.shape, max_shape))
         zooms.append(max_shape[0] // img.shape[0])
@@ -463,8 +468,8 @@ def _process_signal(signal, title, plot_complex, video=False):
 
     Returns
     -------
-    signal : np.ndarray
-        array containing the signal, ready to plot
+    signal : list
+        list of arrays containing the signal, ready to plot
     title : list
         list of titles, ready to plot
     contains_rgb : bool
@@ -516,36 +521,6 @@ def _process_signal(signal, title, plot_complex, video=False):
         else:
             signal_tmp.append(np.array(sig))
             title_tmp.append(t)
-    try:
-        if all([sig.shape == signal_tmp[0].shape for sig in signal_tmp]):
-            # then they're all the same shape
-            signal_tmp = np.array(signal_tmp)
-        else:
-            # then at least one is a different shape, so we need to set the
-            # dtype to object, explicitly
-            signal_tmp = np.array(signal_tmp, dtype=np.object)
-    except ValueError:
-        # this happens when the images are the same shape but at least one is
-        # RGB(A) and at least one is grayscale, e.g., signal_tmp[0].shape = (10,
-        # 10) and signal_tmp[1].shape = (10, 10, 4). Strangely enough, it's not
-        # a problem if, in the above example, image_tmp[1].shape = (5, 5, 4).
-        # So in this case, we need to add extra dims, adding the RGB and/or A
-        # channels.
-        for i, sig in enumerate(signal_tmp):
-            if sig.ndim == (2 + time_dim):
-                # make all of the RGB channels identical so it's grayscale
-                sig = np.dstack([sig, sig, sig])
-            if sig.shape[-1] == 3:
-                # add an alpha channel of all 1s
-                sig = np.dstack([sig, np.ones_like(sig[..., 0])])
-            signal_tmp[i] = sig
-        if all([sig.shape == signal_tmp[0].shape for sig in signal_tmp]):
-            # then they're all the same shape
-            signal_tmp = np.array(signal_tmp)
-        else:
-            # then at least one is a different shape, so we need to set the
-            # dtype to object, explicitly
-            signal_tmp = np.array(signal_tmp, dtype=np.object)
     return signal_tmp, title_tmp, contains_rgb
 
 
@@ -557,8 +532,8 @@ def _check_zooms(signal, zoom, contains_rgb, video=False):
 
     Parameters
     ----------
-    signal : np.ndarray
-        array of signal to plot
+    signal : list
+        list of arrays that will be plotted
     zoom : float
         how we're going to zoom the image
     contains_rgb : bool
@@ -574,42 +549,30 @@ def _check_zooms(signal, zoom, contains_rgb, video=False):
         how much to zoom each image
     max_shape : np.ndarray
         contains 2 ints, giving the max image size in pixels
-    image : np.ndarray
-        3d array of images to plot (extra dimension may have been added)
 
     """
     if video:
         time_dim = 1
-        sigtype = 'video'
     else:
         time_dim = 0
-        sigtype = 'image'
 
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
-    if signal.ndim == 1:
-        # in this case, the two signal were different sizes and so numpy can't
-        # combine them correctly
-        zooms, max_shape = find_zooms(signal)
-    elif signal.ndim == (2 + time_dim):
-        signal = signal.reshape((1, signal.shape[0], signal.shape[1]))
-        max_shape = signal.shape[-2:]
-        zooms = [1]
-    else:
-        if signal.shape[-1] in [3, 4] and signal.ndim == (3 + time_dim) and contains_rgb:
-            # then this is a single color image and so we add an extra
-            # dimension at the beginning
-            signal = signal[None]
+    if all([sig.shape == signal[0].shape for sig in signal]):
+        # then this is one or multiple images/videos, all the same size
         zooms = [1 for i in signal]
         if contains_rgb:
-            max_shape = signal.shape[-3:-1]
+            max_shape = signal[0].shape[-3:-1]
         else:
-            max_shape = signal.shape[-2:]
+            max_shape = signal[0].shape[-2:]
+    else:
+        # then we have multiple images/videos that are different shapes
+        zooms, max_shape = find_zooms(signal, video)
     max_shape = np.array(max_shape)
     zooms = zoom * np.array(zooms)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
         raise Exception("zoom * signal.shape must result in integers!")
-    return zooms, max_shape, signal
+    return zooms, max_shape
 
 
 def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
@@ -620,11 +583,11 @@ def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
     """
     if ax is None:
         if col_wrap is None:
-            n_cols = image.shape[0]
+            n_cols = len(image)
             n_rows = 1
         else:
             n_cols = col_wrap
-            n_rows = int(np.ceil(image.shape[0] / n_cols))
+            n_rows = int(np.ceil(len(image) / n_cols))
         fig = make_figure(n_rows, n_cols, zoom * max_shape, vert_pct=vert_pct)
         axes = fig.axes
     else:
@@ -737,7 +700,7 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     image, title, contains_rgb = _process_signal(image, title, plot_complex)
 
     # make sure we can properly zoom all images
-    zooms, max_shape, image = _check_zooms(image, zoom, contains_rgb)
+    zooms, max_shape = _check_zooms(image, zoom, contains_rgb)
 
     # get the figure and axes created
     fig, axes = _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct)
@@ -752,15 +715,22 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
 
 def animshow(video, framerate=2., as_html5=True, repeat=False,
              vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
-             cmap=None, plot_complex='rectangular', as_fig=False, **kwargs):
+             cmap=None, plot_complex='rectangular', **kwargs):
     """Display one or more videos (3d array) as a matplotlib animation or an HTML video.
 
     Arguments
     ---------
     video : `np.array` or `list`
-        3d array (one video to display), 4d array (multiple videos to display, videos
-        are indexed along the first dimension), or list of 3d arrays (the height, resp. width,
-        of all videos must be integer multiples)
+        the videos(s) to show. Videos can be either grayscale, in which case
+        they must be 3d arrays of shape `(f,h,w)`, or RGB(A), in which case
+        they must be 4d arrays of shape `(f,h,w,c)` where `c` is 3 (for RGB) or
+        4 (to also plot the alpha channel) and `f` indexes frames. If multiple
+        videos, must be a list of such arrays (note this means we do not
+        support an array of shape `(n,f,h,w)` for multiple grayscale videos).
+        all videos will be automatically rescaled so they're displayed at the
+        same size. thus, their sizes must be scalar multiples of each other. If
+        multiple videos, all must have the same number of frames (first
+        dimension).
     framerate : `float`
         Temporal resolution of the video, in Hz (frames per second).
     as_html : `bool`
@@ -813,8 +783,6 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
         * `'rectangular'`: plot real and imaginary components as separate images
         * `'polar'`: plot amplitude and phase as separate images
         * `'logpolar'`: plot log_2 amplitude and phase as separate images
-    as_fig : `bool`, optional (default False)
-        If True, return the figure - used for development and testing purposes.
     kwargs :
         Passed to `ax.imshow`
 
@@ -822,12 +790,17 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     -------
     anim : HTML object or FuncAnimation object
         Animation, format depends on `as_html`.
+
     """
 
     video = _convert_signal_to_list(video)
+    video_n_frames = np.array([v.shape[0] for v in video])
+    if (video_n_frames != video_n_frames[0]).any():
+        raise Exception("All videos must have the same number of frames! But you "
+                        "passed videos with {} frames".format(video_n_frames))
     title, vert_pct = _convert_title_to_list(title, video)
     video, title, contains_rgb = _process_signal(video, title, plot_complex, video=True)
-    zooms, max_shape, video = _check_zooms(video, zoom, contains_rgb, video=True)
+    zooms, max_shape = _check_zooms(video, zoom, contains_rgb, video=True)
     fig, axes = _setup_figure(ax, col_wrap, video, zoom, max_shape, vert_pct)
     vrange_list, cmap = colormap_range(image=video, vrange=vrange, cmap=cmap)
 
@@ -852,8 +825,6 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
                                    func=animate_video, repeat=repeat,
                                    repeat_delay=500)
 
-    if as_fig:
-        return fig
     plt.close(fig)
 
     if as_html5:
@@ -927,7 +898,6 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
     # then only loop through those - see below line 655
     num_scales = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,0]) + 1
     num_orientations = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,1]) + 1
-    # print(num_scales, num_orientations, zoom)
 
     col_wrap_new = num_orientations
     if is_complex:

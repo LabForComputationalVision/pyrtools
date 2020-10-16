@@ -6,8 +6,9 @@ python:
   - "3.7"
 install:
   - pip install -e .
+  - pip install coverage
 script:
-  - python TESTS/unitTests.py
+  - coverage run TESTS/unitTests.py
 deploy:
   provider: pypi
   user: billbrod
@@ -16,3 +17,5 @@ deploy:
     secure: zaaaddfAIhYzNXk8gIFYBB1ckxMYhQ1gS9SLsrlaarlIFI7KcR1Y4RvyYVaVYO8OxR0xte5WF/PGE5NCZQFao9C/KvQGLAomavR0PspgpKEPq5PLoLpt87r88QgbhWwaHsYBDhJ1TMcIF5petRSKhKJwFoMlgyYr5EyLc3P9zhYlwJxyYt0BsQZDrztHSYapdie4AJowd/IMC1shkxShZLoLzDOOz2VteAnQWcV1vkrOQzmg6JkPNI97yVFZ4KDe9eTGL6ZI+fs/uSSTVT3K6YRrfGSoMu7sdLHI5TMGASvUps/VeghZ47fDJekDFhNLA7ce6KuB87MX+e2vDdFoah9ek1NrA+4xRaw80FEMrTZ4FM3O/SJkp2qytEYVYN2sIGDptl8Uop29QWJXdQd+ATrxldbLhlMOGuE7Fm+y+aniWFytHLUPwoXX4nJxkjAj/Qv6RxSAlhCZpeUO5pIiIfPxqVJOBgL4pvlf/Y6Feal9wXcLc5QxBuFNY1U3Lfyjo7sgpAfL7UNnJk0cZv4ld+ixhj7Ns7Tb8Yp1oN8ihgEmmZTaAGH0AqIwNmnEqYiJpQwVuVWt0GXddkiNubjrDaLRc7tDeKia+yNJDyYDVkHGY7ydalvzuZGytrlFUQWz6K00cnWPaCn/ogPhRJtcfmOek44H66mzjLAxq05rp9s=
   on:
     tags: true
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
