@@ -321,6 +321,11 @@ class LpyrTests(unittest.TestCase):
         pyRamp = np.array(list(range(200))).reshape(1, 200)
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
+    def test5bis(self):
+        matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr5.mat'))
+        pyRamp = np.array(list(range(200)))
+        pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
+        self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test6(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr6.mat'))
         pyRamp = np.array(list(range(200)))

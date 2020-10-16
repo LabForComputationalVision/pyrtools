@@ -52,7 +52,7 @@ def blur(image, n_levels=1, filt='binom5'):
     '''
 
     if image.ndim == 1:
-        image = np.reshape(image, (image.shape, 1))
+        image = image.reshape(-1, 1)
 
     filt = parse_filter(filt)
 
@@ -140,7 +140,7 @@ def blurDn(image, n_levels=1, filt='binom5'):
     '''
 
     if image.ndim == 1:
-        image = np.reshape(image, (image.shape, 1))
+        image = image.reshape(-1, 1)
 
     filt = parse_filter(filt)
 
@@ -219,7 +219,7 @@ def upBlur(image, n_levels=1, filt='binom5'):
     '''
 
     if image.ndim == 1:
-        image = np.reshape(image, (image.shape, 1))
+        image = image.reshape(-1, 1)
 
     filt = parse_filter(filt, normalize=False)
 
