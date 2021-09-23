@@ -49,7 +49,7 @@ class Pyramid:
 
     def __init__(self, image, edge_type):
 
-        self.image = np.array(image).astype(np.float)
+        self.image = np.array(image).astype(float)
         if self.image.ndim == 1:
             self.image = self.image.reshape(-1, 1)
         assert self.image.ndim == 2, "Error: Input signal must be 1D or 2D."
