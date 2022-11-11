@@ -24,6 +24,11 @@ does not attempt to recreate all of the matlab code from
 matlabPyrTools. The goal is to create a Python interface for the C
 code at the heart of matlabPyrTools.
 
+**NOTE**: If you are only interested in the complex steerable pyramid, we have a
+pytorch implementation in the
+[plenoptic](https://github.com/LabForComputationalVision/plenoptic/) package;
+this implementation is differentiable.
+
 # Installation
 
 It's recommended you install from pip: `pip install pyrtools`. The pip
