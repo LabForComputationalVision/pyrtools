@@ -17,7 +17,7 @@ jobs:
     outputs:
       notebook: ${{ steps.get-notebooks.outputs.nb }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - id: get-notebooks
         # it's weird to me, but the quotes around \n should *not* be escaped or it breaks
         run: echo "::set-output name=nb::$(ls TUTORIALS/*ipynb | jq -R -s -c 'split("\n")[:-1]')"
