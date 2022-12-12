@@ -53,7 +53,7 @@ jobs:
       matrix:
         python-version: [3.7, 3.8, 3.9, '3.10']
       fail-fast: false
-    name: Run pytest scripts
+    name: Run tests
     steps:
       - uses: actions/checkout@v2
       - name: Install Python 3
@@ -68,8 +68,11 @@ jobs:
           # pip will always install the latest allowed version of all
           # dependencies, to make sure the cache doesn't go stale
           pip install --upgrade --upgrade-strategy eager .
-      - name: Run tests with pytest
-        run: 'python TESTS/unitTests.py'
+          pip install coverage
+      - name: Run tests
+        run: 'coverage run TESTS/unitTests.py'
+      - name: Upload to codecov
+        run: 'bash <(curl -s https://codecov.io/bash)'
   all_tutorials_in_docs:
     runs-on: ubuntu-latest
     name: Check that all tutorial notebooks are included in docs
