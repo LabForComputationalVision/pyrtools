@@ -4,7 +4,7 @@
 .. |license-shield| image:: https://img.shields.io/badge/license-MIT-yellow.svg
 			    :target: https://github.com/LabForComputationalVision/pyrtools/blob/master/LICENSE
 
-.. |python-version-shield| image:: https://img.shields.io/badge/python-3.5%7C3.6%7C3.7-blue.svg
+.. |python-version-shield| image:: https://img.shields.io/badge/python-3.7%7C3.8%7C3.9%7C3.10-blue.svg
 
 .. |travis| image:: https://travis-ci.com/LabForComputationalVision/pyrtools.svg?branch=master
 		    :target: https://travis-ci.com/LabForComputationalVision/pyrtools
@@ -62,17 +62,12 @@ for image processing, here are some resources to get you started:
 
    installation
    developerguide
-   tutorial1
-   tutorial2
-   tutorial3
    api/modules
 
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials
+   :glob:
    :numbered:
 
-   tutorials/tutorial1
-   tutorials/tutorial2
-   tutorials/tutorial3
-   
+   tutorials/*
