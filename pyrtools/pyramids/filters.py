@@ -89,44 +89,44 @@ def named_filter(name):
     elif name.startswith('sp'):
         kernel = steerable_filters(name)
 
-    elif name is "qmf5":
+    elif name == "qmf5":
         kernel = np.array([[-0.076103], [0.3535534], [0.8593118], [0.3535534], [-0.076103]])
-    elif name is "qmf9":
+    elif name == "qmf9":
         kernel = np.array([[0.02807382], [-0.060944743], [-0.073386624], [0.41472545], [0.7973934],
                            [0.41472545], [-0.073386624], [-0.060944743], [0.02807382]])
-    elif name is "qmf13":
+    elif name == "qmf13":
         kernel = np.array([[-0.014556438], [0.021651438], [0.039045125], [-0.09800052],
                            [-0.057827797], [0.42995453], [0.7737113], [0.42995453], [-0.057827797],
                            [-0.09800052], [0.039045125], [0.021651438], [-0.014556438]])
-    elif name is "qmf8":
+    elif name == "qmf8":
         kernel = np.sqrt(2) * np.array([[0.00938715], [-0.07065183], [0.06942827], [0.4899808],
                                         [0.4899808], [0.06942827], [-0.07065183], [0.00938715]])
-    elif name is "qmf12":
+    elif name == "qmf12":
         kernel = np.array([[-0.003809699], [0.01885659], [-0.002710326], [-0.08469594],
                            [0.08846992], [0.4843894], [0.4843894], [0.08846992],
                            [-0.08469594], [-0.002710326], [0.01885659], [-0.003809699]])
         kernel *= np.sqrt(2)
-    elif name is "qmf16":
+    elif name == "qmf16":
         kernel = np.array([[0.001050167], [-0.005054526], [-0.002589756], [0.0276414],
                            [-0.009666376], [-0.09039223], [0.09779817], [0.4810284], [0.4810284],
                            [0.09779817], [-0.09039223], [-0.009666376], [0.0276414],
                            [-0.002589756], [-0.005054526], [0.001050167]])
         kernel *= np.sqrt(2)
-    elif name is "haar":
+    elif name == "haar":
         kernel = np.array([[1], [1]]) / np.sqrt(2)
-    elif name is "daub2":
+    elif name == "daub2":
         kernel = np.array([[0.482962913145], [0.836516303738], [0.224143868042],
                            [-0.129409522551]])
-    elif name is "daub3":
+    elif name == "daub3":
         kernel = np.array([[0.332670552950], [0.806891509311], [0.459877502118], [-0.135011020010],
                            [-0.085441273882], [0.035226291882]])
-    elif name is "daub4":
+    elif name == "daub4":
         kernel = np.array([[0.230377813309], [0.714846570553], [0.630880767930],
                            [-0.027983769417], [-0.187034811719], [0.030841381836],
                            [0.032883011667], [-0.010597401785]])
-    elif name is "gauss5":  # for backward-compatibility
+    elif name == "gauss5":  # for backward-compatibility
         kernel = np.sqrt(2) * np.array([[0.0625], [0.25], [0.375], [0.25], [0.0625]])
-    elif name is "gauss3":  # for backward-compatibility
+    elif name == "gauss3":  # for backward-compatibility
         kernel = np.sqrt(2) * np.array([[0.25], [0.5], [0.25]])
     else:
         raise Exception("Error: Unknown filter name: %s" % (name))
