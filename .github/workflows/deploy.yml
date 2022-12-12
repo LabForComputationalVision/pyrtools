@@ -17,7 +17,7 @@ jobs:
       - name: Build package
         run: python -m build --outdir dist/ --sdist --wheel
       - name: Publish package to test pypi
-        uses: pypa/gh-action-pypi-publish@v1
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
