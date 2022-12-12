@@ -49,15 +49,7 @@ code is the C code, and the pip install will compile it nicely.
 
 ## Dependencies
 
-Python 3.5, 3.6, and 3.7 all officially supported.
-
-Other requirements:
- - numpy
- - scipy
- - matplotlib
- - Pillow
- - tqdm
- - requests
+Dependencies are documented in `setup.py`.
 
 IPython is optional. If it's not installed,
 `pyrtools.display_tools.animshow` must be called with `as_html5=False`
@@ -123,9 +115,7 @@ and Jupyter installed.
 
 All code should be considered a beta release.  By that we mean that it is being
 actively developed and tested.  You can find unit tests in
-`TESTING/unitTests.py`.
-and run
-`python unitTests.py`.
+`TEST/unitTests.py` and run them with `python TEST/unitTests.py`.
 
 If you're using functions or parameters that do not have associated unit
 tests you should test this yourself to make sure the results are correct.
