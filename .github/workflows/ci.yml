@@ -75,7 +75,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           # we run coverage in the TESTS dir
-          working-directory: ./TESTS/
+          directory: ./TESTS/
           verbose: true
   all_tutorials_in_docs:
     runs-on: ubuntu-latest
