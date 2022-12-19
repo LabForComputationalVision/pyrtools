@@ -2,7 +2,7 @@
 			 :target: https://pypi.org/project/pyrtools/
 
 .. |license-shield| image:: https://img.shields.io/badge/license-MIT-yellow.svg
-			    :target: https://github.com/LabForComputationalVision/pyrtools/blob/master/LICENSE
+			    :target: https://github.com/LabForComputationalVision/pyrtools/blob/main/LICENSE
 
 .. |python-version-shield| image:: https://img.shields.io/badge/python-3.7%7C3.8%7C3.9%7C3.10-blue.svg
 
