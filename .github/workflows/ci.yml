@@ -70,7 +70,7 @@ jobs:
           pip install --upgrade --upgrade-strategy eager .
           pip install coverage
       - name: Run tests
-        run: 'coverage run TESTS/unitTests.py'
+        run: 'coverage run TESTS/unitTests.py --debug trace'
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
   all_tutorials_in_docs:
