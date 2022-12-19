@@ -74,9 +74,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          # this isn't the root dir of the project, but it is the dir we run
-          # coverage in
-          files: ./TESTS/.coverage
+          # we run coverage in the TESTS dir
+          working-directory: ./TESTS/
           verbose: true
   all_tutorials_in_docs:
     runs-on: ubuntu-latest
