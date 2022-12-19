@@ -73,6 +73,10 @@ jobs:
         run: 'cd TESTS && coverage run unitTests.py'
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        with:
+          # this isn't the root dir of the project, but it is the dir we run
+          # coverage in
+          root_dir: TESTS/
   all_tutorials_in_docs:
     runs-on: ubuntu-latest
     name: Check that all tutorial notebooks are included in docs
