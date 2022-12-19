@@ -70,13 +70,15 @@ jobs:
           pip install --upgrade --upgrade-strategy eager .
           pip install coverage
       - name: Run tests
-        run: 'cd TESTS && coverage run unitTests.py'
+        run: |
+          # for some reason, need to run this in the TESTS dir in order to get
+          # coverage to work (I couldn't get an analogous .coveragerc working in
+          # the root directory)
+          cd TESTS && coverage run unitTests.py
+          # generate the xml file and move it to root dir for codecov
+          coverage xml -o ../coverage.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
-        with:
-          # we run coverage in the TESTS dir
-          directory: ./TESTS/
-          verbose: true
   all_tutorials_in_docs:
     runs-on: ubuntu-latest
     name: Check that all tutorial notebooks are included in docs
