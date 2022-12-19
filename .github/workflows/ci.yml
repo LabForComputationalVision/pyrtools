@@ -76,7 +76,7 @@ jobs:
         with:
           # this isn't the root dir of the project, but it is the dir we run
           # coverage in
-          root_dir: TESTS/
+          root_dir: ./TESTS/
   all_tutorials_in_docs:
     runs-on: ubuntu-latest
     name: Check that all tutorial notebooks are included in docs
