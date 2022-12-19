@@ -71,8 +71,8 @@ jobs:
           pip install coverage
       - name: Run tests
         run: 'coverage run TESTS/unitTests.py'
-      - name: Upload to codecov
-        run: 'bash <(curl -s https://codecov.io/bash)'
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
   all_tutorials_in_docs:
     runs-on: ubuntu-latest
     name: Check that all tutorial notebooks are included in docs
