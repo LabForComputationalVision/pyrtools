@@ -1,12 +1,12 @@
 # pyrtools: tools for multi-scale image processing
 
 [![PyPI Version](https://img.shields.io/pypi/v/pyrtools.svg)](https://pypi.org/project/pyrtools/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/LabForComputationalVision/pyrtools/blob/master/LICENSE)
-![Python version](https://img.shields.io/badge/python-3.5%7C3.6%7C3.7-blue.svg)
-[![Build Status](https://travis-ci.com/LabForComputationalVision/pyrtools.svg?branch=master)](https://travis-ci.com/LabForComputationalVision/pyrtools)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/LabForComputationalVision/pyrtools/blob/main/LICENSE)
+![Python version](https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg)
+[![Build Status](https://github.com/LabForComputationalVision/pyrtools/workflows/build/badge.svg)](https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild)
 [![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.0?filepath=TUTORIALS%2F)
-[![codecov](https://codecov.io/gh/LabForComputationalVision/pyrtools/branch/master/graph/badge.svg?token=Ei9TYftdYi)](https://codecov.io/gh/LabForComputationalVision/pyrtools)
+[![codecov](https://codecov.io/gh/LabForComputationalVision/pyrtools/branch/main/graph/badge.svg?token=Ei9TYftdYi)](https://codecov.io/gh/LabForComputationalVision/pyrtools)
 
 Briefly, the tools include:
   - Recursive multi-scale image decompositions (pyramids), including
@@ -24,6 +24,11 @@ does not attempt to recreate all of the matlab code from
 matlabPyrTools. The goal is to create a Python interface for the C
 code at the heart of matlabPyrTools.
 
+**NOTE**: If you are only interested in the complex steerable pyramid, we have a
+pytorch implementation in the
+[plenoptic](https://github.com/LabForComputationalVision/plenoptic/) package;
+this implementation is differentiable.
+
 # Installation
 
 It's recommended you install from pip: `pip install pyrtools`. The pip
@@ -36,7 +41,7 @@ run the pip command, and then adding: `from Cython.Build import
 cythonize` and wrapping the `ext_modules` in the `setup` call with
 `cythonize`, but I'm not sure.
 
-If you wish to install from the master branch, it's still recommended
+If you wish to install from the main branch, it's still recommended
 to use pip, just run `pip install .` (or `pip install -e .` if you
 want the changes you make in the directory to be reflected in your
 install) from the root directory of this project. The core of this
@@ -44,15 +49,7 @@ code is the C code, and the pip install will compile it nicely.
 
 ## Dependencies
 
-Python 3.5, 3.6, and 3.7 all officially supported.
-
-Other requirements:
- - numpy
- - scipy
- - matplotlib
- - Pillow
- - tqdm
- - requests
+Dependencies are documented in `setup.py`.
 
 IPython is optional. If it's not installed,
 `pyrtools.display_tools.animshow` must be called with `as_html5=False`
@@ -118,9 +115,7 @@ and Jupyter installed.
 
 All code should be considered a beta release.  By that we mean that it is being
 actively developed and tested.  You can find unit tests in
-`TESTING/unitTests.py`.
-and run
-`python unitTests.py`.
+`TEST/unitTests.py` and run them with `python TEST/unitTests.py`.
 
 If you're using functions or parameters that do not have associated unit
 tests you should test this yourself to make sure the results are correct.

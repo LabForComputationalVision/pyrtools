@@ -815,7 +815,7 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
 
     def animate_video(t):
         for i, a in enumerate(artists):
-            frame = video[i][t].astype(np.float)
+            frame = video[i][t].astype(float)
             a.set_data(frame)
         return artists
 

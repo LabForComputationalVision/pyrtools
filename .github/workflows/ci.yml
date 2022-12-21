@@ -1,0 +1,118 @@
+name: build
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: 0 0 * * 0     # weekly
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
+
+jobs:
+  # based on https://slashgear.github.io/how-to-split-test-by-folder-with-github-action/
+  get_notebooks:
+    runs-on: ubuntu-latest
+    outputs:
+      notebook: ${{ steps.get-notebooks.outputs.nb }}
+    steps:
+    - uses: actions/checkout@v3
+    - id: get-notebooks
+        # it's weird to me, but the quotes around \n should *not* be escaped or it breaks
+      run: "echo \"nb=$(ls TUTORIALS/*ipynb | jq -R -s -c 'split(\"\\n\")[:-1]')\"\
+        \ >> $GITHUB_OUTPUT\n"
+  notebooks:
+    runs-on: ubuntu-latest
+    needs: [get_notebooks]
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, '3.10']
+        notebook: ${{fromJson(needs.get_notebooks.outputs.notebook)}}
+      fail-fast: false
+    name: Execute notebooks
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: pip
+        cache-dependency-path: setup.py
+    - name: Setup FFmpeg
+      uses: FedericoCarboni/setup-ffmpeg@v2
+    - name: Install dependencies
+        # nbclient 0.5.5 is the first version that includes jupyter execute
+      run: |
+        pip install --upgrade --upgrade-strategy eager .
+        pip install jupyter ipywidgets
+        pip install "nbclient>=0.5.5"
+    - name: Run notebooks
+      run: jupyter execute ${{ matrix.notebook }}.ipynb --kernel_name=python3
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, '3.10']
+      fail-fast: false
+    name: Run tests
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Python 3
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: pip
+        cache-dependency-path: setup.py
+    - name: Install dependencies
+      run: |
+        # using the --upgrade and --upgrade-strategy eager flags ensures that
+        # pip will always install the latest allowed version of all
+        # dependencies, to make sure the cache doesn't go stale
+        pip install --upgrade --upgrade-strategy eager .
+        pip install coverage
+    - name: Run tests
+      run: |
+        # for some reason, need to run this in the TESTS dir in order to get
+        # coverage to work (I couldn't get an analogous .coveragerc working in
+        # the root directory)
+        cd TESTS && coverage run unitTests.py
+        # generate the xml file and move it to root dir for codecov
+        coverage xml -o ../coverage.xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@858dd794fbb81941b6d60b0dca860878cba60fa9 # v3.1.1
+  all_tutorials_in_docs:
+    runs-on: ubuntu-latest
+    name: Check that all tutorial notebooks are included in docs
+    needs: [get_notebooks]
+    strategy:
+      matrix:
+        notebook: ${{fromJson(needs.get_notebooks.outputs.notebook)}}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check for file
+      shell: bash
+      run: if [[ -z "$(grep ${{ matrix.notebook }} docs/tutorials/*nblink)" ]] ; then
+        exit 1; fi
+  no_extra_nblinks:
+    runs-on: ubuntu-latest
+    name: Check that we don't have any extra nblink files
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check same number of nblink and notebooks
+      shell: bash
+      run: |
+        n_nblink=0; for file in docs/tutorials/*nblink; do let "n_nblink+=1"; done;
+        n_ipynb=0; for file in TUTORIALS/*ipynb; do let "n_ipynb+=1"; done;
+        if [[ $n_nblink != $n_ipynb ]]; then exit 1; fi;
+
+  check:
+    if: always()
+    needs:
+    - notebooks
+    - tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Decide whether all tests and notebooks succeeded
+      uses: re-actors/alls-green@afee1c1eac2a506084c274e9c02c8e0687b48d9e # v1.2.2
+      with:
+        jobs: ${{ toJSON(needs) }}

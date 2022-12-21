@@ -15,8 +15,9 @@ VERSION = pyrtools_version_module.version
 setup(
     name='pyrtools',
     version=VERSION,
-    description=('Python tools for multi-scale image processing, including Laplacian pyramids, '
-                 'Wavelets, and Steerable Pyramids'),
+    long_description=open('README.md', 'r').read(),
+    long_description_content_type='text/markdown',
+    description='Python tools for multi-scale image processing, including Laplacian pyramids, Wavelets, and Steerable Pyramids',
     license='MIT',
     url='https://github.com/LabForComputationalVision/pyrtools',
     author='Eero Simoncelli',
