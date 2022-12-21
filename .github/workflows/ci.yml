@@ -39,7 +39,7 @@ jobs:
         cache: pip
         cache-dependency-path: setup.py
     - name: Setup FFmpeg
-      uses: FedericoCarboni/setup-ffmpeg@102916131ac71e9c7ad6fa9d98fed2c9d86722e6 # v1.1.0
+      uses: FedericoCarboni/setup-ffmpeg@v2
     - name: Install dependencies
         # nbclient 0.5.5 is the first version that includes jupyter execute
       run: |
