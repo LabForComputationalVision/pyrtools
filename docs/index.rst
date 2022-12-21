@@ -10,7 +10,7 @@
 		     :target: https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild
 
 .. |binder| image:: https://mybinder.org/badge_logo.svg
-		    :target: https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.0?filepath=TUTORIALS%2F
+		    :target: https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.1?filepath=TUTORIALS%2F
 			     
 .. pyrtools documentation master file, created by
    sphinx-quickstart on Mon Mar 25 17:57:12 2019.

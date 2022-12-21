@@ -5,7 +5,7 @@
 ![Python version](https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg)
 [![Build Status](https://github.com/LabForComputationalVision/pyrtools/workflows/build/badge.svg)](https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild)
 [![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.0?filepath=TUTORIALS%2F)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.1?filepath=TUTORIALS%2F)
 [![codecov](https://codecov.io/gh/LabForComputationalVision/pyrtools/branch/main/graph/badge.svg?token=Ei9TYftdYi)](https://codecov.io/gh/LabForComputationalVision/pyrtools)
 
 Briefly, the tools include:
