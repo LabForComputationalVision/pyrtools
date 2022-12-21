@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
     name: Execute notebooks
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -55,7 +55,7 @@ jobs:
       fail-fast: false
     name: Run tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Python 3
         uses: actions/setup-python@v2
         with:
@@ -87,7 +87,7 @@ jobs:
       matrix:
         notebook: ${{fromJson(needs.get_notebooks.outputs.notebook)}}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Check for file
         shell: bash
         run: if [[ -z "$(grep ${{ matrix.notebook }} docs/tutorials/*nblink)" ]] ; then exit 1; fi
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check that we don't have any extra nblink files
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Check same number of nblink and notebooks
         shell: bash
         run: |
