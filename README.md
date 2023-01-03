@@ -1,12 +1,12 @@
 # pyrtools: tools for multi-scale image processing
 
 [![PyPI Version](https://img.shields.io/pypi/v/pyrtools.svg)](https://pypi.org/project/pyrtools/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/LabForComputationalVision/pyrtools/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/LabForComputationalVision/pyrtools/blob/main/LICENSE)
 ![Python version](https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg)
 [![Build Status](https://github.com/LabForComputationalVision/pyrtools/workflows/build/badge.svg)](https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild)
 [![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.0?filepath=TUTORIALS%2F)
-[![codecov](https://codecov.io/gh/LabForComputationalVision/pyrtools/branch/master/graph/badge.svg?token=Ei9TYftdYi)](https://codecov.io/gh/LabForComputationalVision/pyrtools)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.1?filepath=TUTORIALS%2F)
+[![codecov](https://codecov.io/gh/LabForComputationalVision/pyrtools/branch/main/graph/badge.svg?token=Ei9TYftdYi)](https://codecov.io/gh/LabForComputationalVision/pyrtools)
 
 Briefly, the tools include:
   - Recursive multi-scale image decompositions (pyramids), including
@@ -41,7 +41,7 @@ run the pip command, and then adding: `from Cython.Build import
 cythonize` and wrapping the `ext_modules` in the `setup` call with
 `cythonize`, but I'm not sure.
 
-If you wish to install from the master branch, it's still recommended
+If you wish to install from the main branch, it's still recommended
 to use pip, just run `pip install .` (or `pip install -e .` if you
 want the changes you make in the directory to be reflected in your
 install) from the root directory of this project. The core of this
