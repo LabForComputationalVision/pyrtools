@@ -11,6 +11,7 @@ pyrtools_version_module = importlib.util.module_from_spec(pyrtools_version_spec)
 pyrtools_version_spec.loader.exec_module(pyrtools_version_module)
 VERSION = pyrtools_version_module.version
 
+platform_src = ["pyrtools/windows.c"] if os.name == 'nt' else []
 
 setup(
     name='pyrtools',
@@ -35,7 +36,7 @@ setup(
                            sources=['pyrtools/pyramids/c/convolve.c',
                                     'pyrtools/pyramids/c/edges.c',
                                     'pyrtools/pyramids/c/wrap.c',
-                                    'pyrtools/pyramids/c/internal_pointOp.c'],
+                                    'pyrtools/pyramids/c/internal_pointOp.c'] + platform_src,
                            depends=['pyrtools/pyramids/c/convolve.h',
                                     'pyrtools/pyramids/c/internal_pointOp.h'],
                            extra_compile_args=['-fPIC', '-shared'])],
