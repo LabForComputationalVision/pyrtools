@@ -1,13 +1,13 @@
 ------------------------------
-patched by:\
-Felix Schaller\
-(c) 2023 felixschaller.com\
+patched by: \
+Felix Schaller \
+(c) 2023 felixschaller.com \
 
-######################################################################### \\
+######################################################################### \
 
 WARNING: this patch solves the "fix Python CFFI error LNK2001: unresolved external symbol PyInit__…" compile problem. But it yet requires an interface fpr python. For more Info see the Documention here: https://docs.python.org/3/extending/building.html and here: https://www.codeproject.com/articles/820116/embedding-python-program-in-a-c-cplusplus-code
 
-######################################################################### \\
+######################################################################### \
 
 # pyrtools: tools for multi-scale image processing
 
