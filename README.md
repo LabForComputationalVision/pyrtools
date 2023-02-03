@@ -1,7 +1,7 @@
 ------------------------------
-patched by:
-Felix Schaller
-(c) felixschaller.com
+patched by:\
+Felix Schaller\
+(c) 2023 felixschaller.com\
 
 ######################################################################### \\
 
