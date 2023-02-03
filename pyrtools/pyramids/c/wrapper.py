@@ -9,7 +9,7 @@ import numpy as np
 
 # the wrapConv.so file can have some system information after it from the compiler, so we just find
 # whatever it is called
-libpath = glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'wrapConv*.so'))
+libpath = glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'wrapConv*.*'))
 # print(libpath)
 
 # load the c library
