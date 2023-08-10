@@ -5,8 +5,6 @@ channels:
 
 dependencies:
   - sphinx
-  # fix sphinx 7 incompatibility issue
-  - 'sphinx_rtd_theme>=1.3.0rc1'
   - numpydoc
   - numpy
   - python
@@ -16,3 +14,5 @@ dependencies:
     - nbsphinx
     - nbsphinx_link
     - sphinxcontrib-apidoc
+    # fix sphinx 7 incompatibility issue
+    - 'sphinx_rtd_theme>=1.3.0rc1'
