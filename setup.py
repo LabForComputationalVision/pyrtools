@@ -28,7 +28,6 @@ setup(
     install_requires=['numpy>=1.1',
                       'scipy>=0.18',
                       'matplotlib>=1.5',
-                      'Pillow>=3.4',
                       'tqdm>=4.29',
                       'requests>=2.21'],
     ext_modules=[Extension('pyrtools.pyramids.c.wrapConv',
