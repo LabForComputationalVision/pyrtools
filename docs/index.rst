@@ -37,6 +37,8 @@ The tools include:
     auto-scaling options, rounding to integer zoom factors to avoid
     resampling artifacts, and useful labeling (dimensions and gray-range).
 
+**NOTE**: If you are only interested in the complex steerable pyramid, we have a pytorch implementation in the `plenoptic <https://plenoptic.readthedocs.io/en/>`_ package; the implementation in plenoptic is differentiable.
+
 .. include:: quickstart.rst
 
 Pyramid resources
