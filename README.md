@@ -27,7 +27,7 @@ code at the heart of matlabPyrTools.
 **NOTE**: If you are only interested in the complex steerable pyramid, we have a
 pytorch implementation in the
 [plenoptic](https://github.com/LabForComputationalVision/plenoptic/) package;
-this implementation is differentiable.
+the implementation in plenoptic is differentiable.
 
 # Installation
 
