@@ -1,0 +1,23 @@
+cff-version: 1.1.0
+message: "If you use any component of pyrtools, please cite it as below."
+authors:
+- family-names: Simoncelli
+  given-names: Eero
+- family-names: Young
+  given-names: Rob
+- family-names: Broderick
+  given-names: William
+- family-names: Fiquet
+  given-names: Pierre-Étienne
+- family-names: Wang
+  given-names: Zhuo
+- family-names: Kadkhodaie
+  given-names: Zahra
+- family-names: Parthasarathy
+  given-names: Nikhil
+orcid: https://orcid.org/0000-0000-0000-0000
+title: "Pyrtools: tools for multi-scale image processing"
+version: v1.0.2
+date-released: 2023-11-20
+doi: 10.5281/zenodo.10161031
+url: "https://github.com/LabForComputationalVision/pyrtools"
