@@ -11,7 +11,10 @@
 
 .. |binder| image:: https://mybinder.org/badge_logo.svg
 		    :target: https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.2?filepath=TUTORIALS%2F
-			     
+
+.. |doi| image:: https://zenodo.org/badge/137527035.svg
+  :target: https://zenodo.org/doi/10.5281/zenodo.10161031
+
 .. pyrtools documentation master file, created by
    sphinx-quickstart on Mon Mar 25 17:57:12 2019.
    You can adapt this file completely to your liking, but it should at least
@@ -20,7 +23,7 @@
 pyrtools
 ====================================
 
-|pypi-shield| |license-shield| |python-version-shield| |build| |binder|
+|pypi-shield| |license-shield| |python-version-shield| |build| |binder| |doi|
 
 Pyrtools is a python package for multi-scale image processing, adapted
 from Eero Simoncelli's `matlabPyrTools
