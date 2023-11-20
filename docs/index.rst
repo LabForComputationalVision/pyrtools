@@ -10,8 +10,11 @@
 		     :target: https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild
 
 .. |binder| image:: https://mybinder.org/badge_logo.svg
-		    :target: https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.1?filepath=TUTORIALS%2F
-			     
+		    :target: https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.2?filepath=TUTORIALS%2F
+
+.. |doi| image:: https://zenodo.org/badge/137527035.svg
+  :target: https://zenodo.org/doi/10.5281/zenodo.10161031
+
 .. pyrtools documentation master file, created by
    sphinx-quickstart on Mon Mar 25 17:57:12 2019.
    You can adapt this file completely to your liking, but it should at least
@@ -20,7 +23,7 @@
 pyrtools
 ====================================
 
-|pypi-shield| |license-shield| |python-version-shield| |build| |binder|
+|pypi-shield| |license-shield| |python-version-shield| |build| |binder| |doi|
 
 Pyrtools is a python package for multi-scale image processing, adapted
 from Eero Simoncelli's `matlabPyrTools
@@ -38,6 +41,16 @@ The tools include:
     resampling artifacts, and useful labeling (dimensions and gray-range).
 
 **NOTE**: If you are only interested in the complex steerable pyramid, we have a pytorch implementation in the `plenoptic <https://plenoptic.readthedocs.io/en/>`_ package; the implementation in plenoptic is differentiable.
+
+Citing us
+---------
+
+If you use ``pyrtools`` in a published academic article or presentation, please
+cite us! You can find the link to the most recent release on Zenodo `here
+<https://zenodo.org/doi/10.5281/zenodo.10161031>`_ (though please specify the
+version you used not the most recent one!). You can also get a formatted
+citation at the top right of our `GitHub repo
+<https://github.com/LabForComputationalVision/pyrtools>`_
 
 .. include:: quickstart.rst
 

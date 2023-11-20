@@ -5,7 +5,8 @@
 ![Python version](https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg)
 [![Build Status](https://github.com/LabForComputationalVision/pyrtools/workflows/build/badge.svg)](https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild)
 [![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.1?filepath=TUTORIALS%2F)
+[![DOI](https://zenodo.org/badge/137527035.svg)](https://zenodo.org/doi/10.5281/zenodo.10161031)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.2?filepath=TUTORIALS%2F)
 [![codecov](https://codecov.io/gh/LabForComputationalVision/pyrtools/branch/main/graph/badge.svg?token=Ei9TYftdYi)](https://codecov.io/gh/LabForComputationalVision/pyrtools)
 
 Briefly, the tools include:
@@ -28,6 +29,15 @@ code at the heart of matlabPyrTools.
 pytorch implementation in the
 [plenoptic](https://github.com/LabForComputationalVision/plenoptic/) package;
 the implementation in plenoptic is differentiable.
+
+# Citing us
+
+If you use `pyrtools` in a published academic article or presentation, please
+cite us! You can find the link to the most recent release on Zenodo
+[here](https://zenodo.org/doi/10.5281/zenodo.10161031) (though please specify
+the version you used not the most recent one!). You can also get a formatted
+citation at the top right of our [GitHub
+repo](https://github.com/LabForComputationalVision/pyrtools)
 
 # Installation
 
