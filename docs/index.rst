@@ -42,6 +42,16 @@ The tools include:
 
 **NOTE**: If you are only interested in the complex steerable pyramid, we have a pytorch implementation in the `plenoptic <https://plenoptic.readthedocs.io/en/>`_ package; the implementation in plenoptic is differentiable.
 
+Citing us
+---------
+
+If you use ``pyrtools`` in a published academic article or presentation, please
+cite us! You can find the link to the most recent release on Zenodo `here
+<https://zenodo.org/doi/10.5281/zenodo.10161031>`_ (though please specify the
+version you used not the most recent one!). You can also get a formatted
+citation at the top right of our `GitHub repo
+<https://github.com/LabForComputationalVision/pyrtools>`_
+
 .. include:: quickstart.rst
 
 Pyramid resources
