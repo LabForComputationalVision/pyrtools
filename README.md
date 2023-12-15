@@ -41,15 +41,7 @@ repo](https://github.com/LabForComputationalVision/pyrtools)
 
 # Installation
 
-It's recommended you install from pip: `pip install pyrtools`. The pip
-install has been tested on Linux and on OSX. Windows is NOT supported
-because of issues with the C compiler (`gcc` isn't necessarily
-installed); if you have experience with C compilation on Windows,
-please open a pull request. It's possible that the way to fix this is
-to use Cython, ensuring that Cython is installed before attempting to
-run the pip command, and then adding: `from Cython.Build import
-cythonize` and wrapping the `ext_modules` in the `setup` call with
-`cythonize`, but I'm not sure.
+It's recommended you install from pip: `pip install pyrtools`.
 
 If you wish to install from the main branch, it's still recommended
 to use pip, just run `pip install .` (or `pip install -e .` if you
