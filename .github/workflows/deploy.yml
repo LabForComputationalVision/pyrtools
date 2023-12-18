@@ -24,7 +24,10 @@ jobs:
           CIBW_SKIP: "*musllinux*"
           CIBW_ARCHS: native
           CIBW_BUILD_FRONTEND: build
-          CIBW_TEST_COMMAND: "python TESTS/unitTests.py"
+          CIBW_TEST_COMMAND: "python {project}/TESTS/unitTests.py"
+          # cross-compilation for Apple Silicon:
+          # https://cibuildwheel.readthedocs.io/en/stable/faq/#how-to-cross-compile
+          CIBW_ARCHS_MACOS: x86_64 arm64
 
       - name: "Upload wheel as artifact"
         uses: actions/upload-artifact@v4
