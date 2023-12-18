@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <math.h>
+#include "internal_pointOp.h"
+
 /* Use linear interpolation on a lookup table.
    Taken from OBVIUS.  EPS, Spring, 1987.
  */
