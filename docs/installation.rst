@@ -6,6 +6,8 @@ Installation
 There are two ways to install pyrtools: via the ``pip`` package management
 system, or directly from source.
 
+.. attention:: Windows support was added in version 1.0.3. If you are on Windows and get an installation error, make sure you are installing the newest version.
+
 Recommended
 ===========
 
