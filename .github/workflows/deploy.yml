@@ -24,7 +24,7 @@ jobs:
           CIBW_SKIP: "*musllinux*"
           CIBW_ARCHS: native
           CIBW_BUILD_FRONTEND: build
-          CIBW_TEST_COMMAND: "python TESTS/unitTests.py"
+          CIBW_TEST_COMMAND: "python {project}/TESTS/unitTests.py"
 
       - name: "Upload wheel as artifact"
         uses: actions/upload-artifact@v4
