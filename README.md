@@ -117,7 +117,7 @@ and Jupyter installed.
 
 All code should be considered a beta release.  By that we mean that it is being
 actively developed and tested.  You can find unit tests in
-`TEST/unitTests.py` and run them with `python TEST/unitTests.py`.
+`TESTS/unitTests.py` and run them with `python TESTS/unitTests.py`.
 
 If you're using functions or parameters that do not have associated unit
 tests you should test this yourself to make sure the results are correct.
