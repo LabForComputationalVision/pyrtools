@@ -23,4 +23,4 @@ For more details, see the jupyter notebooks included in the
 ``TUTORIALS/`` directory, static versions of which are linked in the
 navigation sidebar. You can play around with a live version of them in
 order to test out the code before downloading on `binder
-<https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.3?filepath=TUTORIALS%2F>`_
+<https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.4?filepath=TUTORIALS%2F>`_
