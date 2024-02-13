@@ -17,7 +17,6 @@ authors:
   given-names: Nikhil
 - family-names: Ward
   given-names: Brian
-orcid: https://orcid.org/0000-0000-0000-0000
 title: "Pyrtools: tools for multi-scale image processing"
 version: v1.0.3
 date-released: 2023-11-20
