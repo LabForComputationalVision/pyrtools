@@ -37,4 +37,4 @@ When installing from source on Linux or Mac, we require ``gcc`` version >= 6 in
 order for the C code to compile, because of `this issue
 <https://stackoverflow.com/questions/46504700/gcc-compiler-not-recognizing-fno-plt-option>`_
 
-When installing from source on Windows, Microsoft Visual C++ 14.0 or greater is required, which can be obtained with `Microsoft C++ Build Tools <https://visualstudio.microsoft.com/visual-cpp-build-tools/`_.
+When installing from source on Windows, Microsoft Visual C++ 14.0 or greater is required, which can be obtained with `Microsoft C++ Build Tools <https://visualstudio.microsoft.com/visual-cpp-build-tools/>`_.
