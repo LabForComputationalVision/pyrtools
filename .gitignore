@@ -39,3 +39,6 @@ docs/_build
 docs/api
 
 .idea
+
+# created automatically by setuptools.scm, don't track
+version.py

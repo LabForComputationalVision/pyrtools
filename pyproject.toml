@@ -1,3 +1,51 @@
+[project]
+name = "pyrtools"
+dynamic = ["version"]
+authors = [{name="Pyrtools authors"}]
+description = "Python tools for multi-scale image processing, including Laplacian pyramids, Wavelets, and Steerable Pyramids."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+]
+keywords = ['image processing', 'visual information processing', 'computational models']
+
+dependencies = ['numpy>=1.1',
+                'scipy>=0.18',
+                'matplotlib>=1.5',
+                'tqdm>=4.29',
+                'requests>=2.21']
+
+[project.optional-dependencies]
+docs = [
+  'sphinx',
+  'numpydoc',
+  # because of this issue:
+  # https://nbsphinx.readthedocs.io/en/0.6.0/installation.html#Pygments-Lexer-for-Syntax-Highlighting
+  'ipython',
+  'nbsphinx',
+  'nbsphinx_link',
+  'sphinxcontrib-apidoc',
+  # fix sphinx 7 incompatibility issue
+  'sphinx_rtd_theme>=1.3.0rc1'
+]
+
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools", "wheel", "setuptools-scm[toml]"]
 build-backend = "setuptools.build_meta"
+
+[project.urls]
+"Homepage" = "https://github.com/LabForComputationalVision/pyrtools"
+"Documentation" = "https://pyrtools.readthedocs.io/en/latest/"
+"Download" = "https://zenodo.org/records/10403034"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+write_to = "src/pyrtools/version.py"
+version_scheme = 'python-simplified-semver'
+local_scheme = 'no-local-version'
