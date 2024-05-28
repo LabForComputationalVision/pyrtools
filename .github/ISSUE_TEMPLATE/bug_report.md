@@ -30,7 +30,7 @@ If applicable, add screenshots to help explain your problem.
 
 **System (please complete the following information):**
  - OS: [e.g. Mac (with version), Ubuntu 18.04]
- - Python version [e.g. 3.7]
+ - Python version [e.g. 3.11]
  - Pyrtools version [e.g. 1.0.1]
 
 **Additional context**

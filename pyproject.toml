@@ -4,7 +4,7 @@ dynamic = ["version"]
 authors = [{name="Pyrtools authors"}]
 description = "Python tools for multi-scale image processing, including Laplacian pyramids, Wavelets, and Steerable Pyramids."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
