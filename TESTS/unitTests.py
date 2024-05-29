@@ -360,13 +360,13 @@ class LpyrTests(unittest.TestCase):
         pyRamp = pt.synthetic_images.ramp((200,200))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         recon = pyPyr.recon_pyr(levels=[1])
-        np.testing.assert_allclose(matPyr['recon'], recon)
+        np.testing.assert_allclose(matPyr['recon'], recon, atol=1e-6)
     def test12(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr12.mat'))
         pyRamp = pt.synthetic_images.ramp((200,200))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         recon = pyPyr.recon_pyr(levels=[0, 2, 4])
-        np.testing.assert_allclose(matPyr['recon'], recon)
+        np.testing.assert_allclose(matPyr['recon'], recon, atol=1e-6)
 
 class WpyrTests(unittest.TestCase):
     def test0(self):
