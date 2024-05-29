@@ -2,7 +2,7 @@
 
 [![PyPI Version](https://img.shields.io/pypi/v/pyrtools.svg)](https://pypi.org/project/pyrtools/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/LabForComputationalVision/pyrtools/blob/main/LICENSE)
-![Python version](https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg)
+![Python version](https://img.shields.io/badge/python-3.8|3.9|3.10|3.11|3.12-blue.svg)
 [![Build Status](https://github.com/LabForComputationalVision/pyrtools/workflows/build/badge.svg)](https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild)
 [![Documentation Status](https://readthedocs.org/projects/pyrtools/badge/?version=latest)](https://pyrtools.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/137527035.svg)](https://zenodo.org/doi/10.5281/zenodo.10161031)

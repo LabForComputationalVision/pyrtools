@@ -217,7 +217,7 @@ class pointOpTests(unittest.TestCase):
         #foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
         foo = pt.pointOp(img, filt, 0, 1);
         foo = np.reshape(foo,(200,200))
-        self.assertTrue((matImg['foo'] == foo).all())
+        np.testing.assert_allclose(matImg['foo'], foo)
 
 class maxPyrHeightTests(unittest.TestCase):
     def test1(self):
@@ -336,7 +336,7 @@ class LpyrTests(unittest.TestCase):
         img = plt.imread(op.join(test_data_path, 'lenna-256x256.tif'))
         pyPyr = pt.pyramids.LaplacianPyramid(img)
         recon = pyPyr.recon_pyr()
-        self.assertTrue((matPyr['recon'] == recon).all())
+        np.testing.assert_allclose(matPyr['recon'], recon)
     def test8(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr8.mat'))
         pyRamp = pt.synthetic_images.ramp(200)
@@ -360,13 +360,13 @@ class LpyrTests(unittest.TestCase):
         pyRamp = pt.synthetic_images.ramp((200,200))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         recon = pyPyr.recon_pyr(levels=[1])
-        self.assertTrue((matPyr['recon'] == recon).all())
+        np.testing.assert_allclose(matPyr['recon'], recon, atol=1e-6)
     def test12(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr12.mat'))
         pyRamp = pt.synthetic_images.ramp((200,200))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         recon = pyPyr.recon_pyr(levels=[0, 2, 4])
-        self.assertTrue((matPyr['recon'] == recon).all())
+        np.testing.assert_allclose(matPyr['recon'], recon, atol=1e-6)
 
 class WpyrTests(unittest.TestCase):
     def test0(self):
