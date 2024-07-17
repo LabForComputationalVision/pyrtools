@@ -95,7 +95,6 @@ int internal_reduce(image, x_dim, y_dim, filt, temp, x_fdim, y_fdim,
   int y_fmid = y_fdim/2;
   int base_res_pos;
   fptr reflect = edge_function(edges);  /* look up edge-handling function */
-  int i,j;
 
   if (!reflect) return(-1);
 
@@ -245,6 +244,7 @@ int internal_expand(image,filt,temp,x_fdim,y_fdim,
   register int x_step, y_step;
   register image_type *image; 
   int x_start, y_start;
+  int x_stop, y_stop;
   image_type *filt; 
   int y_fdim, y_dim;
   char *edges;
@@ -261,7 +261,6 @@ int internal_expand(image,filt,temp,x_fdim,y_fdim,
   int y_fmid = y_fdim/2;
   int base_im_pos, x_im_dim = (x_stop-x_start+x_step-1)/x_step;
   fptr reflect = edge_function(edges);  /* look up edge-handling function */	 
-  int i,j;
 
   if (!reflect) return(-1);
 
