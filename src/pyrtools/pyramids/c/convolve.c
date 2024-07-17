@@ -245,6 +245,7 @@ int internal_expand(image,filt,temp,x_fdim,y_fdim,
   register int x_step, y_step;
   register image_type *image; 
   int x_start, y_start;
+  int x_stop, y_stop;
   image_type *filt; 
   int y_fdim, y_dim;
   char *edges;
