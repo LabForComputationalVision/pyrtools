@@ -1,6 +1,9 @@
 .. |pypi-shield| image:: https://img.shields.io/pypi/v/pyrtools.svg
 			 :target: https://pypi.org/project/pyrtools/
 
+.. |conda-shield| image:: https://anaconda.org/conda-forge/pyrtools/badges/version.svg
+                 :target: https://anaconda.org/conda-forge/pyrtools
+
 .. |license-shield| image:: https://img.shields.io/badge/license-MIT-yellow.svg
 			    :target: https://github.com/LabForComputationalVision/pyrtools/blob/main/LICENSE
 
@@ -23,7 +26,7 @@
 pyrtools
 ====================================
 
-|pypi-shield| |license-shield| |python-version-shield| |build| |binder| |doi|
+|pypi-shield| |conda-shield| |license-shield| |python-version-shield| |build| |binder| |doi|
 
 Pyrtools is a python package for multi-scale image processing, adapted
 from Eero Simoncelli's `matlabPyrTools
