@@ -1,7 +1,7 @@
 Quick Start
 *************
 
-On Linux or macOS, open a shell and run::
+Open a shell and run::
 
   pip install pyrtools
 
