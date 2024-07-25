@@ -42,13 +42,31 @@ repo](https://github.com/LabForComputationalVision/pyrtools)
 
 # Installation
 
-It's recommended you install from pip: `pip install pyrtools`.
+You can install `pyrtools` using either pip:
 
-If you wish to install from the main branch, it's still recommended
-to use pip, just run `pip install .` (or `pip install -e .` if you
-want the changes you make in the directory to be reflected in your
-install) from the root directory of this project. The core of this
-code is the C code, and the pip install will compile it nicely.
+```sh
+pip install pyrtools
+```
+
+or conda:
+
+```sh
+conda install pyrtools -c conda-forge
+```
+
+You may also install from source, directly from the git repository. This is
+largely useful if you are seeking to modify the code or make contributions. To
+do so, clone the repository and run `pip install`. On Mac or Linux, that looks
+like:
+
+``` sh
+git clone https://github.com/LabForComputationalVision/pyrtools.git
+cd pyrtools/
+pip install .
+```
+
+You may also want an editable install, `pip install -e .`, in which case changes
+you make in the source code will be reflected in your install.
 
 # Pyramid resources
 

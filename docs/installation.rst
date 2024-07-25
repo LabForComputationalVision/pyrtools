@@ -3,17 +3,23 @@
 Installation
 ************
 
-There are two ways to install pyrtools: via the ``pip`` package management
-system, or directly from source.
+You can install pyrtools via the ``pip`` package management system, via
+``conda``, or directly from source.
 
 .. attention:: Windows support was added in version 1.0.3. If you are on Windows and get an installation error, make sure you are installing the newest version.
 
 Recommended
 ===========
 
-In a shell, please run::
+We recommend using either ``pip`` or ``conda``.
+
+To install using ``pip``, run the following in a shell::
 
     pip install pyrtools
+
+To install using ``conda``, run the following in a shell::
+
+    conda install pyrtools -c conda-forge
 
 From source
 ===========
