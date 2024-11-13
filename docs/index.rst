@@ -13,7 +13,7 @@
 		     :target: https://github.com/LabForComputationalVision/pyrtools/actions?query=workflow%3Abuild
 
 .. |binder| image:: https://mybinder.org/badge_logo.svg
-		    :target: https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.5?filepath=TUTORIALS%2F
+		    :target: https://mybinder.org/v2/gh/LabForComputationalVision/pyrtools/v1.0.6?filepath=TUTORIALS%2F
 
 .. |doi| image:: https://zenodo.org/badge/137527035.svg
   :target: https://zenodo.org/doi/10.5281/zenodo.10161031
