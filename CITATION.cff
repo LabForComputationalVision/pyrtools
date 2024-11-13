@@ -18,7 +18,7 @@ authors:
 - family-names: Ward
   given-names: Brian
 title: "Pyrtools: tools for multi-scale image processing"
-version: v1.0.5
+version: v1.0.6
 date-released: 2023-11-20
 doi: 10.5281/zenodo.10161031
 url: "https://github.com/LabForComputationalVision/pyrtools"
