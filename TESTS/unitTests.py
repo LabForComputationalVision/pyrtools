@@ -1069,6 +1069,27 @@ class mkSquareTests(unittest.TestCase):
         res = pt.synthetic_images.square_wave(20, frequency=(1,2), amplitude=3.2, phase=-2, origin=(2,3), twidth=.55)
         self.assertTrue(pt.compareRecon(matPyr['res'], res))
 
+class polarAngleTests(unittest.TestCase):
+    def test0(self):
+        ang = pt.synthetic_images.polar_angle(100, direction='clockwise')
+        idx = np.argmin((ang - np.pi/2)**2)
+        # check that pi/2 is in the bottom half of the image
+        self.assertTrue(np.unravel_index(idx, (100, 100))[0] > 50)
+        idx = np.argmin((ang + np.pi/2)**2)
+        # check that -pi/2 is in the top half of the image
+        self.assertTrue(np.unravel_index(idx, (100, 100))[0] < 50)
+    def test1(self):
+        ang = pt.synthetic_images.polar_angle(100, direction='counter-clockwise')
+        idx = np.argmin((ang - np.pi/2)**2)
+        # check that pi/2 is in the top half of the image
+        self.assertTrue(np.unravel_index(idx, (100, 100))[0] < 50)
+        idx = np.argmin((ang + np.pi/2)**2)
+        # check that -pi/2 is in the bottom half of the image
+        self.assertTrue(np.unravel_index(idx, (100, 100))[0] > 50)
+    def test2(self):
+        with self.assertRaises(ValueError):
+            pt.synthetic_images.polar_angle(100, direction='-clockwise')
+
 # TODO
 
 # python version of histo

@@ -136,11 +136,12 @@ def polar_radius(size, exponent=1, origin=None):
     return res
 
 
-def polar_angle(size, phase=0, origin=None):
+def polar_angle(size, phase=0, origin=None, direction='clockwise'):
     '''make polar angle matrix (in radians)
 
-    Compute a matrix of given size containing samples of the polar angle (in radians, CW from the
-    X-axis, ranging from -pi to pi), relative to given phase, about the given origin pixel.
+    Compute a matrix of given size containing samples of the polar angle (in radians,
+    increasing in user-defined direction from the X-axis, ranging from -pi to pi), relative to
+    given phase, about the given origin pixel.
 
     Arguments
     ---------
@@ -153,6 +154,10 @@ def polar_angle(size, phase=0, origin=None):
         the center of the image. if an int, we assume the origin is at `(origin, origin)`. if a
         tuple, must be a 2-tuple of ints specifying the origin (where `(0, 0)` is the upper left).
         if None, we assume the origin lies at the center of the matrix, `(size+1)/2`.
+    direction : {'clockwise', 'counter-clockwise'}
+        Whether the angle increases in a clockwise or counter-clockwise direction from
+        the x-axis. The standard mathematical convention is to increase
+        counter-clockwise, so that 90 degrees corresponds to the positive y-axis.
 
     Returns
     -------
@@ -160,6 +165,9 @@ def polar_angle(size, phase=0, origin=None):
         the polar angle matrix
 
     '''
+    if direction not in ['clockwise', 'counter-clockwise']:
+        raise ValueError("direction must be one of {'clockwise', 'counter-clockwise'}, "
+                         f"but received {direction}!")
     if not hasattr(size, '__iter__'):
         size = (size, size)
 
@@ -172,6 +180,8 @@ def polar_angle(size, phase=0, origin=None):
                                np.arange(1, size[0]+1)-origin[0])
     xramp = np.array(xramp)
     yramp = np.array(yramp)
+    if direction == 'counter-clockwise':
+        yramp = np.flip(yramp, 0)
 
     res = np.arctan2(yramp, xramp)
 
