@@ -20,6 +20,9 @@ class SteerablePyramidFreq(SteerablePyramidBase):
     The squared radial functions tile the Fourier plane with a raised-cosine
     falloff. Angular functions are cos(theta- k*pi/order+1)^(order).
 
+    Note that reconstruction will not be exact if the image has an odd shape (due to
+    boundary-handling issues) or if the pyramid is complex with order=0.
+
     Notes
     -----
     Transform described in [1]_, filter kernel design described in [2]_.
@@ -66,6 +69,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
        Oct 1995.
     .. [2] A Karasaridis and E P Simoncelli, "A Filter Design Technique for Steerable Pyramid
        Image Transforms", ICASSP, Atlanta, GA, May 1996.
+
     """
     def __init__(self, image, height='auto', order=3, twidth=1, is_complex=False):
         # in the Fourier domain, there's only one choice for how do edge-handling: circular. to
@@ -78,6 +82,12 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         self.filters = {}
         self.order = int(order)
 
+        if (image.shape[0] % 2 != 0) or (image.shape[1] % 2 != 0):
+            warnings.warn("Reconstruction will not be perfect with odd-sized images")
+
+        if self.order == 0 and self.is_complex:
+            warnings.warn("Reconstruction will not be perfect for a complex pyramid with order=0")
+
         # we can't use the base class's _set_num_scales method because the max height is calculated
         # slightly differently
         max_ht = np.floor(np.log2(min(self.image.shape))) - 2
@@ -89,13 +99,12 @@ class SteerablePyramidFreq(SteerablePyramidBase):
             self.num_scales = int(height)
 
         if self.order > 15 or self.order < 0:
-            raise Exception("order must be an integer in the range [0,15]. Truncating.")
+            raise Exception("order must be an integer in the range [0,15].")
 
         self.num_orientations = int(order + 1)
 
         if twidth <= 0:
-            warnings.warn("twidth must be positive. Setting to 1.")
-            twidth = 1
+            raise ValueError("twidth must be positive.")
         twidth = int(twidth)
 
         dims = np.array(self.image.shape)
@@ -220,8 +229,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
 
         """
         if twidth <= 0:
-            warnings.warn("twidth must be positive. Setting to 1.")
-            twidth = 1
+            raise ValueError("twidth must be positive.")
 
         recon_keys = self._recon_keys(levels, bands)
 
