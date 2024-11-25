@@ -94,12 +94,12 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         if height == 'auto' or height is None:
             self.num_scales = int(max_ht)
         elif height > max_ht:
-            raise Exception("Cannot build pyramid higher than %d levels." % (max_ht))
+            raise ValueError("Cannot build pyramid higher than %d levels." % (max_ht))
         else:
             self.num_scales = int(height)
 
         if self.order > 15 or self.order < 0:
-            raise Exception("order must be an integer in the range [0,15].")
+            raise ValueError("order must be an integer in the range [0,15].")
 
         self.num_orientations = int(order + 1)
 
