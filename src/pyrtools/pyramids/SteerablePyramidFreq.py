@@ -33,7 +33,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         2d image upon which to construct to the pyramid.
     height : 'auto' or `int`.
         The height of the pyramid. If 'auto', will automatically determine based on the size of
-        `image`.
+        `image`. If an int, must be non-negative. When height=0, only returns the residuals.
     order : `int`.
         The Gaussian derivative order used for the steerable filters. Default value is 3.
         Note that to achieve steerability the minimum number of orientation is `order` + 1,
@@ -95,6 +95,8 @@ class SteerablePyramidFreq(SteerablePyramidBase):
             self.num_scales = int(max_ht)
         elif height > max_ht:
             raise ValueError("Cannot build pyramid higher than %d levels." % (max_ht))
+        elif height < 0:
+            raise ValueError("Height must be a non-negative int.")
         else:
             self.num_scales = int(height)
 
