@@ -96,7 +96,7 @@ class Pyramid:
         if height == 'auto':
             self.num_scales = max_ht
         elif height > max_ht:
-            raise Exception("Cannot build pyramid higher than %d levels." % (max_ht))
+            raise ValueError("Cannot build pyramid higher than %d levels." % (max_ht))
         else:
             self.num_scales = int(height)
 
