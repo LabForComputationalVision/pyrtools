@@ -1460,6 +1460,32 @@ class TestAnimshow(unittest.TestCase):
         with self.assertRaises(Exception):
             fig = pt.animshow([vid1, vid2], as_html5=False)._fig
 
+
+class TestPyrshow(unittest.TestCase):
+
+    def test_pyrshow_1d(self):
+        signal = np.random.rand(256)
+        pyr = pt.pyramids.GaussianPyramid(signal)
+        pt.pyrshow(pyr.pyr_coeffs)
+
+    def test_pyrshow_1d_weird_shape(self):
+        # unlike 2d pyrshow, 1d pyrshow works with any shapes
+        signal = np.random.rand(255)
+        pyr = pt.pyramids.GaussianPyramid(signal)
+        pt.pyrshow(pyr.pyr_coeffs)
+
+    def test_pyrshow_2d(self):
+        img = np.random.rand(256, 256)
+        pyr = pt.pyramids.GaussianPyramid(img)
+        pt.pyrshow(pyr.pyr_coeffs)
+
+    def test_pyrshow_2d_shape_err(self):
+        img = np.random.rand(255, 255)
+        pyr = pt.pyramids.GaussianPyramid(img)
+        with self.assertRaises(ValueError):
+            pt.pyrshow(pyr.pyr_coeffs)
+
+            
 def main():
     unittest.main()
 
