@@ -55,7 +55,8 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         Human-readable string specifying the type of pyramid. For base class, is None.
     pyr_coeffs : `dict`
         Dictionary containing the coefficients of the pyramid. Keys are `(level, band)` tuples and
-        values are 1d or 2d numpy arrays (same number of dimensions as the input image)
+        values are 1d or 2d numpy arrays (same number of dimensions as the input image),
+        running from fine to coarse.
     pyr_size : `dict`
         Dictionary containing the sizes of the pyramid coefficients. Keys are `(level, band)`
         tuples and values are tuples.
@@ -86,7 +87,11 @@ class SteerablePyramidFreq(SteerablePyramidBase):
             warnings.warn("Reconstruction will not be perfect with odd-sized images")
 
         if self.order == 0 and self.is_complex:
-            warnings.warn("Reconstruction will not be perfect for a complex pyramid with order=0")
+            raise ValueError(
+                "Complex pyramid cannot have order=0! See "
+                "https://github.com/plenoptic-org/plenoptic/issues/326 "
+                "for an explanation."
+            )
 
         # we can't use the base class's _set_num_scales method because the max height is calculated
         # slightly differently
