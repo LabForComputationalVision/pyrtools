@@ -63,7 +63,7 @@ jobs:
         find . -name '*.tar.gz' -exec mv '{}' dist/ \;
         find . -name '*.whl' -exec mv '{}' dist/ \;
     - name: Publish package to test pypi
-      uses: pypa/gh-action-pypi-publish@7f25271a4aa483500f742f9492b2ab5648d61011 # v1.12.4
+      uses: pypa/gh-action-pypi-publish@v1.12.4
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
