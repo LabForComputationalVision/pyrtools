@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@357b80c11e6e995e6297e86386460ae84cbc5bee # v2.18.1
+      uses: pypa/cibuildwheel@6a41245b42fcb325223b8793746f10456ed07436 # v2.23.2
       env:
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
@@ -63,7 +63,7 @@ jobs:
         find . -name '*.tar.gz' -exec mv '{}' dist/ \;
         find . -name '*.whl' -exec mv '{}' dist/ \;
     - name: Publish package to test pypi
-      uses: pypa/gh-action-pypi-publish@68e62d4871ad9d14a9d55f114e6ac71f0b408ec0 # v1.8.14
+      uses: pypa/gh-action-pypi-publish@7f25271a4aa483500f742f9492b2ab5648d61011 # v1.12.4
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
