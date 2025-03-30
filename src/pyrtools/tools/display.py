@@ -4,11 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.figure import Figure
 from matplotlib import animation
-try:
-    from IPython.display import HTML
-except ImportError:
-    warnings.warn("Unable to import IPython.display.HTML, animshow must be called with "
-                  "as_html5=False")
 from ..pyramids import convert_pyr_coeffs_to_pyr
 
 
@@ -778,6 +773,7 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     as_html : `bool`
         If True, return an HTML5 video; otherwise return the underying matplotlib animation object
         (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
+        Requires ipython to be installed.
     repeat : `bool`
         whether to loop the animation or just play it once
     vrange : `tuple` or `str`
@@ -834,7 +830,12 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
         Animation, format depends on `as_html`.
 
     """
-
+    if as_html5:
+        try:
+            from IPython.display import HTML
+        except ImportError:
+            raise ImportError("Unable to import IPython.display.HTML, animshow must be called with "
+                              "as_html5=False")
     video = _convert_signal_to_list(video)
     video_n_frames = np.array([v.shape[0] for v in video])
     if (video_n_frames != video_n_frames[0]).any():
