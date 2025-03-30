@@ -529,16 +529,18 @@ def _process_signal(signal, title, plot_complex, video=False):
         if sig.ndim == (3 + time_dim):
             if sig.shape[-1] not in [3, 4]:
                 raise Exception(
-                    "Can't figure out how to plot {} with shape {}"
+                    f"Can't figure out how to plot {sigtype} with shape {sig.shape} "
                     "as RGB(A)! RGB(A) signals should have their final"
-                    "dimension of shape 3 or 4.".format(sigtype, sig.shape))
+                    "dimension of shape 3 or 4."
+                )
             contains_rgb = True
         elif sig.ndim != (2 + time_dim):
             raise Exception(
-                "Can't figure out how to plot image with "
-                "shape {}! Images should be be either 2d "
-                "(grayscale) or 3d (RGB(A), last dimension with 3 or"
-                " 4 elements).".format(sig.shape))
+                f"Can't figure out how to plot {sigtype} with "
+                f"shape {sig.shape}! {sigtype.capitalize()}s should be be either "
+                f"{2 + time_dim}d (grayscale) or {3 + time_dim}d (RGB(A), last "
+                "dimension with 3 or 4 elements)."
+            )
         if np.iscomplexobj(sig):
             if plot_complex == 'rectangular':
                 signal_tmp.extend([np.real(sig), np.imag(sig)])
