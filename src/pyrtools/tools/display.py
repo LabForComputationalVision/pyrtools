@@ -4,11 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.figure import Figure
 from matplotlib import animation
-try:
-    from IPython.display import HTML
-except ImportError:
-    warnings.warn("Unable to import IPython.display.HTML, animshow must be called with "
-                  "as_html5=False")
 from ..pyramids import convert_pyr_coeffs_to_pyr
 
 
@@ -529,16 +524,18 @@ def _process_signal(signal, title, plot_complex, video=False):
         if sig.ndim == (3 + time_dim):
             if sig.shape[-1] not in [3, 4]:
                 raise Exception(
-                    "Can't figure out how to plot {} with shape {}"
+                    f"Can't figure out how to plot {sigtype} with shape {sig.shape} "
                     "as RGB(A)! RGB(A) signals should have their final"
-                    "dimension of shape 3 or 4.".format(sigtype, sig.shape))
+                    "dimension of shape 3 or 4."
+                )
             contains_rgb = True
         elif sig.ndim != (2 + time_dim):
             raise Exception(
-                "Can't figure out how to plot image with "
-                "shape {}! Images should be be either 2d "
-                "(grayscale) or 3d (RGB(A), last dimension with 3 or"
-                " 4 elements).".format(sig.shape))
+                f"Can't figure out how to plot {sigtype} with "
+                f"shape {sig.shape}! {sigtype.capitalize()}s should be be either "
+                f"{2 + time_dim}d (grayscale) or {3 + time_dim}d (RGB(A), last "
+                "dimension with 3 or 4 elements)."
+            )
         if np.iscomplexobj(sig):
             if plot_complex == 'rectangular':
                 signal_tmp.extend([np.real(sig), np.imag(sig)])
@@ -776,6 +773,7 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     as_html : `bool`
         If True, return an HTML5 video; otherwise return the underying matplotlib animation object
         (e.g. to save to .gif). should set to True to display in a Jupyter notebook.
+        Requires ipython to be installed.
     repeat : `bool`
         whether to loop the animation or just play it once
     vrange : `tuple` or `str`
@@ -832,7 +830,12 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
         Animation, format depends on `as_html`.
 
     """
-
+    if as_html5:
+        try:
+            from IPython.display import HTML
+        except ImportError:
+            raise ImportError("Unable to import IPython.display.HTML, animshow must be called with "
+                              "as_html5=False")
     video = _convert_signal_to_list(video)
     video_n_frames = np.array([v.shape[0] for v in video])
     if (video_n_frames != video_n_frames[0]).any():
