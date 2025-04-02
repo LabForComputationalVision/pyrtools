@@ -556,7 +556,7 @@ def _process_signal(signal, title, plot_complex, video=False):
                 else:
                     title_tmp.extend([None, None])
         else:
-            signal_tmp.append(np.array(sig))
+            signal_tmp.append(np.asarray(sig))
             title_tmp.append(t)
     return signal_tmp, title_tmp, contains_rgb
 
@@ -605,8 +605,8 @@ def _check_zooms(signal, zoom, contains_rgb, video=False):
     else:
         # then we have multiple images/videos that are different shapes
         zooms, max_shape = find_zooms(signal, video)
-    max_shape = np.array(max_shape)
-    zooms = zoom * np.array(zooms)
+    max_shape = np.asarray(max_shape)
+    zooms = zoom * np.asarray(zooms)
     if not ((zoom * max_shape).astype(int) == zoom * max_shape).all():
         raise Exception("zoom * signal.shape must result in integers!")
     return zooms, max_shape
@@ -837,7 +837,7 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
             raise ImportError("Unable to import IPython.display.HTML, animshow must be called with "
                               "as_html5=False")
     video = _convert_signal_to_list(video)
-    video_n_frames = np.array([v.shape[0] for v in video])
+    video_n_frames = np.asarray([v.shape[0] for v in video])
     if (video_n_frames != video_n_frames[0]).any():
         raise Exception("All videos must have the same number of frames! But you "
                         "passed videos with {} frames".format(video_n_frames))
@@ -934,8 +934,8 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
     # pasting all coefficients into a giant array.
     # and the steerable pyramids have a num_orientations attribute
 
-    num_scales = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,0]) + 1
-    num_orientations = np.max(np.array([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,1]) + 1
+    num_scales = np.max(np.asarray([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,0]) + 1
+    num_orientations = np.max(np.asarray([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,1]) + 1
 
     col_wrap_new = num_orientations
     if is_complex:

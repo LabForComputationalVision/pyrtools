@@ -114,8 +114,8 @@ class SteerablePyramidFreq(SteerablePyramidBase):
             raise ValueError("twidth must be positive.")
         twidth = int(twidth)
 
-        dims = np.array(self.image.shape)
-        ctr = np.ceil((np.array(dims)+0.5)/2).astype(int)
+        dims = np.asarray(self.image.shape)
+        ctr = np.ceil((np.asarray(dims)+0.5)/2).astype(int)
 
         (xramp, yramp) = np.meshgrid(np.linspace(-1, 1, dims[1]+1)[:-1],
                                      np.linspace(-1, 1, dims[0]+1)[:-1])
@@ -126,7 +126,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         log_rad = np.log2(log_rad)
 
         # Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.array([0, 1]))
+        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.asarray([0, 1]))
         Yrcos = np.sqrt(Yrcos)
 
         YIrcos = np.sqrt(1.0 - Yrcos**2)
@@ -191,7 +191,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
                 self.pyr_size[(i, b)] = band.shape
 
             self._anglemasks.append(anglemasks)
-            dims = np.array(lodft.shape)
+            dims = np.asarray(lodft.shape)
             ctr = np.ceil((dims+0.5)/2).astype(int)
             lodims = np.ceil((dims-0.5)/2).astype(int)
             loctr = np.ceil((lodims+0.5)/2).astype(int)
@@ -210,7 +210,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
             lodft = lodft * lomask
 
         lodft = np.fft.ifft2(np.fft.ifftshift(lodft))
-        self.pyr_coeffs['residual_lowpass'] = np.real(np.array(lodft).copy())
+        self.pyr_coeffs['residual_lowpass'] = np.real(np.asarray(lodft).copy())
         self.pyr_size['residual_lowpass'] = lodft.shape
 
     def recon_pyr(self, levels='all', bands='all', twidth=1):
@@ -248,7 +248,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
             if dims in dim_list:
                 continue
             dim_list.append(dims)
-            dims = np.array(dims)
+            dims = np.asarray(dims)
             ctr = np.ceil((dims+0.5)/2).astype(int)
             lodims = np.ceil((dims-0.5)/2).astype(int)
             loctr = np.ceil((lodims+0.5)/2).astype(int)
@@ -260,7 +260,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         dim_list.append((dim_list[-1][0], dim_list[-1][1]))
 
         # matlab code starts here
-        dims = np.array(self.pyr_size['residual_highpass'])
+        dims = np.asarray(self.pyr_size['residual_highpass'])
         ctr = np.ceil((dims+0.5)/2.0).astype(int)
 
         (xramp, yramp) = np.meshgrid((np.arange(1, dims[1]+1)-ctr[1]) / (dims[1]/2.),
@@ -271,7 +271,7 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         log_rad = np.log2(log_rad)
 
         # Radial transition function (a raised cosine in log-frequency):
-        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.array([0, 1]))
+        (Xrcos, Yrcos) = rcosFn(twidth, (-twidth/2.0), np.asarray([0, 1]))
         Yrcos = np.sqrt(Yrcos)
         YIrcos = np.sqrt(1.0 - Yrcos**2)
 

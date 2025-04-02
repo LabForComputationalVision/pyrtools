@@ -49,7 +49,7 @@ class Pyramid:
 
     def __init__(self, image, edge_type):
 
-        self.image = np.array(image).astype(float)
+        self.image = np.asarray(image).astype(float)
         if self.image.ndim == 1:
             self.image = self.image.reshape(-1, 1)
         assert self.image.ndim == 2, "Error: Input signal must be 1D or 2D."
@@ -128,7 +128,7 @@ class Pyramid:
             if not hasattr(levels, '__iter__') or isinstance(levels, str):
                 # then it's a single int or string
                 levels = [levels]
-            levs_nums = np.array([int(i) for i in levels if isinstance(i, int) or i.isdigit()])
+            levs_nums = np.asarray([int(i) for i in levels if isinstance(i, int) or i.isdigit()])
             assert (levs_nums >= 0).all(), "Level numbers must be non-negative."
             assert (levs_nums < self.num_scales).all(), "Level numbers must be in the range [0, %d]" % (self.num_scales-1)
             levs_tmp = list(np.sort(levs_nums))  # we want smallest first

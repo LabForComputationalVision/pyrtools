@@ -213,7 +213,7 @@ class pointOpTests(unittest.TestCase):
     def test1(self):
         matImg = scipy.io.loadmat(op.join(matfiles_path, 'pointOp1.mat'))
         img = pt.synthetic_images.ramp((200,200))
-        filt = np.array([0.2, 0.5, 1.0, 0.4, 0.1]);
+        filt = np.asarray([0.2, 0.5, 1.0, 0.4, 0.1]);
         #foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
         foo = pt.pointOp(img, filt, 0, 1);
         foo = np.reshape(foo,(200,200))
@@ -249,15 +249,15 @@ class maxPyrHeightTests(unittest.TestCase):
 
 class binomialFilterTests(unittest.TestCase):
     def test1(self):
-        target = np.array([[0.5],[0.5]])
+        target = np.asarray([[0.5],[0.5]])
         #target = target / np.sqrt(np.sum(target ** 2))
         self.assertTrue((pt.binomial_filter(2) == target).all() )
     def test2(self):
-        target = np.array([[0.25], [0.5], [0.25]])
+        target = np.asarray([[0.25], [0.5], [0.25]])
         #target = target / np.sqrt(np.sum(target ** 2))
         self.assertTrue((pt.binomial_filter(3) == target).all())
     def test3(self):
-        target = np.array([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])
+        target = np.asarray([[0.0625], [0.25], [0.3750], [0.25], [0.0625]])
         #target = target / np.sqrt(np.sum(target ** 2))
         self.assertTrue((pt.binomial_filter(5) == target).all())
 
@@ -269,13 +269,13 @@ class GpyrTests(unittest.TestCase):
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test2(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildGpyr2row.mat'))
-        img = np.array(list(range(256))).astype(float)
+        img = np.asarray(list(range(256))).astype(float)
         img = img.reshape(1, 256)
         pyPyr = pt.pyramids.GaussianPyramid(img)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test3(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildGpyr2col.mat'))
-        img = np.array(list(range(256))).astype(float)
+        img = np.asarray(list(range(256))).astype(float)
         img = img.reshape(256, 1)
         pyPyr = pt.pyramids.GaussianPyramid(img)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
@@ -318,17 +318,17 @@ class LpyrTests(unittest.TestCase):
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test5(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr5.mat'))
-        pyRamp = np.array(list(range(200))).reshape(1, 200)
+        pyRamp = np.asarray(list(range(200))).reshape(1, 200)
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test5bis(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr5.mat'))
-        pyRamp = np.array(list(range(200)))
+        pyRamp = np.asarray(list(range(200)))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test6(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildLpyr6.mat'))
-        pyRamp = np.array(list(range(200)))
+        pyRamp = np.asarray(list(range(200)))
         pyPyr = pt.pyramids.LaplacianPyramid(pyRamp)
         self.assertTrue(pt.comparePyr(matPyr['pyr'], pyPyr))
     def test7(self):
@@ -1145,16 +1145,16 @@ class ImageGradientTests(unittest.TestCase):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'imGradient0.mat'))
         ramp = pt.synthetic_images.ramp(10)
         [dx,dy] = pt.image_gradient(ramp)
-        dx = np.array(dx)
-        dy = np.array(dy)
+        dx = np.asarray(dx)
+        dy = np.asarray(dy)
         self.assertTrue(pt.compareRecon(matPyr['res'][:,:,0], dx))
         self.assertTrue(pt.compareRecon(matPyr['res'][:,:,1], dy))
     def test1(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'imGradient1.mat'))
         ramp = pt.synthetic_images.ramp(10)
         [dx,dy] = pt.image_gradient(ramp, 'reflect1')
-        dx = np.array(dx)
-        dy = np.array(dy)
+        dx = np.asarray(dx)
+        dy = np.asarray(dy)
         self.assertTrue(pt.compareRecon(matPyr['res'][:,:,0], dx))
         self.assertTrue(pt.compareRecon(matPyr['res'][:,:,1], dy))
 

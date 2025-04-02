@@ -254,4 +254,4 @@ def pointOp(image, lut, origin, increment, warnings=False):
                          ctypes.c_double(origin),
                          ctypes.c_double(increment), warnings)
 
-    return np.array(result)
+    return np.asarray(result)

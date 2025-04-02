@@ -87,7 +87,7 @@ def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, eve
     num = basis.shape[1]
 
     if isinstance(angle, (int, float)):
-        angle = np.array([angle])
+        angle = np.asarray([angle])
     else:
         if angle.shape[0] != basis.shape[0] or angle.shape[1] != 1:
             raise Exception("""ANGLE must be a scalar, or a column vector
@@ -130,6 +130,6 @@ def steer(basis, angle, harmonics=None, steermtx=None, return_weights=False, eve
         res = np.dot(basis, steervect.T)
 
     if return_weights:
-        return res, np.array(steervect).reshape(num)
+        return res, np.asarray(steervect).reshape(num)
     else:
         return res
