@@ -85,7 +85,7 @@ class SteerablePyramidSpace(SteerablePyramidBase):
             for b in range(self.num_orientations):
                 filt = self.filters['bfilts'][:, b].reshape(bfiltsz, bfiltsz).T
                 band = corrDn(image=lo, filt=filt, edge_type=self.edge_type)
-                self.pyr_coeffs[(i, b)] = np.array(band)
+                self.pyr_coeffs[(i, b)] = np.asarray(band)
                 self.pyr_size[(i, b)] = band.shape
 
             lo = corrDn(image=lo, filt=self.filters['lofilt'], edge_type=self.edge_type, step=(2, 2))

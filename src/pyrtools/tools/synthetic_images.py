@@ -178,8 +178,6 @@ def polar_angle(size, phase=0, origin=None, direction='clockwise'):
 
     xramp, yramp = np.meshgrid(np.arange(1, size[1]+1)-origin[1],
                                np.arange(1, size[0]+1)-origin[0])
-    xramp = np.array(xramp)
-    yramp = np.array(yramp)
     if direction == 'counter-clockwise':
         yramp = np.flip(yramp, 0)
 
@@ -234,7 +232,7 @@ def disk(size, radius=None, origin=None, twidth=2, vals=(1, 0)):
         [Xtbl, Ytbl] = rcosFn(twidth, radius, [vals[0], vals[1]])
         res = pointOp(res, Ytbl, Xtbl[0], Xtbl[1]-Xtbl[0])
 
-    return np.array(res)
+    return np.asarray(res)
 
 
 def gaussian(size, covariance=None, origin=None, amplitude='norm'):
@@ -273,7 +271,7 @@ def gaussian(size, covariance=None, origin=None, amplitude='norm'):
 
     if covariance is None:
         covariance = (min([size[0], size[1]]) / 6.0) ** 2
-    covariance = np.array(covariance)
+    covariance = np.asarray(covariance)
 
     if origin is None:
         origin = ((size[0]+1)/2., (size[1]+1)/2.)

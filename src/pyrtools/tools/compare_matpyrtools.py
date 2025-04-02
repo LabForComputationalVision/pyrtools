@@ -15,9 +15,9 @@ def comparePyr(matPyr, pyPyr, rtol=1e-5, atol=1e-8):
     # correct number of elements?
     matSz = sum(matPyr.shape)
     try:
-        pySz = 1 + sum([np.array(size).prod() for size in pyPyr.pyr_size.values()])
+        pySz = 1 + sum([np.asarray(size).prod() for size in pyPyr.pyr_size.values()])
     except AttributeError:
-        pySz = 1 + sum([np.array(size).prod() for size in pyPyr.pyrSize])
+        pySz = 1 + sum([np.asarray(size).prod() for size in pyPyr.pyrSize])
 
     if(matSz != pySz):
         print("size difference: %d != %d, returning False" % (matSz, pySz))

@@ -287,8 +287,8 @@ def image_gradient(image, edge_type="dont-compute"):
 
     # kernels from Farid & Simoncelli, IEEE Trans Image Processing,
     #   13(4):496-508, April 2004.
-    gp = np.array([0.037659,  0.249153, 0.426375, 0.249153, 0.037659]).reshape(5, 1)
-    gd = np.array([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5, 1)
+    gp = np.asarray([0.037659,  0.249153, 0.426375, 0.249153, 0.037659]).reshape(5, 1)
+    gd = np.asarray([-0.109604, -0.276691, 0.000000, 0.276691, 0.109604]).reshape(5, 1)
 
     dx = corrDn(corrDn(image, gp, edge_type), gd.T, edge_type)
     dy = corrDn(corrDn(image, gd, edge_type), gp.T, edge_type)
@@ -384,8 +384,8 @@ def rconv2(mtx1, mtx2, ctr=0):
 #         print 'where center parameter is optional'
 #         return
 #     else:
-#         a = np.array(args[0])
-#         b = np.array(args[1])
+#         a = np.asarray(args[0])
+#         b = np.asarray(args[1])
 #
 #     if len(args) == 3:
 #         ctr = args[2]
@@ -459,8 +459,8 @@ def rconv2(mtx1, mtx2, ctr=0):
 #         print 'first two input parameters are required'
 #         return
 #     else:
-#         a = np.array(args[0])
-#         b = np.array(args[1])
+#         a = np.asarray(args[0])
+#         b = np.asarray(args[1])
 #
 #     # OPTIONAL ARGUMENT
 #     #----------------------------------------------------------------
