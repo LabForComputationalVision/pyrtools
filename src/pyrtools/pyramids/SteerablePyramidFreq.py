@@ -42,8 +42,8 @@ class SteerablePyramidFreq(SteerablePyramidBase):
         The width of the transition region of the radial lowpass function, in octaves
     is_complex : `bool`
         Whether the pyramid coefficients should be complex or not. If True, the real and imaginary
-        parts correspond to a pair of even and odd symmetric filters. If False, the coefficients
-        only include the real part / even symmetric filter.
+        parts correspond to a pair of odd and even symmetric filters. If False, the coefficients
+        only include the real part / odd symmetric filter.
 
     Attributes
     ----------
