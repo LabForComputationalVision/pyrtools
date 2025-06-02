@@ -205,4 +205,4 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
-apidoc_module_dir = "../pyrtools"
+apidoc_module_dir = "../src/pyrtools"
