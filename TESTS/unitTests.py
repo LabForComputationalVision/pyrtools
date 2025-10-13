@@ -1493,7 +1493,7 @@ if __name__ == '__main__':
     if not os.path.exists(matfiles_path):
         print("matfiles required for testing not found, downloading now...")
         # Streaming, so we can iterate over the response.
-        r = requests.get("https://osf.io/cbux8/download", stream=True)
+        r = requests.get("https://osf.io/download/cbux8/", stream=True)
 
         # Total size in bytes.
         total_size = int(r.headers.get('content-length', 0))
