@@ -80,7 +80,6 @@ for image processing, here are some resources to get you started:
 
    installation
    developerguide
-   api/modules
 
 .. toctree::
    :maxdepth: 2
@@ -89,3 +88,8 @@ for image processing, here are some resources to get you started:
    :numbered:
 
    tutorials/*
+
+.. toctree::
+   :caption: API Documentation
+
+   api/modules
