@@ -40,8 +40,15 @@ below.
 #define sgn(a)  ( ((a)>0)?1:(((a)<0)?-1:0) )
 #define clip(a,mn,mx)  ( ((a)<(mn))?(mn):(((a)>=(mx))?(mx-1):(a)) )
 
-int reflect1(), reflect2(), qreflect2(), repeat(), zero(), Extend(), nocompute();
-int ereflect(), predict();
+int nocompute(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int zero(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int reflect1(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int reflect2(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int qreflect2(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int repeat(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int Extend(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int predict(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int ereflect(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
 
 /* Lookup table matching a descriptive string to the edge-handling function */
 #if !THINK_C
@@ -138,10 +145,7 @@ r_or_e - equal to one of the two constants EXPAND or REDUCE.
 nocompute() - Return zero for values where filter hangs over the edge.
 */
 
-int nocompute(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int nocompute(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   register int i;
   register int size = x_dim*y_dim;
@@ -157,10 +161,7 @@ int nocompute(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
 /* --------------------------------------------------------------------
 zero() - Zero outside of image.  Discontinuous, but adds zero energy. */
 
-int zero(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int zero(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   register int y_filt,x_filt, y_res,x_res;
   int filt_sz = x_dim*y_dim;
@@ -190,10 +191,7 @@ are subsampling by 2, since it maintains parity (even pixels positions
 remain even, odd ones remain odd).
 */	 
 
-int reflect1(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int reflect1(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   int filt_sz = x_dim*y_dim;
   register int y_filt,x_filt, y_res, x_res;
@@ -259,10 +257,7 @@ then the next pixel, etc.  Continuous, but discontinuous first
 derivative.
 */
 
-int reflect2(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int reflect2(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   int filt_sz = x_dim*y_dim;
   register int y_filt,x_filt, y_res, x_res;
@@ -334,9 +329,7 @@ qreflect2() - Modified version of reflect2 that  works properly for
 even-length QMF filters.
 */
 
-int qreflect2(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  double *filt, *result;
-  int x_dim, y_dim, x_pos, y_pos, r_or_e;
+int qreflect2(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   reflect2(filt,x_dim,y_dim,x_pos,y_pos,result,0);
   return(0);
@@ -347,10 +340,7 @@ repeat() - repeat edge pixel.  Continuous, with discontinuous first
 derivative.
 */
 
-int repeat(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int repeat(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   register int y_filt,x_filt, y_res,x_res, y_tmp, x_tmp;
   register int x_base = (x_pos>0)?(x_dim-1):0;
@@ -418,10 +408,7 @@ value.  Maintains continuity in intensity AND first derivative (but
 not higher derivs).
 */
 
-int Extend(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int Extend(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   int filt_sz = x_dim*y_dim;
   register int y_filt,x_filt, y_res,x_res, y_tmp, x_tmp;
@@ -538,10 +525,7 @@ by the reciprocal of the percentage of filter being used.  (i.e. if
 50% of the filter is hanging over the edge of the image, multiply the
 taps being used by 2).  */
 
-int predict(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int predict(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   register int y_filt,x_filt, y_res,x_res;
   register double taps_used = 0.0; /* int *** */
@@ -583,10 +567,7 @@ by root 2.  This maintains orthogonality of odd-length linear-phase
 QMF filters, but it is not useful for most applications, since it
 alters the DC level.  */
 
-int ereflect(filt,x_dim,y_dim,x_pos,y_pos,result,r_or_e)
-  register double *filt, *result;
-  register int x_dim;
-  int y_dim, x_pos, y_pos, r_or_e;
+int ereflect(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
   {
   register int y_filt,x_filt, y_res,x_res;
   register int x_base = (x_pos>0)?(x_dim-1):0;
