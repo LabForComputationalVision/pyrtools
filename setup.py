@@ -25,6 +25,6 @@ setup(
                            depends=['src/pyrtools/pyramids/c/meta.h',
                                     'src/pyrtools/pyramids/c/convolve.h',
                                     'src/pyrtools/pyramids/c/internal_pointOp.h'],
-                           extra_compile_args=['-fPIC', '-shared'])],
+                           extra_compile_args=['-fPIC', '-shared', '-std=c18'])],
     cmdclass={"bdist_wheel": WheelABINone},
     )
