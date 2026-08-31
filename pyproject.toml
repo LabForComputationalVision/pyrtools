@@ -4,11 +4,11 @@ dynamic = ["version"]
 authors = [{name="Pyrtools authors"}]
 description = "Python tools for multi-scale image processing, including Laplacian pyramids, Wavelets, and Steerable Pyramids."
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Intended Audience :: Science/Research",
 ]
 keywords = ['image processing', 'visual information processing', 'computational models']
@@ -34,7 +34,7 @@ docs = [
 ]
 
 [build-system]
-requires = ["setuptools", "wheel", "setuptools-scm[toml]"]
+requires = ["setuptools>=70.1", "setuptools-scm[toml]"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
