@@ -8,7 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pyrtools as pt
-from pyrtools.pyramids.pyramid import Pyramid
 
 import scipy.io
 import os
@@ -213,9 +212,9 @@ class pointOpTests(unittest.TestCase):
     def test1(self):
         matImg = scipy.io.loadmat(op.join(matfiles_path, 'pointOp1.mat'))
         img = pt.synthetic_images.ramp((200,200))
-        filt = np.asarray([0.2, 0.5, 1.0, 0.4, 0.1]);
+        filt = np.asarray([0.2, 0.5, 1.0, 0.4, 0.1])
         #foo = pointOp(200, 200, img, 5, filt, 0, 1, 0);
-        foo = pt.pointOp(img, filt, 0, 1);
+        foo = pt.pointOp(img, filt, 0, 1)
         foo = np.reshape(foo,(200,200))
         np.testing.assert_allclose(matImg['foo'], foo)
 
@@ -688,55 +687,55 @@ class SteerablePyramidSpaceTests(unittest.TestCase):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr21.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=0)
-        recon = pyPyr.recon_pyr(0);
+        recon = pyPyr.recon_pyr(0)
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test22(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr22.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=1)
-        recon = pyPyr.recon_pyr(1);
+        recon = pyPyr.recon_pyr(1)
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test23(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr23.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=3)
-        recon = pyPyr.recon_pyr(3);
+        recon = pyPyr.recon_pyr(3)
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test24(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr24.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=5)
-        recon = pyPyr.recon_pyr(5);
+        recon = pyPyr.recon_pyr(5)
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test25(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr25.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:256,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=5)
-        recon = pyPyr.recon_pyr(5,'reflect1', ['residual_highpass', 0, 1], [0]);
+        recon = pyPyr.recon_pyr(5,'reflect1', ['residual_highpass', 0, 1], [0])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test26(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr26.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=0)
-        recon = pyPyr.recon_pyr(0,'reflect1', ['residual_highpass', 0, 1], [0]);
+        recon = pyPyr.recon_pyr(0,'reflect1', ['residual_highpass', 0, 1], [0])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test27(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr27.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=1)
-        recon = pyPyr.recon_pyr(1,'reflect1', ['residual_highpass', 0, 1], [0]);
+        recon = pyPyr.recon_pyr(1,'reflect1', ['residual_highpass', 0, 1], [0])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test28(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr28.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=3)
-        recon = pyPyr.recon_pyr(3,'reflect1', ['residual_highpass', 0, 1], [0]);
+        recon = pyPyr.recon_pyr(3,'reflect1', ['residual_highpass', 0, 1], [0])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
     def test29(self):
         matPyr = scipy.io.loadmat(op.join(matfiles_path, 'buildSpyr29.mat'))
         texture = scipy.io.loadmat(op.join(matfiles_path, 'im04-1.mat'))['res'][0:128,0:256]
         pyPyr = pt.pyramids.SteerablePyramidSpace(texture, height=3, order=5)
-        recon = pyPyr.recon_pyr(5,'reflect1', ['residual_highpass', 0, 1], [0]);
+        recon = pyPyr.recon_pyr(5,'reflect1', ['residual_highpass', 0, 1], [0])
         self.assertTrue(pt.compareRecon(matPyr['recon'], recon))
 
 class SteerablePyramidFreqpyrTests(unittest.TestCase):
@@ -1191,7 +1190,7 @@ class ProjectPolarTests(unittest.TestCase):
     def test0(self):
         # check that it runs, even though here the output will be nonsensical
         img = pt.synthetic_images.disk(256)
-        proj_img = pt.project_polar_to_cartesian(img)
+        pt.project_polar_to_cartesian(img)
     def test1(self):
         # currently only works for square images
         img = pt.synthetic_images.disk((256, 512))
@@ -1295,7 +1294,7 @@ class TestImshow(unittest.TestCase):
         im = np.random.rand(3, 10, 10)
         with self.assertRaises(Exception):
             # because we now need to pass a list of arrays for multiple images
-            fig = pt.imshow(im)
+            pt.imshow(im)
 
     def test_imshow1(self):
         im = np.random.rand(3, 10, 10, 4)
@@ -1306,7 +1305,7 @@ class TestImshow(unittest.TestCase):
         im = np.random.rand(3, 10, 10, 4)
         with self.assertRaises(Exception):
             # because we now need to pass a list of arrays for multiple images
-            fig = pt.imshow(im)
+            pt.imshow(im)
 
     def test_imshow2(self):
         im = np.random.rand(3, 10, 10, 4)
@@ -1366,7 +1365,7 @@ class TestImshow(unittest.TestCase):
         im = np.random.rand(3, 10, 10, 4)
         with self.assertRaises(Exception):
             # no longer support 4d arrays
-            fig = pt.imshow(im)
+            pt.imshow(im)
 
     def test_imshow13(self):
         im = np.random.rand(10, 10, 3)
@@ -1384,13 +1383,13 @@ class TestImshow(unittest.TestCase):
         # don't support 1d arrays
         im = np.random.rand(10)
         with self.assertRaises(Exception):
-            fig = pt.imshow(im)
+            pt.imshow(im)
 
     def test_imshow16(self):
         # must be an array or list of them
         im = 10
         with self.assertRaises(TypeError):
-            fig = pt.imshow(im)
+            pt.imshow(im)
 
     def test_imshow17(self):
         im = np.random.rand(256, 256) + 1j * np.random.rand(256, 256)
@@ -1519,7 +1518,7 @@ class TestAnimshow(unittest.TestCase):
         vid1 = np.random.rand(10, 10, 10)
         vid2 = np.random.rand(5, 10, 10)
         with self.assertRaises(Exception):
-            fig = pt.animshow([vid1, vid2], as_html5=False)._fig
+            pt.animshow([vid1, vid2], as_html5=False)._fig
 
     def test_animshow8(self):
         vid = np.random.randn(3, 32, 32, 3)
