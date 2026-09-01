@@ -24,7 +24,7 @@
 #define AND &&
 #define OR ||
 
-typedef  int (*fptr)();
+typedef int (*fptr)(double *, int , int , int , int , double *, int );
 
 typedef struct 
   {

@@ -5,10 +5,7 @@
 /* Use linear interpolation on a lookup table.
    Taken from OBVIUS.  EPS, Spring, 1987.
  */
-void internal_pointop (im, res, size, lut, lutsize, origin, increment, warnings)
-  register double *im, *res, *lut;
-  register double origin, increment; 
-  register int size, lutsize, warnings;
+void internal_pointop (register double *im, register double *res, register int size, register double *lut, register int lutsize, register double origin, register double increment, register int warnings)
   {
   register int i, index;
   register double pos;

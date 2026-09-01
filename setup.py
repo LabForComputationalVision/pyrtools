@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
-from wheel.bdist_wheel import bdist_wheel
 from setuptools import setup, Extension
+from setuptools.command.bdist_wheel import bdist_wheel
 
 # Adapted from the cibuildwheel example https://github.com/joerick/python-ctypes-package-sample
 # it marks the wheel as not specific to the Python API version.

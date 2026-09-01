@@ -69,19 +69,10 @@
 	}
 */
 
-int internal_reduce(image, x_dim, y_dim, filt, temp, x_fdim, y_fdim,
-		x_start, x_step, x_stop, y_start, y_step, y_stop,
-		result, edges)
-  register image_type *image, *temp;
-  register int x_fdim, x_dim;
-  register image_type *result;
-  register int x_step, y_step;
-  int x_start, y_start;
-  int x_stop, y_stop;     
-  image_type *filt; 
-  int y_dim, y_fdim;
-  char *edges;
-  { 
+int internal_reduce(register image_type *image, register int x_dim, int y_dim, image_type *filt, register image_type *temp, register int x_fdim, int y_fdim,
+		int x_start, register int x_step, int x_stop, int y_start, register int y_step, int y_stop,
+		register image_type *result, char *edges)
+  {
   register double sum;
   register int filt_pos, im_pos, x_filt_stop;
   register int x_pos, filt_size = x_fdim*y_fdim;
@@ -236,18 +227,9 @@ int internal_reduce(image, x_dim, y_dim, filt, temp, x_fdim, y_fdim,
       }									\
   }
 
-int internal_expand(image,filt,temp,x_fdim,y_fdim,
-		x_start,x_step,x_stop,y_start,y_step,y_stop,
-		result,x_dim,y_dim,edges)
-  register image_type *result, *temp;
-  register int x_fdim, x_dim;
-  register int x_step, y_step;
-  register image_type *image; 
-  int x_start, y_start;
-  int x_stop, y_stop;
-  image_type *filt; 
-  int y_fdim, y_dim;
-  char *edges;
+int internal_expand(register image_type *image, image_type *filt, register image_type *temp, register int x_fdim, int y_fdim,
+		int x_start, register int x_step, int x_stop, int y_start, register int y_step, int y_stop,
+		register image_type *result, register int x_dim, int y_dim, char *edges)
   {
   register double val;
   register int filt_pos, res_pos, x_filt_stop;
