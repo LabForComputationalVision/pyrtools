@@ -691,6 +691,9 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         * `'indep3'`: each image has an independent vmin/vmax, chosen so that
                       the 10th/90th percentile values map to the 10th/90th
                       percentile intensities.
+        NOTE: this only affects the behavior for grayscale images. RGB images
+        will always be displayed with vrange [0, 1] (for floats) or [0, 255]
+        (for ints), because of how matplotlib handles them.
     zoom : `float`
         ratio of display pixels to image pixels. if >1, must be an integer. If
         <1, must be 1/d where d is a a divisor of the size of the largest
@@ -821,6 +824,9 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
                       std dev
         * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
                       percentile values map to the 10th/90th percentile intensities.
+        NOTE: this only affects the behavior for grayscale images. RGB images
+        will always be displayed with vrange [0, 1] (for floats) or [0, 255]
+        (for ints), because of how matplotlib handles them.
     zoom : `float`
         amount we zoom the video frames (must result in an integer when multiplied by
         video.shape[1:])
