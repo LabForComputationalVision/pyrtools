@@ -40,15 +40,15 @@ below.
 #define sgn(a)  ( ((a)>0)?1:(((a)<0)?-1:0) )
 #define clip(a,mn,mx)  ( ((a)<(mn))?(mn):(((a)>=(mx))?(mx-1):(a)) )
 
-int nocompute(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int zero(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int reflect1(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int reflect2(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int qreflect2(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int repeat(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int Extend(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int predict(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
-int ereflect(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e);
+int nocompute(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int zero(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int reflect1(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int reflect2(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int qreflect2(register double *filt, int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int repeat(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int Extend(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int predict(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
+int ereflect(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e);
 
 /* Lookup table matching a descriptive string to the edge-handling function */
 #if !THINK_C
@@ -145,7 +145,7 @@ r_or_e - equal to one of the two constants EXPAND or REDUCE.
 nocompute() - Return zero for values where filter hangs over the edge.
 */
 
-int nocompute(double *filt, int x_dim, int y_dim, int x_pos, int y_pos, double *result, int r_or_e)
+int nocompute(register double *filt, register int x_dim, int y_dim, int x_pos, int y_pos, register double *result, int r_or_e)
   {
   register int i;
   register int size = x_dim*y_dim;

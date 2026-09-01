@@ -173,9 +173,9 @@ int internal_wrap_reduce(image, x_dim, y_dim, filt, x_fdim, y_fdim,
 	  imval[YIND][XIND] += val * filt[filt_pos]; \
       }
 
-int internal_wrap_expand(image_type *image, image_type *filt, int x_fdim, int y_fdim,
+int internal_wrap_expand(image_type *image, register image_type *filt, register int x_fdim, register int y_fdim,
 	      int x_start, int x_step, int x_stop, int y_start, int y_step, int y_stop,
-	      image_type *result, int x_dim, int y_dim)
+	      register image_type *result, register int x_dim, register int y_dim)
   {
   register double val;
   register int filt_size = x_fdim*y_fdim;

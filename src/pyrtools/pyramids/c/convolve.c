@@ -69,9 +69,9 @@
 	}
 */
 
-int internal_reduce(image_type *image, int x_dim, int y_dim, image_type *filt, image_type *temp, int x_fdim, int y_fdim,
-		int x_start, int x_step, int x_stop, int y_start, int y_step, int y_stop,
-		image_type *result, char *edges)
+int internal_reduce(register image_type *image, register int x_dim, int y_dim, image_type *filt, register image_type *temp, register int x_fdim, int y_fdim,
+		int x_start, register int x_step, int x_stop, int y_start, register int y_step, int y_stop,
+		register image_type *result, char *edges)
   {
   register double sum;
   register int filt_pos, im_pos, x_filt_stop;
@@ -227,9 +227,9 @@ int internal_reduce(image_type *image, int x_dim, int y_dim, image_type *filt, i
       }									\
   }
 
-int internal_expand(image_type *image, image_type *filt, image_type *temp, int x_fdim, int y_fdim,
-		int x_start, int x_step, int x_stop, int y_start, int y_step, int y_stop,
-		image_type *result, int x_dim, int y_dim, char *edges)
+int internal_expand(register image_type *image, image_type *filt, register image_type *temp, register int x_fdim, int y_fdim,
+		int x_start, register int x_step, int x_stop, int y_start, register int y_step, int y_stop,
+		register image_type *result, register int x_dim, int y_dim, char *edges)
   {
   register double val;
   register int filt_pos, res_pos, x_filt_stop;
