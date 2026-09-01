@@ -1277,6 +1277,13 @@ class ProjectPolarTests(unittest.TestCase):
 #         res = pt.zconv2(ramp, disc, 3)
 #         self.assertTrue(pt.compareRecon(mres, res))
 
+def _check_ranges(fig, ranges):
+    """Helper function to check ranges in figure titles."""
+    titles = [ax.get_title() for ax in fig.axes]
+    assert len(titles) == len(ranges)
+    for t, r in zip(titles, ranges):
+        assert t.split("\n")[1].strip() == f"range: [{r[0]:.1e}, {r[1]:.1e}]"
+
 class TestImshow(unittest.TestCase):
 
     def test_imshow0(self):
@@ -1403,6 +1410,60 @@ class TestImshow(unittest.TestCase):
                 vrange = rng + str(i)
                 pt.imshow(list(im), vrange=vrange)
 
+    def test_imshow20(self):
+        im = np.random.randn(32, 32, 3)
+        fig = pt.imshow(im)
+        ranges = [(0, 1)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.imshow(im, vrange="auto1")
+        _check_ranges(fig, ranges)
+
+    def test_imshow21(self):
+        im = 255 * np.random.randn(32, 32, 3).astype(int)
+        fig = pt.imshow(im)
+        ranges = [(0, 255)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.imshow(im, vrange="auto1")
+        _check_ranges(fig, ranges)
+
+    def test_imshow22(self):
+        im = [np.random.randn(32, 32, 3), np.random.randn(32, 32, 3)]
+        fig = pt.imshow(im)
+        ranges = [(0, 1), (0, 1)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.imshow(im, vrange="auto1")
+        _check_ranges(fig, ranges)
+
+    def test_imshow23(self):
+        im = [np.random.randn(32, 32), np.random.randn(32, 32, 3)]
+        fig = pt.imshow(im)
+        ranges = [(im[0].min(), im[0].max()), (0, 1)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.imshow(im, vrange="auto1")
+        _check_ranges(fig, ranges)
+
+    def test_imshow24(self):
+        im = [np.random.randn(32, 32), np.random.randn(32, 32, 3), 255 * np.random.randn(32, 32, 3).astype(int)]
+        fig = pt.imshow(im)
+        ranges = [(im[0].min(), im[0].max()), (0, 1), (0, 255)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.imshow(im, vrange="auto1")
+        _check_ranges(fig, ranges)
+
+    def test_imshow25(self):
+        im = [np.random.randn(32, 32, 3), 255 * np.random.randn(32, 32, 3).astype(int)]
+        fig = pt.imshow(im)
+        ranges = [(0, 1), (0, 255)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.imshow(im, vrange="auto1")
+        _check_ranges(fig, ranges)
+
 class TestAnimshow(unittest.TestCase):
 
     def test_animshow0(self):
@@ -1459,6 +1520,60 @@ class TestAnimshow(unittest.TestCase):
         vid2 = np.random.rand(5, 10, 10)
         with self.assertRaises(Exception):
             fig = pt.animshow([vid1, vid2], as_html5=False)._fig
+
+    def test_animshow8(self):
+        vid = np.random.randn(3, 32, 32, 3)
+        fig = pt.animshow(vid, as_html5=False)._fig
+        ranges = [(0, 1)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.animshow(vid, vrange="auto1", as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow9(self):
+        vid = 255 * np.random.randn(3, 32, 32, 3).astype(int)
+        fig = pt.animshow(vid, as_html5=False)._fig
+        ranges = [(0, 255)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.animshow(vid, vrange="auto1", as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow10(self):
+        vid = [np.random.randn(3, 32, 32, 3), np.random.randn(3, 32, 32, 3)]
+        fig = pt.animshow(vid, as_html5=False)._fig
+        ranges = [(0, 1), (0, 1)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.animshow(vid, vrange="auto1", as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow11(self):
+        vid = [np.random.randn(3, 32, 32), np.random.randn(3, 32, 32, 3)]
+        fig = pt.animshow(vid, as_html5=False)._fig
+        ranges = [(vid[0].min(), vid[0].max()), (0, 1)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.animshow(vid, vrange="auto1", as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow12(self):
+        vid = [np.random.randn(3, 32, 32), np.random.randn(3, 32, 32, 3), 255 * np.random.randn(3, 32, 32, 3).astype(int)]
+        fig = pt.animshow(vid, as_html5=False)._fig
+        ranges = [(vid[0].min(), vid[0].max()), (0, 1), (0, 255)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.animshow(vid, vrange="auto1", as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow13(self):
+        vid = [np.random.randn(3, 32, 32, 3), 255 * np.random.randn(3, 32, 32, 3).astype(int)]
+        fig = pt.animshow(vid, as_html5=False)._fig
+        ranges = [(0, 1), (0, 255)]
+        _check_ranges(fig, ranges)
+        with self.assertWarns(UserWarning, msg="RGB images cannot have their vrange set"):
+            fig = pt.animshow(vid, vrange="auto1", as_html5=False)._fig
+        _check_ranges(fig, ranges)
 
 
 class TestPyrshow(unittest.TestCase):

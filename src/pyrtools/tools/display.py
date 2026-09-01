@@ -225,7 +225,7 @@ def reshape_axis(ax, axis_size_pix):
     return ax
 
 
-def colormap_range(image, vrange='indep1', cmap=None):
+def colormap_range(image, contains_rgb, vrange='indep1', cmap=None):
     """Find the appropriate ranges for colormaps of provided images
 
     Arguments
@@ -236,6 +236,9 @@ def colormap_range(image, vrange='indep1', cmap=None):
         dimension), or list of 2d arrays. all images will be automatically
         rescaled so they're displayed at the same size. thus, their sizes must
         be scalar multiples of each other.
+    contains_rgb : list
+        List of bools specifying whether each of the signals in image are
+        RGB or not.
     vrange : `tuple` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to
         (ie. clipped to) the minimum and maximum value of the colormap,
@@ -269,36 +272,54 @@ def colormap_range(image, vrange='indep1', cmap=None):
     vrange_list : `list`
         list of tuples, same length as `image`. contains the (vmin, vmax) tuple
         for each image.
-
     """
-    # flatimg is one long 1d array, which enables the min, max, mean, std, and percentile calls to
-    # operate on the values from each of the images simultaneously.
-    flatimg = np.concatenate([i.flatten() for i in image]).flatten()
-
     if isinstance(vrange, str):
         if vrange[:4] == 'auto':
-            if vrange == 'auto0':
-                M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
-                vrange_list = [-M, M]
-            elif vrange == 'auto1' or vrange == 'auto':
-                vrange_list = [np.nanmin(flatimg), np.nanmax(flatimg)]
-            elif vrange == 'auto2':
-                vrange_list = [np.nanmean(flatimg) - 2 * np.nanstd(flatimg),
-                               np.nanmean(flatimg) + 2 * np.nanstd(flatimg)]
-            elif vrange == 'auto3':
-                p1 = np.nanpercentile(flatimg, 10)
-                p2 = np.nanpercentile(flatimg, 90)
-                vrange_list = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
+            # flatimg is one long 1d array, which enables the min, max, mean, std, and
+            # percentile calls to operate on the values from each of the images simultaneously.
+            # We filter out the rgb images from this because they are unaffected by vrange, see
+            # PR #51 or https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html
+            # for more.
+            try:
+                flatimg = np.concatenate([i.flatten() for i, rgb in zip(image, contains_rgb)
+                                      if not rgb]).flatten()
+                if vrange == 'auto0':
+                    M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
+                    vrange_tmp = [-M, M]
+                elif vrange == 'auto1' or vrange == 'auto':
+                    vrange_tmp = [np.nanmin(flatimg), np.nanmax(flatimg)]
+                elif vrange == 'auto2':
+                    vrange_tmp = [np.nanmean(flatimg) - 2 * np.nanstd(flatimg),
+                                   np.nanmean(flatimg) + 2 * np.nanstd(flatimg)]
+                elif vrange == 'auto3':
+                    p1 = np.nanpercentile(flatimg, 10)
+                    p2 = np.nanpercentile(flatimg, 90)
+                    vrange_tmp = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
+            except ValueError:
+                # then there was only a single rgb image, and none of the above matters,
+                # because the vrange doesn't depend on the computed values above, it
+                # must be either [0, 1] for floats or [0, 255] for ints
+                pass
 
             # make sure to return as many ranges as there are images
-            vrange_list = [vrange_list] * len(image)
+            vrange_list = []
+            for img, rgb in zip(image, contains_rgb):
+                if not rgb:
+                    vrange_list.append(vrange_tmp)
+                elif np.issubdtype(img.dtype, np.floating):
+                    # all RGB float images use vrange 0, 1
+                    vrange_list.append([0, 1])
+                else:
+                    # all RGB int images use vrange 0, 255
+                    vrange_list.append([0, 255])
 
         elif vrange[:5] == 'indep':
             # independent vrange from recursive calls of this function per image
-            vrange_list = [colormap_range(im, vrange.replace('indep', 'auto')
-                           )[0][0] for im in image]
+            vrange_list = [colormap_range([im], [rgb], vrange.replace('indep', 'auto')
+                                          )[0][0] for im, rgb in
+                           zip(image, contains_rgb)]
         else:
-            vrange_list, _ = colormap_range(image, vrange='auto1')
+            vrange_list, _ = colormap_range(image, contains_rgb, 'auto1')
             warnings.warn('Unknown vrange argument, using auto1 instead')
     else:
         # two numbers were passed, either as a list or tuple
@@ -306,9 +327,6 @@ def colormap_range(image, vrange='indep1', cmap=None):
             raise Exception("If you're passing numbers to vrange,"
                             "there must be 2 of them!")
         vrange_list = [tuple(vrange)] * len(image)
-
-    # double check that we're returning the right number of vranges
-    assert len(image) == len(vrange_list)
 
     if cmap is None:
         if '0' in vrange:
@@ -507,8 +525,8 @@ def _process_signal(signal, title, plot_complex, video=False):
         list of arrays containing the signal, ready to plot
     title : list
         list of titles, ready to plot
-    contains_rgb : bool
-        if at least one of the images is 3d (and thus RGB), this will be True.
+    contains_rgb : list[bool]
+        list of bools saying whether each array in signal is RGB or not.
 
     """
     if video:
@@ -519,7 +537,7 @@ def _process_signal(signal, title, plot_complex, video=False):
         sigtype = 'image'
     signal_tmp = []
     title_tmp = []
-    contains_rgb = False
+    contains_rgb = []
     for sig, t in zip(signal, title):
         if sig.ndim == (3 + time_dim):
             if sig.shape[-1] not in [3, 4]:
@@ -528,7 +546,7 @@ def _process_signal(signal, title, plot_complex, video=False):
                     "as RGB(A)! RGB(A) signals should have their final"
                     "dimension of shape 3 or 4."
                 )
-            contains_rgb = True
+            rgb = True
         elif sig.ndim != (2 + time_dim):
             raise Exception(
                 f"Can't figure out how to plot {sigtype} with "
@@ -536,6 +554,8 @@ def _process_signal(signal, title, plot_complex, video=False):
                 f"{2 + time_dim}d (grayscale) or {3 + time_dim}d (RGB(A), last "
                 "dimension with 3 or 4 elements)."
             )
+        else:
+            rgb = False
         if np.iscomplexobj(sig):
             if plot_complex == 'rectangular':
                 signal_tmp.extend([np.real(sig), np.imag(sig)])
@@ -555,9 +575,11 @@ def _process_signal(signal, title, plot_complex, video=False):
                     title_tmp.extend([t + " log(1+amplitude)", t + " phase"])
                 else:
                     title_tmp.extend([None, None])
+            contains_rgb.extend(2 * [rgb])
         else:
             signal_tmp.append(np.asarray(sig))
             title_tmp.append(t)
+            contains_rgb.append(rgb)
     return signal_tmp, title_tmp, contains_rgb
 
 
@@ -574,9 +596,7 @@ def _check_zooms(signal, zoom, contains_rgb, video=False):
     zoom : float
         how we're going to zoom the image
     contains_rgb : bool
-        whether image contains at least one image to plot as RGB. This only
-        matters when we're given a 3d array and we want to know whether it was
-        supposed to be a single RGB image or multiple grayscale ones
+        whether image contains at least one image to plot as RGB.
     video: bool, optional (default False)
         handling signals in both space and time or just space.
 
@@ -588,11 +608,6 @@ def _check_zooms(signal, zoom, contains_rgb, video=False):
         contains 2 ints, giving the max image size in pixels
 
     """
-    if video:
-        time_dim = 1
-    else:
-        time_dim = 0
-
     if hasattr(zoom, '__iter__'):
         raise Exception("zoom must be a single number!")
     if all([sig.shape == signal[0].shape for sig in signal]):
@@ -717,6 +732,12 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     fig : `PyrFigure`
         figure containing the plotted images
 
+    Warns
+    -----
+    UserWarning
+        If vrange is not the default and at least one of the images is RGB, because
+        matplotlib will only plot RGB images with vranges of [0, 1] (for floats) or [0,
+        255] (for ints).
     """
     if plot_complex not in ['rectangular', 'polar', 'logpolar']:
         raise Exception("Don't know how to handle plot_complex value "
@@ -737,12 +758,18 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     image, title, contains_rgb = _process_signal(image, title, plot_complex)
 
     # make sure we can properly zoom all images
-    zooms, max_shape = _check_zooms(image, zoom, contains_rgb)
+    zooms, max_shape = _check_zooms(image, zoom, any(contains_rgb))
 
     # get the figure and axes created
     fig, axes = _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct)
 
-    vrange_list, cmap = colormap_range(image=image, vrange=vrange, cmap=cmap)
+    if any(contains_rgb) and vrange != "indep1":
+        warnings.warn("RGB images cannot have their vrange set: matplotlib "
+                      "will always show them with vrange [0, 1] (for floats) "
+                      "or [0, 255] (for ints).")
+    vrange_list, cmap = colormap_range(image, contains_rgb, vrange, cmap)
+
+    assert len(image) == len(vrange_list)
 
     for im, a, r, t, z in zip(image, axes, vrange_list, title, zooms):
         _showIm(im, a, r, z, t, cmap, **kwargs)
@@ -829,6 +856,12 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     anim : HTML object or FuncAnimation object
         Animation, format depends on `as_html`.
 
+    Warns
+    -----
+    UserWarning
+        If vrange is not the default and at least one of the videos is RGB, because
+        matplotlib will only plot RGB images with vranges of [0, 1] (for floats) or [0,
+        255] (for ints).
     """
     if as_html5:
         try:
@@ -843,9 +876,15 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
                         "passed videos with {} frames".format(video_n_frames))
     title, vert_pct = _convert_title_to_list(title, video)
     video, title, contains_rgb = _process_signal(video, title, plot_complex, video=True)
-    zooms, max_shape = _check_zooms(video, zoom, contains_rgb, video=True)
+    zooms, max_shape = _check_zooms(video, zoom, any(contains_rgb), video=True)
     fig, axes = _setup_figure(ax, col_wrap, video, zoom, max_shape, vert_pct)
-    vrange_list, cmap = colormap_range(image=video, vrange=vrange, cmap=cmap)
+    if any(contains_rgb) and vrange != "indep1":
+        warnings.warn("RGB images cannot have their vrange set: matplotlib "
+                      "will always show them with vrange [0, 1] (for floats) "
+                      "or [0, 255] (for ints).")
+    vrange_list, cmap = colormap_range(video, contains_rgb, vrange, cmap)
+
+    assert len(video) == len(vrange_list)
 
     first_image = [v[0] for v in video]
     for im, a, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
