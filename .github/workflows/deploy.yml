@@ -2,7 +2,7 @@ name: deploy
 on:
   release:
     types: [published]
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
   build-wheels:
@@ -19,7 +19,6 @@ jobs:
     - name: Build wheels
       uses: pypa/cibuildwheel@v4.2.0
       env:
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*
         CIBW_SKIP: '*musllinux*'
         CIBW_ARCHS: native
@@ -48,12 +47,14 @@ jobs:
         name: artifact-source-dist
         path: ./**/dist/*.tar.gz
 
-  deploy:
+  publish:
+    name: Upload release to (Test) PyPI
+    environment: pypi
     needs: [build-wheels, build-sdist]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
+    permissions:
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-    - uses: actions/checkout@v4
     - name: Download all artifacts
       uses: actions/download-artifact@v4
     - name: Copy artifacts to dist/ folder
@@ -63,7 +64,10 @@ jobs:
         find . -name '*.tar.gz' -exec mv '{}' dist/ \;
         find . -name '*.whl' -exec mv '{}' dist/ \;
     - name: Publish package to test pypi
+      if: github.event_name == 'release' && github.event.action == 'published'
+      uses: pypa/gh-action-pypi-publish@v1.13.0
+    - name: Publish package to test pypi
+      if: github.event_name != 'release'
       uses: pypa/gh-action-pypi-publish@v1.13.0
       with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
