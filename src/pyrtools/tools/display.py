@@ -326,18 +326,18 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None, n_cols = Non
                         vrange_tmp.extend(vr)
                 elif 'col' in vrange:
                     if 'complex' in vrange:
-                        imgs_formatted = [np.concatenate([image[i+1], image[i+1]]) for i in range(0, len(image), 2)] ## SHOULD THIS BE image[i]
+                        imgs_formatted = [np.concatenate([image[i], image[i+1]]) for i in range(0, len(image), 2)] 
                         # Divide by 2 because we are grouping complex images into pairs
                         vrange_tmp, cmap = colormap_range(imgs_formatted, contains_rgb, vrange=vrange.split('complex')[0], n_cols=n_cols//2) 
                         vrange_tmp = [v for v in vrange_tmp for _ in range(2)]
+                
                     else:
                         vrange_tmp = []
                         for j in range(n_cols):
                             col_images = [image[i] for i in range(j, len(image), n_cols)]
                             vr, _ = colormap_range(col_images, contains_rgb, vrange.split('col')[0])
                             vrange_tmp.append(vr[0]) # all entries will be the same, so just take the first
-                        # now repeat values for each row, truncating if the last row is partial
-                        vrange_tmp = (vrange_tmp * math.ceil(len(image) / n_cols))[:len(image)]
+                        vrange_tmp *= (len(image) // n_cols) # now repeat values for each row
                 elif vrange == 'auto0':
                     M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
                     vrange_tmp = [-M, M]
@@ -1077,7 +1077,8 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
 
         * ``'autoNcolcomplex'``: where ``N`` is an integer. Same as ``'autoNcol'``, 
           but the vmin/vmax are computed across the real and imaginary parts in each 
-          column.
+          column. Note: Is not compatible with show_residuals=True. Plot the residuals
+          separately.
 
         * ``'autoNpyr'``: where ``N`` is an integer. Same as ``'autoNrow'`` except
           the lowpass and highpass residuals vmin/vmax are computed independently, 
@@ -1125,6 +1126,12 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
     # pasting all coefficients into a giant array.
     # and the steerable pyramids have a num_orientations attribute
 
+
+    if vrange[0:4] == 'auto' and vrange[5:] == 'colcomplex':
+        if show_residuals:
+            raise ValueError("vrange='autoNcolcomplex' can not be used with show_residuals=True. "
+                             "Please use show_residuals=False or a different vrange.")
+
     num_scales = np.max(np.asarray([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,0]) + 1
     num_orientations = np.max(np.asarray([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,1]) + 1
 
@@ -1144,9 +1151,13 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
         # We want the residuals vmin/vmax to be computed independently.
         # Compute AutoNrow for the pyramid coefficients,
         # and then compute the residuals and append their vmin/vmax. 
+        if col_wrap is not None:
+            n_cols = col_wrap
+        else:
+            n_cols = len(imgs)
         image_tmp = _convert_signal_to_list(imgs)
         image_tmp, _, contains_rgb = _process_signal(image_tmp, [None]*len(image_tmp), 'rectangular')
-        vrange_list, _ = colormap_range(image_tmp, [None]*len(image_tmp), vrange.replace('pyr','row'), None, col_wrap)
+        vrange_list, _ = colormap_range(image_tmp, [None]*len(image_tmp), vrange.replace('pyr','row'), None, n_cols)
 
     # we can similarly grab the labels for height and band
     # from the keys in this pyramid coefficients dictionary
