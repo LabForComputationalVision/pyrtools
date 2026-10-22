@@ -337,7 +337,9 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None, n_cols = Non
                             col_images = [image[i] for i in range(j, len(image), n_cols)]
                             vr, _ = colormap_range(col_images, contains_rgb, vrange.split('col')[0])
                             vrange_tmp.append(vr[0]) # all entries will be the same, so just take the first
-                        vrange_tmp *= (len(image) // n_cols) # now repeat values for each row
+                        vrange_tmp *= math.ceil(len(image) / n_cols) # now repeat values for each row
+                        # and exclude any values that correspond to blank axes
+                        vrange_tmp = vrange_tmp[:len(image)]
                 elif vrange == 'auto0':
                     M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
                     vrange_tmp = [-M, M]
