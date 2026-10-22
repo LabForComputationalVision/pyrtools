@@ -1467,6 +1467,18 @@ class TestImshow(unittest.TestCase):
             fig = pt.imshow(im, vrange="auto1")
         _check_ranges(fig, ranges)
 
+    def test_imshow26(self):
+        im = np.random.randn(32, 32)
+        fig, ax = plt.subplots(1, 1)
+        fig = pt.imshow(im, ax=ax)
+        plt.close(fig)
+
+    def test_imshow27(self):
+        im = np.random.randn(32, 32)
+        fig, ax = plt.subplots(1, 1)
+        with self.assertRaises(ValueError, msg="Can only display one image"):
+            pt.imshow([im, im], ax=ax)
+
 class TestAnimshow(unittest.TestCase):
 
     def test_animshow0(self):
