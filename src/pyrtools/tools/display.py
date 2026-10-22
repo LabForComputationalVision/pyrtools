@@ -1008,13 +1008,10 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     assert len(video) == len(vrange_list)
 
     first_image = [v[0] for v in video]
-    for im, a, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
-        _showIm(im, a, r, z, t, cmap, **kwargs)
-
-    artists = [fig.axes[i].images[0] for i in range(len(fig.axes))]
-
-    for i, a in enumerate(artists):
-        a.set_clim(vrange_list[i])
+    artists = []
+    for im, ax, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
+        _showIm(im, ax, r, z, t, cmap, **kwargs)
+        artists.append(ax.images[0])
 
     def animate_video(t):
         for i, a in enumerate(artists):
