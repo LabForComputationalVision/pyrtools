@@ -1613,19 +1613,33 @@ class TestPyrshow(unittest.TestCase):
     def _get_clims(self, fig):
         return [ax.images[0].get_clim() for ax in fig.axes if ax.images]
     
+    def test_setting_colwrap_with_vrange_pyr(self):
+        pyr_coeffs = {}
+        # Construct the simple pyramid
+        for i in range(3):
+            for j in range(3):
+                pyr_coeffs[i,j] = np.random.rand(256,256) * (i * 3)+ j 
+        pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
+        pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
+
+        with self.assertRaises(ValueError, msg="If col_wrap is set vrange cannot have 'pyr' use one of the 'col' vrange options"):
+            pt.pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=3)
+    
     def test_pyrshow_vrange(self):
+        
         for num_orientations in [1, 3]: # 1 orientation simulates laplacian pyramid
+            pyr_coeffs = {}
             if num_orientations == 1:
                 num_images = 3
             else: 
                 num_images = 9
-            pyr_coeffs = {}
+                pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
+                pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
+
             # Construct the simple pyramid
             for i in range(3):
                 for j in range(num_orientations):
                     pyr_coeffs[i,j] = np.random.rand(256,256) * (i * 3)+ j 
-            pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
-            pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
 
             for mode in range(4):
                 mode_full = f"auto{mode}pyr"

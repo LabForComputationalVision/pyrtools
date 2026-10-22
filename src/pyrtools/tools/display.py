@@ -1147,11 +1147,13 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
                 col_wrap *= 2
                 break 
     elif col_wrap is not None and 'pyr' in vrange:
-        raise ValueError(f"If col_wrap is set vrange cannot have 'pyr' use one of the 'col' vrange options")
+        raise ValueError("If col_wrap is set vrange cannot have 'pyr' use one of the 'col' vrange options")
 
     if 'pyr' in vrange:
         # We make two types of pyramids: one where there is multiple orientations (each scale on a seperate row) 
-        # and another where there is only one orientation (all scales on one row). In each case should have seperate vrange. 
+        # and another where there is only one orientation (all scales on one row). In both cases, "pyr" 
+        # vranges should have independent vrange per scale
+        
         if num_orientations != 1:
             vrange_cols = col_wrap
         else:
