@@ -1281,7 +1281,8 @@ class ProjectPolarTests(unittest.TestCase):
 
 def _check_ranges(fig, ranges):
     """Helper function to check ranges in figure titles."""
-    titles = [ax.get_title() for ax in fig.axes]
+    # get title from all axes that have a title
+    titles = [ax.get_title() for ax in fig.axes if ax.get_title()]
     assert len(titles) == len(ranges)
     for t, r in zip(titles, ranges):
         assert t.split("\n")[1].strip() == f"range: [{r[0]:.1e}, {r[1]:.1e}]"
@@ -1577,6 +1578,52 @@ class TestAnimshow(unittest.TestCase):
             fig = pt.animshow(vid, vrange="auto1", as_html5=False)._fig
         _check_ranges(fig, ranges)
 
+    def test_animshow14(self):
+        vid = np.random.randn(3, 32, 32)
+        ranges = (vid.min(), vid.max())
+        ranges = [(ranges[0]*i, ranges[1]*i) for i in [1, 2, 3]]
+        fig = pt.animshow([vid, 2*vid, 3*vid], as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow15(self):
+        vid = np.random.randn(3, 32, 32)
+        ranges = (vid.min(), vid.max())
+        ranges = [(ranges[0]*i, ranges[1]*i) for i in [1, 2, 3]]
+        fig = pt.animshow([vid, 2*vid, 3*vid], col_wrap=2, as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow16(self):
+        vid = np.random.randn(3, 32, 32)
+        ranges = (vid.min(), vid.max())
+        # all have same vrange here
+        ranges = [(ranges[0]*3, ranges[1]*3) for _ in [1, 2, 3]]
+        fig = pt.animshow([vid, 2*vid, 3*vid], vrange="auto1row", as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow17(self):
+        vid = np.random.randn(3, 32, 32)
+        ranges = (vid.min(), vid.max())
+        # first two have same range, third is independent
+        ranges = [(ranges[0]*2, ranges[1]*2), (ranges[0]*2, ranges[1]*2), (ranges[0]*3, ranges[1]*3)]
+        fig = pt.animshow([vid, 2*vid, 3*vid], vrange="auto1row", col_wrap=2, as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow18(self):
+        vid = np.random.randn(3, 32, 32)
+        ranges = (vid.min(), vid.max())
+        # all have independent ranges
+        ranges = [(ranges[0]*i, ranges[1]*i) for i in [1, 2, 3]]
+        fig = pt.animshow([vid, 2*vid, 3*vid], vrange="auto1col", as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
+    def test_animshow19(self):
+        vid = np.random.randn(3, 32, 32)
+        ranges = (vid.min(), vid.max())
+        # first and last have same range, second is independent
+        ranges = [(ranges[0]*3, ranges[1]*3), (ranges[0]*2, ranges[1]*2), (ranges[0]*3, ranges[1]*3)]
+        fig = pt.animshow([vid, 2*vid, 3*vid], vrange="auto1col", col_wrap=2, as_html5=False)._fig
+        _check_ranges(fig, ranges)
+
 
 class TestPyrshow(unittest.TestCase):
 
@@ -1699,8 +1746,9 @@ class TestVrange(unittest.TestCase):
         clims = []
         for ax in fig.axes:
             title = ax.get_title()
-            vmin, vmax  = title.split('[')[1].split(']')[0].split(',')
-            clims.append((float(vmin.strip()), float(vmax.strip())))
+            if title:
+                vmin, vmax  = title.split('[')[1].split(']')[0].split(',')
+                clims.append((float(vmin.strip()), float(vmax.strip())))
         return clims
 
     def _get_images(self):
@@ -1708,11 +1756,24 @@ class TestVrange(unittest.TestCase):
         images = [np.arange(4 * i, 4 * i + 4, dtype=float).reshape(2, 2) for i in range(4)]
         return images
 
-    def _imshow(self, vrange):
-        return pt.imshow(self._get_images(), vrange=vrange, col_wrap=2)
+    def _get_images2(self):
+        # [[0,1],[2,3]], [[4,5],[6,7]], [[8,9],[10,11]]
+        images = [np.arange(4 * i, 4 * i + 4, dtype=float).reshape(2, 2) for i in range(3)]
+        return images
 
-    def _expected_clims(self, vrange):
-        clims, _ = colormap_range(image=self._get_images(), contains_rgb= [False]*len(self._get_images()), 
+    def _imshow(self, vrange, img_set=0):
+        if img_set == 0:
+            imgs = self._get_images()
+        elif img_set == 1:
+            imgs = self._get_images2()
+        return pt.imshow(imgs, vrange=vrange, col_wrap=2)
+
+    def _expected_clims(self, vrange, img_set=0):
+        if img_set == 0:
+            imgs = self._get_images()
+        elif img_set == 1:
+            imgs = self._get_images2()
+        clims, _ = colormap_range(image=imgs, contains_rgb= [False]*len(self._get_images()),
                                   vrange=vrange, cmap=None, n_cols=2)
         return clims
 
@@ -1724,6 +1785,7 @@ class TestVrange(unittest.TestCase):
         for i in range(4):
             with self.subTest(i=i):
                 self.assertTrue(np.isclose(clims[i], vrange[i], atol=1e-6).all())
+        plt.close('all')
 
     def test_list_of_tuples_vrange_wrong_length(self):
         images = self._get_images()
@@ -1745,64 +1807,88 @@ class TestVrange(unittest.TestCase):
 
     def test_vrange_matches_expected(self):
         for mode in ['auto', 'indep', 'autoNrow', 'autoNcol','autoNcolcomplex']:
-            for mode_num in range(4):
-                for img_idx in range(4):
-                    with self.subTest(mode=mode, img_idx=img_idx):
-                        if 'N' in mode:
-                            mode_full = f"{mode.replace('N',str(mode_num))}"
-                        else:
-                            mode_full = f"{mode}{mode_num}"
-                        vmin, vmax = self._get_clims(self._imshow(mode_full))[img_idx]
-                        exp_vmin, exp_vmax = self._expected_clims(mode_full)[img_idx]
-                        self.assertTrue(np.isclose(vmax, exp_vmax, atol=1e-6))
-                        self.assertTrue(np.isclose(vmin, exp_vmin, atol=1e-6))
+            for img_set in range(2):
+                if img_set == 1 and "complex" in mode:
+                    continue
+                if img_set == 0:
+                    n_imgs = 4
+                elif img_set == 1:
+                    n_imgs = 3
+                for mode_num in range(4):
+                    for img_idx in range(n_imgs):
+                        with self.subTest(mode=mode, img_idx=img_idx, img_set=img_set):
+                            if 'N' in mode:
+                                mode_full = f"{mode.replace('N',str(mode_num))}"
+                            else:
+                                mode_full = f"{mode}{mode_num}"
+                            vmin, vmax = self._get_clims(self._imshow(mode_full, img_set))[img_idx]
+                            exp_vmin, exp_vmax = self._expected_clims(mode_full, img_set)[img_idx]
+                            self.assertTrue(np.isclose(vmax, exp_vmax, atol=1e-6))
+                            self.assertTrue(np.isclose(vmin, exp_vmin, atol=1e-6))
         plt.close("all")
         
     def test_vrange_title_matches_clim(self):
         for mode in ['auto', 'indep', 'autoNrow', 'autoNcol','autoNcolcomplex']:
-            for mode_num in range(4):
-                for img_idx in range(4):
-                    with self.subTest(mode=mode, img_idx=img_idx):
-                        if 'N' in mode:
-                            mode_full = f"{mode.replace('N',str(mode_num))}"
-                        else:
-                            mode_full = f"{mode}{mode_num}"
-                        fig = self._imshow(mode_full)
-                        clim_vmin, clim_vmax = self._get_clims(fig)[img_idx]
-                        title_vmin, title_vmax = self._get_title_clims(fig)[img_idx]
-                        self.assertEqual("{:.1e}".format(clim_vmin), "{:.1e}".format(title_vmin))
-                        self.assertEqual("{:.1e}".format(clim_vmax), "{:.1e}".format(title_vmax))
+            for img_set in range(2):
+                if img_set == 1 and "complex" in mode:
+                    continue
+                if img_set == 0:
+                    n_imgs = 4
+                elif img_set == 1:
+                    n_imgs = 3
+                for mode_num in range(4):
+                    for img_idx in range(n_imgs):
+                        with self.subTest(mode=mode, img_idx=img_idx, img_set=img_set):
+                            if 'N' in mode:
+                                mode_full = f"{mode.replace('N',str(mode_num))}"
+                            else:
+                                mode_full = f"{mode}{mode_num}"
+                            fig = self._imshow(mode_full, img_set)
+                            clim_vmin, clim_vmax = self._get_clims(fig)[img_idx]
+                            title_vmin, title_vmax = self._get_title_clims(fig)[img_idx]
+                            self.assertEqual("{:.1e}".format(clim_vmin), "{:.1e}".format(title_vmin))
+                            self.assertEqual("{:.1e}".format(clim_vmax), "{:.1e}".format(title_vmax))
         plt.close("all")
 
     def test_row_vrange_same_row_shares_clim(self):
         for mode in range(4):
-            with self.subTest(mode=mode):
-                clims = self._get_clims(self._imshow(f"auto{mode}row"))
-                self.assertEqual(clims[0], clims[1], "row 0 images differ")
-                self.assertEqual(clims[2], clims[3], "row 1 images differ")
+            for img_set in range(2):
+                with self.subTest(mode=mode, img_set=img_set):
+                    clims = self._get_clims(self._imshow(f"auto{mode}row", img_set))
+                    self.assertEqual(clims[0], clims[1], "row 0 images differ")
+                    self.assertNotEqual(clims[0], clims[2], "col 0 images same")
+                    if img_set == 0:
+                        self.assertEqual(clims[2], clims[3], "row 1 images differ")
+                        self.assertNotEqual(clims[1], clims[3], "col 1 images same")
         plt.close("all")
 
     def test_col_vrange_same_col_shares_clim(self):
         for mode in range(4):
-            with self.subTest(mode=mode):
-                clims = self._get_clims(self._imshow(f"auto{mode}col"))
-                self.assertEqual(clims[0], clims[2], "col 0 images differ")
-                self.assertEqual(clims[1], clims[3], "col 1 images differ")
+            for img_set in range(2):
+                with self.subTest(mode=mode, img_set=img_set):
+                    clims = self._get_clims(self._imshow(f"auto{mode}col", img_set))
+                    self.assertEqual(clims[0], clims[2], "col 0 images differ")
+                    self.assertNotEqual(clims[0], clims[1], "row 0 images same")
+                    if img_set == 0:
+                        self.assertEqual(clims[1], clims[3], "col 1 images differ")
+                        self.assertNotEqual(clims[2], clims[3], "row 1 images same")
         plt.close("all")
 
     def test_global_vrange_all_images_share_clim(self):
         for mode in range(4):
-            with self.subTest(mode=mode):
-                clims = self._get_clims(self._imshow(f"auto{mode}"))
-                self.assertTrue(all(c == clims[0] for c in clims))
+            for img_set in range(2):
+                with self.subTest(mode=mode, img_set=img_set):
+                    clims = self._get_clims(self._imshow(f"auto{mode}"))
+                    self.assertTrue(all(c == clims[0] for c in clims))
         plt.close("all")
 
     def test_indep_vrange_all_images_have_different_clims(self):
         for mode in range(4):
-            with self.subTest(mode=mode):
-                clims = self._get_clims(self._imshow(f"indep{mode}"))
-                self.assertTrue(len(set(clims)) == len(clims),
-                                 "not all images have different clims")
+            for img_set in range(2):
+                with self.subTest(mode=mode, img_set=img_set):
+                    clims = self._get_clims(self._imshow(f"indep{mode}"))
+                    self.assertTrue(len(set(clims)) == len(clims),
+                                    "not all images have different clims")
         plt.close("all")
                 
 def main():

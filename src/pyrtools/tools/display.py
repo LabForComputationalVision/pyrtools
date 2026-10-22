@@ -337,7 +337,9 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None, n_cols = Non
                             col_images = [image[i] for i in range(j, len(image), n_cols)]
                             vr, _ = colormap_range(col_images, contains_rgb, vrange.split('col')[0])
                             vrange_tmp.append(vr[0]) # all entries will be the same, so just take the first
-                        vrange_tmp *= (len(image) // n_cols) # now repeat values for each row
+                        vrange_tmp *= math.ceil(len(image) / n_cols) # now repeat values for each row
+                        # and exclude any values that correspond to blank axes
+                        vrange_tmp = vrange_tmp[:len(image)]
                 elif vrange == 'auto0':
                     M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
                     vrange_tmp = [-M, M]
@@ -1006,13 +1008,10 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     assert len(video) == len(vrange_list)
 
     first_image = [v[0] for v in video]
-    for im, a, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
-        _showIm(im, a, r, z, t, cmap, **kwargs)
-
-    artists = [fig.axes[i].images[0] for i in range(len(fig.axes))]
-
-    for i, a in enumerate(artists):
-        a.set_clim(vrange_list[i])
+    artists = []
+    for im, ax, r, t, z in zip(first_image, axes, vrange_list, title, zooms):
+        _showIm(im, ax, r, z, t, cmap, **kwargs)
+        artists.append(ax.images[0])
 
     def animate_video(t):
         for i, a in enumerate(artists):
