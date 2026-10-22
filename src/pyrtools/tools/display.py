@@ -705,7 +705,10 @@ def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
         axes = fig.axes
     else:
         fig = ax.figure
+        if len(image) > 1:
+            raise ValueError("Can only display one image if passing an axis!")
         axes = [reshape_axis(ax,  zoom * max_shape)]
+        n_cols = 1
     return fig, axes, n_cols
 
 
@@ -1038,6 +1041,9 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
 
 def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
     """Display the coefficients of the pyramid in an orderly fashion
+
+    .. versionchanged:: 1.1
+       Removed ``"is_complex"`` argument -- complexity of input is now determined automatically.
 
     Arguments
     ---------
