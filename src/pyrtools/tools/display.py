@@ -705,7 +705,10 @@ def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
         axes = fig.axes
     else:
         fig = ax.figure
+        if len(image) > 1:
+            raise ValueError("Can only display one image if passing an axis!")
         axes = [reshape_axis(ax,  zoom * max_shape)]
+        n_cols = 1
     return fig, axes, n_cols
 
 
