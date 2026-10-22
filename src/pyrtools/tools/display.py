@@ -1042,6 +1042,9 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
 def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
     """Display the coefficients of the pyramid in an orderly fashion
 
+    .. versionchanged:: 1.1
+       Removed ``"is_complex"`` argument -- complexity of input is now determined automatically.
+
     Arguments
     ---------
     pyr_coeffs : `dict`
