@@ -303,10 +303,10 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None, n_cols = Non
     if isinstance(vrange, str):
 
         if 'indep' in vrange and 'row' in vrange:
-            raise ValueError("indep and row cannot be used together in vrange. Use either indep or auto[x]row")
+            raise ValueError("indep and row cannot be used together in vrange. Use either indepN or autoNrow")
         if 'indep' in vrange and 'col' in vrange:
-            raise ValueError("indep and col cannot be used together in vrange. Use either indep or " 
-                             "auto[x]col or auto[x]colcomplex")    
+            raise ValueError("indep and col cannot be used together in vrange. Use either indepN or " 
+                             "autoNcol or autoNcolcomplex")
 
         if vrange[:4] == 'auto':
             # flatimg is one long 1d array, which enables the min, max, mean, std, and
@@ -1157,7 +1157,7 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
             n_cols = len(imgs)
         image_tmp = _convert_signal_to_list(imgs)
         image_tmp, _, contains_rgb = _process_signal(image_tmp, [None]*len(image_tmp), 'rectangular')
-        vrange_list, _ = colormap_range(image_tmp, [None]*len(image_tmp), vrange.replace('pyr','row'), None, n_cols)
+        vrange_list, _ = colormap_range(image_tmp, [False]*len(image_tmp), vrange.replace('pyr','row'), None, n_cols)
 
     # we can similarly grab the labels for height and band
     # from the keys in this pyramid coefficients dictionary
@@ -1168,14 +1168,14 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
             titles += ["residual highpass"]
             imgs.append(highpass)
             if 'pyr' in vrange:
-                highpass_vrange, _ = colormap_range(highpass, [None], 
+                highpass_vrange, _ = colormap_range([highpass], [False], 
                                                 vrange.replace('pyr','').replace('auto','indep'), None, col_wrap)
                 vrange_list.append(highpass_vrange[0])
         if lowpass is not None:
             titles += ["residual lowpass"]
             imgs.append(lowpass)
             if 'pyr' in vrange:
-                lowpass_vrange , _= colormap_range(lowpass, [None], 
+                lowpass_vrange , _= colormap_range([lowpass], [False], 
                                                vrange.replace('pyr','').replace('auto','indep'), None, col_wrap)
           
                 vrange_list.append(lowpass_vrange[0])

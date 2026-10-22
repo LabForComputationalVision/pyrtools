@@ -1582,42 +1582,44 @@ class TestPyrshow(unittest.TestCase):
 
     def _pyrshow(self, pyr, vrange):
         return pt.pyrshow(pyr, vrange=vrange, zoom=1, col_wrap=3, show_residuals=True)
+    
+    def _get_expected_values(self, image, vrange_idx):
+        if vrange_idx == '0':
+            M = np.nanmax([np.abs(np.nanmin(image)), np.abs(np.nanmax(image))])
+            vrange_tmp = [-M, M]
+        elif vrange_idx == '1':
+            vrange_tmp = [np.nanmin(image), np.nanmax(image)]
+        elif vrange_idx == '2':
+            vrange_tmp = [np.nanmean(image) - 2 * np.nanstd(image),
+                            np.nanmean(image) + 2 * np.nanstd(image)]
+        elif vrange_idx == '3':
+            p1 = np.nanpercentile(image, 10)
+            p2 = np.nanpercentile(image, 90)
+            vrange_tmp = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
+        return vrange_tmp
+
 
     def _expected_clims_pyrshow(self, pyr_coeffs,  vrange):
+        # Note this assumes column wrap is 3 
         imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr_coeffs.copy())
-
         clims = []
         for i in range(3):
             for j in range(3):
                 flatimg = np.concatenate([img.flatten() for img in imgs[i*3:i*3+3]]).flatten()
-
-                if 'auto0' in vrange:
-                    M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
-                    clims.append([-M,M])
-                elif 'auto1' in vrange:
-                    clims.append([np.min(flatimg), np.max(flatimg)])
-                elif 'auto2' in vrange:
-                    clims.append([np.nanmean(flatimg) - 2 * np.nanstd(flatimg),
-                                np.nanmean(flatimg) + 2 * np.nanstd(flatimg)])
-                elif 'auto3' in vrange:
-                    p1 = np.nanpercentile(flatimg, 10)
-                    p2 = np.nanpercentile(flatimg, 90)
-                    clims.append([p1-(p2-p1)/8.0, p2+(p2-p1)/8.0])
+                clims.append(self._get_expected_values(flatimg, vrange[4]))  
         return clims 
     
     def _get_clims(self, fig):
-        """get vmin vmax for each image in fig as list of tuples (vmin, vmax)"""
         return [ax.images[0].get_clim() for ax in fig.axes if ax.images]
     
     def test_pyrshow_vrange(self):
         pyr_coeffs = {}
-
         # Construct the simple pyramid
         for i in range(3):
             for j in range(3):
-                pyr_coeffs[i,j] = np.ones((256,256)) * (i *3)+ j 
-        pyr_coeffs['residual_highpass'] = np.ones((256,256)) * .01
-        pyr_coeffs['residual_lowpass'] = np.ones((256,256)) * 10
+                pyr_coeffs[i,j] = np.random.rand(256,256) * (i * 3)+ j 
+        pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
+        pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
 
         for mode in range(4):
             mode_full = f"auto{mode}pyr"
@@ -1629,15 +1631,16 @@ class TestPyrshow(unittest.TestCase):
                     self.assertTrue(np.isclose(vmax, exp_vmax, atol=1e-6))
                     self.assertTrue(np.isclose(vmin, exp_vmin, atol=1e-6))
 
-            # Becuase testing autoNpyr the residuals are handled differently
+            # Becuase testing autoNpyr the residuals are handled differently            
             for i, residual in enumerate(['residual_highpass', 'residual_lowpass']):
                 image_idx = 9 + i # residuals are the last two images 
+                # Get residual bounds by just passing the single image
+                expected_values = self._get_expected_values(pyr_coeffs[residual], str(mode))
+
                 with self.subTest(mode=mode, img_idx=img_idx):
-                    # Get residual bounds with vrange = indepN
-                    expected_values, _= colormap_range(image=pyr_coeffs[residual], contains_rgb= [False], 
-                                                vrange='indep'+str(mode))
-                    for j in range(2): # Iterate over vmin and vmax 
-                        self.assertTrue(np.isclose(self._get_clims(fig)[image_idx][j], expected_values[0][j], atol=1e-6)) 
+                    clims = self._get_clims(fig)[image_idx] 
+                    for actual, expected in zip(clims, expected_values): # Iterate over vmin and vmax 
+                        self.assertTrue(np.isclose(actual, expected, atol=1e-6)) 
         plt.close("all")
                 
     def test_pyrshow_1d(self):
@@ -1683,7 +1686,7 @@ class TestVrange(unittest.TestCase):
         return images
 
     def _imshow(self, vrange):
-        return pt.imshow(self._get_images(), vrange=vrange, zoom=1, col_wrap=2)
+        return pt.imshow(self._get_images(), vrange=vrange, col_wrap=2)
 
     def _expected_clims(self, vrange):
         clims, _ = colormap_range(image=self._get_images(), contains_rgb= [False]*len(self._get_images()), 
@@ -1693,7 +1696,7 @@ class TestVrange(unittest.TestCase):
     def test_list_of_tuples_vrange(self):
         images = self._get_images()
         vrange = [(0, 1), (2, 3), (4, 5), (6, 7)]
-        fig = pt.imshow(images, vrange=vrange, zoom=1, col_wrap=2)
+        fig = pt.imshow(images, vrange=vrange)
         clims = self._get_clims(fig)
         for i in range(4):
             with self.subTest(i=i):
@@ -1704,15 +1707,18 @@ class TestVrange(unittest.TestCase):
         vrange = [(0, 1), (2, 3), (4, 5)]
         with self.assertRaises(Exception, msg="If you're passing numbers to vrange,"
                             "there must be a single 2-tuple or as many as there are images!"):
-            fig = pt.imshow(images, vrange=vrange, zoom=1, col_wrap=2)
+            fig = pt.imshow(images, vrange=vrange)
        
-    def test_vrange_argument(self):
+    def test_vrange_argument_indep_col(self):
         images = self._get_images()
-        with self.assertRaises(ValueError, msg="indep and row cannot be used together in vrange. Use either indep or auto[x]row"):
-            pt.imshow(images, vrange='indep1row', zoom=1, col_wrap=2)
-        with self.assertRaises(ValueError, msg = "indep and col cannot be used together in vrange. Use either indep or " 
-                "auto[x]col or auto[x]colcomplex"):
-            pt.imshow(images, vrange='indep1col', zoom=1, col_wrap=2)
+        with self.assertRaises(ValueError, msg="indep and row cannot be used together in vrange. Use either indepN or autoNrow"):
+            pt.imshow(images, vrange='indep1row')
+
+    def test_vrange_argument_indep_row(self):
+        images = self._get_images()
+        with self.assertRaises(ValueError, msg = "indep and col cannot be used together in vrange. Use either indepN or " 
+                             "autoNcol or autoNcolcomplex"):
+            pt.imshow(images, vrange='indep1col')
 
     def test_vrange_matches_expected(self):
         for mode in ['auto', 'indep', 'autoNrow', 'autoNcol','autoNcolcomplex']:
