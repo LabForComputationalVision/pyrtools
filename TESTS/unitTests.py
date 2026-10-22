@@ -1636,6 +1636,18 @@ class TestAnimshow(unittest.TestCase):
         fig = pt.animshow([vid, 2*vid, 3*vid], vrange="auto1col", col_wrap=2, as_html5=False)._fig
         _check_ranges(fig, ranges)
 
+    def test_animshow20(self):
+        vid = np.random.randn(3, 32, 32)
+        fig, ax = plt.subplots(1, 1)
+        fig = pt.animshow(vid, ax=ax, as_html5=False)._fig
+        plt.close(fig)
+
+    def test_animshow21(self):
+        vid = np.random.randn(3, 32, 32)
+        fig, ax = plt.subplots(1, 1)
+        with self.assertRaises(ValueError, msg="Can only display one image"):
+            pt.animshow([vid, vid], ax=ax, as_html5=False)._fig
+
 
 class TestPyrshow(unittest.TestCase):
 
