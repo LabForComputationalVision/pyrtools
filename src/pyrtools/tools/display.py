@@ -1,3 +1,4 @@
+import math
 import warnings
 import numpy as np
 import matplotlib.pyplot as plt
@@ -225,7 +226,7 @@ def reshape_axis(ax, axis_size_pix):
     return ax
 
 
-def colormap_range(image, contains_rgb, vrange='indep1', cmap=None):
+def colormap_range(image, contains_rgb, vrange='indep1', cmap=None, n_cols = None):
     """Find the appropriate ranges for colormaps of provided images
 
     Arguments
@@ -239,34 +240,60 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None):
     contains_rgb : list
         List of bools specifying whether each of the signals in image are
         RGB or not.
-    vrange : `tuple` or `str`
+    vrange : `tuple` or `list` or `str`
         If a 2-tuple, specifies the image values vmin/vmax that are mapped to
-        (ie. clipped to) the minimum and maximum value of the colormap,
-        respectively.
-        If a string:
-        * `'auto0'`: all images have same vmin/vmax, which have the same
-                     absolute value, and come from the minimum or maximum across
-                     all images, whichever has the larger absolute value
-        * `'auto1'`: all images have same vmin/vmax, which are the minimum/
-                     maximum values across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across
-                     all images) minus/plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the
-                     10th/90th percentile values to the 10th/90th percentile of
-                     the display intensity range. For example: vmin is the 10th
-                     percentile image value minus 1/8 times the difference
-                     between the 90th and 10th percentile
-        * `'indep0'`: each image has an independent vmin/vmax, which have the
-                     same absolute value, which comes from either their minimum
-                     or maximum value, whichever has the larger absolute value.
-        * `'indep1'`: each image has an independent vmin/vmax, which are their
-                     minimum/maximum values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their
-                     mean minus/plus 2 std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that
-                     the 10th/90th percentile values map to the 10th/90th
-                     percentile intensities.
+        the minimum and maximum value of the colormap, respectively. If a list
+        of 2-tuples, must have one per image, and each image's vmin/vmax is specified 
+        by the corresponding 2-tuple. If a string: 
 
+        * ``'auto0'``: all images have same vmin/vmax, which have the same absolute
+          value, and come from the minimum or maximum across all
+          images, whichever has the larger absolute value
+
+        * ``'auto/auto1'``: all images have same vmin/vmax, which are the
+          minimum/maximum values across all images
+
+        * ``'auto2'``: all images have same vmin/vmax, which are the mean (across
+          all images) minus/ plus 2 std dev (across all images)
+
+        * ``'auto3'``: all images have same vmin/vmax, chosen so as to map the
+          10th/90th percentile values to the 10th/90th percentile of
+          the display intensity range. For example: vmin is the 10th
+          percentile image value minus 1/8 times the difference
+          between the 90th and 10th percentile
+
+        * ``'autoNrow'``: where ``N`` is an integer. each row of the figure 
+          has the same vmin/vmax, which are 
+          computed using the corresponding ``"autoN"`` method described above.
+
+        * ``'autoNcol'``: where ``N`` is an integer. each column of the figure has the
+          same vmin/vmax, which are computed using the corresponding ``"autoN"`` 
+          method described above.
+
+        * ``'autoNcolcomplex'``: where ``N`` is an integer. Same as ``'autoNcol'``, 
+          but the vmin/vmax are computed jointly across the real and imaginary parts
+          in each column.
+
+        * ``'indep0'``: each image has an independent vmin/vmax, which have the
+          same absolute value, which comes from either their
+          minimum or maximum value, whichever has the larger
+          absolute value.
+
+        * ``'indep1'``: each image has an independent vmin/vmax, which are their
+          minimum/maximum values.
+
+        * ``'indep2'``: each image has an independent vmin/vmax, which is their
+          mean minus/plus 2 std dev.
+
+        * ``'indep3'``: each image has an independent vmin/vmax, chosen so that
+          the 10th/90th percentile values map to the 10th/90th
+          percentile intensities.
+        
+    cmap : matplotlib colormap, optional
+        colormap to use when showing these images. If None, will pick RdBu_r if vrange is 
+        some variant of auto0 or indep0, else will pick gray.
+    n_cols : `int`
+        number of columns in the figure. 
     Returns
     -------
     vrange_list : `list`
@@ -274,6 +301,13 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None):
         for each image.
     """
     if isinstance(vrange, str):
+
+        if 'indep' in vrange and 'row' in vrange:
+            raise ValueError("indep and row cannot be used together in vrange. Use either indepN or autoNrow")
+        if 'indep' in vrange and 'col' in vrange:
+            raise ValueError("indep and col cannot be used together in vrange. Use either indepN or " 
+                             "autoNcol or autoNcolcomplex")
+
         if vrange[:4] == 'auto':
             # flatimg is one long 1d array, which enables the min, max, mean, std, and
             # percentile calls to operate on the values from each of the images simultaneously.
@@ -282,8 +316,29 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None):
             # for more.
             try:
                 flatimg = np.concatenate([i.flatten() for i, rgb in zip(image, contains_rgb)
-                                      if not rgb]).flatten()
-                if vrange == 'auto0':
+                                         if not rgb]).flatten()
+                if 'row' in vrange:
+                    assert n_cols is not None, "n_cols must be provided when using row-wise vrange (e.g. 'auto1row')"
+                    vrange_tmp = []
+                    for i in range(math.ceil(len(image) / n_cols)):
+                        vr, _ = colormap_range(
+                            image[n_cols * i : n_cols * (i + 1)], contains_rgb,  vrange.split('row')[0])
+                        vrange_tmp.extend(vr)
+                elif 'col' in vrange:
+                    if 'complex' in vrange:
+                        imgs_formatted = [np.concatenate([image[i], image[i+1]]) for i in range(0, len(image), 2)] 
+                        # Divide by 2 because we are grouping complex images into pairs
+                        vrange_tmp, cmap = colormap_range(imgs_formatted, contains_rgb, vrange=vrange.split('complex')[0], n_cols=n_cols//2) 
+                        vrange_tmp = [v for v in vrange_tmp for _ in range(2)]
+                
+                    else:
+                        vrange_tmp = []
+                        for j in range(n_cols):
+                            col_images = [image[i] for i in range(j, len(image), n_cols)]
+                            vr, _ = colormap_range(col_images, contains_rgb, vrange.split('col')[0])
+                            vrange_tmp.append(vr[0]) # all entries will be the same, so just take the first
+                        vrange_tmp *= (len(image) // n_cols) # now repeat values for each row
+                elif vrange == 'auto0':
                     M = np.nanmax([np.abs(np.nanmin(flatimg)), np.abs(np.nanmax(flatimg))])
                     vrange_tmp = [-M, M]
                 elif vrange == 'auto1' or vrange == 'auto':
@@ -300,19 +355,20 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None):
                 # because the vrange doesn't depend on the computed values above, it
                 # must be either [0, 1] for floats or [0, 255] for ints
                 pass
-
             # make sure to return as many ranges as there are images
             vrange_list = []
-            for img, rgb in zip(image, contains_rgb):
-                if not rgb:
-                    vrange_list.append(vrange_tmp)
-                elif np.issubdtype(img.dtype, np.floating):
-                    # all RGB float images use vrange 0, 1
-                    vrange_list.append([0, 1])
-                else:
-                    # all RGB int images use vrange 0, 255
-                    vrange_list.append([0, 255])
-
+            if 'row' not in vrange and 'col' not in vrange:
+                for img, rgb in zip(image, contains_rgb):
+                    if not rgb:
+                        vrange_list.append(vrange_tmp)
+                    elif np.issubdtype(img.dtype, np.floating):
+                        # all RGB float images use vrange 0, 1
+                        vrange_list.append([0, 1])
+                    else:
+                        # all RGB int images use vrange 0, 255
+                        vrange_list.append([0, 255])
+            else:
+                vrange_list = vrange_tmp
         elif vrange[:5] == 'indep':
             # independent vrange from recursive calls of this function per image
             vrange_list = [colormap_range([im], [rgb], vrange.replace('indep', 'auto')
@@ -322,14 +378,17 @@ def colormap_range(image, contains_rgb, vrange='indep1', cmap=None):
             vrange_list, _ = colormap_range(image, contains_rgb, 'auto1')
             warnings.warn('Unknown vrange argument, using auto1 instead')
     else:
-        # two numbers were passed, either as a list or tuple
-        if len(vrange) != 2:
+        # either a single 2-tuple was passed or a list of 2-tuples one for each image was passed.
+        if len(vrange) == 2:
+            vrange_list = [tuple(vrange)] * len(image)
+        elif len(vrange) == len(image):
+            # explicitly cast as tuple in case of list of lists
+            vrange_list = [tuple(v) for v in vrange] 
+        else:
             raise Exception("If you're passing numbers to vrange,"
-                            "there must be 2 of them!")
-        vrange_list = [tuple(vrange)] * len(image)
-
+                            "there must be a single 2-tuple or as many as there are images!")        
     if cmap is None:
-        if '0' in vrange:
+        if isinstance(vrange, str) and '0' in vrange:
             cmap = cm.RdBu_r
         else:
             cmap = cm.gray
@@ -645,7 +704,7 @@ def _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct):
     else:
         fig = ax.figure
         axes = [reshape_axis(ax,  zoom * max_shape)]
-    return fig, axes
+    return fig, axes, n_cols
 
 
 def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
@@ -663,37 +722,61 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
         `(n,h,w)` for multiple grayscale images). all images will be
         automatically rescaled so they're displayed at the same size. thus,
         their sizes must be scalar multiples of each other.
-    vrange : `tuple` or `str`
-        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
-        the minimum and maximum value of the colormap, respectively. If a
-        string:
+    vrange : `tuple` or `list` or `str`
 
-        * `'auto0'`: all images have same vmin/vmax, which have the same absolute
-                     value, and come from the minimum or maximum across all
-                     images, whichever has the larger absolute value
-        * `'auto/auto1'`: all images have same vmin/vmax, which are the
-                          minimum/maximum values across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across
-                     all images) minus/ plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the
-                     10th/90th percentile values to the 10th/90th percentile of
-                     the display intensity range. For example: vmin is the 10th
-                     percentile image value minus 1/8 times the difference
-                     between the 90th and 10th percentile
-        * `'indep0'`: each image has an independent vmin/vmax, which have the
-                      same absolute value, which comes from either their
-                      minimum or maximum value, whichever has the larger
-                      absolute value.
-        * `'indep1'`: each image has an independent vmin/vmax, which are their
-                      minimum/maximum values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their
-                      mean minus/plus 2 std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that
-                      the 10th/90th percentile values map to the 10th/90th
-                      percentile intensities.
-        NOTE: this only affects the behavior for grayscale images. RGB images
-        will always be displayed with vrange [0, 1] (for floats) or [0, 255]
-        (for ints), because of how matplotlib handles them.
+        .. attention::
+           this only affects the behavior for grayscale images. RGB images
+           will always be displayed with vrange [0, 1] (for floats) or [0, 255]
+           (for ints), because of how matplotlib handles them.
+
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
+        the minimum and maximum value of the colormap, respectively. If a list
+        of 2-tuples, must have one per image, and each image's vmin/vmax is specified 
+        by the corresponding 2-tuple. If a string: 
+
+        * ``'auto0'``: all images have same vmin/vmax, which have the same absolute
+          value, and come from the minimum or maximum across all
+          images, whichever has the larger absolute value
+
+        * ``'auto/auto1'``: all images have same vmin/vmax, which are the
+          minimum/maximum values across all images
+
+        * ``'auto2'``: all images have same vmin/vmax, which are the mean (across
+          all images) minus/ plus 2 std dev (across all images)
+
+        * ``'auto3'``: all images have same vmin/vmax, chosen so as to map the
+          10th/90th percentile values to the 10th/90th percentile of
+          the display intensity range. For example: vmin is the 10th
+          percentile image value minus 1/8 times the difference
+          between the 90th and 10th percentile
+
+        * ``'autoNrow'``: where ``N`` is an integer. each row of the figure 
+          has the same vmin/vmax, which are 
+          computed using the corresponding ``"autoN"`` method described above.
+
+        * ``'autoNcol'``: where ``N`` is an integer. each column of the figure has the
+          same vmin/vmax, which are computed using the corresponding ``"autoN"`` 
+          method described above.
+
+        * ``'autoNcolcomplex'``: where ``N`` is an integer. Same as ``'autoNcol'``, 
+          but the vmin/vmax are computed jointly across the real and imaginary parts
+          in each column.
+
+        * ``'indep0'``: each image has an independent vmin/vmax, which have the
+          same absolute value, which comes from either their
+          minimum or maximum value, whichever has the larger
+          absolute value.
+
+        * ``'indep1'``: each image has an independent vmin/vmax, which are their
+          minimum/maximum values.
+
+        * ``'indep2'``: each image has an independent vmin/vmax, which is their
+          mean minus/plus 2 std dev.
+
+        * ``'indep3'``: each image has an independent vmin/vmax, chosen so that
+          the 10th/90th percentile values map to the 10th/90th
+          percentile intensities.
+        
     zoom : `float`
         ratio of display pixels to image pixels. if >1, must be an integer. If
         <1, must be 1/d where d is a a divisor of the size of the largest
@@ -759,19 +842,17 @@ def imshow(image, vrange='indep1', zoom=1, title='', col_wrap=None, ax=None,
     # Process complex images for plotting, double-check image size to see if we
     # have RGB(A) images
     image, title, contains_rgb = _process_signal(image, title, plot_complex)
-
     # make sure we can properly zoom all images
     zooms, max_shape = _check_zooms(image, zoom, any(contains_rgb))
 
     # get the figure and axes created
-    fig, axes = _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct)
+    fig, axes, n_cols = _setup_figure(ax, col_wrap, image, zoom, max_shape, vert_pct)
 
     if any(contains_rgb) and vrange != "indep1":
         warnings.warn("RGB images cannot have their vrange set: matplotlib "
                       "will always show them with vrange [0, 1] (for floats) "
                       "or [0, 255] (for ints).")
-    vrange_list, cmap = colormap_range(image, contains_rgb, vrange, cmap)
-
+    vrange_list, cmap = colormap_range(image, contains_rgb, vrange, cmap, n_cols)
     assert len(image) == len(vrange_list)
 
     for im, a, r, t, z in zip(image, axes, vrange_list, title, zooms):
@@ -806,33 +887,65 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
         Requires ipython to be installed.
     repeat : `bool`
         whether to loop the animation or just play it once
-    vrange : `tuple` or `str`
-        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-        maximum value of the colormap, respectively. If a string:
+    vrange : `tuple` or `list` or `str`
+        .. attention::
+           this only affects the behavior for grayscale images. RGB images
+           will always be displayed with vrange [0, 1] (for floats) or [0, 255]
+           (for ints), because of how matplotlib handles them.
 
-        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
-                          across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
-                     plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
-                     values to the 10th/90th percentile of the display intensity range. For
-                     example: vmin is the 10th percentile image value minus 1/8 times the
-                     difference between the 90th and 10th percentile
-        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
-                      values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
-                      std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
-                      percentile values map to the 10th/90th percentile intensities.
-        NOTE: this only affects the behavior for grayscale images. RGB images
-        will always be displayed with vrange [0, 1] (for floats) or [0, 255]
-        (for ints), because of how matplotlib handles them.
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
+        the minimum and maximum value of the colormap, respectively. If a list
+        of 2-tuples, must have one per image, and each image's vmin/vmax is specified 
+        by the corresponding 2-tuple. If a string: 
+
+        * ``'auto0'``: all images have same vmin/vmax, which have the same absolute
+          value, and come from the minimum or maximum across all
+          images, whichever has the larger absolute value
+
+        * ``'auto/auto1'``: all images have same vmin/vmax, which are the
+          minimum/maximum values across all images
+
+        * ``'auto2'``: all images have same vmin/vmax, which are the mean (across
+          all images) minus/ plus 2 std dev (across all images)
+
+        * ``'auto3'``: all images have same vmin/vmax, chosen so as to map the
+          10th/90th percentile values to the 10th/90th percentile of
+          the display intensity range. For example: vmin is the 10th
+          percentile image value minus 1/8 times the difference
+          between the 90th and 10th percentile
+
+        * ``'autoNrow'``: where ``N`` is an integer. each row of the figure 
+          has the same vmin/vmax, which are 
+          computed using the corresponding ``"autoN"`` method described above.
+
+        * ``'autoNcol'``: where ``N`` is an integer. each column of the figure has the
+          same vmin/vmax, which are computed using the corresponding ``"autoN"`` 
+          method described above.
+
+        * ``'autoNcolcomplex'``: where ``N`` is an integer. Same as ``'autoNcol'``, 
+          but the vmin/vmax are computed jointly across the real and imaginary parts
+          in each column.
+
+        * ``'indep0'``: each image has an independent vmin/vmax, which have the
+          same absolute value, which comes from either their
+          minimum or maximum value, whichever has the larger
+          absolute value.
+
+        * ``'indep1'``: each image has an independent vmin/vmax, which are their
+          minimum/maximum values.
+
+        * ``'indep2'``: each image has an independent vmin/vmax, which is their
+          mean minus/plus 2 std dev.
+
+        * ``'indep3'``: each image has an independent vmin/vmax, chosen so that
+          the 10th/90th percentile values map to the 10th/90th
+          percentile intensities.
+        
     zoom : `float`
         amount we zoom the video frames (must result in an integer when multiplied by
         video.shape[1:])
     title : `str` , `list` or None
         Title for the plot:
-
         * if `str`, will put the same title on every plot.
         * if `list`, all values must be `str`, must be the same length as img, assigning each
           title to corresponding image.
@@ -883,12 +996,12 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     title, vert_pct = _convert_title_to_list(title, video)
     video, title, contains_rgb = _process_signal(video, title, plot_complex, video=True)
     zooms, max_shape = _check_zooms(video, zoom, any(contains_rgb), video=True)
-    fig, axes = _setup_figure(ax, col_wrap, video, zoom, max_shape, vert_pct)
+    fig, axes, n_cols = _setup_figure(ax, col_wrap, video, zoom, max_shape, vert_pct)
     if any(contains_rgb) and vrange != "indep1":
         warnings.warn("RGB images cannot have their vrange set: matplotlib "
                       "will always show them with vrange [0, 1] (for floats) "
                       "or [0, 255] (for ints).")
-    vrange_list, cmap = colormap_range(video, contains_rgb, vrange, cmap)
+    vrange_list, cmap = colormap_range(video, contains_rgb, vrange, cmap, n_cols)
 
     assert len(video) == len(vrange_list)
 
@@ -924,34 +1037,68 @@ def animshow(video, framerate=2., as_html5=True, repeat=False,
     return anim
 
 
-def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
+def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals=True, **kwargs):
     """Display the coefficients of the pyramid in an orderly fashion
 
     Arguments
     ---------
     pyr_coeffs : `dict`
         from the pyramid object (i.e. pyr.pyr_coeffs)
-    is_complex : `bool`
-        default False, indicates whether the pyramids is real or complex
-        indicating whether the pyramid is complex or real
-    vrange : `tuple` or `str`
-        If a 2-tuple, specifies the image values vmin/vmax that are mapped to the minimum and
-        maximum value of the colormap, respectively. If a string:
+    vrange : `tuple` or `list` or `str`
 
-        * `'auto/auto1'`: all images have same vmin/vmax, which are the minimum/maximum values
-                          across all images
-        * `'auto2'`: all images have same vmin/vmax, which are the mean (across all images) minus/
-                     plus 2 std dev (across all images)
-        * `'auto3'`: all images have same vmin/vmax, chosen so as to map the 10th/90th percentile
-                     values to the 10th/90th percentile of the display intensity range. For
-                     example: vmin is the 10th percentile image value minus 1/8 times the
-                     difference between the 90th and 10th percentile
-        * `'indep1'`: each image has an independent vmin/vmax, which are their minimum/maximum
-                      values
-        * `'indep2'`: each image has an independent vmin/vmax, which is their mean minus/plus 2
-                      std dev
-        * `'indep3'`: each image has an independent vmin/vmax, chosen so that the 10th/90th
-                      percentile values map to the 10th/90th percentile intensities.
+        If a 2-tuple, specifies the image values vmin/vmax that are mapped to
+        the minimum and maximum value of the colormap, respectively. If a list
+        of 2-tuples, must have one per image, and each image's vmin/vmax is specified 
+        by the corresponding 2-tuple. If a string: 
+
+        * ``'auto0'``: all images have same vmin/vmax, which have the same absolute
+          value, and come from the minimum or maximum across all
+          images, whichever has the larger absolute value
+
+        * ``'auto/auto1'``: all images have same vmin/vmax, which are the
+          minimum/maximum values across all images
+
+        * ``'auto2'``: all images have same vmin/vmax, which are the mean (across
+          all images) minus/ plus 2 std dev (across all images)
+
+        * ``'auto3'``: all images have same vmin/vmax, chosen so as to map the
+          10th/90th percentile values to the 10th/90th percentile of
+          the display intensity range. For example: vmin is the 10th
+          percentile image value minus 1/8 times the difference
+          between the 90th and 10th percentile
+
+        * ``'autoNrow'``: where ``N`` is an integer. each row of the figure 
+          has the same vmin/vmax, which are 
+          computed using the corresponding ``"autoN"`` method described above.
+
+        * ``'autoNcol'``: where ``N`` is an integer. each column of the figure has the
+          same vmin/vmax, which are computed using the corresponding ``"autoN"`` 
+          method described above.
+
+        * ``'autoNcolcomplex'``: where ``N`` is an integer. Same as ``'autoNcol'``, 
+          but the vmin/vmax are computed across the real and imaginary parts in each 
+          column. Note: Is not compatible with show_residuals=True. Plot the residuals
+          separately.
+
+        * ``'autoNpyr'``: where ``N`` is an integer. Same as ``'autoNrow'`` except
+          the lowpass and highpass residuals vmin/vmax are computed independently, 
+          as ``'indepN'``.
+
+        * ``'indep0'``: each image has an independent vmin/vmax, which have the
+          same absolute value, which comes from either their
+          minimum or maximum value, whichever has the larger
+          absolute value.
+
+        * ``'indep1'``: each image has an independent vmin/vmax, which are their
+          minimum/maximum values.
+
+        * ``'indep2'``: each image has an independent vmin/vmax, which is their
+          mean minus/plus 2 std dev.
+
+        * ``'indep3'``: each image has an independent vmin/vmax, chosen so that
+          the 10th/90th percentile values map to the 10th/90th
+          percentile intensities.
+        
     col_wrap : `int` or None
         Only usable when the pyramid is one-dimensional (e.g., Gaussian or Laplacian Pyramid),
         otherwise the column wrap is determined by the number of bands. If not None, how many axes
@@ -979,15 +1126,46 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
     # pasting all coefficients into a giant array.
     # and the steerable pyramids have a num_orientations attribute
 
+
+    if vrange[0:4] == 'auto' and vrange[5:] == 'colcomplex':
+        if show_residuals:
+            raise ValueError("vrange='autoNcolcomplex' can not be used with show_residuals=True. "
+                             "Please use show_residuals=False or a different vrange.")
+
     num_scales = np.max(np.asarray([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,0]) + 1
     num_orientations = np.max(np.asarray([k for k in pyr_coeffs.keys() if isinstance(k, tuple)])[:,1]) + 1
 
-    col_wrap_new = num_orientations
-    if is_complex:
-        col_wrap_new *= 2
     # not sure about scope here, so we make sure to copy the
     # pyr_coeffs dictionary.
     imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr_coeffs.copy())
+
+    # determine if input is complex and if so account for that in column wrap.    
+    if col_wrap is None and num_orientations != 1: 
+        col_wrap = num_orientations
+        for im in imgs:
+            if np.iscomplex(im).any():
+                col_wrap *= 2
+                break 
+    elif col_wrap is not None and 'pyr' in vrange:
+        raise ValueError("If col_wrap is set vrange cannot have 'pyr' use one of the 'col' vrange options")
+
+    if 'pyr' in vrange:
+        # We make two types of pyramids: one where there is multiple orientations (each scale on a seperate row) 
+        # and another where there is only one orientation (all scales on one row). In both cases, "pyr" 
+        # vranges should have independent vrange per scale
+        
+        if num_orientations != 1:
+            vrange_cols = col_wrap
+        else:
+            vrange_cols = 1
+
+        # We want the residuals vmin/vmax to be computed independently.
+        # Compute AutoNrow for the pyramid coefficients,
+        # and then compute the residuals and append their vmin/vmax. 
+        image_tmp = _convert_signal_to_list(imgs)
+        image_tmp, _, contains_rgb = _process_signal(image_tmp, [None]*len(image_tmp), 'rectangular')
+        vrange_list, _ = colormap_range(image_tmp, [False]*len(image_tmp), vrange.replace('pyr','row'), None, vrange_cols)
+
     # we can similarly grab the labels for height and band
     # from the keys in this pyramid coefficients dictionary
     pyr_coeffs_keys = [k for k in pyr_coeffs.keys() if isinstance(k, tuple)]
@@ -996,12 +1174,19 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
         if highpass is not None:
             titles += ["residual highpass"]
             imgs.append(highpass)
+            if 'pyr' in vrange:
+                highpass_vrange, _ = colormap_range([highpass], [False], 
+                                                vrange.replace('pyr','').replace('auto','indep'), None, col_wrap)
+                vrange_list.append(highpass_vrange[0])
         if lowpass is not None:
             titles += ["residual lowpass"]
             imgs.append(lowpass)
-    if col_wrap_new is not None and col_wrap_new != 1:
-        if col_wrap is None:
-            col_wrap = col_wrap_new
+            if 'pyr' in vrange:
+                lowpass_vrange , _= colormap_range([lowpass], [False], 
+                                               vrange.replace('pyr','').replace('auto','indep'), None, col_wrap)
+          
+                vrange_list.append(lowpass_vrange[0])
+   
     # if these are really 1d (i.e., have shape (1, x) or (x, 1)), then we want them to be 1d
     imgs = [i.squeeze() for i in imgs]
     if imgs[0].ndim == 1:
@@ -1040,4 +1225,6 @@ def pyrshow(pyr_coeffs, is_complex=False, vrange='indep1', col_wrap=None, zoom=1
                              "times, where this number is the height of the "
                              f"pyramid{residual_err_msg}. "
                              f"Instead, found:\n{err_msg}")
+        if 'pyr' in vrange:
+            vrange = vrange_list
         return imshow(imgs, vrange=vrange, col_wrap=col_wrap, zoom=zoom, title=titles, **kwargs)

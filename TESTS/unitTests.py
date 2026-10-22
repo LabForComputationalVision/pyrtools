@@ -8,6 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pyrtools as pt
+from pyrtools.pyramids.pyramid import Pyramid
+from pyrtools.tools.display import colormap_range
+from pyrtools.pyramids.pyr_utils import convert_pyr_coeffs_to_pyr
 
 import scipy.io
 import os
@@ -1577,6 +1580,92 @@ class TestAnimshow(unittest.TestCase):
 
 class TestPyrshow(unittest.TestCase):
 
+    def _pyrshow(self, pyr, vrange):
+        return pt.pyrshow(pyr, vrange=vrange, show_residuals=True)
+    
+    def _get_expected_values(self, image, vrange_idx):
+        if vrange_idx == '0':
+            M = np.nanmax([np.abs(np.nanmin(image)), np.abs(np.nanmax(image))])
+            vrange_tmp = [-M, M]
+        elif vrange_idx == '1':
+            vrange_tmp = [np.nanmin(image), np.nanmax(image)]
+        elif vrange_idx == '2':
+            vrange_tmp = [np.nanmean(image) - 2 * np.nanstd(image),
+                            np.nanmean(image) + 2 * np.nanstd(image)]
+        elif vrange_idx == '3':
+            p1 = np.nanpercentile(image, 10)
+            p2 = np.nanpercentile(image, 90)
+            vrange_tmp = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
+        return vrange_tmp
+
+    def _expected_clims_pyrshow(self, pyr_coeffs, vrange, num_orientations):
+        imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr_coeffs.copy())
+        clims = []
+        for i in range(3):
+            for j in range(num_orientations):
+                if num_orientations == 1:
+                    flatimg = imgs[i]
+                else: 
+                    flatimg = np.concatenate([img.flatten() for img in imgs[i*3:i*3+3]]).flatten()
+                clims.append(self._get_expected_values(flatimg, vrange[4]))  
+        return clims 
+    
+    def _get_clims(self, fig):
+        return [ax.images[0].get_clim() for ax in fig.axes if ax.images]
+    
+    def test_setting_colwrap_with_vrange_pyr(self):
+        pyr_coeffs = {}
+        # Construct the simple pyramid
+        for i in range(3):
+            for j in range(3):
+                pyr_coeffs[i,j] = np.random.rand(256,256) * (i * 3)+ j 
+        pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
+        pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
+
+        with self.assertRaises(ValueError, msg="If col_wrap is set vrange cannot have 'pyr' use one of the 'col' vrange options"):
+            pt.pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=3)
+    
+    def test_pyrshow_vrange(self):
+        
+        for num_orientations in [1, 3]: # 1 orientation simulates laplacian pyramid
+            pyr_coeffs = {}
+            if num_orientations == 1:
+                num_images = 3
+            else: 
+                num_images = 9
+                pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
+                pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
+
+            # Construct the simple pyramid
+            for i in range(3):
+                for j in range(num_orientations):
+                    pyr_coeffs[i,j] = np.random.rand(256,256) * (i * 3)+ j 
+
+            for mode in range(4):
+                mode_full = f"auto{mode}pyr"
+                fig = self._pyrshow(pyr_coeffs, mode_full)
+          
+                for img_idx in range(num_images):
+                    with self.subTest(num_orientations = num_orientations, mode=mode, img_idx=img_idx):
+                        vmin, vmax = self._get_clims(fig)[img_idx]
+                        exp_vmin, exp_vmax  = self._expected_clims_pyrshow(pyr_coeffs, mode_full, num_orientations)[img_idx]
+                        self.assertTrue(np.isclose(vmax, exp_vmax, atol=1e-6))
+                        self.assertTrue(np.isclose(vmin, exp_vmin, atol=1e-6))
+
+                if num_orientations != 1:
+                    # Becuase testing autoNpyr the residuals are handled differently 
+                    clims_all = self._get_clims(fig)            
+                    for i, residual in enumerate(['residual_highpass', 'residual_lowpass']):
+                        image_idx = 9 + i # residuals are the last two images 
+                        # Get residual bounds by just passing the single image
+                        expected_values = self._get_expected_values(pyr_coeffs[residual], str(mode))
+
+                        with self.subTest(num_orientations = num_orientations, mode=mode, img_idx=img_idx):
+                            clims = clims_all[image_idx]
+                            for actual, expected in zip(clims, expected_values): # Iterate over vmin and vmax 
+                                self.assertTrue(np.isclose(actual, expected, atol=1e-6)) 
+            plt.close("all")
+                
     def test_pyrshow_1d(self):
         signal = np.random.rand(256)
         pyr = pt.pyramids.GaussianPyramid(signal)
@@ -1599,7 +1688,123 @@ class TestPyrshow(unittest.TestCase):
         with self.assertRaises(ValueError):
             pt.pyrshow(pyr.pyr_coeffs)
 
-            
+class TestVrange(unittest.TestCase):
+
+    def _get_clims(self, fig):
+        """get vmin vmax for each image in fig as list of tuples (vmin, vmax)"""
+        return [ax.images[0].get_clim() for ax in fig.axes if ax.images]
+    
+    def _get_title_clims(self, fig):
+        """get vmin vmax for each image in fig as list of tuples (vmin, vmax)"""
+        clims = []
+        for ax in fig.axes:
+            title = ax.get_title()
+            vmin, vmax  = title.split('[')[1].split(']')[0].split(',')
+            clims.append((float(vmin.strip()), float(vmax.strip())))
+        return clims
+
+    def _get_images(self):
+        # [[0,1],[2,3]], [[4,5],[6,7]], [[8,9],[10,11]], [[12,13],[14,15]]
+        images = [np.arange(4 * i, 4 * i + 4, dtype=float).reshape(2, 2) for i in range(4)]
+        return images
+
+    def _imshow(self, vrange):
+        return pt.imshow(self._get_images(), vrange=vrange, col_wrap=2)
+
+    def _expected_clims(self, vrange):
+        clims, _ = colormap_range(image=self._get_images(), contains_rgb= [False]*len(self._get_images()), 
+                                  vrange=vrange, cmap=None, n_cols=2)
+        return clims
+
+    def test_list_of_tuples_vrange(self):
+        images = self._get_images()
+        vrange = [(0, 1), (2, 3), (4, 5), (6, 7)]
+        fig = pt.imshow(images, vrange=vrange)
+        clims = self._get_clims(fig)
+        for i in range(4):
+            with self.subTest(i=i):
+                self.assertTrue(np.isclose(clims[i], vrange[i], atol=1e-6).all())
+
+    def test_list_of_tuples_vrange_wrong_length(self):
+        images = self._get_images()
+        vrange = [(0, 1), (2, 3), (4, 5)]
+        with self.assertRaises(Exception, msg="If you're passing numbers to vrange,"
+                            "there must be a single 2-tuple or as many as there are images!"):
+            fig = pt.imshow(images, vrange=vrange)
+       
+    def test_vrange_argument_indep_col(self):
+        images = self._get_images()
+        with self.assertRaises(ValueError, msg="indep and row cannot be used together in vrange. Use either indepN or autoNrow"):
+            pt.imshow(images, vrange='indep1row')
+
+    def test_vrange_argument_indep_row(self):
+        images = self._get_images()
+        with self.assertRaises(ValueError, msg = "indep and col cannot be used together in vrange. Use either indepN or " 
+                             "autoNcol or autoNcolcomplex"):
+            pt.imshow(images, vrange='indep1col')
+
+    def test_vrange_matches_expected(self):
+        for mode in ['auto', 'indep', 'autoNrow', 'autoNcol','autoNcolcomplex']:
+            for mode_num in range(4):
+                for img_idx in range(4):
+                    with self.subTest(mode=mode, img_idx=img_idx):
+                        if 'N' in mode:
+                            mode_full = f"{mode.replace('N',str(mode_num))}"
+                        else:
+                            mode_full = f"{mode}{mode_num}"
+                        vmin, vmax = self._get_clims(self._imshow(mode_full))[img_idx]
+                        exp_vmin, exp_vmax = self._expected_clims(mode_full)[img_idx]
+                        self.assertTrue(np.isclose(vmax, exp_vmax, atol=1e-6))
+                        self.assertTrue(np.isclose(vmin, exp_vmin, atol=1e-6))
+        plt.close("all")
+        
+    def test_vrange_title_matches_clim(self):
+        for mode in ['auto', 'indep', 'autoNrow', 'autoNcol','autoNcolcomplex']:
+            for mode_num in range(4):
+                for img_idx in range(4):
+                    with self.subTest(mode=mode, img_idx=img_idx):
+                        if 'N' in mode:
+                            mode_full = f"{mode.replace('N',str(mode_num))}"
+                        else:
+                            mode_full = f"{mode}{mode_num}"
+                        fig = self._imshow(mode_full)
+                        clim_vmin, clim_vmax = self._get_clims(fig)[img_idx]
+                        title_vmin, title_vmax = self._get_title_clims(fig)[img_idx]
+                        self.assertEqual("{:.1e}".format(clim_vmin), "{:.1e}".format(title_vmin))
+                        self.assertEqual("{:.1e}".format(clim_vmax), "{:.1e}".format(title_vmax))
+        plt.close("all")
+
+    def test_row_vrange_same_row_shares_clim(self):
+        for mode in range(4):
+            with self.subTest(mode=mode):
+                clims = self._get_clims(self._imshow(f"auto{mode}row"))
+                self.assertEqual(clims[0], clims[1], "row 0 images differ")
+                self.assertEqual(clims[2], clims[3], "row 1 images differ")
+        plt.close("all")
+
+    def test_col_vrange_same_col_shares_clim(self):
+        for mode in range(4):
+            with self.subTest(mode=mode):
+                clims = self._get_clims(self._imshow(f"auto{mode}col"))
+                self.assertEqual(clims[0], clims[2], "col 0 images differ")
+                self.assertEqual(clims[1], clims[3], "col 1 images differ")
+        plt.close("all")
+
+    def test_global_vrange_all_images_share_clim(self):
+        for mode in range(4):
+            with self.subTest(mode=mode):
+                clims = self._get_clims(self._imshow(f"auto{mode}"))
+                self.assertTrue(all(c == clims[0] for c in clims))
+        plt.close("all")
+
+    def test_indep_vrange_all_images_have_different_clims(self):
+        for mode in range(4):
+            with self.subTest(mode=mode):
+                clims = self._get_clims(self._imshow(f"indep{mode}"))
+                self.assertTrue(len(set(clims)) == len(clims),
+                                 "not all images have different clims")
+        plt.close("all")
+                
 def main():
     unittest.main()
 
