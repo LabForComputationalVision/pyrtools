@@ -1581,7 +1581,7 @@ class TestAnimshow(unittest.TestCase):
 class TestPyrshow(unittest.TestCase):
 
     def _pyrshow(self, pyr, vrange):
-        return pt.pyrshow(pyr, vrange=vrange, zoom=1, col_wrap=3, show_residuals=True)
+        return pt.pyrshow(pyr, vrange=vrange, show_residuals=True)
     
     def _get_expected_values(self, image, vrange_idx):
         if vrange_idx == '0':
@@ -1598,14 +1598,15 @@ class TestPyrshow(unittest.TestCase):
             vrange_tmp = [p1-(p2-p1)/8.0, p2+(p2-p1)/8.0]
         return vrange_tmp
 
-
-    def _expected_clims_pyrshow(self, pyr_coeffs,  vrange):
-        # Note this assumes column wrap is 3 
+    def _expected_clims_pyrshow(self, pyr_coeffs, vrange, num_orientations):
         imgs, highpass, lowpass = convert_pyr_coeffs_to_pyr(pyr_coeffs.copy())
         clims = []
         for i in range(3):
-            for j in range(3):
-                flatimg = np.concatenate([img.flatten() for img in imgs[i*3:i*3+3]]).flatten()
+            for j in range(num_orientations):
+                if num_orientations == 1:
+                    flatimg = imgs[i]
+                else: 
+                    flatimg = np.concatenate([img.flatten() for img in imgs[i*3:i*3+3]]).flatten()
                 clims.append(self._get_expected_values(flatimg, vrange[4]))  
         return clims 
     
@@ -1613,35 +1614,43 @@ class TestPyrshow(unittest.TestCase):
         return [ax.images[0].get_clim() for ax in fig.axes if ax.images]
     
     def test_pyrshow_vrange(self):
-        pyr_coeffs = {}
-        # Construct the simple pyramid
-        for i in range(3):
-            for j in range(3):
-                pyr_coeffs[i,j] = np.random.rand(256,256) * (i * 3)+ j 
-        pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
-        pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
+        for num_orientations in [1, 3]: # 1 orientation simulates laplacian pyramid
+            if num_orientations == 1:
+                num_images = 3
+            else: 
+                num_images = 9
+            pyr_coeffs = {}
+            # Construct the simple pyramid
+            for i in range(3):
+                for j in range(num_orientations):
+                    pyr_coeffs[i,j] = np.random.rand(256,256) * (i * 3)+ j 
+            pyr_coeffs['residual_highpass'] = np.random.rand(256,256) * .01
+            pyr_coeffs['residual_lowpass'] = np.random.rand(256,256) * 10
 
-        for mode in range(4):
-            mode_full = f"auto{mode}pyr"
-            fig = self._pyrshow(pyr_coeffs, mode_full)
-            for img_idx in range(9):
-                with self.subTest(mode=mode, img_idx=img_idx):
-                    vmin, vmax = self._get_clims(fig)[img_idx]
-                    exp_vmin, exp_vmax  = self._expected_clims_pyrshow(pyr_coeffs, mode_full)[img_idx]
-                    self.assertTrue(np.isclose(vmax, exp_vmax, atol=1e-6))
-                    self.assertTrue(np.isclose(vmin, exp_vmin, atol=1e-6))
+            for mode in range(4):
+                mode_full = f"auto{mode}pyr"
+                fig = self._pyrshow(pyr_coeffs, mode_full)
+          
+                for img_idx in range(num_images):
+                    with self.subTest(num_orientations = num_orientations, mode=mode, img_idx=img_idx):
+                        vmin, vmax = self._get_clims(fig)[img_idx]
+                        exp_vmin, exp_vmax  = self._expected_clims_pyrshow(pyr_coeffs, mode_full, num_orientations)[img_idx]
+                        self.assertTrue(np.isclose(vmax, exp_vmax, atol=1e-6))
+                        self.assertTrue(np.isclose(vmin, exp_vmin, atol=1e-6))
 
-            # Becuase testing autoNpyr the residuals are handled differently            
-            for i, residual in enumerate(['residual_highpass', 'residual_lowpass']):
-                image_idx = 9 + i # residuals are the last two images 
-                # Get residual bounds by just passing the single image
-                expected_values = self._get_expected_values(pyr_coeffs[residual], str(mode))
+                if num_orientations != 1:
+                    # Becuase testing autoNpyr the residuals are handled differently 
+                    clims_all = self._get_clims(fig)            
+                    for i, residual in enumerate(['residual_highpass', 'residual_lowpass']):
+                        image_idx = 9 + i # residuals are the last two images 
+                        # Get residual bounds by just passing the single image
+                        expected_values = self._get_expected_values(pyr_coeffs[residual], str(mode))
 
-                with self.subTest(mode=mode, img_idx=img_idx):
-                    clims = self._get_clims(fig)[image_idx] 
-                    for actual, expected in zip(clims, expected_values): # Iterate over vmin and vmax 
-                        self.assertTrue(np.isclose(actual, expected, atol=1e-6)) 
-        plt.close("all")
+                        with self.subTest(num_orientations = num_orientations, mode=mode, img_idx=img_idx):
+                            clims = clims_all[image_idx]
+                            for actual, expected in zip(clims, expected_values): # Iterate over vmin and vmax 
+                                self.assertTrue(np.isclose(actual, expected, atol=1e-6)) 
+            plt.close("all")
                 
     def test_pyrshow_1d(self):
         signal = np.random.rand(256)

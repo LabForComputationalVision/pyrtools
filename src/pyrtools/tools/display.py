@@ -1146,18 +1146,23 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
             if np.iscomplex(im).any():
                 col_wrap *= 2
                 break 
-   
+    elif col_wrap is not None and 'pyr' in vrange:
+        raise ValueError(f"If col_wrap is set vrange cannot have 'pyr' use one of the 'col' vrange options")
+
     if 'pyr' in vrange:
+        # We make two types of pyramids: one where there is multiple orientations (each scale on a seperate row) 
+        # and another where there is only one orientation (all scales on one row). In each case should have seperate vrange. 
+        if num_orientations != 1:
+            vrange_cols = col_wrap
+        else:
+            vrange_cols = 1
+
         # We want the residuals vmin/vmax to be computed independently.
         # Compute AutoNrow for the pyramid coefficients,
         # and then compute the residuals and append their vmin/vmax. 
-        if col_wrap is not None:
-            n_cols = col_wrap
-        else:
-            n_cols = len(imgs)
         image_tmp = _convert_signal_to_list(imgs)
         image_tmp, _, contains_rgb = _process_signal(image_tmp, [None]*len(image_tmp), 'rectangular')
-        vrange_list, _ = colormap_range(image_tmp, [False]*len(image_tmp), vrange.replace('pyr','row'), None, n_cols)
+        vrange_list, _ = colormap_range(image_tmp, [False]*len(image_tmp), vrange.replace('pyr','row'), None, vrange_cols)
 
     # we can similarly grab the labels for height and band
     # from the keys in this pyramid coefficients dictionary
