@@ -1043,7 +1043,7 @@ def pyrshow(pyr_coeffs, vrange='auto1pyr', col_wrap=None, zoom=1, show_residuals
     """Display the coefficients of the pyramid in an orderly fashion
 
     .. versionchanged:: 1.1
-       Removed ``"is_complex"`` argument -- complexity of input is now determined automatically.
+       Removed ``is_complex`` argument -- complexity of input is now determined automatically.
 
     Arguments
     ---------
