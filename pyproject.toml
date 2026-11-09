@@ -5,7 +5,7 @@ authors = [{name="Pyrtools authors"}]
 description = "Python tools for multi-scale image processing, including Laplacian pyramids, Wavelets, and Steerable Pyramids."
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
