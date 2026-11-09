@@ -54,7 +54,7 @@ jobs:
         pip install jupyter ipywidgets
         pip install "nbclient>=0.5.5"
     - name: Run notebooks
-      run: jupyter execute ${{ matrix.notebook }} --kernel_name=python3
+      run: jupyter execute TUTORIALS/${{ matrix.notebook }} --kernel_name=python3
   tests:
     runs-on: ${{matrix.os}}
     strategy:
@@ -104,7 +104,7 @@ jobs:
         persist-credentials: false
     - name: Check for file
       shell: bash
-      run: if [[ -z "$(grep ${{ matrix.notebook }} docs/tutorials/*nblink)" ]] ; then
+      run: if [[ -z "$(grep TUTORIALS/${{ matrix.notebook }} docs/tutorials/*nblink)" ]] ; then
         exit 1; fi
   no_extra_nblinks:
     runs-on: ubuntu-latest
